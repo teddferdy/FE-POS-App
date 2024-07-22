@@ -78,7 +78,7 @@ function Register() {
               <div class="flex justify-center items-center">
                 <p class="text-[#CECECE] font-semibold text-lg">
                   Jika sudah punya akun, silahkan
-                  <a class="text-[#6853F0] hover:text-[#1ACB0A]" href="/login">
+                  <a class="text-[#6853F0] hover:text-[#1ACB0A]" href="/">
                     Login
                   </a>
                 </p>

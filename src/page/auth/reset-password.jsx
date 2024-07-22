@@ -78,7 +78,7 @@ function ResetPassword() {
               <div class="flex justify-center items-center">
                 <p class="text-[#CECECE] font-semibold text-lg">
                   Kembali Ke
-                  <a class="text-[#6853F0] hover:text-[#1ACB0A]" href="/login">
+                  <a class="text-[#6853F0] hover:text-[#1ACB0A]" href="/">
                     Login
                   </a>
                 </p>

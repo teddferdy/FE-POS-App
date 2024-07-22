@@ -8,10 +8,6 @@ import Login from "../page/auth/login";
 export const Routes = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/login",
     element: <Login />,
   },
   {
@@ -21,5 +17,9 @@ export const Routes = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/home",
+    element: <Home />,
   },
 ]);
