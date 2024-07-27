@@ -1,84 +1,131 @@
 import React from "react";
+import { useFormik } from "formik";
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
+const validate = (values) => {
+  const errors = {};
+  if (!values.userName) {
+    errors.userName = "Tidak Boleh Kosong";
+  }
+
+  if (!values.password) {
+    errors.password = "Tidak Boleh Kosong";
+  }
+
+  if (!values.oldPassword) {
+    errors.oldPassword = "Tidak Boleh Kosong";
+  }
+
+  // if (!values.email) {
+  //   errors.email = "Required";
+  // } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+  //   errors.email = "Invalid email address";
+  // }
+
+  return errors;
+};
+
 function ResetPassword() {
+  const formik = useFormik({
+    initialValues: {
+      userName: "",
+      password: "",
+      oldPassword: "",
+    },
+    validate,
+    onSubmit: (values) => {
+      alert(JSON.stringify(values, null, 2));
+    },
+  });
   return (
-    <div class="flex h-screen justify-between">
-      <div class="w-full flex flex-col flex-1 rounded p-[61px]">
-        <img src={Logo} class="w-1/4" />
-        <div class="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
-          <p class="text-[#636363] text-[32px] font-semibold leading-[48px]">
+    <div className="flex h-screen justify-between">
+      <div className="w-full flex flex-col flex-1 rounded p-[61px]">
+        <img src={Logo} className="w-1/4" alt="logo" />
+        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
             Lupa Password
           </p>
-          <form action="/login" method="POST" class="flex flex-col">
-            <div class="flex flex-col gap-3">
+
+          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <label
-                class="block text-[#828282] text-lg font-semibold"
-                for="username"
+                className="block text-[#828282] text-lg font-semibold"
+                htmlFor="userName"
               >
-                Username
+                User Name :
               </label>
               <input
-                class="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
+                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
                 type="text"
-                name="username"
+                id="userName"
+                name="userName"
+                onChange={formik.handleChange}
+                value={formik.values.userName}
               />
-            </div>
-            <div class="flex flex-col gap-3">
-              <label
-                class="block text-[#828282] text-lg font-semibold"
-                for="password"
-              >
-                Password Lama
-              </label>
-              <input
-                class="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-                type="password"
-                name="password"
-              />
-            </div>
-            <div class="flex flex-col gap-3 <% if(!error.length > 0){ %>mb-11<% } else { %>mb-[11px]<% } %>">
-              <label
-                class="block text-[#828282] text-lg font-semibold"
-                for="password"
-              >
-                Password Baru
-              </label>
-              <input
-                class="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-                type="password"
-                name="password"
-                id="password"
-              />
-              <div class="flex items-center gap-3 mb-[11px]">
-                <input
-                  class="p-2 border-2 w-[18px] h-[18px] bg-white"
-                  type="checkbox"
-                  name="showPassword"
-                  id="showPassword"
-                />
-                <label
-                  class="block text-[#828282] text-lg font-semibold"
-                  for="password"
-                >
-                  Tampilkan Kata Sandi
-                </label>
-              </div>
+              {formik.errors.userName ? (
+                <p className="mt-1 text-sm text-red-600">
+                  {formik.errors.userName}
+                </p>
+              ) : null}
             </div>
 
-            <div class="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
+              <label
+                className="block text-[#828282] text-lg font-semibold"
+                htmlFor="password"
+              >
+                Password Lama :
+              </label>
+              <input
+                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
+                type="password"
+                id="password"
+                name="password"
+                onChange={formik.handleChange}
+                value={formik.values.password}
+              />
+              {formik.errors.password ? (
+                <p className="mt-1 text-sm text-red-600">
+                  {formik.errors.password}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label
+                className="block text-[#828282] text-lg font-semibold"
+                htmlFor="oldPassword"
+              >
+                Password Baru :
+              </label>
+              <input
+                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
+                type="password"
+                id="oldPassword"
+                name="oldPassword"
+                onChange={formik.handleChange}
+                value={formik.values.oldPassword}
+              />
+              {formik.errors.oldPassword ? (
+                <p className="mt-1 text-sm text-red-600">
+                  {formik.errors.oldPassword}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-3">
               <button
                 type="submit"
-                class="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
               >
                 Submit
               </button>
-              <div class="flex justify-center items-center">
-                <p class="text-[#CECECE] font-semibold text-lg">
+              <div className="flex justify-center items-center">
+                <p className="text-[#CECECE] font-semibold text-lg">
                   Kembali Ke
-                  <a class="text-[#6853F0] hover:text-[#1ACB0A]" href="/">
+                  <a className="text-[#6853F0] hover:text-[#1ACB0A]" href="/">
                     Login
                   </a>
                 </p>
@@ -87,16 +134,21 @@ function ResetPassword() {
           </form>
         </div>
       </div>
-      <div class="hidden lg:block w-full flex-[0.8] bg-indigo-700 p-[71px]">
-        <div class="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
-          <p class="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
+      <div className="hidden lg:block w-full flex-[0.8] bg-indigo-700 p-[71px]">
+        <div className="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
+          <p className="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
             Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
           </p>
-          <img src={MiniLogo} class="h-16 w-16 absolute top-[42%] -left-8" />
-          <div class="overflow-hidden self-end flex-1 absolute bottom-0 h-[70%]">
+          <img
+            src={MiniLogo}
+            className="mi-h-16 min-w-16 max-w-20 max-h-20 absolute top-[42%] -left-8"
+            alt="mini-logo"
+          />
+          <div className="overflow-hidden self-end flex-1 absolute bottom-0 h-[70%]">
             <img
-              class="w-full h-full object-contain group-hover:scale-125 group-hover:rotate-3 duration-500"
+              className="w-full h-full object-contain group-hover:scale-125 group-hover:rotate-3 duration-500"
               src={ImageUser}
+              alt="image-user"
             />
           </div>
         </div>
