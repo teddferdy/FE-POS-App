@@ -41,7 +41,7 @@ const Input = ({
           <div className="absolute top-[24%] right-[5%]">
             <div
               onClick={() => setShowPassword(!showPassword)}
-              className="w-6 h-6"
+              className="w-6 h-6 cursor-pointer"
             >
               <img
                 src={!showPassword ? HidePassword : ViewPassword}
