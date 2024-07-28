@@ -35,9 +35,9 @@ const PopUp = ({
             </div>
           </div>
 
-          <div className="text-left my-2">
+          {/* <div className="text-left my-2">
             <p className="text-sm text-black">Your modal body goes here</p>
-          </div>
+          </div> */}
 
           {withButton && (
             <div className="flex items-center justify-end gap-2 mt-4">

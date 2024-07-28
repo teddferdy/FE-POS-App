@@ -9,8 +9,9 @@ import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
 // Component
-import PopUp from "../../components/UI/pop-up";
-import { useLoading } from "../../components/UI/loading";
+import Input from "../../components/molecule/input";
+import PopUp from "../../components/organism/pop-up";
+import { useLoading } from "../../components/organism/loading";
 
 // Services
 import { register } from "../../services/auth";
@@ -83,71 +84,44 @@ const Register = () => {
           </p>
 
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <label
-                className="block text-[#828282] text-lg font-semibold"
-                htmlFor="userName"
-              >
-                User Name :
-              </label>
-              <input
-                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-                type="text"
-                id="userName"
-                name="userName"
-                onChange={formik.handleChange}
-                value={formik.values.userName}
-              />
-              {formik.errors.userName ? (
-                <p className="mt-1 text-sm text-red-600">
-                  {formik.errors.userName}
-                </p>
-              ) : null}
-            </div>
+            <Input
+              placeholder="Masukan User Name Anda"
+              label="User Name"
+              error={formik.errors.userName}
+              errorLabel={formik.errors.userName}
+              htmlFor="userName"
+              id="userName"
+              name="userName"
+              type="text"
+              onChange={formik.handleChange}
+              value={formik.values.userName}
+            />
 
-            <div className="flex flex-col gap-3">
-              <label
-                className="block text-[#828282] text-lg font-semibold"
-                htmlFor="password"
-              >
-                Password :
-              </label>
-              <input
-                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-                type="password"
-                id="password"
-                name="password"
-                onChange={formik.handleChange}
-                value={formik.values.password}
-              />
-              {formik.errors.password ? (
-                <p className="mt-1 text-sm text-red-600">
-                  {formik.errors.password}
-                </p>
-              ) : null}
-            </div>
+            <Input
+              placeholder="Masukan Password Anda"
+              label="Password"
+              error={formik.errors.password}
+              errorLabel={formik.errors.password}
+              htmlFor="password"
+              id="password"
+              name="password"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.password}
+            />
 
-            <div className="flex flex-col gap-3">
-              <label
-                className="block text-[#828282] text-lg font-semibold"
-                htmlFor="password"
-              >
-                Konfirmasi Password :
-              </label>
-              <input
-                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-                type="password"
-                id="confirmationPassword"
-                name="confirmationPassword"
-                onChange={formik.handleChange}
-                value={formik.values.confirmationPassword}
-              />
-              {formik.errors.confirmationPassword ? (
-                <p className="mt-1 text-sm text-red-600">
-                  {formik.errors.confirmationPassword}
-                </p>
-              ) : null}
-            </div>
+            <Input
+              placeholder="Masukan Konfirmasi Password Anda"
+              label="Konfirmasi Password"
+              error={formik.errors.confirmationPassword}
+              errorLabel={formik.errors.confirmationPassword}
+              htmlFor="confirmationPassword"
+              id="confirmationPassword"
+              name="confirmationPassword"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.confirmationPassword}
+            />
 
             <div className="flex flex-col gap-3">
               <button
@@ -159,7 +133,10 @@ const Register = () => {
               <div className="flex justify-center items-center">
                 <p className="text-[#CECECE] font-semibold text-lg">
                   Jika sudah punya akun, silahkan
-                  <a className="text-[#6853F0] hover:text-[#1ACB0A]" href="/">
+                  <a
+                    className="text-[#6853F0] hover:text-[#1ACB0A]  ml-2"
+                    href="/"
+                  >
                     Login
                   </a>
                 </p>
