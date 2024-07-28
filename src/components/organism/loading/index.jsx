@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 import Lottie from "react-lottie";
 
 // Molecule
-import Modal from "../../molecule/modal";
+import Modal from "../../atom/modal";
 
 // Assets
 import LoadingLottie from "../../../assets/lottie/loading.json";

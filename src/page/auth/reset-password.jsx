@@ -9,7 +9,7 @@ import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
 // Component
-import Input from "../../components/molecule/input";
+import Input from "../../components/atom/input";
 import PopUp from "../../components/organism/pop-up";
 import { useLoading } from "../../components/organism/loading";
 
