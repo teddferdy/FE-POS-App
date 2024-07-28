@@ -15,21 +15,24 @@ const Input = ({
   value,
   error,
   errorLabel,
+  classNameInput,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex flex-col gap-3">
-      <label
-        className="block text-[#828282] text-lg font-semibold"
-        htmlFor={htmlFor}
-      >
-        {label} :
-      </label>
+      {label && (
+        <label
+          className="block text-[#828282] text-lg font-semibold"
+          htmlFor={htmlFor}
+        >
+          {label} :
+        </label>
+      )}
       <div className="relative">
         <input
           placeholder={placeholder}
-          className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
+          className={`w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300 ${classNameInput}`}
           type={type !== "password" ? type : showPassword ? "text" : type}
           id={id}
           name={name}

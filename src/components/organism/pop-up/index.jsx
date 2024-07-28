@@ -1,5 +1,5 @@
 import React from "react";
-import Modal from "../../molecule/modal";
+import Modal from "../../atom/modal";
 
 // Assets
 import CloseIcon from "../../../assets/icon/close-icon.svg";
