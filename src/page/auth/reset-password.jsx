@@ -47,7 +47,7 @@ const ResetPassword = () => {
         setShowPopUp("success");
       }, 1000);
       setTimeout(() => {
-        navigate("/login");
+        navigate("/");
         setShowPopUp("");
         setActive(null, null);
       }, 2000);
