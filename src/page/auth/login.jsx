@@ -14,8 +14,6 @@ import { useLoading } from "../../components/UI/loading";
 
 // Services
 import { login } from "../../services/auth";
-// register;
-// resetPassword;
 
 const validate = (values) => {
   const errors = {};
@@ -27,16 +25,10 @@ const validate = (values) => {
     errors.password = "Tidak Boleh Kosong";
   }
 
-  // if (!values.email) {
-  //   errors.email = "Required";
-  // } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
-  //   errors.email = "Invalid email address";
-  // }
-
   return errors;
 };
 
-function Login() {
+const Login = () => {
   const [showPopUp, setShowPopUp] = useState("");
   const { setActive } = useLoading();
   const navigate = useNavigate();
@@ -169,7 +161,7 @@ function Login() {
       {/* Pop Up Error Login */}
       {showPopUp === "error" && (
         <PopUp
-          title="Error Login"
+          title="Gagal Login"
           desc={mutateLogin?.error?.response?.data?.error || ""}
           btnAccText="Tutup"
           btnCloseText="Coba Lagi"
@@ -184,6 +176,6 @@ function Login() {
       )}
     </div>
   );
-}
+};
 
 export default Login;

@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
+import { useMutation } from "react-query";
+import { useNavigate } from "react-router-dom";
+
+// Assets
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
+
+// Component
+import PopUp from "../../components/UI/pop-up";
+import { useLoading } from "../../components/UI/loading";
+
+// Services
+import { resetPassword } from "../../services/auth";
 
 const validate = (values) => {
   const errors = {};
@@ -18,16 +29,30 @@ const validate = (values) => {
     errors.oldPassword = "Tidak Boleh Kosong";
   }
 
-  // if (!values.email) {
-  //   errors.email = "Required";
-  // } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
-  //   errors.email = "Invalid email address";
-  // }
-
   return errors;
 };
 
-function ResetPassword() {
+const ResetPassword = () => {
+  const [showPopUp, setShowPopUp] = useState("");
+  const { setActive } = useLoading();
+  const navigate = useNavigate();
+
+  // QUERY
+  const mutateResetPassword = useMutation(resetPassword, {
+    onMutate: () => setActive(true),
+    onSuccess: () => {
+      setShowPopUp("success");
+      setActive(false);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    },
+    onError: () => {
+      setActive(false);
+      setShowPopUp("error");
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       userName: "",
@@ -35,10 +60,9 @@ function ResetPassword() {
       oldPassword: "",
     },
     validate,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
-    },
+    onSubmit: (values) => mutateResetPassword.mutate(values),
   });
+
   return (
     <div className="flex h-screen justify-between">
       <div className="w-full flex flex-col flex-1 rounded p-[61px]">
@@ -153,8 +177,29 @@ function ResetPassword() {
           </div>
         </div>
       </div>
+
+      {/* Pop Up Error Login */}
+      {showPopUp === "error" && (
+        <PopUp
+          title="Reset Password Gagal"
+          desc={mutateResetPassword?.error?.response?.data?.error || ""}
+          btnAccText="Tutup"
+          btnCloseText="Coba Lagi"
+          withButton
+          onCloseIcon={() => setShowPopUp("")}
+        />
+      )}
+
+      {/* Pop up Success Login */}
+      {showPopUp === "success" && (
+        <PopUp
+          title="Sukses Reset Password"
+          desc="Reset Password Berhasil"
+          withButton={false}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default ResetPassword;

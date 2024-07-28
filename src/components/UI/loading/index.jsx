@@ -12,20 +12,19 @@ const LoadingContext = createContext(null);
 const LoadingProvider = ({ children = null }) => {
   const [active, setActiveLoading] = useState(false);
 
-  const options = {
-    loop: true,
-    autoplay: true,
-    animationData: LoadingLottie,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
-
   const setActive = (isActive) => {
     setActiveLoading(isActive);
   };
 
   const LOADING = useMemo(() => {
+    const options = {
+      loop: true,
+      autoplay: true,
+      animationData: LoadingLottie,
+      rendererSettings: {
+        preserveAspectRatio: "xMidYMid slice",
+      },
+    };
     if (active) {
       return (
         <Modal>
@@ -35,7 +34,7 @@ const LoadingProvider = ({ children = null }) => {
         </Modal>
       );
     }
-  }, [active, options]);
+  }, [active]);
 
   return (
     <LoadingContext.Provider value={{ active, setActive }}>

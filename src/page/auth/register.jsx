@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
+import { useMutation } from "react-query";
+import { useNavigate } from "react-router-dom";
+
+// Assets
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
+
+// Component
+import PopUp from "../../components/UI/pop-up";
+import { useLoading } from "../../components/UI/loading";
+
+// Services
+import { register } from "../../services/auth";
 
 const validate = (values) => {
   const errors = {};
@@ -22,16 +33,30 @@ const validate = (values) => {
     errors.confirmationPassword = "Password Tidak Sama";
   }
 
-  // if (!values.email) {
-  //   errors.email = "Required";
-  // } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
-  //   errors.email = "Invalid email address";
-  // }
-
   return errors;
 };
 
-function Register() {
+const Register = () => {
+  const [showPopUp, setShowPopUp] = useState("");
+  const { setActive } = useLoading();
+  const navigate = useNavigate();
+
+  // QUERY
+  const mutateRegister = useMutation(register, {
+    onMutate: () => setActive(true),
+    onSuccess: () => {
+      setShowPopUp("success");
+      setActive(false);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    },
+    onError: () => {
+      setActive(false);
+      setShowPopUp("error");
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       userName: "",
@@ -39,9 +64,7 @@ function Register() {
       confirmationPassword: "",
     },
     validate,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
-    },
+    onSubmit: (values) => mutateRegister.mutate(values),
   });
 
   return (
@@ -158,8 +181,29 @@ function Register() {
           </div>
         </div>
       </div>
+
+      {/* Pop Up Error Login */}
+      {showPopUp === "error" && (
+        <PopUp
+          title="Gagal Mendaftar"
+          desc={mutateRegister?.error?.response?.data?.error || ""}
+          btnAccText="Tutup"
+          btnCloseText="Coba Lagi"
+          withButton
+          onCloseIcon={() => setShowPopUp("")}
+        />
+      )}
+
+      {/* Pop up Success Login */}
+      {showPopUp === "success" && (
+        <PopUp
+          title="Sukses Mendaftar"
+          desc="Sukses Mendaftar"
+          withButton={false}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default Register;
