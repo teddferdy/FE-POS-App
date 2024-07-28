@@ -5,27 +5,40 @@ import Lottie from "react-lottie";
 import Modal from "../../molecule/modal";
 
 // Assets
-import LoadingLottie from "../../../assets/lottie/success.json";
+import LoadingLottie from "../../../assets/lottie/loading.json";
+import SuccessLottie from "../../../assets/lottie/success.json";
+import FailedLottie from "../../../assets/lottie/failed.json";
 
 const LoadingContext = createContext(null);
 
 const LoadingProvider = ({ children = null }) => {
-  const [active, setActiveLoading] = useState(false);
+  const [active, setActiveLoading] = useState(null);
+  const [status, setStatus] = useState(null);
 
-  const setActive = (isActive) => {
+  const setActive = (isActive, status) => {
     setActiveLoading(isActive);
+    setStatus(status);
   };
 
   const LOADING = useMemo(() => {
+    let lottie = null;
+    if (!active && status === "success") {
+      lottie = SuccessLottie;
+    } else if (!active && status === "error") {
+      lottie = FailedLottie;
+    } else {
+      lottie = LoadingLottie;
+    }
+
     const options = {
       loop: true,
       autoplay: true,
-      animationData: LoadingLottie,
+      animationData: lottie,
       rendererSettings: {
         preserveAspectRatio: "xMidYMid slice",
       },
     };
-    if (active) {
+    if (active !== null) {
       return (
         <Modal>
           <div className="justify-center items-center flex flex-col h-screen">
@@ -34,7 +47,7 @@ const LoadingProvider = ({ children = null }) => {
         </Modal>
       );
     }
-  }, [active]);
+  }, [active, status]);
 
   return (
     <LoadingContext.Provider value={{ active, setActive }}>

@@ -35,17 +35,23 @@ const Login = () => {
 
   // QUERY
   const mutateLogin = useMutation(login, {
-    onMutate: () => setActive(true),
+    onMutate: () => setActive(true, null),
     onSuccess: () => {
-      setShowPopUp("success");
-      setActive(false);
+      setActive(false, "success");
+      setTimeout(() => {
+        setShowPopUp("success");
+      }, 1000);
       setTimeout(() => {
         navigate("/home");
-      }, 1000);
+        setShowPopUp("");
+        setActive(null, null);
+      }, 2000);
     },
     onError: () => {
-      setActive(false);
-      setShowPopUp("error");
+      setActive(false, "error");
+      setTimeout(() => {
+        setShowPopUp("error");
+      }, 1500);
     },
   });
 
@@ -166,7 +172,18 @@ const Login = () => {
           btnAccText="Tutup"
           btnCloseText="Coba Lagi"
           withButton
-          onCloseIcon={() => setShowPopUp("")}
+          onCloseIcon={() => {
+            setShowPopUp("");
+            setActive(null, null);
+          }}
+          funcBtnClose={() => {
+            setShowPopUp("");
+            setActive(null, null);
+          }}
+          funcBtnAcc={() => {
+            setShowPopUp("");
+            setActive(null, null);
+          }}
         />
       )}
 
