@@ -11,6 +11,8 @@ const PopUp = ({
   btnAccText,
   withButton,
   onCloseIcon,
+  funcBtnClose,
+  funcBtnAcc,
 }) => {
   return (
     <Modal>
@@ -42,12 +44,14 @@ const PopUp = ({
               <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-blue-500 px-4 py-2 text-base font-medium text-blue-500 hover:text-white hover:border-blue-400 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm"
+                onClick={funcBtnClose}
               >
                 {btnCloseText}
               </button>
               <button
                 type="button"
                 className="w-full inline-flex justify-center rounded-md border border-transparent px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm"
+                onClick={funcBtnAcc}
               >
                 {btnAccText}
               </button>
