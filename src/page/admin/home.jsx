@@ -11,6 +11,7 @@ import { translationSelect } from "../../state/translation";
 
 // Utils -> Constant
 import { TRANSLATION } from "../../utils/translation";
+import SideBar from "../../components/molecule/sidebar";
 
 const Home = () => {
   const [search, setSearch] = useState("");
@@ -39,8 +40,8 @@ const Home = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="bg-red-500 hidden md:block flex-[0.1] md:hover:flex-[0.2] transition-all">
-        Sidebar
+      <div className="bg-white hidden md:overflow-visible md:block flex-[0.08] md:hover:flex-[0.15] transition-all shadow-lg group">
+        <SideBar classNameContainer="hidden group-hover:block transition-all" />
       </div>
       <div className="flex-1 bg-orange-900">
         <HeaderHome
