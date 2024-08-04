@@ -16,6 +16,6 @@ export const login = async (payload) => {
   return data;
 };
 
-// export const register = (payload) => {};
+export const register = () => {};
 
-// export const resetPassword = (payload) => {};
+export const resetPassword = () => {};
