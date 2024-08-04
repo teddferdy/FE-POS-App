@@ -6,16 +6,16 @@ export const TRANSLATION = [
   {
     name: "Indonesia",
     value: "id",
-    img: INDONESIA_FLAG,
+    img: INDONESIA_FLAG
   },
   {
     name: "Japan",
     value: "jpn",
-    img: JAPAN_FLAG,
+    img: JAPAN_FLAG
   },
   {
     name: "U.S.A",
     value: "en",
-    img: USA_FLAG,
-  },
+    img: USA_FLAG
+  }
 ];

@@ -1,3 +1,4 @@
+/* eslint-disable react/react-in-jsx-scope */
 import { createBrowserRouter } from "react-router-dom";
 // Pages
 import Home from "../page/home";
@@ -8,18 +9,18 @@ import Login from "../page/auth/login";
 export const Routes = createBrowserRouter([
   {
     path: "/",
-    element: <Login />,
+    element: <Login />
   },
   {
     path: "/reset-password",
-    element: <ResetPassword />,
+    element: <ResetPassword />
   },
   {
     path: "/register",
-    element: <Register />,
+    element: <Register />
   },
   {
     path: "/home",
-    element: <Home />,
-  },
+    element: <Home />
+  }
 ]);

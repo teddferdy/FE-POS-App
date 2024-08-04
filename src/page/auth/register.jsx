@@ -61,17 +61,17 @@ const Register = () => {
       setTimeout(() => {
         setShowPopUp("error");
       }, 1500);
-    },
+    }
   });
 
   const formik = useFormik({
     initialValues: {
       userName: "",
       password: "",
-      confirmationPassword: "",
+      confirmationPassword: ""
     },
     validate,
-    onSubmit: (values) => mutateRegister.mutate(values),
+    onSubmit: (values) => mutateRegister.mutate(values)
   });
 
   return (
@@ -79,9 +79,7 @@ const Register = () => {
       <div className="w-full flex flex-col flex-1 rounded p-[61px]">
         <img src={Logo} className="w-1/4" alt="logo" />
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
-            Buat Akun
-          </p>
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Buat Akun</p>
 
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
             <Input
@@ -126,17 +124,13 @@ const Register = () => {
             <div className="flex flex-col gap-3">
               <button
                 type="submit"
-                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-              >
+                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
                 Regiter
               </button>
               <div className="flex justify-center items-center">
                 <p className="text-[#CECECE] font-semibold text-lg">
                   Jika sudah punya akun, silahkan
-                  <a
-                    className="text-[#6853F0] hover:text-[#1ACB0A]  ml-2"
-                    href="/"
-                  >
+                  <a className="text-[#6853F0] hover:text-[#1ACB0A]  ml-2" href="/">
                     Login
                   </a>
                 </p>
@@ -190,11 +184,7 @@ const Register = () => {
 
       {/* Pop up Success Login */}
       {showPopUp === "success" && (
-        <PopUp
-          title="Sukses Mendaftar"
-          desc="Sukses Mendaftar"
-          withButton={false}
-        />
+        <PopUp title="Sukses Mendaftar" desc="Sukses Mendaftar" withButton={false} />
       )}
     </div>
   );
