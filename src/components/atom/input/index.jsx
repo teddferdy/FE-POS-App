@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 
 // Assets
 import ViewPassword from "../../../assets/view-password.png";
@@ -15,17 +16,14 @@ const Input = ({
   value,
   error,
   errorLabel,
-  classNameInput,
+  classNameInput
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex flex-col gap-3">
       {label && (
-        <label
-          className="block text-[#828282] text-lg font-semibold"
-          htmlFor={htmlFor}
-        >
+        <label className="block text-[#828282] text-lg font-semibold" htmlFor={htmlFor}>
           {label} :
         </label>
       )}
@@ -42,10 +40,7 @@ const Input = ({
         {/* Icons Show Password */}
         {type === "password" && (
           <div className="absolute top-[24%] right-[5%]">
-            <div
-              onClick={() => setShowPassword(!showPassword)}
-              className="w-6 h-6 cursor-pointer"
-            >
+            <div onClick={() => setShowPassword(!showPassword)} className="w-6 h-6 cursor-pointer">
               <img
                 src={!showPassword ? HidePassword : ViewPassword}
                 alt="password"
@@ -58,6 +53,20 @@ const Input = ({
       {error ? <p className="mt-1 text-sm text-red-600">{errorLabel}</p> : null}
     </div>
   );
+};
+
+Input.propTypes = {
+  htmlFor: PropTypes.any,
+  placeholder: PropTypes.any,
+  label: PropTypes.any,
+  type: PropTypes.any,
+  id: PropTypes.any,
+  name: PropTypes.any,
+  onChange: PropTypes.any,
+  value: PropTypes.any,
+  error: PropTypes.any,
+  errorLabel: PropTypes.any,
+  classNameInput: PropTypes.any
 };
 
 export default Input;
