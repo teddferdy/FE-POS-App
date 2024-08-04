@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 // Assets
 import LogoSidebar from "../../../assets/sidebar/logo-sidebar.png";
@@ -10,11 +11,7 @@ const SideBar = ({ classNameContainer }) => {
   return (
     <div className="flex flex-col justify-center items-center my-6 gap-14">
       <div className="w-10 h-10">
-        <img
-          src={LogoSidebar}
-          alt="logo-sidebar"
-          className="object-cover w-full"
-        />
+        <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full" />
       </div>
       <div className="flex flex-col gap-8">
         <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
@@ -38,6 +35,10 @@ const SideBar = ({ classNameContainer }) => {
       </div>
     </div>
   );
+};
+
+SideBar.propTypes = {
+  classNameContainer: PropTypes.string
 };
 
 export default SideBar;

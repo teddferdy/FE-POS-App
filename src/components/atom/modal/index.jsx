@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const Modal = ({ children, colorBgModal = "bg-gray-900" }) => {
   return (
@@ -11,6 +12,11 @@ const Modal = ({ children, colorBgModal = "bg-gray-900" }) => {
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  children: PropTypes.element,
+  colorBgModal: PropTypes.string
 };
 
 export default Modal;

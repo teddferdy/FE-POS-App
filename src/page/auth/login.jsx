@@ -53,16 +53,16 @@ const Login = () => {
       setTimeout(() => {
         setShowPopUp("error");
       }, 1500);
-    },
+    }
   });
 
   const formik = useFormik({
     initialValues: {
       userName: "",
-      password: "",
+      password: ""
     },
     validate,
-    onSubmit: (values) => mutateLogin.mutate(values),
+    onSubmit: (values) => mutateLogin.mutate(values)
   });
 
   return (
@@ -70,9 +70,7 @@ const Login = () => {
       <div className="w-full flex flex-col flex-1 rounded p-[61px]">
         <img src={Logo} className="w-1/4" alt="logo" />
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
-            Login
-          </p>
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Login</p>
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
             <Input
               placeholder="Masukan User Name Anda"
@@ -103,21 +101,18 @@ const Login = () => {
             <div className="flex flex-col gap-3 mt-4">
               <button
                 type="submit"
-                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-              >
+                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
                 Login
               </button>
               <div className="flex justify-between items-center">
                 <a
                   className="text-[#CECECE] font-semibold hover:text-[#1ACB0A] text-lg"
-                  href="/register"
-                >
+                  href="/register">
                   Buat Akun
                 </a>
                 <a
                   className="text-[#CECECE] font-semibold hover:text-[#1ACB0A] text-lg"
-                  href="/reset-password"
-                >
+                  href="/reset-password">
                   Lupa Password ?
                 </a>
               </div>
@@ -131,11 +126,7 @@ const Login = () => {
             Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
           </p>
           <div className="absolute top-[42%] -left-8 overflow-hidden">
-            <img
-              src={MiniLogo}
-              className="w-16 h-16 object-cover"
-              alt="mini-logo"
-            />
+            <img src={MiniLogo} className="w-16 h-16 object-cover" alt="mini-logo" />
           </div>
           <div className="overflow-hidden self-end flex-1 absolute bottom-0 h-[70%]">
             <img

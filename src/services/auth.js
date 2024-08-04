@@ -6,8 +6,8 @@ export const login = async (payload) => {
     payload,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
 
@@ -16,6 +16,6 @@ export const login = async (payload) => {
   return data;
 };
 
-export const register = (payload) => {};
+export const register = () => {};
 
-export const resetPassword = (payload) => {};
+export const resetPassword = () => {};

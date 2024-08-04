@@ -4,7 +4,7 @@ import INDONESIA_FLAG from "../assets/nations/indonesia-flag.png";
 
 export const translationSelect = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       translation: "id",
       translationName: "Indonesia",
       translationImg: INDONESIA_FLAG,
@@ -12,13 +12,13 @@ export const translationSelect = create(
         return set({
           translation: translation.value,
           translationName: translation.name,
-          translationImg: translation.img,
+          translationImg: translation.img
         });
-      },
+      }
     }),
     {
       name: "translation",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => sessionStorage)
     }
   )
 );

@@ -57,17 +57,17 @@ const ResetPassword = () => {
       setTimeout(() => {
         setShowPopUp("error");
       }, 1500);
-    },
+    }
   });
 
   const formik = useFormik({
     initialValues: {
       userName: "",
       password: "",
-      oldPassword: "",
+      oldPassword: ""
     },
     validate,
-    onSubmit: (values) => mutateResetPassword.mutate(values),
+    onSubmit: (values) => mutateResetPassword.mutate(values)
   });
 
   return (
@@ -75,9 +75,7 @@ const ResetPassword = () => {
       <div className="w-full flex flex-col flex-1 rounded p-[61px]">
         <img src={Logo} className="w-1/4" alt="logo" />
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
-            Lupa Password
-          </p>
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Lupa Password</p>
 
           <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
             <Input
@@ -122,17 +120,13 @@ const ResetPassword = () => {
             <div className="flex flex-col gap-3">
               <button
                 type="submit"
-                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-              >
+                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
                 Submit
               </button>
               <div className="flex justify-center items-center">
                 <p className="text-[#CECECE] font-semibold text-lg">
                   Kembali Ke
-                  <a
-                    className="text-[#6853F0] hover:text-[#1ACB0A] ml-2"
-                    href="/"
-                  >
+                  <a className="text-[#6853F0] hover:text-[#1ACB0A] ml-2" href="/">
                     Login
                   </a>
                 </p>
@@ -186,11 +180,7 @@ const ResetPassword = () => {
 
       {/* Pop up Success Login */}
       {showPopUp === "success" && (
-        <PopUp
-          title="Sukses Reset Password"
-          desc="Reset Password Berhasil"
-          withButton={false}
-        />
+        <PopUp title="Sukses Reset Password" desc="Reset Password Berhasil" withButton={false} />
       )}
     </div>
   );

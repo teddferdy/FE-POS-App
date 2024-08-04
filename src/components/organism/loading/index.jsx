@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import Lottie from "react-lottie";
+import PropTypes from "prop-types";
 
 // Molecule
 import Modal from "../../atom/modal";
@@ -11,7 +12,7 @@ import FailedLottie from "../../../assets/lottie/failed.json";
 
 const LoadingContext = createContext(null);
 
-const LoadingProvider = ({ children = null }) => {
+const LoadingProvider = ({ children }) => {
   const [active, setActiveLoading] = useState(null);
   const [status, setStatus] = useState(null);
 
@@ -35,8 +36,8 @@ const LoadingProvider = ({ children = null }) => {
       autoplay: true,
       animationData: lottie,
       rendererSettings: {
-        preserveAspectRatio: "xMidYMid slice",
-      },
+        preserveAspectRatio: "xMidYMid slice"
+      }
     };
     if (active !== null) {
       return (
@@ -64,6 +65,10 @@ const useLoading = () => {
   }
   const { active, setActive } = ctx;
   return { active, setActive };
+};
+
+LoadingProvider.propTypes = {
+  children: PropTypes.element
 };
 
 export { LoadingProvider, useLoading };
