@@ -17,7 +17,7 @@ const HeaderHome = ({
 }) => {
   return (
     <div className="flex items-center justify-between p-4 bg-white shadow-lg">
-      <div className="flex-1 pl-28">
+      <div className="flex-1 md:pl-28">
         <Input
           placeholder="Cari...."
           value={search}
