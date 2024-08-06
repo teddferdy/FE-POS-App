@@ -51,7 +51,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex h-screen relative max-w-full">
+    <div className="flex h-screen relative overscroll-none bg-yellow-900 overflow-hidden">
       <div className="bg-white hidden md:block transition-all z-10 shadow-2xl group absolute h-screen w-24 md:hover:w-fit md:hover:px-10 rounded-r-3xl">
         <SideBar classNameContainer="hidden group-hover:block transition-all" />
       </div>
