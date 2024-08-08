@@ -1,21 +1,19 @@
-import axios from "axios";
+import { axiosInstance } from ".";
 
 export const login = async (payload) => {
-  const { data, status } = await axios.post(
-    `https://api-bisa-nota.vercel.app/auth/login`,
-    payload,
-    {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
-
+  const { data, status } = await axiosInstance.post("/auth/login", payload);
   if (status !== 200) throw Error(`Error`);
-
   return data;
 };
 
-export const register = () => {};
+export const register = async (payload) => {
+  const { data, status } = await axiosInstance.post("/auth/register", payload);
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
 
-export const resetPassword = () => {};
+export const resetPassword = async (payload) => {
+  const { data, status } = await axiosInstance.post("/auth/reset-password", payload);
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};

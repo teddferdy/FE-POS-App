@@ -71,7 +71,14 @@ const Register = () => {
       confirmationPassword: ""
     },
     validate,
-    onSubmit: (values) => mutateRegister.mutate(values)
+    onSubmit: (values) => {
+      const { userName, password } = values;
+      const body = {
+        userName,
+        password
+      };
+      return mutateRegister.mutate(body);
+    }
   });
 
   return (
@@ -162,8 +169,6 @@ const Register = () => {
       {/* Pop Up Error Login */}
       {showPopUp === "error" && (
         <PopUp
-          title="Gagal Mendaftar"
-          desc={mutateRegister?.error?.response?.data?.error || ""}
           btnAccText="Tutup"
           btnCloseText="Coba Lagi"
           withButton
@@ -179,12 +184,32 @@ const Register = () => {
             setShowPopUp("");
             setActive(null, null);
           }}
+          content={() => {
+            return (
+              <div className="flex justify-center items-center">
+                <h1 className="font-bold text-2xl text-red-700">
+                  {mutateRegister?.error?.message}
+                </h1>
+              </div>
+            );
+          }}
+          withContent
         />
       )}
 
       {/* Pop up Success Login */}
       {showPopUp === "success" && (
-        <PopUp title="Sukses Mendaftar" desc="Sukses Mendaftar" withButton={false} />
+        <PopUp
+          withButton={false}
+          content={() => {
+            return (
+              <div className="flex justify-center items-center">
+                <h1 className="font-bold text-2xl text-[#1ACB0A]">Register Berhasil</h1>
+              </div>
+            );
+          }}
+          withContent
+        />
       )}
     </div>
   );

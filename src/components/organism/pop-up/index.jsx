@@ -13,7 +13,9 @@ const PopUp = ({
   withButton,
   onCloseIcon,
   funcBtnClose,
-  funcBtnAcc
+  funcBtnAcc,
+  withContent,
+  content
 }) => {
   return (
     <Modal>
@@ -26,16 +28,16 @@ const PopUp = ({
           </button>
           <div className="flex items-start justify-between ">
             <div className="text-left">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+              {title && <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>}
               <div className="mt-1">
                 <p className="text-sm text-gray-500">{desc}</p>
               </div>
             </div>
           </div>
 
-          {/* <div className="text-left my-2">
-            <p className="text-sm text-black">Your modal body goes here</p>
-          </div> */}
+          {/* Fill Content */}
+          {withContent && content()}
+          {/* End Fill Content */}
 
           {withButton && (
             <div className="flex items-center justify-end gap-2 mt-4">
@@ -67,7 +69,9 @@ PopUp.propTypes = {
   withButton: PropTypes.any,
   onCloseIcon: PropTypes.any,
   funcBtnClose: PropTypes.any,
-  funcBtnAcc: PropTypes.any
+  funcBtnAcc: PropTypes.any,
+  withContent: PropTypes.bool,
+  content: PropTypes.element
 };
 
 export default PopUp;

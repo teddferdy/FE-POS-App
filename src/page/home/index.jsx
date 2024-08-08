@@ -28,6 +28,7 @@ const arr = Array(20).fill(null);
 
 const Home = () => {
   const [search, setSearch] = useState("");
+  const [openMenu, setOpenMenu] = useState(false);
 
   const navigate = useNavigate();
 
@@ -46,17 +47,17 @@ const Home = () => {
     }
   ];
 
-  const selectedByProfile = ({ value }) => {
-    navigate(value);
-  };
+  const selectedByProfile = ({ value }) => navigate(value);
 
   return (
     <div className="flex h-screen relative overscroll-none bg-yellow-900 overflow-hidden">
-      <div className="bg-white hidden md:block transition-all z-10 shadow-2xl group absolute h-screen w-24 md:hover:w-fit md:hover:px-10 rounded-r-3xl">
-        <SideBar classNameContainer="hidden group-hover:block transition-all" />
+      <div
+        className={`bg-white hidden md:block transition-all z-10 shadow-2xl absolute h-screen w-24 rounded-r-3xl ${openMenu ? "w-max px-10" : ""}`}>
+        <SideBar classNameContainer={`${openMenu ? "block transition-all" : "hidden"}`} />
       </div>
       <div className="flex flex-1 flex-col">
         <HeaderHome
+          openingSideBar={openMenu}
           listMenuProfile={LIST_MENU_PROFILE}
           listTranslation={TRANSLATION}
           translationName={translationName}
@@ -65,6 +66,7 @@ const Home = () => {
           search={search}
           setSearch={setSearch}
           selecDataProfile={selectedByProfile}
+          openMenu={() => setOpenMenu(!openMenu)}
         />
         <div className="flex h-screen border-t-2 border-[#ffffff10] md:pl-20">
           <div className="flex-1 overflow-hidden py-10 flex-col flex bg-gray-200">
@@ -72,9 +74,6 @@ const Home = () => {
               slidesPerView={6}
               spaceBetween={20}
               freeMode={true}
-              // pagination={{
-              //   clickable: true
-              // }}
               modules={[FreeMode, Pagination]}
               className="flex overflow-x-auto gap-10 pl-10 no-scrollbar max-w-6xl pb-9">
               <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">

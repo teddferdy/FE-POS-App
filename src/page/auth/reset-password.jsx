@@ -67,7 +67,14 @@ const ResetPassword = () => {
       oldPassword: ""
     },
     validate,
-    onSubmit: (values) => mutateResetPassword.mutate(values)
+    onSubmit: (values) => {
+      const { userName, password } = values;
+      const body = {
+        userName,
+        password
+      };
+      mutateResetPassword.mutate(body);
+    }
   });
 
   return (
@@ -158,8 +165,6 @@ const ResetPassword = () => {
       {/* Pop Up Error Login */}
       {showPopUp === "error" && (
         <PopUp
-          title="Reset Password Gagal"
-          desc={mutateResetPassword?.error?.response?.data?.error || ""}
           btnAccText="Tutup"
           btnCloseText="Coba Lagi"
           withButton
@@ -175,12 +180,31 @@ const ResetPassword = () => {
             setShowPopUp("");
             setActive(null, null);
           }}
+          content={() => {
+            return (
+              <div className="flex justify-center items-center">
+                <h1 className="font-bold text-2xl text-red-700">
+                  {mutateResetPassword?.error?.message}
+                </h1>
+              </div>
+            );
+          }}
+          withContent
         />
       )}
-
       {/* Pop up Success Login */}
       {showPopUp === "success" && (
-        <PopUp title="Sukses Reset Password" desc="Reset Password Berhasil" withButton={false} />
+        <PopUp
+          withButton={false}
+          content={() => {
+            return (
+              <div className="flex justify-center items-center">
+                <h1 className="font-bold text-2xl text-[#1ACB0A]">Reset Password Berhasil</h1>
+              </div>
+            );
+          }}
+          withContent
+        />
       )}
     </div>
   );

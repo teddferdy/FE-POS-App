@@ -1,9 +1,12 @@
 import React from "react";
-import Input from "../../atom/input";
 import ProfileHeader from "../profile-header";
 import Avatar from "../../atom/avatar";
 import Dropdown from "../../atom/dropdown";
 import PropTypes from "prop-types";
+
+// Assets
+import BurgerOpenIconBar from "../../../assets/burger-open.png";
+import BurgerCloseIconBar from "../../../assets/burger-close.png";
 
 const HeaderHome = ({
   listMenuProfile,
@@ -13,19 +16,28 @@ const HeaderHome = ({
   updateTranslation,
   selecDataProfile,
   search,
-  setSearch
+  setSearch,
+  openMenu,
+  openingSideBar
 }) => {
   return (
     <div className="flex items-center justify-between p-4 bg-white shadow-lg">
-      <div className="flex-1 md:pl-28">
-        <Input
+      <div className={`flex flex-1 items-center gap-4 ${openingSideBar ? "ml-72" : "md:ml-28"}`}>
+        <button onClick={openMenu} className="hidden md:block w-8 h-8">
+          <img
+            src={openingSideBar ? BurgerCloseIconBar : BurgerOpenIconBar}
+            alt="icon burger"
+            className="object-cover w-full"
+          />
+        </button>
+        <input
           placeholder="Cari...."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
           type="text"
           id="search"
           name="search"
-          classNameInput="h-10 max-w-[350px]"
+          onChange={setSearch}
+          value={search}
         />
       </div>
       <div className="flex flex-1 items-end justify-end gap-10">
@@ -57,7 +69,9 @@ HeaderHome.propTypes = {
   updateTranslation: PropTypes.any,
   selecDataProfile: PropTypes.any,
   search: PropTypes.any,
-  setSearch: PropTypes.any
+  setSearch: PropTypes.any,
+  openMenu: PropTypes.any,
+  openingSideBar: PropTypes.bool
 };
 
 export default HeaderHome;
