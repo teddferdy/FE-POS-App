@@ -5,6 +5,7 @@ import Home from "../page/home";
 import Register from "../page/auth/register";
 import ResetPassword from "../page/auth/reset-password";
 import Login from "../page/auth/login";
+import AdminPage from "../page/admin";
 
 export const Routes = createBrowserRouter([
   {
@@ -22,5 +23,9 @@ export const Routes = createBrowserRouter([
   {
     path: "/home",
     element: <Home />
+  },
+  {
+    path: "/admin-page",
+    element: <AdminPage />
   }
 ]);
