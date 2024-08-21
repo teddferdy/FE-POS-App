@@ -9,7 +9,7 @@ import { useMutation } from "react-query";
 // import Logo from "../../assets/logo.png";
 
 // Component
-import Input from "../../atom/input";
+// import Input from "../../atom/input";
 // import PopUp from "../../components/organism/pop-up";
 import { useLoading } from "../../organism/loading";
 
@@ -69,7 +69,7 @@ const AddProduct = () => {
     <div className="flex flex-col h-screen items-center pt-8">
       <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Login</p>
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4 w-3/4">
-        <Input
+        {/* <Input
           placeholder="Masukan User Name Anda"
           label="User Name"
           error={formik.errors.userName}
@@ -333,7 +333,7 @@ const AddProduct = () => {
           type="password"
           onChange={formik.handleChange}
           value={formik.values.password}
-        />
+        /> */}
 
         <button
           type="submit"
