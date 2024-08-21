@@ -7,11 +7,10 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 // Assets
+import { Eye, EyeOff } from "lucide-react";
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
-import ViewPassword from "../../assets/view-password.png";
-import HidePassword from "../../assets/hide-password.png";
 
 // Component
 import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
@@ -113,15 +112,18 @@ const Login = () => {
                     <div className="relative">
                       <Input type={showPassword ? "text" : "password"} {...field} />
                       <div className="absolute top-[24%] right-[4%]">
-                        <div
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="w-6 h-6 cursor-pointer">
-                          <img
-                            src={!showPassword ? HidePassword : ViewPassword}
-                            alt="password"
-                            className="object-cover"
+                        {showPassword ? (
+                          <Eye
+                            color="#6853F0"
+                            className="w-6 h-6 cursor-pointer"
+                            onClick={() => setShowPassword(!showPassword)}
                           />
-                        </div>
+                        ) : (
+                          <EyeOff
+                            className="w-6 h-6 cursor-pointer"
+                            onClick={() => setShowPassword(!showPassword)}
+                          />
+                        )}
                       </div>
                     </div>
                     {form.formState.errors.password && (
