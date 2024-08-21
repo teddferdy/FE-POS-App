@@ -3,28 +3,23 @@ import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 // Assets
+import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react";
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
-import ViewPassword from "../../assets/view-password.png";
-import HidePassword from "../../assets/hide-password.png";
 
 // Component
 import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
-// import { Button } from "../../components/ui/button";
-// import Input from "../../components/atom/input";
-import PopUp from "../../components/organism/pop-up";
 import { useLoading } from "../../components/organism/loading";
-
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Button } from "../../components/ui/button";
 
 import { cn } from "../../lib/utils";
-import { Button } from "../../components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -40,36 +35,34 @@ import { register } from "../../services/auth";
 
 const frameworks = [
   {
-    value: "next.js",
-    label: "Next.js"
+    value: "semarang",
+    label: "Semarang"
   },
   {
-    value: "sveltekit",
-    label: "SvelteKit"
+    value: "solo",
+    label: "Solo"
   },
   {
-    value: "nuxt.js",
-    label: "Nuxt.js"
+    value: "jogja",
+    label: "Jogja"
   },
   {
-    value: "remix",
-    label: "Remix"
+    value: "malang",
+    label: "Malang"
   },
   {
-    value: "astro",
-    label: "Astro"
+    value: "jakarta",
+    label: "Jakarta"
   }
 ];
 
 const Register = () => {
-  const [showPopUp, setShowPopUp] = useState("");
+  const { setActive } = useLoading();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
-
-  const { setActive } = useLoading();
-  const navigate = useNavigate();
 
   const formSchema = z
     .object({
@@ -119,18 +112,21 @@ const Register = () => {
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
-        setShowPopUp("success");
+        toast.success("Success", {
+          description: "Register User successfully"
+        });
       }, 1000);
       setTimeout(() => {
         navigate("/");
-        setShowPopUp("");
         setActive(null, null);
       }, 2000);
     },
     onError: () => {
       setActive(false, "error");
       setTimeout(() => {
-        setShowPopUp("error");
+        toast.error("Custom Title 1", {
+          description: "Failed to Register User"
+        });
       }, 1500);
     }
   });
@@ -140,7 +136,7 @@ const Register = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll"
+        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
         defaultSize={55}
         maxSize={55}
         minSize={55}
@@ -163,7 +159,7 @@ const Register = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">User Name</FormLabel>
                       </div>
-                      <Input type="text" {...field} />
+                      <Input type="text" {...field} placeholder="User Name" />
                       {form.formState.errors.userName && (
                         <FormMessage>{form.formState.errors.userName}</FormMessage>
                       )}
@@ -229,7 +225,7 @@ const Register = () => {
                   }}
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
                   name="email"
@@ -238,7 +234,7 @@ const Register = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">Email</FormLabel>
                       </div>
-                      <Input type="email" {...field} />
+                      <Input type="email" {...field} placeholder="Email" />
                       {form.formState.errors.email && (
                         <FormMessage>{form.formState.errors.email}</FormMessage>
                       )}
@@ -246,7 +242,7 @@ const Register = () => {
                   )}
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
                   name="password"
@@ -256,17 +252,24 @@ const Register = () => {
                         <FormLabel className="text-base">Password</FormLabel>
                       </div>
                       <div className="relative">
-                        <Input type={showPassword ? "text" : "password"} {...field} />
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          placeholder="Password"
+                        />
                         <div className="absolute top-[24%] right-[4%]">
-                          <div
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="w-6 h-6 cursor-pointer">
-                            <img
-                              src={!showPassword ? HidePassword : ViewPassword}
-                              alt="password"
-                              className="object-cover"
+                          {showPassword ? (
+                            <Eye
+                              color="#6853F0"
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowPassword(!showPassword)}
                             />
-                          </div>
+                          ) : (
+                            <EyeOff
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowPassword(!showPassword)}
+                            />
+                          )}
                         </div>
                       </div>
                       {form.formState.errors.password && (
@@ -276,7 +279,7 @@ const Register = () => {
                   )}
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -286,17 +289,24 @@ const Register = () => {
                         <FormLabel className="text-base">Confirmation Password</FormLabel>
                       </div>
                       <div className="relative">
-                        <Input type={showConfirmPassword ? "text" : "password"} {...field} />
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          {...field}
+                          placeholder="Konfirmasi Password"
+                        />
                         <div className="absolute top-[24%] right-[4%]">
-                          <div
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="w-6 h-6 cursor-pointer">
-                            <img
-                              src={!showConfirmPassword ? HidePassword : ViewPassword}
-                              alt="password"
-                              className="object-cover"
+                          {showConfirmPassword ? (
+                            <Eye
+                              color="#6853F0"
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             />
-                          </div>
+                          ) : (
+                            <EyeOff
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            />
+                          )}
                         </div>
                       </div>
                       {form.formState.errors.confirmPassword && (
@@ -306,11 +316,11 @@ const Register = () => {
                   )}
                 />
               </div>
-              <div className="col-span-2 mt-4">
+              <div className="col-span-2 mt-8">
                 <Button
                   type="submit"
                   className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                  Login
+                  Register
                 </Button>
               </div>
             </form>
@@ -346,34 +356,6 @@ const Register = () => {
           </div>
         </div>
       </ResizablePanel>
-
-      {/* Pop Up Error Login */}
-      {showPopUp === "error" && (
-        <PopUp
-          title="Gagal Login"
-          desc={mutateRegister?.error?.response?.data?.error || ""}
-          btnAccText="Tutup"
-          btnCloseText="Coba Lagi"
-          withButton
-          onCloseIcon={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnClose={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnAcc={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-        />
-      )}
-
-      {/* Pop up Success Login */}
-      {showPopUp === "success" && (
-        <PopUp title="Sukses Login" desc="Login Sukses" withButton={false} />
-      )}
     </ResizablePanelGroup>
   );
 };

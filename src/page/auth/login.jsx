@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
 
 // Assets
 import ImageUser from "../../assets/logo-auth.png";
@@ -17,7 +18,6 @@ import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizab
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import PopUp from "../../components/organism/pop-up";
 import { useLoading } from "../../components/organism/loading";
 
 // Services
@@ -25,7 +25,6 @@ import { login } from "../../services/auth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [showPopUp, setShowPopUp] = useState("");
   const { setActive } = useLoading();
   const navigate = useNavigate();
 
@@ -52,18 +51,21 @@ const Login = () => {
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
-        setShowPopUp("success");
+        toast.success("Success", {
+          description: "Register User successfully"
+        });
       }, 1000);
       setTimeout(() => {
         navigate("/home");
-        setShowPopUp("");
         setActive(null, null);
       }, 2000);
     },
     onError: () => {
       setActive(false, "error");
       setTimeout(() => {
-        setShowPopUp("error");
+        toast.error("Custom Title 1", {
+          description: "Failed to Register User"
+        });
       }, 1500);
     }
   });
@@ -73,10 +75,13 @@ const Login = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-[61px] h-screen"
+        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
         defaultSize={55}
         maxSize={55}
-        minSize={55}>
+        minSize={55}
+        style={{
+          overflow: "scroll"
+        }}>
         <img src={Logo} className="w-1/4" alt="logo" />
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-11">
           <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Login</p>
@@ -169,34 +174,6 @@ const Login = () => {
           </div>
         </div>
       </ResizablePanel>
-
-      {/* Pop Up Error Login */}
-      {showPopUp === "error" && (
-        <PopUp
-          title="Gagal Login"
-          desc={mutateLogin?.error?.response?.data?.error || ""}
-          btnAccText="Tutup"
-          btnCloseText="Coba Lagi"
-          withButton
-          onCloseIcon={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnClose={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnAcc={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-        />
-      )}
-
-      {/* Pop up Success Login */}
-      {showPopUp === "success" && (
-        <PopUp title="Sukses Login" desc="Login Sukses" withButton={false} />
-      )}
     </ResizablePanelGroup>
   );
 };

@@ -1,42 +1,50 @@
 import React, { useState } from "react";
-import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 // Assets
+import { Eye, EyeOff } from "lucide-react";
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
 // Component
-import Input from "../../components/atom/input";
-import PopUp from "../../components/organism/pop-up";
+
+import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import { useLoading } from "../../components/organism/loading";
 
 // Services
 import { resetPassword } from "../../services/auth";
 
-const validate = (values) => {
-  const errors = {};
-  if (!values.userName) {
-    errors.userName = "Tidak Boleh Kosong";
-  }
-
-  if (!values.password) {
-    errors.password = "Tidak Boleh Kosong";
-  }
-
-  if (!values.oldPassword) {
-    errors.oldPassword = "Tidak Boleh Kosong";
-  }
-
-  return errors;
-};
-
 const ResetPassword = () => {
-  const [showPopUp, setShowPopUp] = useState("");
   const { setActive } = useLoading();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const formSchema = z
+    .object({
+      userName: z.string().min(4, {
+        message: "userName must be at least 4 characters."
+      }),
+      password: z.string().min(4, {
+        message: "Password must be at least 4 characters."
+      }),
+      confirmPassword: z.string().min(4, {
+        message: "Confirmation Password must be at least 4 characters."
+      })
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"]
+    });
 
   // QUERY
   const mutateResetPassword = useMutation(resetPassword, {
@@ -44,169 +52,194 @@ const ResetPassword = () => {
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
-        setShowPopUp("success");
+        toast.success("Success", {
+          description: "Profile updated successfully"
+        });
       }, 1000);
       setTimeout(() => {
         navigate("/");
-        setShowPopUp("");
         setActive(null, null);
       }, 2000);
     },
     onError: () => {
       setActive(false, "error");
       setTimeout(() => {
-        setShowPopUp("error");
+        toast.error("Custom Title 1", {
+          description: "Failed to Reset Password"
+        });
       }, 1500);
     }
   });
 
-  const formik = useFormik({
-    initialValues: {
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       userName: "",
       password: "",
-      oldPassword: ""
-    },
-    validate,
-    onSubmit: (values) => {
-      const { userName, password } = values;
-      const body = {
-        userName,
-        password
-      };
-      mutateResetPassword.mutate(body);
+      email: "",
+      location: "",
+      confirmPassword: ""
     }
   });
 
+  const onSubmit = (values) => {
+    const { userName, password } = values;
+    const body = {
+      userName,
+      password
+    };
+    mutateResetPassword.mutate(body);
+  };
+
   return (
-    <div className="flex h-screen justify-between">
-      <div className="w-full flex flex-col flex-1 rounded p-[61px]">
+    <ResizablePanelGroup direction="horizontal">
+      <ResizablePanel
+        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
+        defaultSize={55}
+        maxSize={55}
+        minSize={55}
+        style={{
+          overflow: "scroll"
+        }}>
         <img src={Logo} className="w-1/4" alt="logo" />
-        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Lupa Password</p>
-
-          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-            <Input
-              placeholder="Masukan User Name Anda"
-              label="User Name"
-              error={formik.errors.userName}
-              errorLabel={formik.errors.userName}
-              htmlFor="userName"
-              id="userName"
-              name="userName"
-              type="text"
-              onChange={formik.handleChange}
-              value={formik.values.userName}
-            />
-
-            <Input
-              placeholder="Masukan Password Lama Anda"
-              label="Password Lama"
-              error={formik.errors.password}
-              errorLabel={formik.errors.password}
-              htmlFor="password"
-              id="password"
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-            />
-
-            <Input
-              placeholder="Masukan Password Baru Anda"
-              label="Password Baru"
-              error={formik.errors.oldPassword}
-              errorLabel={formik.errors.oldPassword}
-              htmlFor="oldPassword"
-              id="oldPassword"
-              name="oldPassword"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.oldPassword}
-            />
-
-            <div className="flex flex-col gap-3">
-              <button
-                type="submit"
-                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                Submit
-              </button>
-              <div className="flex justify-center items-center">
-                <p className="text-[#CECECE] font-semibold text-lg">
-                  Kembali Ke
-                  <a className="text-[#6853F0] hover:text-[#1ACB0A] ml-2" href="/">
-                    Login
-                  </a>
-                </p>
+        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-4 mt-10">
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Reset Password</p>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid grid-cols-2 items-center gap-2">
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="userName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">User Name</FormLabel>
+                      </div>
+                      <Input type="text" {...field} placeholder="User Name Yang terdaftar" />
+                      {form.formState.errors.userName && (
+                        <FormMessage>{form.formState.errors.userName}</FormMessage>
+                      )}
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
-          </form>
+              <div className="col-span-1 mt-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Password</FormLabel>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          placeholder="Password"
+                        />
+                        <div className="absolute top-[24%] right-[4%]">
+                          {showPassword ? (
+                            <Eye
+                              color="#6853F0"
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowPassword(!showPassword)}
+                            />
+                          ) : (
+                            <EyeOff
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowPassword(!showPassword)}
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {form.formState.errors.password && (
+                        <FormMessage>{form.formState.errors.password}</FormMessage>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-1 mt-4">
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Confirmation Password</FormLabel>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          {...field}
+                          placeholder="Konfirmasi Password"
+                        />
+                        <div className="absolute top-[24%] right-[4%]">
+                          {showConfirmPassword ? (
+                            <Eye
+                              color="#6853F0"
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            />
+                          ) : (
+                            <EyeOff
+                              className="w-6 h-6 cursor-pointer"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {form.formState.errors.confirmPassword && (
+                        <FormMessage>{form.formState.errors.confirmPassword}</FormMessage>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-2 mt-8">
+                <Button
+                  type="submit"
+                  className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
+                  Reset Password
+                </Button>
+              </div>
+            </form>
+          </Form>
+          <div className="flex justify-center items-center gap-2">
+            <p className="text-[#CECECE] font-semibold text-lg">Jika sudah punya akun, silahkan</p>
+            <Button
+              className="font-semibold text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
+              onClick={() => navigate("/")}>
+              Login
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="hidden lg:block w-full flex-[0.8] bg-indigo-700 p-[71px]">
+      </ResizablePanel>
+      <ResizablePanel
+        className="hidden lg:block w-full bg-indigo-700 p-[71px]"
+        defaultSize={45}
+        maxSize={45}
+        minSize={45}>
         <div className="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
           <p className="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
             Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
           </p>
-          <img
-            src={MiniLogo}
-            className="mi-h-16 min-w-16 max-w-20 max-h-20 absolute top-[42%] -left-8"
-            alt="mini-logo"
-          />
+          <div className="absolute top-[42%] -left-8 overflow-hidden">
+            <img src={MiniLogo} className="w-16 h-16 object-cover" alt="mini-logo" />
+          </div>
           <div className="overflow-hidden self-end flex-1 absolute bottom-0 h-[70%]">
             <img
               className="w-full h-full object-contain group-hover:scale-125 group-hover:rotate-3 duration-500"
               src={ImageUser}
-              alt="image-user"
+              alt="logo-person"
             />
           </div>
         </div>
-      </div>
-
-      {/* Pop Up Error Login */}
-      {showPopUp === "error" && (
-        <PopUp
-          btnAccText="Tutup"
-          btnCloseText="Coba Lagi"
-          withButton
-          onCloseIcon={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnClose={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          funcBtnAcc={() => {
-            setShowPopUp("");
-            setActive(null, null);
-          }}
-          content={() => {
-            return (
-              <div className="flex justify-center items-center">
-                <h1 className="font-bold text-2xl text-red-700">
-                  {mutateResetPassword?.error?.message}
-                </h1>
-              </div>
-            );
-          }}
-          withContent
-        />
-      )}
-      {/* Pop up Success Login */}
-      {showPopUp === "success" && (
-        <PopUp
-          withButton={false}
-          content={() => {
-            return (
-              <div className="flex justify-center items-center">
-                <h1 className="font-bold text-2xl text-[#1ACB0A]">Reset Password Berhasil</h1>
-              </div>
-            );
-          }}
-          withContent
-        />
-      )}
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
