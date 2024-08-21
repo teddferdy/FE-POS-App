@@ -1,38 +1,50 @@
 import React, { useState } from "react";
-import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Assets
 import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
+import ViewPassword from "../../assets/view-password.png";
+import HidePassword from "../../assets/hide-password.png";
 
 // Component
-import Input from "../../components/atom/input";
+import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
 import PopUp from "../../components/organism/pop-up";
 import { useLoading } from "../../components/organism/loading";
 
 // Services
 import { login } from "../../services/auth";
 
-const validate = (values) => {
-  const errors = {};
-  if (!values.userName) {
-    errors.userName = "Tidak Boleh Kosong";
-  }
-
-  if (!values.password) {
-    errors.password = "Tidak Boleh Kosong";
-  }
-
-  return errors;
-};
-
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const [showPopUp, setShowPopUp] = useState("");
   const { setActive } = useLoading();
   const navigate = useNavigate();
+
+  const formSchema = z.object({
+    userName: z.string().min(4, {
+      message: "Username must be at least 4 characters."
+    }),
+    password: z.string().min(4, {
+      message: "Password must be at least 4 characters."
+    })
+  });
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      userName: "",
+      password: ""
+    }
+  });
 
   // QUERY
   const mutateLogin = useMutation(login, {
@@ -56,71 +68,91 @@ const Login = () => {
     }
   });
 
-  const formik = useFormik({
-    initialValues: {
-      userName: "",
-      password: ""
-    },
-    validate,
-    onSubmit: (values) => mutateLogin.mutate(values)
-  });
+  const onSubmit = (values) => mutateLogin.mutate(values);
 
   return (
-    <div className="flex h-screen justify-between">
-      <div className="w-full flex flex-col flex-1 rounded p-[61px]">
+    <ResizablePanelGroup direction="horizontal">
+      <ResizablePanel
+        className="w-full flex flex-col rounded p-[61px] h-screen"
+        defaultSize={55}
+        maxSize={55}
+        minSize={55}>
         <img src={Logo} className="w-1/4" alt="logo" />
-        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-1/2 gap-11">
+        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-11">
           <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Login</p>
-          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-            <Input
-              placeholder="Masukan User Name Anda"
-              label="User Name"
-              error={formik.errors.userName}
-              errorLabel={formik.errors.userName}
-              htmlFor="userName"
-              id="userName"
-              name="userName"
-              type="text"
-              onChange={formik.handleChange}
-              value={formik.values.userName}
-            />
-
-            <Input
-              placeholder="Masukan Password Anda"
-              label="Password"
-              error={formik.errors.password}
-              errorLabel={formik.errors.password}
-              htmlFor="password"
-              id="password"
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-            />
-
-            <div className="flex flex-col gap-3 mt-4">
-              <button
-                type="submit"
-                className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                Login
-              </button>
-              <div className="flex justify-between items-center">
-                <a
-                  className="text-[#CECECE] font-semibold hover:text-[#1ACB0A] text-lg"
-                  href="/register">
-                  Buat Akun
-                </a>
-                <a
-                  className="text-[#CECECE] font-semibold hover:text-[#1ACB0A] text-lg"
-                  href="/reset-password">
-                  Lupa Password ?
-                </a>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="userName"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">User Name / Email</FormLabel>
+                    </div>
+                    <Input type="text" {...field} />
+                    {form.formState.errors.userName && (
+                      <FormMessage>{form.formState.errors.userName}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Password</FormLabel>
+                    </div>
+                    <div className="relative">
+                      <Input type={showPassword ? "text" : "password"} {...field} />
+                      <div className="absolute top-[24%] right-[4%]">
+                        <div
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="w-6 h-6 cursor-pointer">
+                          <img
+                            src={!showPassword ? HidePassword : ViewPassword}
+                            alt="password"
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {form.formState.errors.password && (
+                      <FormMessage>{form.formState.errors.password}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col gap-3 mt-4">
+                <Button
+                  type="submit"
+                  className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
+                  Login
+                </Button>
+                <div className="flex justify-between items-center">
+                  <Button
+                    onClick={() => navigate("/register")}
+                    className="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent">
+                    Buat Akun
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/reset-password")}
+                    className="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent">
+                    Lupa Password ?
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
-      </div>
-      <div className="hidden lg:block w-full flex-[0.8] bg-indigo-700 p-[71px]">
+      </ResizablePanel>
+      <ResizablePanel
+        className="hidden lg:block w-full bg-indigo-700 p-[71px]"
+        defaultSize={45}
+        maxSize={45}
+        minSize={45}>
         <div className="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
           <p className="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
             Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
@@ -136,7 +168,7 @@ const Login = () => {
             />
           </div>
         </div>
-      </div>
+      </ResizablePanel>
 
       {/* Pop Up Error Login */}
       {showPopUp === "error" && (
@@ -165,7 +197,7 @@ const Login = () => {
       {showPopUp === "success" && (
         <PopUp title="Sukses Login" desc="Login Sukses" withButton={false} />
       )}
-    </div>
+    </ResizablePanelGroup>
   );
 };
 
