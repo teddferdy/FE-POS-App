@@ -9,7 +9,7 @@ import LogoList from "../../../assets/sidebar/list-logo.png";
 import LogoAdmin from "../../../assets/sidebar/admin-logo.png";
 import LogoChart from "../../../assets/sidebar/chart-logo.png";
 
-const SideBar = ({ classNameContainer }) => {
+const SideBarAdmin = ({ classNameContainer }) => {
   const navigate = useNavigate();
   return (
     <div className="flex flex-col justify-center items-center my-6 gap-14">
@@ -23,7 +23,15 @@ const SideBar = ({ classNameContainer }) => {
           <div className="w-14 h-14 p-4 bg-red-700 rounded-full">
             <img src={LogoList} alt="logo-list" className="w-full" />
           </div>
-          <p className={classNameContainer}>List Product</p>
+          <p className={classNameContainer}>Back To Cashier App</p>
+        </div>
+        <div
+          className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+          onClick={() => navigate("/")}>
+          <div className="w-14 h-14 p-4 bg-red-700 rounded-full">
+            <img src={LogoList} alt="logo-list" className="w-full" />
+          </div>
+          <p className={classNameContainer}>Product</p>
         </div>
         <div
           className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
@@ -31,25 +39,31 @@ const SideBar = ({ classNameContainer }) => {
           <div className="w-14 h-14 p-4 bg-red-700 rounded-full">
             <img src={LogoAdmin} alt="logo-list" className="w-full" />
           </div>
-          <p className={classNameContainer}>Admin Menu</p>
+          <p className={classNameContainer}>Category</p>
         </div>
         <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
           <div className="w-14 h-14 p-4 bg-red-700 rounded-full">
             <img src={LogoChart} alt="logo-list" className="w-full" />
           </div>
-          <p className={classNameContainer}>Chart</p>
+          <p className={classNameContainer}>MemberShip</p>
+        </div>
+        <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+          <div className="w-14 h-14 p-4 bg-red-700 rounded-full">
+            <img src={LogoChart} alt="logo-list" className="w-full" />
+          </div>
+          <p className={classNameContainer}>My Employeee</p>
         </div>
       </div>
     </div>
   );
 };
 
-SideBar.defaultProps = {
+SideBarAdmin.defaultProps = {
   classNameContainer: ""
 };
 
-SideBar.propTypes = {
+SideBarAdmin.propTypes = {
   classNameContainer: PropTypes.string
 };
 
-export default SideBar;
+export default SideBarAdmin;
