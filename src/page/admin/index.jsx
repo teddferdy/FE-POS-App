@@ -8,6 +8,10 @@ import {
 } from "../../components/ui/resizable";
 import Dropdown from "../../components/atom/dropdown";
 import Avatar from "../../components/atom/avatar";
+import OverviewProductList from "../../components/molecule/table/overviewProductList";
+import OverviewMembertList from "../../components/molecule/table/overviewMemberList";
+import OverviewCategoryList from "../..//components/molecule/table/overviewCategoryList";
+import OverviewLocationList from "../..//components/molecule/table/overviewLocationList";
 
 // Import Swiper React components
 import SidebarAdmin from "../../components/molecule/sidebarAdmin";
@@ -141,15 +145,35 @@ const AdminPage = () => {
             <h1>Chart</h1>
             <BarChartComponent />
           </div>
-          <div className="flex items-center">
-            <div className="p-4 shadow-lg w-full flex-1">
-              <h1>Chart</h1>
-              <BarChartComponent />
+          <div className="flex flex-col gap-4 md:flex-row">
+            <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2>Member List :</h2>
+                <p>See All</p>
+              </div>
+              <OverviewMembertList />
             </div>
-            <div className="p-4 shadow-lg w-full flex-1">
-              <h1>Chart</h1>
-              <BarChartComponent />
+            <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2>Category List :</h2>
+                <p>See All</p>
+              </div>
+              <OverviewCategoryList />
             </div>
+            <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2>Location List :</h2>
+                <p>See All</p>
+              </div>
+              <OverviewLocationList />
+            </div>
+          </div>
+          <div className="p-4 shadow-lg w-full h-96 rounded-lg flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2>Product List :</h2>
+              <p>See All</p>
+            </div>
+            <OverviewProductList />
           </div>
         </div>
       </ResizablePanel>
