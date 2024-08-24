@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 
-import { useNavigate } from "react-router-dom";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from "../../components/ui/resizable";
 import Dropdown from "../../components/atom/dropdown";
-import Avatar from "../../components/atom/avatar";
+import AvatarUser from "../../components/molecule/AvatarUser";
 import OverviewProductList from "../../components/molecule/table/overviewProductList";
 import OverviewMembertList from "../../components/molecule/table/overviewMemberList";
 import OverviewCategoryList from "../..//components/molecule/table/overviewCategoryList";
@@ -29,24 +28,8 @@ const AdminPage = () => {
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState(false);
 
-  const navigate = useNavigate();
-
   const { translationName, translationImg, updateTranslation } = translationSelect();
 
-  const LIST_MENU_PROFILE = [
-    {
-      name: "Account Setting",
-      value: "setting-profile"
-      // img: HomeProfileIcons
-    },
-    {
-      name: "Logout",
-      value: "/"
-      // img: SettingProfileIcons
-    }
-  ];
-
-  const selectedByProfile = ({ value }) => navigate(value);
   return (
     <ResizablePanelGroup direction="horizontal" className="h-screen">
       <ResizablePanel
@@ -91,13 +74,7 @@ const AdminPage = () => {
               <p className="text-base font-medium text-[#737373]">welcome, John!</p>
               <p className="text-xs font-medium text-[#D9D9D9]">Cachier on Bonta Coffe</p>
             </div>
-            <Dropdown
-              data={LIST_MENU_PROFILE}
-              classNameListContainer="right-0"
-              widthListWrapper="w-52"
-              selectData={selectedByProfile}>
-              <Avatar />
-            </Dropdown>
+            <AvatarUser />
           </div>
         </div>
         <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8">
