@@ -33,7 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/pop
 // Services
 import { register } from "../../services/auth";
 
-const frameworks = [
+const location = [
   {
     value: "semarang",
     label: "Semarang"
@@ -187,21 +187,21 @@ const Register = () => {
                               aria-expanded={open}
                               className="w-full justify-between">
                               {value
-                                ? frameworks.find((framework) => framework.value === value)?.label
-                                : "Select framework..."}
+                                ? location.find((location) => location.value === value)?.label
+                                : "Select location..."}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-full p-0">
                             <Command>
-                              <CommandInput placeholder="Search framework..." />
+                              <CommandInput placeholder="Search location..." />
                               <CommandList>
-                                <CommandEmpty>No framework found.</CommandEmpty>
+                                <CommandEmpty>No location found.</CommandEmpty>
                                 <CommandGroup>
-                                  {frameworks.map((framework) => (
+                                  {location.map((location) => (
                                     <CommandItem
-                                      key={framework.value}
-                                      value={framework.value}
+                                      key={location.value}
+                                      value={location.value}
                                       onSelect={(currentValue) => {
                                         setValue(currentValue === value ? "" : currentValue);
                                         setOpen(false);
@@ -209,10 +209,10 @@ const Register = () => {
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          value === framework.value ? "opacity-100" : "opacity-0"
+                                          value === location.value ? "opacity-100" : "opacity-0"
                                         )}
                                       />
-                                      {framework.label}
+                                      {location.label}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>

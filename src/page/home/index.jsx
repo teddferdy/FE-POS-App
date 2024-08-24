@@ -1,17 +1,42 @@
 import React, { useState } from "react";
 
-import { useNavigate } from "react-router-dom";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from "../../components/ui/resizable";
 import Dropdown from "../../components/atom/dropdown";
-import Avatar from "../../components/atom/avatar";
+import AvatarUser from "../../components/molecule/AvatarUser";
 
 // Import Swiper React components
+import { Menu, Check, ChevronsUpDown } from "lucide-react";
+
 import SideBar from "../../components/molecule/sidebar";
 import { Swiper, SwiperSlide } from "swiper/react";
+
+import { Button } from "../../components/ui/button";
+
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "../../components/ui/sheet";
+
+import { cn } from "../../lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "../../components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 
 // Import Swiper styles
 import "swiper/css";
@@ -22,30 +47,64 @@ import { FreeMode, Pagination } from "swiper/modules";
 import { translationSelect } from "../../state/translation";
 import { TRANSLATION } from "../../utils/translation";
 
-const arr = Array(20).fill(null);
+const arr = Array(40).fill(null);
+
+const filteringBy = [
+  {
+    value: "asc",
+    label: "Harga Terendah"
+  },
+  {
+    value: "desc",
+    label: "Harga Tertinggi"
+  },
+  {
+    value: "promo",
+    label: "Promo"
+  },
+  {
+    value: "Event",
+    label: "Event"
+  }
+];
+
+const filteringByCategory = [
+  {
+    value: "Semua",
+    label: "Semua"
+  },
+  {
+    value: "Makanan",
+    label: "Makanan"
+  },
+  {
+    value: "Minuman",
+    label: "Minuman"
+  },
+  {
+    value: "Snack",
+    label: "Snack"
+  },
+  {
+    value: "Seafood",
+    label: "Seafood"
+  }
+];
 
 const Home = () => {
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState(false);
 
-  const navigate = useNavigate();
+  // FIlter By
+  const [openFilterBy, setOpenFilterBy] = useState(false);
+  const [valueFilterBy, setValueFilterBy] = useState("");
+
+  // Filter Category
+  const [openFilterCategory, setOpenFilterCategory] = useState(false);
+  const [valueFilterCategory, setValueFilterCategory] = useState("");
 
   const { translationName, translationImg, updateTranslation } = translationSelect();
 
-  const LIST_MENU_PROFILE = [
-    {
-      name: "Account Setting",
-      value: "setting-profile"
-      // img: HomeProfileIcons
-    },
-    {
-      name: "Logout",
-      value: "/"
-      // img: SettingProfileIcons
-    }
-  ];
-
-  const selectedByProfile = ({ value }) => navigate(value);
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
       <ResizablePanel
@@ -59,13 +118,45 @@ const Home = () => {
         defaultSize={4}
         maxSize={16}
         minSize={6}
-        className="hidden overflow-hidden h-screen md:block">
+        className="hidden overflow-hidden h-screen lg:block">
         <SideBar classNameContainer={`${openMenu ? "block" : "hidden"}`} />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className="overflow-hidden h-screen">
         <div className="flex items-center justify-between p-4 bg-white shadow-lg">
-          <div className={`flex flex-1 items-center`}>
+          <div className="flex flex-1 items-center gap-4 lg:gap-0">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="p-0 bg-transparent border-none lg:hidden">
+                  <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>Hello, John</SheetTitle>
+                  <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="name" className="text-right">
+                      Name
+                    </div>
+                    <input id="name" value="Pedro Duarte" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="username" className="text-right">
+                      Username
+                    </div>
+                    <input id="username" value="@peduarte" className="col-span-3" />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button type="submit">Save changes</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
             <input
               placeholder="Cari...."
               className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
@@ -76,7 +167,7 @@ const Home = () => {
               value={search}
             />
           </div>
-          <div className="flex flex-1 items-end justify-end gap-10">
+          <div className="flex flex-[0.2] md:flex-1 items-end justify-end gap-10">
             <div className="hidden md:block">
               <Dropdown data={TRANSLATION} selectData={(select) => updateTranslation(select)}>
                 <button className="text-gray-700 font-semibold rounded inline-flex items-center justify-center">
@@ -88,25 +179,52 @@ const Home = () => {
             </div>
             <div className="hidden md:flex md:flex-col md:gap-1">
               <p className="text-base font-medium text-[#737373]">welcome, John!</p>
-              <p className="text-xs font-medium text-[#D9D9D9]">Cachier on Bonta Coffe</p>
+              <p className="text-xs font-medium text-[#D9D9D9]">Cashier on Bonta Coffe</p>
             </div>
-            <Dropdown
-              data={LIST_MENU_PROFILE}
-              classNameListContainer="right-0"
-              widthListWrapper="w-52"
-              selectData={selectedByProfile}>
-              <Avatar />
-            </Dropdown>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="p-0 bg-transparent border-none">
+                  <AvatarUser />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Hello, John</SheetTitle>
+                  <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="name" className="text-right">
+                      Name
+                    </div>
+                    <input id="name" value="Pedro Duarte" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="username" className="text-right">
+                      Username
+                    </div>
+                    <input id="username" value="@peduarte" className="col-span-3" />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button type="submit">Save changes</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
         <div className="flex h-screen border-t-2 border-[#ffffff10] ">
-          <div className="flex-1 overflow-hidden py-10 flex-col flex bg-gray-200 h-screen">
+          <div className="flex-1 overflow-hidden py-10 flex-col flex bg-gray-200 h-screen px-4">
+            {/* Slider Category When Desktop Resolution */}
             <Swiper
               slidesPerView={6}
               spaceBetween={20}
               freeMode={true}
               modules={[FreeMode, Pagination]}
-              className="flex overflow-x-auto gap-10 no-scrollbar max-w-6xl pb-9">
+              className="overflow-x-auto gap-10 no-scrollbar max-w-6xl pb-9 pr-96 hidden lg:flex">
               <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
                 Semua
               </SwiperSlide>
@@ -186,7 +304,113 @@ const Home = () => {
                 Semua
               </SwiperSlide>
             </Swiper>
-            <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar px-12 pb-20">
+
+            {/* Filter Category When In Tablet / Mobile Resolution */}
+            <div className="lg:hidden flex justify-between items-center mb-10 gap-20">
+              <div className="flex flex-col gap-4 flex-1">
+                <p>Filter By</p>
+
+                <Popover open={openFilterBy} onOpenChange={setOpenFilterBy}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openFilterBy}
+                      className="w-full justify-between">
+                      {valueFilterBy
+                        ? filteringBy.find((filteringBy) => filteringBy.value === valueFilterBy)
+                            ?.label
+                        : "Filter..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search filteringBy..." />
+                      <CommandList>
+                        <CommandEmpty>No filter By found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteringBy.map((filteringBy) => (
+                            <CommandItem
+                              key={filteringBy.value}
+                              value={filteringBy.value}
+                              onSelect={(currentValue) => {
+                                setValueFilterBy(
+                                  currentValue === valueFilterBy ? "" : currentValue
+                                );
+                                setOpenFilterBy(false);
+                              }}>
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  valueFilterBy === filteringBy.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {filteringBy.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex flex-col gap-4 flex-1">
+                <p>Category By</p>
+
+                <Popover open={openFilterCategory} onOpenChange={setOpenFilterCategory}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openFilterCategory}
+                      className="w-full justify-between">
+                      {valueFilterCategory
+                        ? filteringByCategory.find(
+                            (filteringByCategory) =>
+                              filteringByCategory.value === valueFilterCategory
+                          )?.label
+                        : "Category..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search Category..." />
+                      <CommandList>
+                        <CommandEmpty>No Category found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteringByCategory.map((filteringByCategory) => (
+                            <CommandItem
+                              key={filteringByCategory.value}
+                              value={filteringByCategory.value}
+                              onSelect={(currentValue) => {
+                                setValueFilterCategory(
+                                  currentValue === valueFilterCategory ? "" : currentValue
+                                );
+                                setOpenFilterCategory(false);
+                              }}>
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  valueFilterCategory === filteringByCategory.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {filteringByCategory.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* List Items */}
+            <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
               {arr.map((_, index) => {
                 return (
                   <div className="p-2 rounded-lg flex flex-col gap-4 bg-white" key={index}>
@@ -222,12 +446,20 @@ const Home = () => {
               })}
             </div>
           </div>
-          <div className="hidden md:flex md:flex-[0.4] shadow-lg py-12 px-8  flex-col justify-between gap-6 bg-white">
-            <h3 className="text-2xl font-semibold text-[#737373]">Jumlah Orderan :</h3>
-            <div className="overflow-scroll h-screen no-scrollbar flex-1 flex flex-col gap-4">
+
+          {/* Total Checkout */}
+          <div className="hidden lg:flex md:flex-[0.4] shadow-lg py-12 flex-col justify-between gap-6 bg-white relative">
+            <h3 className="text-2xl font-semibold text-[#737373] px-8">Daftar Orderan :</h3>
+            <div className="overflow-scroll h-auto no-scrollbar flex-1 flex flex-col gap-4 px-8">
               {arr.map((_, index) => {
+                console.log("index", index);
+                console.log("arr.length", arr.length);
+
                 return (
-                  <div className="flex gap-4 border-b border-[#000] pb-4" key={index}>
+                  <div
+                    className={`flex gap-4 border-b border-[#000]  ${index + 1 === arr.length ? "pb-56" : "pb-4"}`}
+                    key={index}>
+                    <p>{index + 1}.</p>
                     <div className="flex gap-4 flex-1 items-center">
                       <div className="w-30 h-20">
                         <img
@@ -254,9 +486,15 @@ const Home = () => {
                 );
               })}
             </div>
-            <div className="self-end flex-[0.4] w-full border-t border-[#D9D9D9] flex flex-col gap-4">
-              <div className="flex justify-between items-center pt-4">
-                <p className="text-[#737373] text-lg font-semibold">Total :</p>
+
+            <div
+              className={`${!openMenu ? "w-[27%]" : "w-[24%]"}  border-t border-[#D9D9D9] flex flex-col gap-4 py-4 px-8 fixed bottom-0 z-10 bg-white`}>
+              <div className="flex justify-between items-center">
+                <p className="text-[#737373] text-lg font-semibold">Total Items :</p>
+                <p className="text-[#737373] text-lg font-semibold">40 Items</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-[#737373] text-lg font-semibold">Total Harga :</p>
                 <p className="text-[#737373] text-lg font-semibold">Rp 60.000</p>
               </div>
               <div className="flex justify-between items-center">
