@@ -13,7 +13,14 @@ import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
 // Component
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectGroup,
+  SelectLabel
+} from "../../components/ui/select";
 import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
 import { Button } from "../../components/ui/button";
@@ -23,11 +30,16 @@ import { useLoading } from "../../components/organism/loading";
 // Services
 import { resetPassword } from "../../services/auth";
 
+// Utils & State
+import { translationSelect } from "../../state/translation";
+import { TRANSLATION } from "../../utils/translation";
+
 const ResetPassword = () => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { updateTranslation, translation } = translationSelect();
 
   const formSchema = z
     .object({
@@ -101,7 +113,37 @@ const ResetPassword = () => {
         style={{
           overflow: "scroll"
         }}>
-        <img src={Logo} className="w-1/4" alt="logo" />
+        <div className="flex items-center justify-between">
+          <img src={Logo} className="w-1/4" alt="logo" />
+          <Select
+            onValueChange={(e) => updateTranslation(e)}
+            value={localStorage.getItem("translation")}>
+            <SelectTrigger className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200">
+              {TRANSLATION?.filter((items) => items.value === translation)?.map((items, index) => (
+                <img src={items.img} alt={items.name} className="max-w-6 max-h-6" key={index} />
+              ))}
+            </SelectTrigger>
+            <SelectContent
+              className="min-w-2 z-50"
+              defaultValue={
+                TRANSLATION?.filter((items) => items.value === translation)?.map(
+                  (items) => items.value
+                )?.[0]
+              }>
+              <SelectGroup>
+                <SelectLabel>Select Language</SelectLabel>
+                {TRANSLATION.map((items, index) => (
+                  <SelectItem value={items.value} className="w-full flex items-center" key={index}>
+                    <div className="flex justify-between items-center gap-4">
+                      <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
+                      <p>{items.name}</p>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-4 mt-10">
           <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Reset Password</p>
           <Form {...form}>
