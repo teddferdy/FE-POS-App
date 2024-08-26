@@ -5,7 +5,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup
 } from "../../components/ui/resizable";
-import AvatarUser from "../../components/molecule/avatarUser";
+import AvatarUser from "../../components/molecule/AvatarUser";
 
 import {
   Select,
