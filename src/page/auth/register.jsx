@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 
 // Assets
 import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react";
@@ -13,6 +14,14 @@ import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
 // Component
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectGroup,
+  SelectLabel
+} from "../../components/ui/select";
 import { ResizablePanel, ResizablePanelGroup } from "../../components/ui/resizable";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
@@ -32,6 +41,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/pop
 
 // Services
 import { register } from "../../services/auth";
+
+// Utils & State
+import { translationSelect } from "../../state/translation";
+import { TRANSLATION } from "../../utils/translation";
 
 const location = [
   {
@@ -59,10 +72,29 @@ const location = [
 const Register = () => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const { updateTranslation, translation } = translationSelect();
+
+  // Translation
+  const translationMemo = useMemo(() => {
+    return {
+      title: t("translation:register"),
+      login: t("translation:login"),
+      userName: t("translation:userName"),
+      password: t("translation:password"),
+      email: t("translation:email"),
+      location: t("translation:location"),
+      confirmationPassword: t("translation:confirmationPassword"),
+      descRegister: t("translation:descRegister"),
+      selectLanguage: t("translation:selectLanguage"),
+      sidebarAuth: t("translation:descAuth")
+    };
+  }, [t]);
 
   const formSchema = z
     .object({
@@ -143,9 +175,41 @@ const Register = () => {
         style={{
           overflow: "scroll"
         }}>
-        <img src={Logo} className="w-1/4" alt="logo" />
+        <div className="flex items-center justify-between">
+          <img src={Logo} className="w-1/4" alt="logo" />
+          <Select
+            onValueChange={(e) => updateTranslation(e)}
+            value={localStorage.getItem("translation")}>
+            <SelectTrigger className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200">
+              {TRANSLATION?.filter((items) => items.value === translation)?.map((items, index) => (
+                <img src={items.img} alt={items.name} className="max-w-6 max-h-6" key={index} />
+              ))}
+            </SelectTrigger>
+            <SelectContent
+              className="min-w-2 z-50"
+              defaultValue={
+                TRANSLATION?.filter((items) => items.value === translation)?.map(
+                  (items) => items.value
+                )?.[0]
+              }>
+              <SelectGroup>
+                <SelectLabel>{translationMemo.selectLanguage}</SelectLabel>
+                {TRANSLATION.map((items, index) => (
+                  <SelectItem value={items.value} className="w-full flex items-center" key={index}>
+                    <div className="flex justify-between items-center gap-4">
+                      <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
+                      <p>{items.name}</p>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-4 mt-10">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Register</p>
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
+            {translationMemo.title}
+          </p>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -157,7 +221,7 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">User Name</FormLabel>
+                        <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
                       </div>
                       <Input type="text" {...field} placeholder="User Name" />
                       {form.formState.errors.userName && (
@@ -177,7 +241,7 @@ const Register = () => {
                     return (
                       <FormItem>
                         <div className="mb-2">
-                          <FormLabel className="text-base">location</FormLabel>
+                          <FormLabel className="text-base">{translationMemo.location}</FormLabel>
                         </div>
                         <Popover open={open} onOpenChange={setOpen} className="mt-10">
                           <PopoverTrigger asChild>
@@ -232,7 +296,7 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Email</FormLabel>
+                        <FormLabel className="text-base">{translationMemo.email}</FormLabel>
                       </div>
                       <Input type="email" {...field} placeholder="Email" />
                       {form.formState.errors.email && (
@@ -249,7 +313,7 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Password</FormLabel>
+                        <FormLabel className="text-base">{translationMemo.password}</FormLabel>
                       </div>
                       <div className="relative">
                         <Input
@@ -286,7 +350,9 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Confirmation Password</FormLabel>
+                        <FormLabel className="text-base">
+                          {translationMemo.confirmationPassword}
+                        </FormLabel>
                       </div>
                       <div className="relative">
                         <Input
@@ -320,17 +386,17 @@ const Register = () => {
                 <Button
                   type="submit"
                   className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                  Register
+                  {translationMemo.title}
                 </Button>
               </div>
             </form>
           </Form>
           <div className="flex justify-center items-center gap-2">
-            <p className="text-[#CECECE] font-semibold text-lg">Jika sudah punya akun, silahkan</p>
+            <p className="text-[#CECECE] font-semibold text-lg">{translationMemo.descRegister}</p>
             <Button
               className="font-semibold text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
               onClick={() => navigate("/")}>
-              Login
+              {translationMemo.login}
             </Button>
           </div>
         </div>
@@ -342,7 +408,7 @@ const Register = () => {
         minSize={45}>
         <div className="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
           <p className="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
-            Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
+            {translationMemo.sidebarAuth}
           </p>
           <div className="absolute top-[42%] -left-8 overflow-hidden">
             <img src={MiniLogo} className="w-16 h-16 object-cover" alt="mini-logo" />

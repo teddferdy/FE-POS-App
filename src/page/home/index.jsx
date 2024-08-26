@@ -5,8 +5,16 @@ import {
   ResizablePanel,
   ResizablePanelGroup
 } from "../../components/ui/resizable";
-import Dropdown from "../../components/atom/dropdown";
 import AvatarUser from "../../components/molecule/AvatarUser";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectGroup,
+  SelectLabel
+} from "../../components/ui/select";
 
 // Import Swiper React components
 import { Menu, Check, ChevronsUpDown } from "lucide-react";
@@ -103,7 +111,7 @@ const Home = () => {
   const [openFilterCategory, setOpenFilterCategory] = useState(false);
   const [valueFilterCategory, setValueFilterCategory] = useState("");
 
-  const { translationName, translationImg, updateTranslation } = translationSelect();
+  const { updateTranslation, translation } = translationSelect();
 
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
@@ -169,13 +177,44 @@ const Home = () => {
           </div>
           <div className="flex flex-[0.2] md:flex-1 items-end justify-end gap-10">
             <div className="hidden md:block">
-              <Dropdown data={TRANSLATION} selectData={(select) => updateTranslation(select)}>
-                <button className="text-gray-700 font-semibold rounded inline-flex items-center justify-center">
-                  <div className="w-8 h-8">
-                    <img src={translationImg} alt={translationName} className="object-cover" />
-                  </div>
-                </button>
-              </Dropdown>
+              <Select
+                onValueChange={(e) => updateTranslation(e)}
+                value={localStorage.getItem("translation")}>
+                <SelectTrigger className="w-fit border-hidden">
+                  {TRANSLATION?.filter((items) => items.value === translation)?.map(
+                    (items, index) => (
+                      <img
+                        src={items.img}
+                        alt={items.name}
+                        className="max-w-6 max-h-6"
+                        key={index}
+                      />
+                    )
+                  )}
+                </SelectTrigger>
+                <SelectContent
+                  className="min-w-2 z-50"
+                  defaultValue={
+                    TRANSLATION?.filter((items) => items.value === translation)?.map(
+                      (items) => items.value
+                    )?.[0]
+                  }>
+                  <SelectGroup>
+                    <SelectLabel>Select Language</SelectLabel>
+                    {TRANSLATION.map((items, index) => (
+                      <SelectItem
+                        value={items.value}
+                        className="w-full flex items-center"
+                        key={index}>
+                        <div className="flex justify-between items-center gap-4">
+                          <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
+                          <p>{items.name}</p>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
             <div className="hidden md:flex md:flex-col md:gap-1">
               <p className="text-base font-medium text-[#737373]">welcome, John!</p>

@@ -1,0 +1,17 @@
+{
+  "descAuth": "Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan",
+  "descRegister": "Jika sudah punya akun, silahkan",
+  "login": "Masuk",
+  "register": "Daftar",
+  "userNameOrEmail": "Nama Pengguna / Email",
+  "userName": "Nama Pengguna",
+  "email": "Email",
+  "location": "Lokasi",
+  "password": "Kata Sandi",
+  "confirmationPassword": "Konfirmasi Kata Sandi",
+  "selectLanguage": "Pilih Bahasa",
+
+  "btnLogin": "Masuk",
+  "btnCreateAcc": "Buat Akun",
+  "btnResetPassword": "Lupa Sandi"
+}
