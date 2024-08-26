@@ -6331,7 +6331,7 @@
   dependencies:
     "cross-fetch" "4.0.0"
 
-"i18next@>= 23.2.3":
+"i18next@^23.14.0", "i18next@>= 23.2.3":
   "integrity" "sha512-Y5GL4OdA8IU2geRrt2+Uc1iIhsjICdHZzT9tNwQ3TVqdNzgxHToGCKf/TPRP80vTCAP6svg2WbbJL+Gx5MFQVA=="
   "resolved" "https://registry.npmjs.org/i18next/-/i18next-23.14.0.tgz"
   "version" "23.14.0"
