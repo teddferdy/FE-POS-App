@@ -5,8 +5,32 @@ import {
   ResizablePanel,
   ResizablePanelGroup
 } from "../../components/ui/resizable";
-import Dropdown from "../../components/atom/dropdown";
-import AvatarUser from "../../components/molecule/AvatarUser";
+import AvatarUser from "../../components/molecule/avatarUser";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectGroup,
+  SelectLabel
+} from "../../components/ui/select";
+
+import { Button } from "../../components/ui/button";
+
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "../../components/ui/sheet";
+
+import { Menu } from "lucide-react";
+
 import OverviewProductList from "../../components/molecule/table/overviewProductList";
 import OverviewMembertList from "../../components/molecule/table/overviewMemberList";
 import OverviewCategoryList from "../..//components/molecule/table/overviewCategoryList";
@@ -28,7 +52,7 @@ const AdminPage = () => {
   const [search, setSearch] = useState("");
   const [openMenu, setOpenMenu] = useState(false);
 
-  const { translationName, translationImg, updateTranslation } = translationSelect();
+  const { updateTranslation, translation } = translationSelect();
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-screen">
@@ -43,13 +67,23 @@ const AdminPage = () => {
         defaultSize={4}
         maxSize={16}
         minSize={6}
-        className="hidden h-screen md:block">
+        className="hidden overflow-hidden h-screen lg:block">
         <SidebarAdmin classNameContainer={`${openMenu ? "block" : "hidden"}`} />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55}>
         <div className="flex items-center justify-between p-4 bg-white shadow-lg">
-          <div className={`flex flex-1 items-center`}>
+          <div className="flex flex-1 items-center gap-4 lg:gap-0">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="p-0 bg-transparent border-none lg:hidden">
+                  <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-3/6">
+                <SidebarAdmin classNameContainer="block" />
+              </SheetContent>
+            </Sheet>
             <input
               placeholder="Cari...."
               className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
@@ -60,21 +94,84 @@ const AdminPage = () => {
               value={search}
             />
           </div>
-          <div className="flex flex-1 items-end justify-end gap-10">
+          <div className="flex flex-[0.2] md:flex-1 items-end justify-end gap-10">
             <div className="hidden md:block">
-              <Dropdown data={TRANSLATION} selectData={(select) => updateTranslation(select)}>
-                <button className="text-gray-700 font-semibold rounded inline-flex items-center justify-center">
-                  <div className="w-8 h-8">
-                    <img src={translationImg} alt={translationName} className="object-cover" />
-                  </div>
-                </button>
-              </Dropdown>
+              <Select
+                onValueChange={(e) => updateTranslation(e)}
+                value={localStorage.getItem("translation")}>
+                <SelectTrigger className="w-fit border-hidden">
+                  {TRANSLATION?.filter((items) => items.value === translation)?.map(
+                    (items, index) => (
+                      <img
+                        src={items.img}
+                        alt={items.name}
+                        className="max-w-6 max-h-6"
+                        key={index}
+                      />
+                    )
+                  )}
+                </SelectTrigger>
+                <SelectContent
+                  className="min-w-2 z-50"
+                  defaultValue={
+                    TRANSLATION?.filter((items) => items.value === translation)?.map(
+                      (items) => items.value
+                    )?.[0]
+                  }>
+                  <SelectGroup>
+                    <SelectLabel>Select Language</SelectLabel>
+                    {TRANSLATION.map((items, index) => (
+                      <SelectItem
+                        value={items.value}
+                        className="w-full flex items-center"
+                        key={index}>
+                        <div className="flex justify-between items-center gap-4">
+                          <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
+                          <p>{items.name}</p>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
             <div className="hidden md:flex md:flex-col md:gap-1">
               <p className="text-base font-medium text-[#737373]">welcome, John!</p>
-              <p className="text-xs font-medium text-[#D9D9D9]">Cachier on Bonta Coffe</p>
+              <p className="text-xs font-medium text-[#D9D9D9]">Cashier on Bonta Coffe</p>
             </div>
-            <AvatarUser />
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="p-0 bg-transparent border-none">
+                  <AvatarUser />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Hello, John</SheetTitle>
+                  <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="name" className="text-right">
+                      Name
+                    </div>
+                    <input id="name" value="Pedro Duarte" className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div htmlFor="username" className="text-right">
+                      Username
+                    </div>
+                    <input id="username" value="@peduarte" className="col-span-3" />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button type="submit">Save changes</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
         <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8">

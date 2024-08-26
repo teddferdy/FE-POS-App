@@ -2,9 +2,6 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 import Lottie from "react-lottie";
 import PropTypes from "prop-types";
 
-// Molecule
-import Modal from "../../atom/modal";
-
 // Assets
 import LoadingLottie from "../../../assets/lottie/loading.json";
 import SuccessLottie from "../../../assets/lottie/success.json";
@@ -41,11 +38,18 @@ const LoadingProvider = ({ children }) => {
     };
     if (active !== null) {
       return (
-        <Modal>
-          <div className="justify-center items-center flex flex-col h-screen">
-            <Lottie options={options} height={200} width={200} />
+        <div className="fixed z-10 overflow-y-auto top-0 w-full left-0">
+          <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity">
+              <div className="absolute inset-0 bg-gray-900 opacity-75" />
+              <div className="h-full">
+                <div className="justify-center items-center flex flex-col h-screen">
+                  <Lottie options={options} height={200} width={200} />
+                </div>
+              </div>
+            </div>
           </div>
-        </Modal>
+        </div>
       );
     }
   }, [active, status]);
