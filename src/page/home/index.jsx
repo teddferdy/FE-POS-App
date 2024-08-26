@@ -6,7 +6,6 @@ import {
   ResizablePanelGroup
 } from "../../components/ui/resizable";
 import AvatarUser from "../../components/molecule/AvatarUser";
-
 import {
   Select,
   SelectContent,
@@ -54,15 +53,9 @@ import {
   DrawerTrigger
 } from "../../components/ui/drawer";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "../../components/ui/dialog";
+// Form
+
+import DialogCheckout from "../../components/molecule/dialog/dialogCheckout";
 
 // Import Swiper styles
 import "swiper/css";
@@ -456,23 +449,7 @@ const Home = () => {
                   Custom Nota
                 </button>
                 <div className="flex items-center gap-10">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
-                        Check Out
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Check Out Items</DialogTitle>
-                        <DialogDescription>Mohon di check lagi!!</DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4"></div>
-                      <DialogFooter>
-                        <Button type="submit">Save changes</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <DialogCheckout />
                   <Drawer>
                     <DrawerTrigger>
                       <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
@@ -485,9 +462,6 @@ const Home = () => {
                       </DrawerHeader>
                       <div className="overflow-scroll no-scrollbar flex-1 flex flex-col gap-4 px-8">
                         {arr.map((_, index) => {
-                          console.log("index", index);
-                          console.log("arr.length", arr.length);
-
                           return (
                             <div className={`flex gap-4 border-b border-[#000]  pb-4`} key={index}>
                               <p>{index + 1}.</p>
@@ -619,23 +593,9 @@ const Home = () => {
                 <button className="px-3 py-2 bg-[#D9D9D9] text-base font-bold text-white rounded-full">
                   Custom Nota
                 </button>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
-                      Check Out
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Check Out Items</DialogTitle>
-                      <DialogDescription>Mohon di check lagi!!</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4"></div>
-                    <DialogFooter>
-                      <Button type="submit">Save changes</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+
+                {/* Dialog Checkout  */}
+                <DialogCheckout />
               </div>
             </div>
           </div>
