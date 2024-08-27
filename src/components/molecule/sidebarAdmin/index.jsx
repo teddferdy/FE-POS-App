@@ -1,12 +1,13 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 // Assets
-import LogoSidebar from "../../../assets/sidebar/logo-sidebar.png";
-import LogoList from "../../../assets/sidebar/list-logo.png";
-import LogoAdmin from "../../../assets/sidebar/admin-logo.png";
-import LogoChart from "../../../assets/sidebar/chart-logo.png";
+import LogoSidebar from "../../../assets/logo-sidebar.png";
+// import LogoList from "../../../assets/sidebar/list-logo.png";
+// import LogoAdmin from "../../../assets/sidebar/admin-logo.png";
+// import LogoChart from "../../../assets/sidebar/chart-logo.png";
 
 const SideBarAdmin = ({ classNameContainer }) => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const SideBarAdmin = ({ classNameContainer }) => {
       <div className="w-10 h-10" onClick={() => navigate("/home")}>
         <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full cursor-pointer" />
       </div>
-      <div className="flex flex-col gap-8">
+      {/* <div className="flex flex-col gap-8">
         <div
           className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
           onClick={() => navigate("/home")}>
@@ -52,7 +53,7 @@ const SideBarAdmin = ({ classNameContainer }) => {
           </div>
           <p className={classNameContainer}>My Employeee</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

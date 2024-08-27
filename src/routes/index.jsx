@@ -1,10 +1,16 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { createBrowserRouter } from "react-router-dom";
-// Pages
-import Home from "../page/home";
+
+// Auth
+import Login from "../page/auth/login";
 import Register from "../page/auth/register";
 import ResetPassword from "../page/auth/reset-password";
-import Login from "../page/auth/login";
+
+// Cashier
+import Home from "../page/home"; // List Product Cashier
+import MemberCashier from "../page/cashier/member";
+
+// Admin
 import AdminPage from "../page/admin";
 
 export const Routes = createBrowserRouter([
@@ -20,9 +26,17 @@ export const Routes = createBrowserRouter([
     path: "/register",
     element: <Register />
   },
+
+  // User -> List Product
   {
     path: "/home",
     element: <Home />
+  },
+
+  // User -> Member
+  {
+    path: "/membership",
+    element: <MemberCashier />
   },
   {
     path: "/admin-page",
