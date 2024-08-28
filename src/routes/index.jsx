@@ -16,6 +16,7 @@ import OverviewPage from "../page/admin/overview";
 import CategoryList from "../page/admin/category";
 import LocationList from "../page/admin/location";
 import MemberList from "../page/admin/member";
+import ProductList from "../page/admin/product";
 
 export const Routes = createBrowserRouter([
   {
@@ -64,5 +65,9 @@ export const Routes = createBrowserRouter([
   {
     path: "/member-list",
     element: <MemberList />
+  },
+  {
+    path: "/product-list",
+    element: <ProductList />
   }
 ]);
