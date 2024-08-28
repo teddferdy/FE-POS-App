@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useMemo, useState } from "react";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
 
 // Assets
 import { Eye, EyeOff } from "lucide-react";
@@ -39,6 +41,7 @@ const Login = () => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [_, setCookie] = useCookies();
 
   const [showPassword, setShowPassword] = useState(false);
   const { updateTranslation, translation } = translationSelect();
@@ -77,7 +80,10 @@ const Login = () => {
   // QUERY
   const mutateLogin = useMutation(login, {
     onMutate: () => setActive(true, null),
-    onSuccess: () => {
+    onSuccess: (success) => {
+      setCookie("token", success.token);
+      setCookie("user", success.user);
+
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -89,13 +95,16 @@ const Login = () => {
         setActive(null, null);
       }, 2000);
     },
-    onError: () => {
+    onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Custom Title 1", {
-          description: "Failed to Register User"
+        toast.error("Failed Login", {
+          description: err.message
         });
       }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
     }
   });
 

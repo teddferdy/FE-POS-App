@@ -153,13 +153,16 @@ const Register = () => {
         setActive(null, null);
       }, 2000);
     },
-    onError: () => {
+    onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Custom Title 1", {
-          description: "Failed to Register User"
+        toast.error("Failed Register", {
+          description: err.message
         });
       }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
     }
   });
 
