@@ -11,13 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger
-} from "../../../components/ui/dialog";
-import { Input } from "../../../components/ui/input";
+} from "../../components/ui/dialog";
+import { Input } from "../../components/ui/input";
 
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-import TemplateContainerUser from "../../../components/organism/template-container/TemplateContainerUser";
-import { Button } from "../../../components/ui/button";
-import { Card, CardContent } from "../../../components/ui/card";
+import { Form, FormField, FormItem, FormLabel } from "../../components/ui/form";
+import TemplateContainer from "../../components/organism/template-container";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
 
 const arr = new Array(20).fill(null);
 
@@ -41,7 +41,7 @@ const MemberCashier = () => {
   };
 
   return (
-    <TemplateContainerUser setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
+    <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
       <div className="border-t-2 border-[#ffffff10] overflow-scroll p-4 flex flex-col h-screen">
         <div className="flex justify-end mb-6">
           <Dialog>
@@ -134,7 +134,7 @@ const MemberCashier = () => {
           </div>
         </div>
       </div>
-    </TemplateContainerUser>
+    </TemplateContainer>
   );
 };
 

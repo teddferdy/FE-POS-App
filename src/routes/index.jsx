@@ -5,13 +5,14 @@ import { createBrowserRouter } from "react-router-dom";
 import Login from "../page/auth/login";
 import Register from "../page/auth/register";
 import ResetPassword from "../page/auth/reset-password";
+import EditProfile from "../page/auth/edit-profile";
 
 // Cashier
-import Home from "../page/home"; // List Product Cashier
-import MemberCashier from "../page/cashier/member";
+import ListProduct from "../page/cashier/list-product"; // List Product Cashier
+import MemberCashier from "../page/cashier/member-cashier";
 
 // Admin
-import AdminPage from "../page/admin";
+import OverviewPage from "../page/admin/overview";
 
 export const Routes = createBrowserRouter([
   {
@@ -26,11 +27,15 @@ export const Routes = createBrowserRouter([
     path: "/register",
     element: <Register />
   },
+  {
+    path: "/edit-profile",
+    element: <EditProfile />
+  },
 
   // User -> List Product
   {
     path: "/home",
-    element: <Home />
+    element: <ListProduct />
   },
 
   // User -> Member
@@ -40,6 +45,6 @@ export const Routes = createBrowserRouter([
   },
   {
     path: "/admin-page",
-    element: <AdminPage />
+    element: <OverviewPage />
   }
 ]);

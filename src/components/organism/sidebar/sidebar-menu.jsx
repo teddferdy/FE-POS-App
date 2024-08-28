@@ -9,7 +9,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-ca
 // Assets
 import LogoSidebar from "../../../assets/logo-sidebar.png";
 
-const SideBar = ({ classNameContainer }) => {
+const SideBarMenu = ({ classNameContainer }) => {
   const navigate = useNavigate();
   const urlNow = useLocation();
 
@@ -109,12 +109,12 @@ const SideBar = ({ classNameContainer }) => {
   );
 };
 
-SideBar.defaultProps = {
+SideBarMenu.defaultProps = {
   classNameContainer: ""
 };
 
-SideBar.propTypes = {
+SideBarMenu.propTypes = {
   classNameContainer: PropTypes.string
 };
 
-export default SideBar;
+export default SideBarMenu;
