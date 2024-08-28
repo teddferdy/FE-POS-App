@@ -22,7 +22,7 @@ const SideBarMenu = ({ classNameContainer }) => {
   const urlNow = useLocation();
 
   return (
-    <div className="flex flex-col items-center my-6 gap-14 h-screen overflow-scroll">
+    <div className="flex flex-col items-center my-6 gap-14">
       <div className="w-10 h-10" onClick={() => navigate("/home")}>
         <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full cursor-pointer" />
       </div>
@@ -100,7 +100,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/home" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p className={classNameContainer}>List Product</p>
+              <p className={classNameContainer}>Cashier App</p>
             </div>
           </HoverCardTrigger>
           <HoverCardContent>
@@ -112,7 +112,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/home" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p>List Product</p>
+              <p>Cashier App</p>
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -130,7 +130,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/membership" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p className={classNameContainer}>Membership</p>
+              <p className={classNameContainer}>My Membership</p>
             </div>
           </HoverCardTrigger>
           <HoverCardContent>
@@ -142,7 +142,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/membership" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p>Membership</p>
+              <p>My Membership</p>
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -160,7 +160,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/location-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p className={classNameContainer}>Location</p>
+              <p className={classNameContainer}>Location List</p>
             </div>
           </HoverCardTrigger>
           <HoverCardContent>
@@ -172,7 +172,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/location-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p>Location</p>
+              <p>Location List</p>
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -190,7 +190,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/category-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p className={classNameContainer}>Category</p>
+              <p className={classNameContainer}>Category List</p>
             </div>
           </HoverCardTrigger>
           <HoverCardContent>
@@ -202,7 +202,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/category-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p>Category</p>
+              <p>Category List</p>
             </div>
           </HoverCardContent>
         </HoverCard>
@@ -220,7 +220,7 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/product-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p className={classNameContainer}>Product</p>
+              <p className={classNameContainer}>Product List</p>
             </div>
           </HoverCardTrigger>
           <HoverCardContent>
@@ -232,7 +232,37 @@ const SideBarMenu = ({ classNameContainer }) => {
                   color={`${urlNow.pathname === "/product-list" ? "#fff" : "#000"}`}
                 />
               </div>
-              <p>Product</p>
+              <p>Product List</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+
+        {/* MemberShip List Admin */}
+        <HoverCard>
+          <HoverCardTrigger>
+            <div
+              className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+              onClick={() => navigate("/member-list")}>
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/member-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <UtensilsCrossed
+                  className="w-full"
+                  color={`${urlNow.pathname === "/member-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p className={classNameContainer}>MemberShip List</p>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/member-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <UtensilsCrossed
+                  className="w-full"
+                  color={`${urlNow.pathname === "/member-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p>MemberShip List</p>
             </div>
           </HoverCardContent>
         </HoverCard>

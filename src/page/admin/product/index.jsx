@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { MapPinPlus } from "lucide-react";
+import { Utensils } from "lucide-react";
 
 import { Button } from "../../../components/ui/button";
 // import { Checkbox } from "../../../components/ui/checkbox";
@@ -171,7 +171,7 @@ export const columns = [
   }
 ];
 
-const LocationList = () => {
+const ProductList = () => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -202,8 +202,8 @@ const LocationList = () => {
         <div className="flex justify-end mb-6">
           <Button className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
             <div className="flex items-center gap-4">
-              <MapPinPlus className="w-6 h-6" />
-              <p>Add Location</p>
+              <Utensils className="w-6 h-6" />
+              <p>Add Product</p>
             </div>
           </Button>
         </div>
@@ -309,4 +309,4 @@ const LocationList = () => {
   );
 };
 
-export default LocationList;
+export default ProductList;
