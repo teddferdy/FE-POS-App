@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
+import SideBarMenu from "../sidebar/sidebar-menu";
+import SideBarProfile from "../sidebar/sidebar-profile";
 
-import AvatarUser from "../../molecule/AvatarUser";
+import AvatarUser from "../avatar-user";
 import {
   Select,
   SelectContent,
@@ -15,16 +17,14 @@ import {
 // Import Swiper React components
 import { Menu } from "lucide-react";
 
-import SideBar from "../../molecule/sidebar";
+import SideBar from "../../organism/sidebar/sidebar-menu";
 
 import { Button } from "../../ui/button";
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger
@@ -32,8 +32,9 @@ import {
 import { translationSelect } from "../../../state/translation";
 import { TRANSLATION } from "../../../utils/translation";
 
-const TemplateContainerUser = ({ children, setOpenMenu, openMenu }) => {
+const TemplateContainer = ({ children }) => {
   const { updateTranslation, translation } = translationSelect();
+  const [openMenu, setOpenMenu] = useState(false);
   const [search, setSearch] = useState("");
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
@@ -49,7 +50,7 @@ const TemplateContainerUser = ({ children, setOpenMenu, openMenu }) => {
         maxSize={16}
         minSize={6}
         className="hidden overflow-hidden h-screen lg:block">
-        <SideBar classNameContainer={`${openMenu ? "block" : "hidden"}`} />
+        <SideBarMenu classNameContainer={`${openMenu ? "block" : "hidden"}`} />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className="overflow-hidden h-screen">
@@ -132,25 +133,7 @@ const TemplateContainerUser = ({ children, setOpenMenu, openMenu }) => {
                   <SheetTitle>Hello, John</SheetTitle>
                   <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
                 </SheetHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <div htmlFor="name" className="text-right">
-                      Name
-                    </div>
-                    <input id="name" value="Pedro Duarte" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <div htmlFor="username" className="text-right">
-                      Username
-                    </div>
-                    <input id="username" value="@peduarte" className="col-span-3" />
-                  </div>
-                </div>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter>
+                <SideBarProfile />
               </SheetContent>
             </Sheet>
           </div>
@@ -161,10 +144,8 @@ const TemplateContainerUser = ({ children, setOpenMenu, openMenu }) => {
   );
 };
 
-TemplateContainerUser.propTypes = {
-  children: PropTypes.element,
-  setOpenMenu: PropTypes.func,
-  openMenu: PropTypes.bool
+TemplateContainer.propTypes = {
+  children: PropTypes.element
 };
 
-export default TemplateContainerUser;
+export default TemplateContainer;
