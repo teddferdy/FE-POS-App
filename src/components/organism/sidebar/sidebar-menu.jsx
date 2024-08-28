@@ -2,7 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { SquareUser, ShoppingBasketIcon, Crown } from "lucide-react";
+import {
+  SquareUser,
+  ShoppingBasketIcon,
+  Crown,
+  MapPin,
+  Clipboard,
+  Calculator,
+  UtensilsCrossed
+} from "lucide-react";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-card";
 
@@ -14,11 +22,12 @@ const SideBarMenu = ({ classNameContainer }) => {
   const urlNow = useLocation();
 
   return (
-    <div className="flex flex-col justify-center items-center my-6 gap-14">
+    <div className="flex flex-col items-center my-6 gap-14 h-screen overflow-scroll">
       <div className="w-10 h-10" onClick={() => navigate("/home")}>
         <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full cursor-pointer" />
       </div>
       <div className="flex flex-col gap-8">
+        {/* Admin Menu */}
         <HoverCard>
           <HoverCardTrigger>
             <div
@@ -47,6 +56,38 @@ const SideBarMenu = ({ classNameContainer }) => {
             </div>
           </HoverCardContent>
         </HoverCard>
+
+        {/* Back to cashier app */}
+        <HoverCard>
+          <HoverCardTrigger>
+            <div
+              className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+              onClick={() => navigate("/home")}>
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#ffcf40]"} rounded-full`}>
+                <Calculator
+                  className="w-full"
+                  color={`${urlNow.pathname === "/home" ? "#ffcf40" : "#fff"}`}
+                />
+              </div>
+              <p className={classNameContainer}>Kembali Ke Cashier App</p>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <Calculator
+                  className="w-full"
+                  color={`${urlNow.pathname === "/home" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p>Kembali Ke Cashier App</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+
+        {/* List Product -> Cashier app */}
         <HoverCard>
           <HoverCardTrigger>
             <div
@@ -76,6 +117,7 @@ const SideBarMenu = ({ classNameContainer }) => {
           </HoverCardContent>
         </HoverCard>
 
+        {/* Membership -> admin / user just change path location */}
         <HoverCard>
           <HoverCardTrigger>
             <div
@@ -101,6 +143,96 @@ const SideBarMenu = ({ classNameContainer }) => {
                 />
               </div>
               <p>Membership</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+
+        {/* Location */}
+        <HoverCard>
+          <HoverCardTrigger>
+            <div
+              className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+              onClick={() => navigate("/location-list")}>
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/location-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <MapPin
+                  className="w-full"
+                  color={`${urlNow.pathname === "/location-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p className={classNameContainer}>Location</p>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/location-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <MapPin
+                  className="w-full"
+                  color={`${urlNow.pathname === "/location-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p>Location</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+
+        {/* Category */}
+        <HoverCard>
+          <HoverCardTrigger>
+            <div
+              className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+              onClick={() => navigate("/category-list")}>
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/category-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <Clipboard
+                  className="w-full"
+                  color={`${urlNow.pathname === "/category-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p className={classNameContainer}>Category</p>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/category-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <Clipboard
+                  className="w-full"
+                  color={`${urlNow.pathname === "/category-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p>Category</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+
+        {/* List Product Admin */}
+        <HoverCard>
+          <HoverCardTrigger>
+            <div
+              className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+              onClick={() => navigate("/product-list")}>
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/product-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <UtensilsCrossed
+                  className="w-full"
+                  color={`${urlNow.pathname === "/product-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p className={classNameContainer}>Product</p>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent>
+            <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+              <div
+                className={`w-14 h-14 p-4 ${urlNow.pathname === "/product-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                <UtensilsCrossed
+                  className="w-full"
+                  color={`${urlNow.pathname === "/product-list" ? "#fff" : "#000"}`}
+                />
+              </div>
+              <p>Product</p>
             </div>
           </HoverCardContent>
         </HoverCard>

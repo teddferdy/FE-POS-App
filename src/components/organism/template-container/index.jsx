@@ -47,9 +47,12 @@ const TemplateContainer = ({ children }) => {
           }
         }}
         defaultSize={4}
-        maxSize={16}
+        maxSize={18}
         minSize={6}
-        className="hidden overflow-hidden h-screen lg:block">
+        className="hidden overflow-scroll h-screen lg:block no-scrollbar"
+        style={{
+          overflow: "scroll"
+        }}>
         <SideBarMenu classNameContainer={`${openMenu ? "block" : "hidden"}`} />
       </ResizablePanel>
       <ResizableHandle withHandle />
