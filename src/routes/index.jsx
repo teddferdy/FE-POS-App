@@ -13,6 +13,9 @@ import MemberCashier from "../page/cashier/member-cashier";
 
 // Admin
 import OverviewPage from "../page/admin/overview";
+import CategoryList from "../page/admin/category";
+import LocationList from "../page/admin/location";
+import MemberList from "../page/admin/member";
 
 export const Routes = createBrowserRouter([
   {
@@ -43,8 +46,23 @@ export const Routes = createBrowserRouter([
     path: "/membership",
     element: <MemberCashier />
   },
+
+  // Admin Page
   {
     path: "/admin-page",
     element: <OverviewPage />
+  },
+  {
+    path: "/category-list",
+    element: <CategoryList />
+  },
+  {
+    path: "/location-list",
+    element: <LocationList />
+  },
+  // Member List Admin
+  {
+    path: "/member-list",
+    element: <MemberList />
   }
 ]);
