@@ -22,7 +22,7 @@ export const editLocation = async (payload) => {
 };
 
 export const deleteLocation = async (payload) => {
-  const { data, status } = await axiosInstance.post(
+  const { data, status } = await axiosInstance.delete(
     `/location/delete-location/${payload.id}`,
     payload
   );
