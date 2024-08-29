@@ -18,3 +18,9 @@ export const resetPassword = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const logOut = async (payload) => {
+  const { data, status } = await axiosInstance.post("/auth/logout", payload);
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};

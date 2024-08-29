@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useForm } from "react-hook-form";
-// import { z } from "zod";
 import {
-  //   ColumnDef,
-  //   ColumnFiltersState,
-  //   SortingState,
-  //   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -17,7 +10,6 @@ import {
 import { ClipboardPlus } from "lucide-react";
 
 import { Button } from "../../../components/ui/button";
-// import { Checkbox } from "../../../components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -37,21 +29,8 @@ import {
   TableRow
 } from "../../../components/ui/table";
 
-// Component
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger
-// } from "../../components/ui/dialog";
-// import { Input } from "../../components/ui/input";
-
-// import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-// import { Button } from "../../../components/ui/button";
-// import { Card, CardContent } from "../../../../components/ui/card";
-
 import TemplateContainer from "../../../components/organism/template-container";
+import { useNavigate } from "react-router-dom";
 
 const data = [
   {
@@ -172,6 +151,7 @@ export const columns = [
 ];
 
 const CategoryList = () => {
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -200,7 +180,9 @@ const CategoryList = () => {
     <TemplateContainer>
       <div className="border-t-2 border-[#ffffff10] overflow-scroll p-4 flex flex-col h-screen">
         <div className="flex justify-end mb-6">
-          <Button className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
+          <Button
+            className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+            onClick={() => navigate("/add-category")}>
             <div className="flex items-center gap-4">
               <ClipboardPlus className="w-6 h-6" />
               <p>Add Category</p>

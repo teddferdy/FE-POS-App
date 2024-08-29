@@ -389,9 +389,6 @@ const Home = () => {
           <h3 className="text-2xl font-semibold text-[#737373] px-8">Daftar Orderan :</h3>
           <div className="overflow-scroll h-auto no-scrollbar flex-1 flex flex-col gap-4 px-8">
             {arr.map((_, index) => {
-              console.log("index", index);
-              console.log("arr.length", arr.length);
-
               return (
                 <div
                   className={`flex gap-4 border-b border-[#000]  ${index + 1 === arr.length ? "pb-56" : "pb-4"}`}

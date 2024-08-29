@@ -87,7 +87,7 @@ const Login = () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Register User successfully"
+          description: "Welcome, Login User successfully"
         });
       }, 1000);
       setTimeout(() => {

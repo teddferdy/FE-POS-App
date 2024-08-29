@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 
 import { LogOut, UserCog, Languages } from "lucide-react";
 
@@ -15,9 +14,7 @@ import {
 import { translationSelect } from "../../../state/translation";
 import { TRANSLATION } from "../../../utils/translation";
 
-const SideBarProfile = ({ classNameContainer }) => {
-  const navigate = useNavigate();
-
+const SideBarProfile = ({ navigate, mutateLogout }) => {
   const { updateTranslation, translation } = translationSelect();
 
   return (
@@ -26,7 +23,7 @@ const SideBarProfile = ({ classNameContainer }) => {
         className="flex items-center w-full cursor-pointer gap-8"
         onClick={() => navigate("/edit-profile")}>
         <UserCog color="#000" />
-        <p className={classNameContainer}>Edit Profile</p>
+        <p>Edit Profile</p>
       </div>
       <div
         className="flex items-center w-full cursor-pointer gap-8 md:hidden"
@@ -65,22 +62,17 @@ const SideBarProfile = ({ classNameContainer }) => {
         </Select>
       </div>
 
-      <div
-        className="flex w-full cursor-pointer gap-8 self-end"
-        onClick={() => navigate("/membership")}>
+      <div className="flex w-full cursor-pointer gap-8 self-end" onClick={mutateLogout}>
         <LogOut color="#000" />
-        <p className={classNameContainer}>Logout</p>
+        <p>Logout</p>
       </div>
     </div>
   );
 };
 
-SideBarProfile.defaultProps = {
-  classNameContainer: ""
-};
-
 SideBarProfile.propTypes = {
-  classNameContainer: PropTypes.string
+  navigate: PropTypes.func,
+  mutateLogout: PropTypes.func
 };
 
 export default SideBarProfile;
