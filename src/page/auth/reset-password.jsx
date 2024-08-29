@@ -76,7 +76,7 @@ const ResetPassword = () => {
     onError: () => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Custom Title 1", {
+        toast.error("Error", {
           description: "Failed to Reset Password"
         });
       }, 1500);

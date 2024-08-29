@@ -21,6 +21,10 @@ import LocationList from "./page/admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product";
 
+// Add
+import FormCategory from "./page/admin/category/formCategory";
+import FormLocation from "./page/admin/location/formLocation";
+
 function App() {
   const { i18n } = useTranslation();
 
@@ -62,6 +66,16 @@ function App() {
         <Route
           path="/product-list"
           element={cookie.token ? <ProductList /> : <Navigate to="/" />}
+        />
+
+        {/* Add / Edit Routes */}
+        <Route
+          path="/add-category"
+          element={cookie.token ? <FormCategory /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/add-location"
+          element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>

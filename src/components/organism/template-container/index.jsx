@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
 import SideBarMenu from "../sidebar/sidebar-menu";
 import SideBarProfile from "../sidebar/sidebar-profile";
-
+import { useMutation } from "react-query";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import AvatarUser from "../avatar-user";
 import {
   Select,
@@ -17,8 +20,6 @@ import {
 // Import Swiper React components
 import { Menu } from "lucide-react";
 
-import SideBar from "../../organism/sidebar/sidebar-menu";
-
 import { Button } from "../../ui/button";
 
 import {
@@ -31,11 +32,50 @@ import {
 } from "../../ui/sheet";
 import { translationSelect } from "../../../state/translation";
 import { TRANSLATION } from "../../../utils/translation";
+import { logOut } from "../../../services/auth";
+import { useLoading } from "../loading";
 
 const TemplateContainer = ({ children }) => {
+  const { setActive } = useLoading();
+  const navigate = useNavigate();
   const { updateTranslation, translation } = translationSelect();
   const [openMenu, setOpenMenu] = useState(false);
+  const [openSheet, setOpenSheet] = useState(false);
   const [search, setSearch] = useState("");
+  const [cookie] = useCookies();
+
+  // Query
+  const mutateLogout = useMutation(logOut, {
+    retry: 2,
+    onMutate: () => {
+      setActive(true, null);
+      setOpenSheet(false);
+    },
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Logout successfully"
+        });
+      }, 1000);
+      setTimeout(() => {
+        navigate("/");
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed Logout", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
       <ResizablePanel
@@ -65,8 +105,8 @@ const TemplateContainer = ({ children }) => {
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-3/6">
-                <SideBar classNameContainer="block" />
+              <SheetContent side="left" className="w-3/6 overflow-scroll h-screen no-scrollbar">
+                <SideBarMenu classNameContainer="block" />
               </SheetContent>
             </Sheet>
             <input
@@ -125,8 +165,8 @@ const TemplateContainer = ({ children }) => {
               <p className="text-xs font-medium text-[#D9D9D9]">Cashier on Bonta Coffe</p>
             </div>
 
-            <Sheet>
-              <SheetTrigger asChild>
+            <Sheet open={openSheet} onOpenChange={() => setOpenSheet(!openSheet)}>
+              <SheetTrigger onClick={() => setOpenSheet(!openSheet)}>
                 <Button variant="outline" className="p-0 bg-transparent border-none">
                   <AvatarUser />
                 </Button>
@@ -136,7 +176,10 @@ const TemplateContainer = ({ children }) => {
                   <SheetTitle>Hello, John</SheetTitle>
                   <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
                 </SheetHeader>
-                <SideBarProfile />
+                <SideBarProfile
+                  navigate={navigate}
+                  mutateLogout={() => mutateLogout.mutate({ id: cookie?.user?.id })}
+                />
               </SheetContent>
             </Sheet>
           </div>
