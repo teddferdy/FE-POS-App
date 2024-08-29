@@ -58,7 +58,7 @@ const FormLocation = () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Welcome, Login User successfully"
+          description: "Successfull, Added New Location"
         });
       }, 1000);
       setTimeout(() => {
@@ -85,7 +85,7 @@ const FormLocation = () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Welcome, Login User successfully"
+          description: "Successfull, Added Edit Location"
         });
       }, 1000);
       setTimeout(() => {
@@ -96,7 +96,7 @@ const FormLocation = () => {
     onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Failed Login", {
+        toast.error("Failed", {
           description: err.message
         });
       }, 1500);
