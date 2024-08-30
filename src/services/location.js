@@ -13,7 +13,7 @@ export const addLocation = async (payload) => {
 };
 
 export const editLocation = async (payload) => {
-  const { data, status } = await axiosInstance.post(
+  const { data, status } = await axiosInstance.put(
     `/location/edit-location/${payload.id}`,
     payload
   );
@@ -22,10 +22,9 @@ export const editLocation = async (payload) => {
 };
 
 export const deleteLocation = async (payload) => {
-  const { data, status } = await axiosInstance.delete(
-    `/location/delete-location/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.delete(`/location/delete-location/${payload.id}`, {
+    data: payload
+  });
   if (status !== 200) throw Error(data?.error);
   return data;
 };

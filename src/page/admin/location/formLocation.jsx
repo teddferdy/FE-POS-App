@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
 import { MapPinPlus } from "lucide-react";
-import DialogButton from "../../../components/organism/dialog/DialogButton";
+import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { addLocation, editLocation } from "../../../services/location";
@@ -43,11 +43,11 @@ const FormLocation = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      nameStore: "",
-      address: "",
-      detailLocation: "",
-      phoneNumber: "",
-      status: true
+      nameStore: state?.data?.nameStore ?? "",
+      address: state?.data?.address ?? "",
+      detailLocation: state?.data?.detailLocation ?? "",
+      phoneNumber: state?.data?.phoneNumber ?? "",
+      status: state?.data?.status ?? true
     }
   });
 
@@ -85,7 +85,7 @@ const FormLocation = () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Added Edit Location"
+          description: "Successfull, Edit Location"
         });
       }, 1000);
       setTimeout(() => {
@@ -107,17 +107,16 @@ const FormLocation = () => {
   });
 
   const onSubmit = (values) => {
-    if (state?.id) {
+    if (state?.data?.id) {
       const body = {
-        id: 2,
-        nameStore: "Store 22",
-        address: "Alamat 22",
-        detailLocation: "Depan Pom Bensin",
-        phoneNumber: "+622212",
+        id: state?.data?.id,
+        nameStore: values?.nameStore,
+        address: values?.address,
+        detailLocation: values?.detailLocation,
+        phoneNumber: values?.phoneNumber,
         status: true,
-        createdBy: "teddy",
-        modifiedBy: "broo",
-        modifiedAt: "2024-08-17 21:50:20"
+        createdBy: state?.data?.createdBy,
+        modifiedBy: cookie.user.userName
       };
       mutateEditLocation.mutate(body);
     } else {
@@ -232,7 +231,7 @@ const FormLocation = () => {
               </div>
 
               <div className="flex justify-between items-center">
-                <DialogButton
+                <DialogCancelForm
                   classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                   titleDialog="Apakah Anda Ingin Membatalkan Ini"
                   titleButtonTrigger="Cancel"

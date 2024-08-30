@@ -13,15 +13,18 @@ import {
   DialogClose
 } from "../../ui/dialog";
 
-const DialogButton = ({ classNameButtonTrigger }) => {
+const DialogDeleteItem = ({ actionDelete }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className={classNameButtonTrigger}>Cancel</Button>
+        <Button className="h-8 w-full p-4">
+          <span>Delete</span>
+          {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Apakah Anda Ingin Membatalkan Ini</DialogTitle>
+          <DialogTitle>Apakah Anda Ingin Menghapus Item Ini</DialogTitle>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
@@ -29,11 +32,11 @@ const DialogButton = ({ classNameButtonTrigger }) => {
               Close
             </Button>
           </DialogClose>
-          <Button type="submit">Yes</Button>
+          <Button onClick={actionDelete}>Yes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default DialogButton;
+export default DialogDeleteItem;

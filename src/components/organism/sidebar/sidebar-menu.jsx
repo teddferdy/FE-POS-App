@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -16,21 +16,14 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-ca
 
 // Assets
 import LogoSidebar from "../../../assets/logo-sidebar.png";
-import { useCookies } from "react-cookie";
 
-const SideBarMenu = ({ classNameContainer }) => {
+const SideBarMenu = ({ classNameContainer, user }) => {
   const navigate = useNavigate();
   const urlNow = useLocation();
 
-  const [cookie] = useCookies();
-  console.log("DATA BRAY =>", cookie);
-
-  return (
-    <div className="flex flex-col items-center my-6 gap-14">
-      <div className="w-10 h-10" onClick={() => navigate("/home")}>
-        <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full cursor-pointer" />
-      </div>
-      {cookie.user.userType === "admin" ? (
+  const MENU_LIST = useMemo(() => {
+    if (user.userType === "admin") {
+      return (
         <div className="flex flex-col gap-8">
           {/* Admin Menu */}
           <HoverCard>
@@ -212,22 +205,25 @@ const SideBarMenu = ({ classNameContainer }) => {
             </HoverCardContent>
           </HoverCard>
         </div>
-      ) : (
+      );
+    }
+
+    if (user.userType === "user") {
+      return (
         <div className="flex flex-col gap-8">
-          {/* List Product -> Cashier app */}
           <HoverCard>
             <HoverCardTrigger>
               <div
                 className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
                 onClick={() => navigate("/home")}>
                 <div
-                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#ffcf40]"} rounded-full`}>
                   <ShoppingBasketIcon
                     className="w-full"
-                    color={`${urlNow.pathname === "/home" ? "#fff" : "#000"}`}
+                    color={`${urlNow.pathname === "/home" ? "#ffcf40" : "#fff"}`}
                   />
                 </div>
-                <p className={classNameContainer}>Cashier App</p>
+                <p className={classNameContainer}>Kembali Ke Cashier App</p>
               </div>
             </HoverCardTrigger>
             <HoverCardContent>
@@ -244,47 +240,58 @@ const SideBarMenu = ({ classNameContainer }) => {
             </HoverCardContent>
           </HoverCard>
 
-          {/* Membership */}
+          {/* User List */}
           <HoverCard>
             <HoverCardTrigger>
               <div
                 className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
-                onClick={() => navigate("/membership")}>
+                onClick={() => navigate("/home")}>
                 <div
-                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/membership" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#ffcf40]"} rounded-full`}>
                   <SquareUser
                     className="w-full"
-                    color={`${urlNow.pathname === "/membership" ? "#fff" : "#000"}`}
+                    color={`${urlNow.pathname === "/home" ? "#ffcf40" : "#fff"}`}
                   />
                 </div>
-                <p className={classNameContainer}>My Membership</p>
+                <p className={classNameContainer}>Kembali Ke Cashier App</p>
               </div>
             </HoverCardTrigger>
             <HoverCardContent>
               <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
                 <div
-                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/membership" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/home" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
                   <SquareUser
                     className="w-full"
-                    color={`${urlNow.pathname === "/membership" ? "#fff" : "#000"}`}
+                    color={`${urlNow.pathname === "/home" ? "#fff" : "#000"}`}
                   />
                 </div>
-                <p>My Membership</p>
+                <p>Cashier App</p>
               </div>
             </HoverCardContent>
           </HoverCard>
         </div>
-      )}
+      );
+    }
+  }, [user, classNameContainer]);
+
+  return (
+    <div className="flex flex-col items-center my-6 gap-14">
+      <div className="w-10 h-10" onClick={() => navigate("/home")}>
+        <img src={LogoSidebar} alt="logo-sidebar" className="object-cover w-full cursor-pointer" />
+      </div>
+      {MENU_LIST}
     </div>
   );
 };
 
 SideBarMenu.defaultProps = {
-  classNameContainer: ""
+  classNameContainer: "",
+  user: {}
 };
 
 SideBarMenu.propTypes = {
-  classNameContainer: PropTypes.string
+  classNameContainer: PropTypes.string,
+  user: PropTypes.object
 };
 
 export default SideBarMenu;
