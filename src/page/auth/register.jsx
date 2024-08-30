@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -41,33 +41,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/pop
 
 // Services
 import { register } from "../../services/auth";
+import { getAllLocation } from "../../services/location";
 
 // Utils & State
 import { translationSelect } from "../../state/translation";
 import { TRANSLATION } from "../../utils/translation";
-
-const location = [
-  {
-    value: "semarang",
-    label: "Semarang"
-  },
-  {
-    value: "solo",
-    label: "Solo"
-  },
-  {
-    value: "jogja",
-    label: "Jogja"
-  },
-  {
-    value: "malang",
-    label: "Malang"
-  },
-  {
-    value: "jakarta",
-    label: "Jakarta"
-  }
-];
 
 const Register = () => {
   const { setActive } = useLoading();
@@ -79,6 +57,13 @@ const Register = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const { updateTranslation, translation } = translationSelect();
+
+  const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
+    retry: 0,
+    keepPreviousData: true
+  });
+
+  console.log("allLocation =>", allLocation);
 
   // Translation
   const translationMemo = useMemo(() => {
@@ -249,12 +234,15 @@ const Register = () => {
                         <Popover open={open} onOpenChange={setOpen} className="mt-10">
                           <PopoverTrigger asChild>
                             <Button
+                              disabled={allLocation.isLoading}
                               variant="outline"
                               role="combobox"
                               aria-expanded={open}
                               className="w-full justify-between">
                               {value
-                                ? location.find((location) => location.value === value)?.label
+                                ? allLocation?.data?.data?.find(
+                                    (location) => location.nameStore === value
+                                  )?.nameStore
                                 : "Select location..."}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -265,10 +253,10 @@ const Register = () => {
                               <CommandList>
                                 <CommandEmpty>No location found.</CommandEmpty>
                                 <CommandGroup>
-                                  {location.map((location) => (
+                                  {allLocation?.data?.data?.map((location) => (
                                     <CommandItem
-                                      key={location.value}
-                                      value={location.value}
+                                      key={location.nameStore}
+                                      value={location.nameStore}
                                       onSelect={(currentValue) => {
                                         setValue(currentValue === value ? "" : currentValue);
                                         setOpen(false);
@@ -276,10 +264,10 @@ const Register = () => {
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          value === location.value ? "opacity-100" : "opacity-0"
+                                          value === location.nameStore ? "opacity-100" : "opacity-0"
                                         )}
                                       />
-                                      {location.label}
+                                      {location.nameStore}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
