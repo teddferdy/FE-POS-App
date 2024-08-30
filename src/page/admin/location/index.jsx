@@ -1,13 +1,5 @@
-/* eslint-disable no-constant-binary-expression */
 import React, { useState } from "react";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useForm } from "react-hook-form";
-// import { z } from "zod";
 import {
-  //   ColumnDef,
-  //   ColumnFiltersState,
-  //   SortingState,
-  //   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -16,9 +8,9 @@ import {
   useReactTable
 } from "@tanstack/react-table";
 import { MapPinPlus } from "lucide-react";
-
+import moment from "moment";
 import { Button } from "../../../components/ui/button";
-
+import { toast } from "sonner";
 import { Input } from "../../../components/ui/input";
 import {
   Table,
@@ -28,159 +20,210 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
-import { useQuery } from "react-query";
-import { getAllLocation } from "../../../services/location";
+import { getAllLocation, deleteLocation } from "../../../services/location";
+import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
 import TemplateContainer from "../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
-
-export const columns = [
-  {
-    accessorKey: "nameStore",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Name Store
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="capitalize">{row.getValue("nameStore")}</div>
-  },
-  {
-    accessorKey: "address",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          address
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("address")}</div>
-  },
-  {
-    accessorKey: "detailLocation",
-    header: () => <div className="text-right">Detail Location</div>,
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("detailLocation")}</div>;
-    }
-  },
-  {
-    accessorKey: "phoneNumber",
-    header: () => <div className="text-right">Phone Number</div>,
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("phoneNumber")}</div>;
-    }
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Status
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("status")}</div>;
-    }
-  },
-  {
-    accessorKey: "createdBy",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Created By
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
-    }
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Created At
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("createdAt")}</div>;
-    }
-  },
-  {
-    accessorKey: "modifiedBy",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Modified By
-          {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
-    }
-  },
-  {
-    accessorKey: "updatedAt",
-    header: () => <div className="text-right">Updated At</div>,
-    cell: ({ row }) => {
-      return <div className="text-right font-medium">{row.getValue("updatedAt")}</div>;
-    }
-  },
-  {
-    accessorKey: "action",
-    header: () => <div className="text-right">Action</div>,
-    cell: ({ row }) => {
-      console.log("INI ROW", row);
-
-      return (
-        <div className="flex flex-col">
-          <Button className="h-8 w-8 p-0">
-            <span>Edit</span>
-            {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-          </Button>
-          <Button className="h-8 w-8 p-0">
-            <span>Delete</span>
-            {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-          </Button>
-        </div>
-      );
-    }
-  }
-];
+import { useLoading } from "../../../components/organism/loading";
+import { useMutation, useQuery } from "react-query";
 
 const LocationList = () => {
   const navigate = useNavigate();
+  const { setActive } = useLoading();
   const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const columns = [
+    {
+      accessorKey: "nameStore",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Name Store
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="capitalize">{row.getValue("nameStore")}</div>
+    },
+    {
+      accessorKey: "address",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            address
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="lowercase">{row.getValue("address")}</div>
+    },
+    {
+      accessorKey: "detailLocation",
+      header: () => <div className="text-right">Detail Location</div>,
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("detailLocation")}</div>;
+      }
+    },
+    {
+      accessorKey: "phoneNumber",
+      header: () => <div className="text-right">Phone Number</div>,
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("phoneNumber")}</div>;
+      }
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Status
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("status")}</div>;
+      }
+    },
+    {
+      accessorKey: "createdBy",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Created By
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+      }
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Created At
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "modifiedBy",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Modified By
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
+      }
+    },
+    {
+      accessorKey: "updatedAt",
+      header: () => <div className="text-right">Updated At</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-right">Action</div>,
+      cell: ({ row }) => {
+        console.log("INI ROW", row);
+
+        return (
+          <div className="flex flex-col gap-6">
+            <Button
+              className="h-8 w-full p-4"
+              onClick={() =>
+                navigate(`/edit-location/${row?.original?.id}`, {
+                  state: {
+                    data: row.original
+                  }
+                })
+              }>
+              <span>Edit</span>
+              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
+            </Button>
+            <DialogDeleteItem
+              actionDelete={() => {
+                const body = {
+                  id: row?.original?.id,
+                  nameStore: row.getValue("nameStore")
+                };
+                mutateDeleteLocation.mutate(body);
+              }}
+            />
+          </div>
+        );
+      }
+    }
+  ];
+
+  // QUERY
   const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
     retry: 0,
     keepPreviousData: true
   });
 
-  const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
+  const mutateDeleteLocation = useMutation(deleteLocation, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Delete Location"
+        });
+      }, 1000);
+      setTimeout(() => {
+        allLocation.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
 
   const table = useReactTable({
     data: allLocation?.data?.data || [],

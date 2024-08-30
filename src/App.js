@@ -21,7 +21,7 @@ import LocationList from "./page/admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product";
 
-// Add
+// Form
 import FormCategory from "./page/admin/category/formCategory";
 import FormLocation from "./page/admin/location/formLocation";
 
@@ -68,13 +68,23 @@ function App() {
           element={cookie.token ? <ProductList /> : <Navigate to="/" />}
         />
 
-        {/* Add / Edit Routes */}
+        {/* Add Routes */}
         <Route
           path="/add-category"
           element={cookie.token ? <FormCategory /> : <Navigate to="/" />}
         />
         <Route
           path="/add-location"
+          element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
+        />
+
+        {/* Edit */}
+        <Route
+          path="/edit-category/:id"
+          element={cookie.token ? <FormCategory /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-location/:id"
           element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
         />
       </Routes>

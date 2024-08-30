@@ -13,7 +13,7 @@ export const addCategory = async (payload) => {
 };
 
 export const editCategory = async (payload) => {
-  const { data, status } = await axiosInstance.post(
+  const { data, status } = await axiosInstance.put(
     `/category/edit-category/${payload.id}`,
     payload
   );
@@ -22,10 +22,9 @@ export const editCategory = async (payload) => {
 };
 
 export const deleteCategory = async (payload) => {
-  const { data, status } = await axiosInstance.delete(
-    `/category/delete-category/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.delete(`/category/delete-category/${payload.id}`, {
+    data: payload
+  });
   if (status !== 200) throw Error(data?.error);
   return data;
 };

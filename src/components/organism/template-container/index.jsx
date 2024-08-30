@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
 import SideBarMenu from "../sidebar/sidebar-menu";
@@ -42,7 +42,7 @@ const TemplateContainer = ({ children }) => {
   const [openMenu, setOpenMenu] = useState(false);
   const [openSheet, setOpenSheet] = useState(false);
   const [search, setSearch] = useState("");
-  const [cookie] = useCookies();
+  const [cookie] = useCookies(["user"]);
 
   // Query
   const mutateLogout = useMutation(logOut, {
@@ -76,6 +76,40 @@ const TemplateContainer = ({ children }) => {
     }
   });
 
+  // Side Bar Web
+  const SIDEBAR_WEB = useMemo(() => {
+    if (cookie?.user) {
+      console.log("cookie?.user", cookie?.user);
+      console.log("openMenu", openMenu);
+
+      return (
+        <SideBarMenu
+          classNameContainer={`${openMenu ? "block" : "hidden"}`}
+          user={cookie?.user || {}}
+        />
+      );
+    }
+  }, [cookie, openMenu]);
+
+  // Side Mobile
+  const SIDEBAR_MOBILE = useMemo(() => {
+    console.log("cookie?.user", cookie?.user);
+    if (cookie?.user) {
+      return <SideBarMenu classNameContainer="block" user={cookie?.user || {}} />;
+    }
+  }, [cookie]);
+
+  const SIDEBAR_PROFILE = useMemo(() => {
+    if (cookie?.user) {
+      return (
+        <SideBarProfile
+          navigate={navigate}
+          mutateLogout={() => mutateLogout.mutate({ id: cookie?.user?.id })}
+        />
+      );
+    }
+  }, [mutateLogout, navigate, cookie]);
+
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
       <ResizablePanel
@@ -93,7 +127,7 @@ const TemplateContainer = ({ children }) => {
         style={{
           overflow: "scroll"
         }}>
-        <SideBarMenu classNameContainer={`${openMenu ? "block" : "hidden"}`} />
+        {SIDEBAR_WEB}
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className="overflow-hidden h-screen">
@@ -106,7 +140,7 @@ const TemplateContainer = ({ children }) => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-3/6 overflow-scroll h-screen no-scrollbar">
-                <SideBarMenu classNameContainer="block" />
+                {SIDEBAR_MOBILE}
               </SheetContent>
             </Sheet>
             <input
@@ -176,10 +210,7 @@ const TemplateContainer = ({ children }) => {
                   <SheetTitle>Hello, John</SheetTitle>
                   <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
                 </SheetHeader>
-                <SideBarProfile
-                  navigate={navigate}
-                  mutateLogout={() => mutateLogout.mutate({ id: cookie?.user?.id })}
-                />
+                {SIDEBAR_PROFILE}
               </SheetContent>
             </Sheet>
           </div>

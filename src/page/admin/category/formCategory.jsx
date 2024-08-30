@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
 import { ClipboardPlus } from "lucide-react";
-import DialogButton from "../../../components/organism/dialog/DialogButton";
+import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Switch } from "../../../components/ui/switch";
 import { useLocation } from "react-router-dom";
 
@@ -26,6 +26,7 @@ const FormCategory = () => {
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const { state } = useLocation();
+
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(4, {
@@ -37,8 +38,8 @@ const FormCategory = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      status: true
+      name: state?.data?.name ?? "",
+      status: state?.data?.status ?? true
     }
   });
 
@@ -53,7 +54,7 @@ const FormCategory = () => {
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/location-list");
+        navigate("/category-list");
         setActive(null, null);
       }, 2000);
     },
@@ -70,7 +71,7 @@ const FormCategory = () => {
     }
   });
 
-  const mutateEditLocation = useMutation(editCategory, {
+  const mutateEditCategory = useMutation(editCategory, {
     onMutate: () => setActive(true, null),
     onSuccess: (success) => {
       setActive(false, "success");
@@ -80,7 +81,7 @@ const FormCategory = () => {
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/location-list");
+        navigate("/category-list");
         setActive(null, null);
       }, 2000);
     },
@@ -98,19 +99,16 @@ const FormCategory = () => {
   });
 
   const onSubmit = (values) => {
-    if (state?.id) {
+    if (state?.data?.id) {
       const body = {
-        id: 2,
-        nameStore: "Store 22",
-        address: "Alamat 22",
-        detailLocation: "Depan Pom Bensin",
-        phoneNumber: "+622212",
-        status: true,
-        createdBy: "teddy",
-        modifiedBy: "broo",
-        modifiedAt: "2024-08-17 21:50:20"
+        id: state?.data?.id,
+        name: values?.name,
+        value: values?.name?.toLowerCase(),
+        status: values?.status,
+        createdBy: state?.data?.createdBy,
+        modifiedBy: cookie.user.userName
       };
-      mutateEditLocation.mutate(body);
+      mutateEditCategory.mutate(body);
     } else {
       const body = {
         name: values.name,
@@ -175,7 +173,7 @@ const FormCategory = () => {
                 />
               </div>
               <div className="flex justify-between items-center">
-                <DialogButton
+                <DialogCancelForm
                   classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                   titleDialog="Apakah Anda Ingin Membatalkan Ini"
                   titleButtonTrigger="Cancel"
