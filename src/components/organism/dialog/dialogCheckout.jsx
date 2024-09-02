@@ -30,6 +30,7 @@ const DialogCheckout = ({ submitNewMember }) => {
   // State Show Member Using Switch
   const [hasMember, setHasMember] = useState(false);
   const [dialogMember, setDialogMember] = useState(false);
+
   const formSchema = z.object({
     userName: z.string(),
     phoneNumber: z.string()
@@ -98,7 +99,7 @@ const DialogCheckout = ({ submitNewMember }) => {
         </>
       );
     }
-  }, [hasMember]);
+  }, [hasMember, form]);
 
   return (
     <>
@@ -191,10 +192,13 @@ const DialogCheckout = ({ submitNewMember }) => {
 
       {/* Dialog Member */}
       <DialogMember
-        form={form}
-        onSubmit={onSubmit}
         dialogMember={dialogMember}
         setDialogMember={() => setDialogMember(!dialogMember)}
+        selectMember={(values) => {
+          setDialogMember(!dialogMember);
+          form.setValue("userName", values?.nameMember);
+          form.setValue("phoneNumber", values?.phoneNumber);
+        }}
       />
     </>
   );
