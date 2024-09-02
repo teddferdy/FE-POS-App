@@ -1,6 +1,9 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useQuery } from "react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Components
 import { Card, CardContent } from "../../ui/card";
@@ -13,15 +16,36 @@ import { Form, FormField, FormItem, FormLabel } from "../../ui/form";
 // Services
 import { getAllMember } from "../../../services/member";
 
-const DialogMember = ({ dialogMember, setDialogMember, form, onSubmit }) => {
-  // Query
-  const allMember = useQuery(["get-all-member"], () => getAllMember(), {
-    retry: 0,
-    keepPreviousData: true,
-    enabled: dialogMember
+const DialogMember = ({ dialogMember, setDialogMember, selectMember }) => {
+  const formSchema = z.object({
+    userName: z.string(),
+    phoneNumber: z.string()
   });
 
-  console.log("allMember =>", allMember);
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      userName: "",
+      phoneNumber: ""
+    }
+  });
+
+  // Query
+  const allMember = useQuery(
+    ["get-all-member"],
+    () =>
+      getAllMember({
+        nameMember: form.getValues("userName"),
+        phoneNumber: form.getValues("phoneNumber")
+      }),
+    {
+      retry: 0,
+      keepPreviousData: false,
+      enabled: dialogMember
+    }
+  );
+
+  const onSubmit = () => allMember.refetch();
 
   return (
     <Dialog open={dialogMember} onOpenChange={setDialogMember}>
@@ -39,7 +63,7 @@ const DialogMember = ({ dialogMember, setDialogMember, form, onSubmit }) => {
               render={({ field }) => (
                 <FormItem>
                   <div className="mb-4">
-                    <FormLabel className="text-base"> User Name </FormLabel>
+                    <FormLabel className="text-base">User Name</FormLabel>
                   </div>
                   <div className="relative">
                     <Input type="text" {...field} />
@@ -54,7 +78,7 @@ const DialogMember = ({ dialogMember, setDialogMember, form, onSubmit }) => {
               render={({ field }) => (
                 <FormItem>
                   <div className="mb-4">
-                    <FormLabel className="text-base"> Phone Number </FormLabel>
+                    <FormLabel className="text-base">Phone Number</FormLabel>
                   </div>
                   <div className="relative">
                     <Input type="text" {...field} />
@@ -76,7 +100,8 @@ const DialogMember = ({ dialogMember, setDialogMember, form, onSubmit }) => {
             return (
               <Card
                 key={index}
-                className="cursor-pointer bg-white hover:bg-[#1ACB0A] text-black hover:text-white duration-200">
+                className="cursor-pointer bg-white hover:bg-[#1ACB0A] text-black hover:text-white duration-200"
+                onClick={() => selectMember(items)}>
                 <CardContent className="flex flex-col gap-4 pt-6">
                   <div className="flex items-center justify-between">
                     <p>Nama : </p>

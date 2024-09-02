@@ -1,7 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getAllMember = async () => {
-  const { data, status } = await axiosInstance.get("/Member/get-Member");
+export const getAllMember = async ({ nameMember, phoneNumber }) => {
+  const { data, status } = await axiosInstance.get(
+    `/Member/get-Member?nameMember=${nameMember}&phoneNumber=${phoneNumber}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
