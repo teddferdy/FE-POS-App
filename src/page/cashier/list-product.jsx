@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useMutation } from "react-query";
+import { toast } from "sonner";
 import TemplateContainer from "../../components/organism/template-container";
 // Import Swiper React components
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -36,7 +38,8 @@ import "swiper/css/free-mode";
 import "swiper/css/pagination";
 // import required modules
 import { FreeMode, Pagination } from "swiper/modules";
-
+import { useLoading } from "../../components/organism/loading";
+import { addMember } from "../../services/member";
 const arr = Array(40).fill(null);
 
 const filteringBy = [
@@ -82,6 +85,7 @@ const filteringByCategory = [
 ];
 
 const Home = () => {
+  const { setActive } = useLoading();
   const [openMenu, setOpenMenu] = useState(false);
 
   // FIlter By
@@ -91,6 +95,33 @@ const Home = () => {
   // Filter Category
   const [openFilterCategory, setOpenFilterCategory] = useState(false);
   const [valueFilterCategory, setValueFilterCategory] = useState("");
+
+  // Query
+  const mutateNewMember = useMutation(addMember, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Success add new member"
+        });
+      }, 1000);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed Login", {
+          description: err.message || "Failed to add new member"
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
 
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
@@ -296,7 +327,7 @@ const Home = () => {
               <DialogCustomInvoice />
 
               <div className="flex items-center gap-10">
-                <DialogCheckout />
+                <DialogCheckout submitNewMember={(value) => mutateNewMember.mutate(value)} />
                 <Drawer>
                   <DrawerTrigger>
                     <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
@@ -436,7 +467,7 @@ const Home = () => {
               <DialogCustomInvoice />
 
               {/* Dialog Checkout  */}
-              <DialogCheckout />
+              <DialogCheckout submitNewMember={(value) => mutateNewMember.mutate(value)} />
             </div>
           </div>
         </div>
