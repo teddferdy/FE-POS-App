@@ -9,7 +9,8 @@ import {
   MapPin,
   Clipboard,
   Calculator,
-  UtensilsCrossed
+  UtensilsCrossed,
+  BookUser
 } from "lucide-react";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-card";
@@ -183,7 +184,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 onClick={() => navigate("/member-list")}>
                 <div
                   className={`w-14 h-14 p-4 ${urlNow.pathname === "/member-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
-                  <UtensilsCrossed
+                  <BookUser
                     className="w-full"
                     color={`${urlNow.pathname === "/member-list" ? "#fff" : "#000"}`}
                   />
@@ -195,7 +196,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
               <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
                 <div
                   className={`w-14 h-14 p-4 ${urlNow.pathname === "/member-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
-                  <UtensilsCrossed
+                  <BookUser
                     className="w-full"
                     color={`${urlNow.pathname === "/member-list" ? "#fff" : "#000"}`}
                   />
