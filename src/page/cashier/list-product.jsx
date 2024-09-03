@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useMutation } from "react-query";
+/* eslint-disable no-unsafe-optional-chaining */
+import React, { useMemo, useState } from "react";
+import { useQuery, useMutation } from "react-query";
 import { toast } from "sonner";
 import TemplateContainer from "../../components/organism/template-container";
 // Import Swiper React components
@@ -40,6 +41,9 @@ import "swiper/css/pagination";
 import { FreeMode, Pagination } from "swiper/modules";
 import { useLoading } from "../../components/organism/loading";
 import { addMember } from "../../services/member";
+import DialogMember from "../../components/organism/dialog/dialogMember";
+import { getAllCategory } from "../../services/category";
+
 const arr = Array(40).fill(null);
 
 const filteringBy = [
@@ -88,6 +92,13 @@ const Home = () => {
   const { setActive } = useLoading();
   const [openMenu, setOpenMenu] = useState(false);
 
+  // Dialog Member
+  const [dialogMember, setDialogMember] = useState(false);
+  const [memberState, setMemberState] = useState({
+    userName: "",
+    phoneNumber: ""
+  });
+
   // FIlter By
   const [openFilterBy, setOpenFilterBy] = useState(false);
   const [valueFilterBy, setValueFilterBy] = useState("");
@@ -97,6 +108,10 @@ const Home = () => {
   const [valueFilterCategory, setValueFilterCategory] = useState("");
 
   // Query
+  const categoryList = useQuery(["get-category"], () => getAllCategory(), {
+    keepPreviousData: false
+  });
+
   const mutateNewMember = useMutation(addMember, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
@@ -123,96 +138,43 @@ const Home = () => {
     }
   });
 
+  const CATEGORY_LIST = useMemo(() => {
+    // Get Loading
+
+    // When Success Fetch Data
+    if (categoryList.data && categoryList.isSuccess) {
+      const getData = [
+        {
+          name: "All"
+        },
+        ...categoryList?.data?.data
+      ];
+
+      return (
+        <Swiper
+          slidesPerView={getData?.length < 5 ? getData?.length : 5}
+          spaceBetween={10}
+          freeMode={true}
+          modules={[FreeMode, Pagination]}
+          className="overflow-x-auto no-scrollbar max-w-6xl pb-9 pr-[200px] hidden lg:flex">
+          {getData.map((items, index) => (
+            <SwiperSlide
+              className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white"
+              key={index}>
+              {items.name}
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      );
+    }
+  }, [categoryList]);
+
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
       <div className="flex h-screen border-t-2 border-[#ffffff10] relative">
         <div className="flex-1 overflow-hidden py-10 flex-col flex bg-gray-200 h-screen px-4">
           {/* Slider Category When Desktop Resolution */}
-          <Swiper
-            slidesPerView={6}
-            spaceBetween={20}
-            freeMode={true}
-            modules={[FreeMode, Pagination]}
-            className="overflow-x-auto gap-10 no-scrollbar max-w-6xl pb-9 pr-96 hidden lg:flex">
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-            <SwiperSlide className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white">
-              Semua
-            </SwiperSlide>
-          </Swiper>
+          {CATEGORY_LIST}
 
           {/* Filter Category When In Tablet / Mobile Resolution */}
           <div className="lg:hidden flex justify-between items-center mb-10 gap-20">
@@ -327,7 +289,12 @@ const Home = () => {
               <DialogCustomInvoice />
 
               <div className="flex items-center gap-10">
-                <DialogCheckout submitNewMember={(value) => mutateNewMember.mutate(value)} />
+                <DialogCheckout
+                  dialogMember={dialogMember}
+                  setDialogMember={() => setDialogMember(!dialogMember)}
+                  submitNewMember={(value) => mutateNewMember.mutate(value)}
+                  memberState={memberState}
+                />
                 <Drawer>
                   <DrawerTrigger>
                     <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
@@ -467,11 +434,28 @@ const Home = () => {
               <DialogCustomInvoice />
 
               {/* Dialog Checkout  */}
-              <DialogCheckout submitNewMember={(value) => mutateNewMember.mutate(value)} />
+              <DialogCheckout
+                dialogMember={dialogMember}
+                setDialogMember={() => setDialogMember(!dialogMember)}
+                submitNewMember={(value) => mutateNewMember.mutate(value)}
+                memberState={memberState}
+              />
             </div>
           </div>
         </div>
       </div>
+
+      <DialogMember
+        dialogMember={dialogMember}
+        setDialogMember={() => setDialogMember(!dialogMember)}
+        selectMember={(values) => {
+          setDialogMember(!dialogMember);
+          setMemberState({
+            userName: values?.nameMember,
+            phoneNumber: values?.phoneNumber
+          });
+        }}
+      />
     </TemplateContainer>
   );
 };

@@ -161,8 +161,6 @@ const LocationList = () => {
       accessorKey: "action",
       header: () => <div className="text-right">Action</div>,
       cell: ({ row }) => {
-        console.log("INI ROW", row);
-
         return (
           <div className="flex flex-col gap-6">
             <Button
