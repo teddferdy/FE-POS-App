@@ -3,15 +3,17 @@ import React, { useState } from "react";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
+// State
+import { orderList } from "../../../state/order-list";
+
 const ProductCard = ({ items }) => {
+  const { addingProduct } = orderList();
   const [count, setCount] = useState(0);
 
   const linkImage = generateLinkImageFromGoogleDrive(items?.image);
 
   const decrement = () =>
     setCount((prevState) => {
-      console.log("PREVSTATE =>", prevState);
-
       if (prevState < 1) {
         return (prevState = 0);
       } else {
@@ -48,7 +50,17 @@ const ProductCard = ({ items }) => {
           </button>
         </div>
       </div>
-      <button className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center justify-center bg-[#6853F0] text-white">
+      <button
+        className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center justify-center bg-[#6853F0] text-white hover:bg-[#1ACB0A] duration-200 hover:text-white"
+        onClick={() =>
+          addingProduct({
+            id: items?.id,
+            orderName: items?.nameProduct,
+            count: count,
+            totalPrice: Number(items?.price) * count,
+            img: items?.image
+          })
+        }>
         Masukan Keranjang
       </button>
     </div>
