@@ -13,21 +13,25 @@ const ProductList = ({ productList }) => {
     }
 
     if (productList.data && productList.isSuccess) {
-      return productList?.data?.data?.map((items, index) => (
-        <div
-          className={`${productList.data.data.length === index + 1 ? "mb-24 lg:mb-0" : ""}`}
-          key={index}>
-          <ProductCard items={items} />
+      return productList?.data?.data?.length > 0 ? (
+        <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
+          {productList?.data?.data?.map((items, index) => (
+            <div
+              className={`${productList?.data?.data?.length === index + 1 ? "mb-72 lg:mb-0" : ""}`}
+              key={index}>
+              <ProductCard items={items} />
+            </div>
+          ))}
         </div>
-      ));
+      ) : (
+        <div className="h-[65vh] flex justify-center items-center bg-white w-full rounded-lg">
+          <h1>Product Not Found</h1>
+        </div>
+      );
     }
   }, [productList]);
 
-  return (
-    <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
-      {LIST_PRODUCT}
-    </div>
-  );
+  return <div className="pb-20">{LIST_PRODUCT}</div>;
 };
 
 export default ProductList;
