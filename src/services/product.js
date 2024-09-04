@@ -8,7 +8,7 @@ export const getAllProduct = async ({ nameMember, category }) => {
   return data;
 };
 
-export const addMember = async (payload) => {
+export const addProduct = async (payload) => {
   const { data, status } = await axiosInstance.post("/product/add-product", payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
