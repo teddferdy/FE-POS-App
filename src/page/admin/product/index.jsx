@@ -263,7 +263,7 @@ const ProductList = () => {
         <div className="flex justify-end mb-6">
           <Button
             className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-            onClick={() => navigate("/add-location")}>
+            onClick={() => navigate("/add-product")}>
             <div className="flex items-center gap-4">
               <Utensils className="w-6 h-6" />
               <p>Add Product</p>
