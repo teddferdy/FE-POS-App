@@ -32,8 +32,6 @@ const CategoryList = ({
   setOpenFilterCategory,
   setValueFilterCategory
 }) => {
-  console.log("valueFilterCategory =>", valueFilterCategory);
-
   const CATEGORY_DESKTOP = useMemo(() => {
     if (categoryList.isLoading && categoryList.isFetching) {
       const arrLoading = Array(7).fill(null);
@@ -63,8 +61,9 @@ const CategoryList = ({
           className="overflow-x-auto no-scrollbar max-w-6xl pb-9 pr-[200px] hidden lg:flex">
           {getData.map((items, index) => (
             <SwiperSlide
-              className="rounded-full flex items-center justify-center py-6 font-bold text-[#CECECE] text-base bg-white"
-              key={index}>
+              className={`rounded-full flex items-center justify-center py-6 ${items.name === valueFilterCategory ? "bg-[#6853F0] text-white" : "text-[#CECECE] bg-white"} font-bold text-base cursor-pointer hover:bg-[#1ACB0A] duration-200 hover:text-white`}
+              key={index}
+              onClick={() => setValueFilterCategory(items?.name)}>
               {items.name}
             </SwiperSlide>
           ))}
@@ -113,8 +112,6 @@ const CategoryList = ({
                       key={filteringByCategory.name}
                       value={filteringByCategory.name}
                       onSelect={(currentValue) => {
-                        console.log("CURRENT VALUE =>", currentValue);
-
                         setValueFilterCategory(
                           currentValue === valueFilterCategory ? "" : currentValue
                         );

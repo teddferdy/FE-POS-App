@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
 const ProductCard = ({ items }) => {
   const [count, setCount] = useState(0);
@@ -27,7 +28,9 @@ const ProductCard = ({ items }) => {
       <div className="flex flex-col gap-1">
         <p className="text-[#737373] font-bold text-base">{items?.nameProduct || "-"}</p>
         <p className="text-[#737373] text-sm w-4/5">{items?.description || "-"}</p>
-        <p className="text-[#737373] font-bold text-base">{items?.price || "-"}</p>
+        <p className="text-[#737373] font-bold text-base">
+          {formatCurrencyRupiah(items?.price) || "-"}
+        </p>
       </div>
       <div className="flex flex-col gap-1">
         <p className="text-[#CECECE] text-sm">Masukan Jumlah :</p>

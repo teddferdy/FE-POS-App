@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import SkeletonOrderList from "../skeleton/skeleton-order-list";
+import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
 const arr = Array(40).fill(null);
 const OrderList = ({ productList, order, decrementOrder, incrementOrder, setOpenModalDelete }) => {
@@ -19,7 +20,7 @@ const OrderList = ({ productList, order, decrementOrder, incrementOrder, setOpen
             key={index}>
             <p>{index + 1}.</p>
             <div className="flex gap-4 flex-1 items-center">
-              <div className="w-30 h-20">
+              <div className="w-20 h-20">
                 <img
                   src={`${linkName}`}
                   alt={items?.orderName}
@@ -28,7 +29,9 @@ const OrderList = ({ productList, order, decrementOrder, incrementOrder, setOpen
               </div>
               <div className="flex flex-col gap-4">
                 <p className="text-[#737373] font-semibold text-base">{items?.orderName}</p>
-                <p className="text-[#6853F0] font-semibold text-base">{items?.totalPrice}</p>
+                <p className="text-[#6853F0] font-semibold text-base">
+                  {formatCurrencyRupiah(items?.totalPrice)}
+                </p>
               </div>
             </div>
             <div className="flex flex-col gap-1 justify-center items-center">
