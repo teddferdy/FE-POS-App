@@ -54,7 +54,7 @@ const ProductCard = ({ items }) => {
         className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center justify-center bg-[#6853F0] text-white hover:bg-[#1ACB0A] duration-200 hover:text-white"
         onClick={() =>
           addingProduct({
-            id: items?.id,
+            id: Math.random().toString(),
             orderName: items?.nameProduct,
             count: count,
             totalPrice: Number(items?.price) * count,

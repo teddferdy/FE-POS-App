@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { MapPinPlus, Check, ChevronsUpDown } from "lucide-react";
+import { ClipboardType, Check, ChevronsUpDown } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 
 // Component
-import { Textarea } from "../../../components/ui/textarea";
 import { cn } from "../../../lib/utils";
 import { useLoading } from "../../../components/organism/loading";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
@@ -18,7 +17,6 @@ import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
 import TemplateContainer from "../../../components/organism/template-container";
 import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../components/ui/popover";
 import {
   Command,
@@ -32,15 +30,16 @@ import { Switch } from "../../../components/ui/switch";
 import { Separator } from "../../../components/ui/separator";
 
 // Services
-import { addProduct } from "../../../services/product";
+import { addSubCategory } from "../../../services/sub-category";
 import { getAllCategory } from "../../../services/category";
 
 const userInfoSchema = z.object({
-  titleOption: z.string(),
-  typeOption: z.string()
+  name: z.string(),
+  price: z.string(),
+  isFree: z.boolean()
 });
 
-const FormProduct = () => {
+const FormSubCategory = () => {
   const { state } = useLocation();
   const [cookie] = useCookies();
   const { setActive } = useLoading();
@@ -49,40 +48,31 @@ const FormProduct = () => {
   const [open, setOpen] = useState(false);
 
   const formSchema = z.object({
-    image: z.string().min(4, {
-      message: "Image Store must be at least 4 characters."
-    }),
-    nameProduct: z.string().min(4, {
+    nameSubCategory: z.string().min(4, {
       message: "Name Product Store must be at least 4 characters."
     }),
-    category: z.string().min(4, {
+    parentCategory: z.string().min(4, {
       message: "Name Product Store must be at least 4 characters."
-    }),
-    description: z.string().min(4, {
-      message: "Description Store must be at least 4 characters."
-    }),
-    price: z.string().min(2, {
-      message: "Price Product must be at least 2 characters."
     }),
     option: z.boolean(),
-    optionProduct: z.array(userInfoSchema)
+    isMultiple: z.boolean(),
+    typeSubCategory: z.array(userInfoSchema)
   });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      image: "",
-      nameProduct: "",
-      category: "",
-      description: "",
-      option: state?.data?.option ?? false,
-      optionProduct: []
+      nameSubCategory: "",
+      parentCategory: "",
+      isMultiple: false,
+      option: state?.data?.option ?? true,
+      typeSubCategory: [{ name: "", price: "", isFree: false }]
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
-    name: "optionProduct",
+  const { fields, append, remove, update } = useFieldArray({
+    name: "typeSubCategory",
     control: form.control
   });
 
@@ -91,13 +81,13 @@ const FormProduct = () => {
     keepPreviousData: false
   });
 
-  const mutateAddProduct = useMutation(addProduct, {
+  const mutateAddSubCategory = useMutation(addSubCategory, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Added New Product"
+          description: "Successfull, Added New Sub Category"
         });
       }, 1000);
       setTimeout(() => {
@@ -108,7 +98,7 @@ const FormProduct = () => {
     onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Failed Add New Product", {
+        toast.error("Failed Add New Sub Category", {
           description: err.message
         });
       }, 1500);
@@ -134,64 +124,119 @@ const FormProduct = () => {
       //   mutateEditLocation.mutate(body);
     } else {
       const body = {
-        nameProduct: values?.nameProduct,
-        image: values?.image,
-        category: values?.category,
-        description: values?.description,
-        price: values?.price,
-        isOption: values.option,
-        optionProduct: values.optionProduct,
+        parentCategory: values?.parentCategory,
+        nameSubCategory: values?.nameSubCategory,
+        typeSubCategory:
+          values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
+        isMultiple: values?.isMultiple,
         createdBy: cookie?.user?.userName
       };
+      console.log("BODY =>", body);
 
-      mutateAddProduct.mutate(body);
+      mutateAddSubCategory.mutate(body);
     }
   };
 
   // const handleDelete = (numb) => {
   //   console.log("NUMB =>", numb);
 
-  //   const deleteByNumber = optionProduct.filter((_, index) => index !== numb);
+  //   const deleteByNumber = typeSubCategory.filter((_, index) => index !== numb);
   //   console.log("DELETE BY NUMBER", deleteByNumber);
-  //   setOptionProduct(deleteByNumber);
+  //   settypeSubCategory(deleteByNumber);
   // };
+
+  const handlePrimaryFloorChange = (val, idx) => {
+    form.getValues("typeSubCategory").map((items, index) => {
+      console.log("ITEMS =>", items);
+      if (index === idx) {
+        return {
+          ...items,
+          price: val ? "0" : items.price,
+          isFree: val
+        };
+      }
+      return { ...items };
+      // { [`typeSubCategory[${index}].isFree`]: val }
+    });
+
+    const datas = form.getValues("typeSubCategory").map((items, index) => {
+      console.log("ITEMS =>", items);
+      if (index === idx) {
+        return {
+          ...items,
+          price: val ? "0" : items.price,
+          isFree: val
+        };
+      }
+      return { ...items };
+      // { [`typeSubCategory[${index}].isFree`]: val }
+    });
+
+    console.log("DATAS BROOO =>", datas);
+
+    form.setValue("typeSubCategory", datas);
+  };
 
   const ADDING_OPTION = useMemo(() => {
     if (form.getValues("option")) {
       return (
         <div className="col-span-2">
           {fields?.map((items, index) => {
-            console.log("WKWKKWKW", items);
-
             const numb = index + 1;
             return (
               <div key={index}>
                 <Separator />
-                <div key={index} className="flex py-6 gap-6">
+                <div key={index} className="flex py-6 items-start gap-6 justify-between">
                   <div className="flex-1">
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Name Option {numb}</FormLabel>
+                        <FormLabel className="text-base">Option {numb}</FormLabel>
                       </div>
                       <Input
                         type="text"
-                        {...form.register(`optionProduct.${index}.titleOption`)}
+                        {...form.register(`typeSubCategory.${index}.name`)}
                         defaultValue={items.titleOption}
                       />
                     </FormItem>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 flex-col">
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Type Option {numb}</FormLabel>
+                        <FormLabel className="text-base">Option Price {numb}</FormLabel>
                       </div>
-                      <Textarea
-                        {...form.register(`optionProduct.${index}.typeOption`)}
-                        defaultValue={items.typeOption}
+                      <Input
+                        type="text"
+                        disabled={items.isFree}
+                        {...form.register(`typeSubCategory.${index}.price`)}
+                        defaultValue={items.price}
                       />
                     </FormItem>
+                    <div className="flex justify-between mt-6">
+                      <FormLabel className="text-base">Is Free</FormLabel>
+                      <div className="flex items-center gap-6">
+                        <p>No</p>
+                        <Switch
+                          name="isFree"
+                          checked={items.isFree}
+                          onCheckedChange={(e) => handlePrimaryFloorChange(e, index)}
+                        />
+                        <p>Yes</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-[0.5]" onClick={() => remove(index)}>
+                  <div
+                    className="flex justify-end self-center -mt-2"
+                    onClick={() => {
+                      console.log("fields", fields);
+                      console.log("fields.length", fields.length);
+
+                      if (fields?.length === 1) {
+                        form.setValue("option", false);
+                        form.setValue("typeSubCategory", []);
+                      } else {
+                        remove(index);
+                      }
+                    }}>
                     <Button>Delete</Button>
                   </div>
                 </div>
@@ -204,52 +249,24 @@ const FormProduct = () => {
     } else {
       return null;
     }
-  }, [form.getValues("option"), fields, remove]);
+  }, [form.getValues("option"), form, fields, remove, update]);
 
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
       <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 h-full">
         <section>
           <div className="flex items-center gap-4">
-            <MapPinPlus className="w-6 h-6" />
-            <p>Add Product</p>
+            <ClipboardType className="w-6 h-6" />
+            <p>Add Sub Category</p>
           </div>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-24 mx-auto lg:w-3/6 w-3/4">
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => {
-                    const linkName = generateLinkImageFromGoogleDrive(field.value);
-                    return (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Image Product</FormLabel>
-                        </div>
-                        <div className="flex justify-between gap-10">
-                          <Input type="text" {...field} className="flex-1" />
-                          {linkName && (
-                            <div className="flex-1 w-48 h-48">
-                              <img
-                                src={`${linkName}`}
-                                alt={linkName}
-                                className="w-full object-cover"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
               <div className="col-span-2 lg:col-span-1">
                 <FormField
                   control={form.control}
-                  name="nameProduct"
+                  name="nameSubCategory"
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
@@ -263,12 +280,12 @@ const FormProduct = () => {
               <div className="col-span-2 lg:col-span-1">
                 <FormField
                   control={form.control}
-                  name="category"
+                  name="parentCategory"
                   render={({ field }) => {
                     return (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">Category</FormLabel>
+                          <FormLabel className="text-base">Parent Category</FormLabel>
                         </div>
                         <div>
                           <Popover open={open} onOpenChange={setOpen}>
@@ -320,34 +337,6 @@ const FormProduct = () => {
                   }}
                 />
               </div>
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Description</FormLabel>
-                      </div>
-                      <Textarea {...field} />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-1">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Price Product</FormLabel>
-                      </div>
-                      <Input type="text" {...field} />
-                    </FormItem>
-                  )}
-                />
-              </div>
               <div className="col-span-1">
                 <FormField
                   control={form.control}
@@ -365,11 +354,39 @@ const FormProduct = () => {
                           checked={field.value}
                           onCheckedChange={(e) => {
                             field.onChange(e);
-                            append({
-                              titleOption: "",
-                              typeOption: ""
-                            });
+                            if (e) {
+                              append({
+                                name: "",
+                                price: "",
+                                isFree: false
+                              });
+                            } else {
+                              form.setValue("typeSubCategory", []);
+                            }
                           }}
+                        />
+                        <p>Yes</p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-1">
+                <FormField
+                  control={form.control}
+                  name="isMultiple"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Is Multiple</FormLabel>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <p>No</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                         />
                         <p>Yes</p>
                       </div>
@@ -383,13 +400,14 @@ const FormProduct = () => {
 
               {/* Button Adding Option */}
               {form.getValues("option") && (
-                <div className="col-span-2 flex justify-center">
+                <div className="col-span-2 flex justify-center cursor-pointer">
                   <div
                     className="col-span-2"
                     onClick={() =>
                       append({
-                        titleOption: "",
-                        typeOption: ""
+                        name: "",
+                        price: "",
+                        isFree: false
                       })
                     }>
                     Add Option
@@ -407,7 +425,7 @@ const FormProduct = () => {
                   <Button
                     className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                     type="submit">
-                    Add Product
+                    Add Sub Category
                   </Button>
                 </div>
               </div>
@@ -419,4 +437,4 @@ const FormProduct = () => {
   );
 };
 
-export default FormProduct;
+export default FormSubCategory;
