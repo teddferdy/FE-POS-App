@@ -15,6 +15,7 @@ import ListProduct from "./page/cashier/list-product"; // List Product Cashier
 import MemberCashier from "./page/cashier/member-cashier";
 
 // Admin
+import SubCategoryList from "./page/admin/sub-category";
 import OverviewPage from "./page/admin/overview";
 import CategoryList from "./page/admin/category";
 import LocationList from "./page/admin/location";
@@ -25,6 +26,7 @@ import ProductList from "./page/admin/product";
 import FormCategory from "./page/admin/category/formCategory";
 import FormLocation from "./page/admin/location/formLocation";
 import FormProduct from "./page/admin/product/formProduct";
+import FormSubCategory from "./page/admin/sub-category/form-subcategory";
 
 function App() {
   const { i18n } = useTranslation();
@@ -68,6 +70,10 @@ function App() {
           path="/product-list"
           element={cookie.token ? <ProductList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/sub-category-list"
+          element={cookie.token ? <SubCategoryList /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route
@@ -79,6 +85,10 @@ function App() {
           element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
         />
         <Route path="/add-product" element={cookie.token ? <FormProduct /> : <Navigate to="/" />} />
+        <Route
+          path="/add-sub-category"
+          element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
+        />
 
         {/* Edit */}
         <Route
@@ -92,6 +102,10 @@ function App() {
         <Route
           path="/edit-product/:id"
           element={cookie.token ? <FormProduct /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-sub-category/:id"
+          element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>

@@ -9,7 +9,13 @@ const ProductList = ({ productList }) => {
   // USE MEMO SECTION
   const LIST_PRODUCT = useMemo(() => {
     if (productList.isLoading && productList.isFetching) {
-      return arr.map((_, index) => <SkeletonProduct key={index} />);
+      return (
+        <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar">
+          {arr.map((_, index) => (
+            <SkeletonProduct key={index} />
+          ))}
+        </div>
+      );
     }
 
     if (productList.data && productList.isSuccess) {

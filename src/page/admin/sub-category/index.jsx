@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { Utensils } from "lucide-react";
+import { ClipboardType } from "lucide-react";
 import moment from "moment";
 import { Button } from "../../../components/ui/button";
 // import { toast } from "sonner";
@@ -22,7 +22,7 @@ import {
   TableRow
 } from "../../../components/ui/table";
 // import { getAllLocation, deleteLocation } from "../../../services/location";
-import { getAllProduct } from "../../../services/product";
+import { getAllSubCategory } from "../../../services/sub-category";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
 import TemplateContainer from "../../../components/organism/template-container";
@@ -32,9 +32,8 @@ import {
   // useMutation,
   useQuery
 } from "react-query";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
-const ProductList = () => {
+const SubCategoryList = () => {
   const navigate = useNavigate();
   // const { setActive } = useLoading();
   const [sorting, setSorting] = useState([]);
@@ -44,7 +43,7 @@ const ProductList = () => {
 
   const columns = [
     {
-      accessorKey: "nameProduct",
+      accessorKey: "nameSubCategory",
       header: ({ column }) => {
         return (
           <Button
@@ -55,70 +54,37 @@ const ProductList = () => {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameProduct")}</div>
+      cell: ({ row }) => <div className="capitalize">{row.getValue("nameSubCategory")}</div>
     },
     {
-      accessorKey: "category",
+      accessorKey: "typeSubCategory",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Category
+            typeSubCategory
             {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
           </Button>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("category")}</div>
+      cell: ({ row }) => <div className="lowercase">{row.getValue("typeSubCategory")}</div>
     },
     {
-      accessorKey: "description",
-      header: () => <div className="text-right">Description</div>,
+      accessorKey: "isMultiple",
+      header: () => <div className="text-right">isMultiple</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("description")}</div>;
-      }
-    },
-    {
-      accessorKey: "price",
-      header: () => <div className="text-right">Price</div>,
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("price")}</div>;
-      }
-    },
-    {
-      accessorKey: "image",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Image
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
-
-        return <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />;
+        return <div className="text-right font-medium">{row.getValue("isMultiple")}</div>;
       }
     },
     {
       accessorKey: "createdBy",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
+      header: () => <div className="text-right">createdBy</div>,
       cell: ({ row }) => {
         return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
       }
     },
+
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
@@ -139,22 +105,7 @@ const ProductList = () => {
         );
       }
     },
-    {
-      accessorKey: "modifiedBy",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Modified By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
-      }
-    },
+
     {
       accessorKey: "updatedAt",
       header: () => <div className="text-right">Updated At</div>,
@@ -200,16 +151,10 @@ const ProductList = () => {
   ];
 
   // QUERY
-  const allProduct = useQuery(
-    ["get-all-product"],
-    () => getAllProduct({ category: "", nameProduct: "" }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  console.log("allProduct =>", allProduct);
+  const allSubCategory = useQuery(["get-all-sub-caytegory"], () => getAllSubCategory(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
   // const mutateDeleteLocation = useMutation(deleteLocation, {
   //   onMutate: () => setActive(true, null),
@@ -239,7 +184,7 @@ const ProductList = () => {
   // });
 
   const table = useReactTable({
-    data: allProduct?.data?.data || [],
+    data: allSubCategory?.data?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -263,10 +208,10 @@ const ProductList = () => {
         <div className="flex justify-end mb-6">
           <Button
             className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-            onClick={() => navigate("/add-product")}>
+            onClick={() => navigate("/add-sub-category")}>
             <div className="flex items-center gap-4">
-              <Utensils className="w-6 h-6" />
-              <p>Add Product</p>
+              <ClipboardType className="w-6 h-6" />
+              <p>Add Sub Category</p>
             </div>
           </Button>
         </div>
@@ -276,9 +221,9 @@ const ProductList = () => {
           <div className="flex items-center py-4">
             <Input
               placeholder="Filter..."
-              value={table.getColumn("nameProduct")?.getFilterValue() ?? ""}
+              value={table.getColumn("nameSubCategory")?.getFilterValue() ?? ""}
               onChange={(event) =>
-                table.getColumn("nameProduct")?.setFilterValue(event.target.value)
+                table.getColumn("nameSubCategory")?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
@@ -349,4 +294,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default SubCategoryList;
