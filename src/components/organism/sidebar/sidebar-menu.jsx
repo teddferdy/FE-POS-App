@@ -11,7 +11,8 @@ import {
   Calculator,
   UtensilsCrossed,
   BookUser,
-  ClipboardType
+  ClipboardType,
+  Percent
 } from "lucide-react";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-card";
@@ -173,6 +174,36 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                   />
                 </div>
                 <p>Sub Category List</p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+
+          {/* Discount */}
+          <HoverCard>
+            <HoverCardTrigger>
+              <div
+                className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+                onClick={() => navigate("/discount-list")}>
+                <div
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/discount-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  <Percent
+                    className="w-full"
+                    color={`${urlNow.pathname === "/discount-list" ? "#fff" : "#000"}`}
+                  />
+                </div>
+                <p className={classNameContainer}>Discount</p>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent>
+              <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+                <div
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/discount-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  <Percent
+                    className="w-full"
+                    color={`${urlNow.pathname === "/discount-list" ? "#fff" : "#000"}`}
+                  />
+                </div>
+                <p>Discount</p>
               </div>
             </HoverCardContent>
           </HoverCard>

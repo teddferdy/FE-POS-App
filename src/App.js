@@ -21,12 +21,14 @@ import CategoryList from "./page/admin/category";
 import LocationList from "./page/admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product";
+import DiscountList from "./page/admin/discount";
 
 // Form
 import FormCategory from "./page/admin/category/formCategory";
 import FormLocation from "./page/admin/location/formLocation";
 import FormProduct from "./page/admin/product/formProduct";
 import FormSubCategory from "./page/admin/sub-category/form-subcategory";
+import FormDiscount from "./page/admin/discount/formDiscount";
 
 function App() {
   const { i18n } = useTranslation();
@@ -74,6 +76,10 @@ function App() {
           path="/sub-category-list"
           element={cookie.token ? <SubCategoryList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/discount-list"
+          element={cookie.token ? <DiscountList /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route
@@ -88,6 +94,10 @@ function App() {
         <Route
           path="/add-sub-category"
           element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/add-discount"
+          element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
         />
 
         {/* Edit */}
@@ -106,6 +116,10 @@ function App() {
         <Route
           path="/edit-sub-category/:id"
           element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-discount/:id"
+          element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
