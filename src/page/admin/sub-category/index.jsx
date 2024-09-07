@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
-// import { getAllLocation, deleteLocation } from "../../../services/location";
+import DialogTypeSubCategory from "../../../components/organism/dialog/dialog-type-sub-category";
 import { getAllSubCategory } from "../../../services/sub-category";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
@@ -42,6 +42,20 @@ const SubCategoryList = () => {
   const [rowSelection, setRowSelection] = useState({});
 
   const columns = [
+    {
+      accessorKey: "parentCategory",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Name Product
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="capitalize">{row.getValue("parentCategory")}</div>
+    },
     {
       accessorKey: "nameSubCategory",
       header: ({ column }) => {
@@ -68,7 +82,7 @@ const SubCategoryList = () => {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("typeSubCategory")}</div>
+      cell: ({ row }) => <DialogTypeSubCategory data={row} />
     },
     {
       accessorKey: "isMultiple",
@@ -221,9 +235,9 @@ const SubCategoryList = () => {
           <div className="flex items-center py-4">
             <Input
               placeholder="Filter..."
-              value={table.getColumn("nameSubCategory")?.getFilterValue() ?? ""}
+              value={table.getColumn("parentCategory")?.getFilterValue() ?? ""}
               onChange={(event) =>
-                table.getColumn("nameSubCategory")?.setFilterValue(event.target.value)
+                table.getColumn("parentCategory")?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
