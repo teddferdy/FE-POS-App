@@ -11,7 +11,7 @@ import {
 import { ClipboardType } from "lucide-react";
 import moment from "moment";
 import { Button } from "../../../components/ui/button";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { Input } from "../../../components/ui/input";
 import {
   Table,
@@ -27,15 +27,14 @@ import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteIt
 
 import TemplateContainer from "../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
-// import { useLoading } from "../../../components/organism/loading";
-import {
-  // useMutation,
-  useQuery
-} from "react-query";
+import { useLoading } from "../../../components/organism/loading";
+import { useMutation, useQuery } from "react-query";
+
+import { deleteSubCategory } from "../../../services/sub-category";
 
 const SubCategoryList = () => {
   const navigate = useNavigate();
-  // const { setActive } = useLoading();
+  const { setActive } = useLoading();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -140,7 +139,7 @@ const SubCategoryList = () => {
             <Button
               className="h-8 w-full p-4"
               onClick={() =>
-                navigate(`/edit-location/${row?.original?.id}`, {
+                navigate(`/edit-sub-category/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
@@ -151,11 +150,10 @@ const SubCategoryList = () => {
             </Button>
             <DialogDeleteItem
               actionDelete={() => {
-                // const body = {
-                //   id: row?.original?.id,
-                //   nameProduct: row.getValue("nameProduct")
-                // };
-                // mutateDeleteLocation.mutate(body);
+                const body = {
+                  id: row?.original?.id
+                };
+                mutateDeleteSubCategory.mutate(body);
               }}
             />
           </div>
@@ -170,32 +168,32 @@ const SubCategoryList = () => {
     keepPreviousData: true
   });
 
-  // const mutateDeleteLocation = useMutation(deleteLocation, {
-  //   onMutate: () => setActive(true, null),
-  //   onSuccess: () => {
-  //     setActive(false, "success");
-  //     setTimeout(() => {
-  //       toast.success("Success", {
-  //         description: "Successfull, Delete Location"
-  //       });
-  //     }, 1000);
-  //     setTimeout(() => {
-  //       allLocation.refetch();
-  //       setActive(null, null);
-  //     }, 2000);
-  //   },
-  //   onError: (err) => {
-  //     setActive(false, "error");
-  //     setTimeout(() => {
-  //       toast.error("Failed", {
-  //         description: err.message
-  //       });
-  //     }, 1500);
-  //     setTimeout(() => {
-  //       setActive(null, null);
-  //     }, 2000);
-  //   }
-  // });
+  const mutateDeleteSubCategory = useMutation(deleteSubCategory, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Delete Sub Category"
+        });
+      }, 1000);
+      setTimeout(() => {
+        allLocation.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
 
   const table = useReactTable({
     data: allSubCategory?.data?.data || [],
