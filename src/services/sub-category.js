@@ -12,19 +12,22 @@ export const addSubCategory = async (payload) => {
   return data;
 };
 
-// export const editSubCategory = async (payload) => {
-//   const { data, status } = await axiosInstance.put(
-//     `/category/edit-category/${payload.id}`,
-//     payload
-//   );
-//   if (status !== 200) throw Error(`${data.message || data?.error}`);
-//   return data;
-// };
+export const editSubCategory = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/sub-category/edit-subcategory/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  return data;
+};
 
-// export const deleteSubCategory = async (payload) => {
-//   const { data, status } = await axiosInstance.delete(`/category/delete-category/${payload.id}`, {
-//     data: payload
-//   });
-//   if (status !== 200) throw Error(data?.error);
-//   return data;
-// };
+export const deleteSubCategory = async (payload) => {
+  const { data, status } = await axiosInstance.delete(
+    `/sub-category/delete-subcategory/${payload.id}`,
+    {
+      data: payload
+    }
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};

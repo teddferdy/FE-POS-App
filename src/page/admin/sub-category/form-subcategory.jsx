@@ -30,7 +30,7 @@ import { Switch } from "../../../components/ui/switch";
 import { Separator } from "../../../components/ui/separator";
 
 // Services
-import { addSubCategory } from "../../../services/sub-category";
+import { addSubCategory, editSubCategory } from "../../../services/sub-category";
 import { getAllCategory } from "../../../services/category";
 
 const userInfoSchema = z.object({
@@ -63,11 +63,11 @@ const FormSubCategory = () => {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      nameSubCategory: "",
-      parentCategory: "",
-      isMultiple: false,
+      nameSubCategory: state?.data?.nameSubCategory || "",
+      parentCategory: state?.data?.parentCategory || "",
+      isMultiple: state?.data?.isMultiple ?? false,
       option: state?.data?.option ?? true,
-      typeSubCategory: [{ name: "", price: "", isFree: false }]
+      typeSubCategory: state?.data?.typeSubCategory || [{ name: "", price: "", isFree: false }]
     }
   });
 
@@ -107,21 +107,49 @@ const FormSubCategory = () => {
       }, 2000);
     }
   });
+
+  const mutateEditSubCategory = useMutation(editSubCategory, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Edit Sub Category"
+        });
+      }, 1000);
+      setTimeout(() => {
+        navigate("/sub-category-list");
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
   const onSubmit = (values) => {
     console.log("values =>", values);
 
     if (state?.data?.id) {
-      //   const body = {
-      //     id: state?.data?.id,
-      //     nameStore: values?.nameStore,
-      //     address: values?.address,
-      //     detailLocation: values?.detailLocation,
-      //     phoneNumber: values?.phoneNumber,
-      //     status: true,
-      //     createdBy: state?.data?.createdBy,
-      //     modifiedBy: cookie.user.userName
-      //   };
-      //   mutateEditLocation.mutate(body);
+      const body = {
+        id: state?.data?.id,
+        parentCategory: values?.parentCategory,
+        nameSubCategory: values?.nameSubCategory,
+        typeSubCategory:
+          values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
+        isMultiple: values?.isMultiple,
+        createdBy: state?.data?.userName,
+        modifiedBy: cookie.user.userName
+      };
+      mutateEditSubCategory.mutate(body);
     } else {
       const body = {
         parentCategory: values?.parentCategory,
@@ -131,23 +159,13 @@ const FormSubCategory = () => {
         isMultiple: values?.isMultiple,
         createdBy: cookie?.user?.userName
       };
-      console.log("BODY =>", body);
 
       mutateAddSubCategory.mutate(body);
     }
   };
 
-  // const handleDelete = (numb) => {
-  //   console.log("NUMB =>", numb);
-
-  //   const deleteByNumber = typeSubCategory.filter((_, index) => index !== numb);
-  //   console.log("DELETE BY NUMBER", deleteByNumber);
-  //   settypeSubCategory(deleteByNumber);
-  // };
-
   const handlePrimaryFloorChange = (val, idx) => {
     form.getValues("typeSubCategory").map((items, index) => {
-      console.log("ITEMS =>", items);
       if (index === idx) {
         return {
           ...items,
@@ -156,11 +174,9 @@ const FormSubCategory = () => {
         };
       }
       return { ...items };
-      // { [`typeSubCategory[${index}].isFree`]: val }
     });
 
     const datas = form.getValues("typeSubCategory").map((items, index) => {
-      console.log("ITEMS =>", items);
       if (index === idx) {
         return {
           ...items,
@@ -169,11 +185,7 @@ const FormSubCategory = () => {
         };
       }
       return { ...items };
-      // { [`typeSubCategory[${index}].isFree`]: val }
     });
-
-    console.log("DATAS BROOO =>", datas);
-
     form.setValue("typeSubCategory", datas);
   };
 
@@ -207,6 +219,9 @@ const FormSubCategory = () => {
                       <Input
                         type="text"
                         disabled={items.isFree}
+                        value={
+                          items.isFree ? "0" : form.getValues(`typeSubCategory.${index}.price`)
+                        }
                         {...form.register(`typeSubCategory.${index}.price`)}
                         defaultValue={items.price}
                       />
