@@ -22,6 +22,7 @@ import LocationList from "./page/admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product";
 import DiscountList from "./page/admin/discount";
+import ShiftList from "./page/admin/shift";
 
 // Form
 import FormCategory from "./page/admin/category/formCategory";
@@ -29,6 +30,7 @@ import FormLocation from "./page/admin/location/formLocation";
 import FormProduct from "./page/admin/product/formProduct";
 import FormSubCategory from "./page/admin/sub-category/form-subcategory";
 import FormDiscount from "./page/admin/discount/formDiscount";
+import FormShift from "./page/admin/shift/formShift";
 
 function App() {
   const { i18n } = useTranslation();
@@ -80,6 +82,7 @@ function App() {
           path="/discount-list"
           element={cookie.token ? <DiscountList /> : <Navigate to="/" />}
         />
+        <Route path="/shift-list" element={cookie.token ? <ShiftList /> : <Navigate to="/" />} />
 
         {/* Add Routes */}
         <Route
@@ -99,6 +102,7 @@ function App() {
           path="/add-discount"
           element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
         />
+        <Route path="/add-shift" element={cookie.token ? <FormShift /> : <Navigate to="/" />} />
 
         {/* Edit */}
         <Route
@@ -120,6 +124,10 @@ function App() {
         <Route
           path="/edit-discount/:id"
           element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-shift/:id"
+          element={cookie.token ? <FormShift /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
