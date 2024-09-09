@@ -167,7 +167,7 @@ const ShiftList = () => {
             <Button
               className="h-8 w-full p-4"
               onClick={() =>
-                navigate(`/edit-location/${row?.original?.id}`, {
+                navigate(`/edit-shift/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
