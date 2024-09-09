@@ -12,7 +12,8 @@ import {
   UtensilsCrossed,
   BookUser,
   ClipboardType,
-  Percent
+  Percent,
+  AlarmClock
 } from "lucide-react";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../ui/hover-card";
@@ -204,6 +205,36 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                   />
                 </div>
                 <p>Discount</p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+
+          {/* Shift */}
+          <HoverCard>
+            <HoverCardTrigger>
+              <div
+                className="flex items-center w-full overflow-visible gap-6 cursor-pointer"
+                onClick={() => navigate("/shift-list")}>
+                <div
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/shift-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  <AlarmClock
+                    className="w-full"
+                    color={`${urlNow.pathname === "/shift-list" ? "#fff" : "#000"}`}
+                  />
+                </div>
+                <p className={classNameContainer}>Shift</p>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent>
+              <div className="flex items-center w-full overflow-visible gap-6 cursor-pointer">
+                <div
+                  className={`w-14 h-14 p-4 ${urlNow.pathname === "/shift-list" ? "bg-[#6853F0]" : "bg-[#D9D9D9]"} rounded-full`}>
+                  <AlarmClock
+                    className="w-full"
+                    color={`${urlNow.pathname === "/shift-list" ? "#fff" : "#000"}`}
+                  />
+                </div>
+                <p>Shift</p>
               </div>
             </HoverCardContent>
           </HoverCard>
