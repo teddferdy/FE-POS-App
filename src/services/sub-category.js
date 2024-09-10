@@ -6,6 +6,14 @@ export const getAllSubCategory = async () => {
   return data;
 };
 
+export const getSubCategoryByCategory = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/sub-category/get-subcategory-by-category?parentCategory=${payload}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addSubCategory = async (payload) => {
   const { data, status } = await axiosInstance.post("/sub-category/add-subcategory", payload);
   if (status !== 200) throw Error(`${data.message}`);

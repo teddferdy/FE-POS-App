@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { MapPinPlus, Check, ChevronsUpDown } from "lucide-react";
 import { useCookies } from "react-cookie";
@@ -28,16 +28,17 @@ import {
   CommandItem,
   CommandList
 } from "../../../components/ui/command";
-import { Switch } from "../../../components/ui/switch";
-import { Separator } from "../../../components/ui/separator";
+import DrawerSelectSubCategory from "../../../components/organism/drawer/drawer-select-sub-category";
 
 // Services
 import { addProduct } from "../../../services/product";
 import { getAllCategory } from "../../../services/category";
+import { getSubCategoryByCategory } from "../../../services/sub-category";
 
 const userInfoSchema = z.object({
-  titleOption: z.string(),
-  typeOption: z.string()
+  nameSubCategory: z.string(),
+  parentCategory: z.string(),
+  typeSubCategory: z.string()
 });
 
 const FormProduct = () => {
@@ -65,7 +66,7 @@ const FormProduct = () => {
       message: "Price Product must be at least 2 characters."
     }),
     option: z.boolean(),
-    optionProduct: z.array(userInfoSchema)
+    subCategory: z.array(userInfoSchema)
   });
 
   const form = useForm({
@@ -77,19 +78,25 @@ const FormProduct = () => {
       category: "",
       description: "",
       option: state?.data?.option ?? false,
-      optionProduct: []
+      subCategory: []
     }
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    name: "optionProduct",
-    control: form.control
   });
 
   // QUERY
   const allCategory = useQuery(["get-all-category"], () => getAllCategory(), {
     keepPreviousData: false
   });
+
+  const allSubCategory = useQuery(
+    ["get-all-sub-category", form.getValues("category")],
+    () => getSubCategoryByCategory(form.getValues("category")),
+    {
+      enabled: !!form.getValues("category"),
+      keepPreviousData: false
+    }
+  );
+
+  console.log("allSubCategory =>", allSubCategory);
 
   const mutateAddProduct = useMutation(addProduct, {
     onMutate: () => setActive(true, null),
@@ -140,7 +147,7 @@ const FormProduct = () => {
         description: values?.description,
         price: values?.price,
         isOption: values.option,
-        optionProduct: values.optionProduct,
+        subCategory: values.subCategory,
         createdBy: cookie?.user?.userName
       };
 
@@ -148,67 +155,9 @@ const FormProduct = () => {
     }
   };
 
-  // const handleDelete = (numb) => {
-  //   console.log("NUMB =>", numb);
-
-  //   const deleteByNumber = optionProduct.filter((_, index) => index !== numb);
-  //   console.log("DELETE BY NUMBER", deleteByNumber);
-  //   setOptionProduct(deleteByNumber);
-  // };
-
-  const ADDING_OPTION = useMemo(() => {
-    if (form.getValues("option")) {
-      return (
-        <div className="col-span-2">
-          {fields?.map((items, index) => {
-            console.log("WKWKKWKW", items);
-
-            const numb = index + 1;
-            return (
-              <div key={index}>
-                <Separator />
-                <div key={index} className="flex py-6 gap-6">
-                  <div className="flex-1">
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Name Option {numb}</FormLabel>
-                      </div>
-                      <Input
-                        type="text"
-                        {...form.register(`optionProduct.${index}.titleOption`)}
-                        defaultValue={items.titleOption}
-                      />
-                    </FormItem>
-                  </div>
-                  <div className="flex-1">
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Type Option {numb}</FormLabel>
-                      </div>
-                      <Textarea
-                        {...form.register(`optionProduct.${index}.typeOption`)}
-                        defaultValue={items.typeOption}
-                      />
-                    </FormItem>
-                  </div>
-                  <div className="flex-[0.5]" onClick={() => remove(index)}>
-                    <Button>Delete</Button>
-                  </div>
-                </div>
-                <Separator />
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else {
-      return null;
-    }
-  }, [form.getValues("option"), fields, remove]);
-
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 h-full">
+      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 max-h-full no-scrollbar">
         <section>
           <div className="flex items-center gap-4">
             <MapPinPlus className="w-6 h-6" />
@@ -217,8 +166,8 @@ const FormProduct = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-24 mx-auto lg:w-3/6 w-3/4">
-              <div className="col-span-2">
+              className="grid grid-cols-1 lg:grid-cols-3 gap-8 my-24 mx-auto lg:w-3/6 w-3/4 overflow-hidden">
+              <div className="col-span-3">
                 <FormField
                   control={form.control}
                   name="image"
@@ -246,7 +195,7 @@ const FormProduct = () => {
                   }}
                 />
               </div>
-              <div className="col-span-2 lg:col-span-1">
+              <div className="col-span-3">
                 <FormField
                   control={form.control}
                   name="nameProduct"
@@ -260,7 +209,35 @@ const FormProduct = () => {
                   )}
                 />
               </div>
-              <div className="col-span-2 lg:col-span-1">
+              <div className="col-span-3 lg:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Description</FormLabel>
+                      </div>
+                      <Textarea {...field} />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-3 lg:col-span-1">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Price Product</FormLabel>
+                      </div>
+                      <Input type="text" {...field} />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-2">
                 <FormField
                   control={form.control}
                   name="category"
@@ -297,7 +274,11 @@ const FormProduct = () => {
                                       <CommandItem
                                         key={location.name}
                                         value={location.name}
-                                        onSelect={(currentValue) => field.onChange(currentValue)}>
+                                        onSelect={(currentValue) => {
+                                          field.onChange(currentValue);
+                                          form.setValue("subCategory", []);
+                                          setOpen(false);
+                                        }}>
                                         <Check
                                           className={cn(
                                             "mr-2 h-4 w-4",
@@ -320,84 +301,26 @@ const FormProduct = () => {
                   }}
                 />
               </div>
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Description</FormLabel>
-                      </div>
-                      <Textarea {...field} />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-1">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Price Product</FormLabel>
-                      </div>
-                      <Input type="text" {...field} />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-1">
-                <FormField
-                  control={form.control}
-                  name="option"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Adding Option</FormLabel>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <p>No</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={(e) => {
-                            field.onChange(e);
-                            append({
-                              titleOption: "",
-                              typeOption: ""
-                            });
-                          }}
-                        />
-                        <p>Yes</p>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              {/* Form Adding Option */}
-              {ADDING_OPTION}
-              {/* End Form Adding Option */}
-
-              {/* Button Adding Option */}
-              {form.getValues("option") && (
-                <div className="col-span-2 flex justify-center">
-                  <div
-                    className="col-span-2"
-                    onClick={() =>
-                      append({
-                        titleOption: "",
-                        typeOption: ""
-                      })
-                    }>
-                    Add Option
-                  </div>
+              {form?.getValues("category") && (
+                <div className="col-span-1">
+                  <FormField
+                    control={form.control}
+                    name="subCategory"
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <div className="mb-2">
+                            <FormLabel className="text-base">Sub Category</FormLabel>
+                          </div>
+                          <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
+                        </FormItem>
+                      );
+                    }}
+                  />
                 </div>
               )}
 
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <div className="flex justify-between items-center">
                   <DialogCancelForm
                     classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"

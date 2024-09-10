@@ -178,7 +178,7 @@ const SubCategoryList = () => {
         });
       }, 1000);
       setTimeout(() => {
-        allLocation.refetch();
+        allSubCategory.refetch();
         setActive(null, null);
       }, 2000);
     },

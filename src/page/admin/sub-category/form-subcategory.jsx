@@ -91,7 +91,7 @@ const FormSubCategory = () => {
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/product-list");
+        navigate("/sub-category-list");
         setActive(null, null);
       }, 2000);
     },
@@ -216,15 +216,22 @@ const FormSubCategory = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">Option Price {numb}</FormLabel>
                       </div>
-                      <Input
-                        type="text"
-                        disabled={items.isFree}
-                        value={
-                          items.isFree ? "0" : form.getValues(`typeSubCategory.${index}.price`)
-                        }
-                        {...form.register(`typeSubCategory.${index}.price`)}
-                        defaultValue={items.price}
-                      />
+                      {items.isFree ? (
+                        <Input
+                          type="text"
+                          disabled={items.isFree}
+                          value="0"
+                          {...form.register(`typeSubCategory.${index}.price`)}
+                          defaultValue={items.price}
+                        />
+                      ) : (
+                        <Input
+                          type="text"
+                          disabled={items.isFree}
+                          {...form.register(`typeSubCategory.${index}.price`)}
+                          defaultValue={items.price}
+                        />
+                      )}
                     </FormItem>
                     <div className="flex justify-between mt-6">
                       <FormLabel className="text-base">Is Free</FormLabel>
