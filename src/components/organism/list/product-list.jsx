@@ -31,7 +31,7 @@ const ProductList = ({ productList }) => {
         </div>
       ) : (
         <div className="h-[65vh] flex justify-center items-center bg-white w-full rounded-lg">
-          <h1>Product Not Found</h1>
+          <h1>Product Empty</h1>
         </div>
       );
     }

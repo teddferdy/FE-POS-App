@@ -38,7 +38,8 @@ import { getSubCategoryByCategory } from "../../../services/sub-category";
 const userInfoSchema = z.object({
   nameSubCategory: z.string(),
   parentCategory: z.string(),
-  typeSubCategory: z.string()
+  typeSubCategory: z.string(),
+  isMultiple: z.boolean()
 });
 
 const FormProduct = () => {
@@ -65,7 +66,6 @@ const FormProduct = () => {
     price: z.string().min(2, {
       message: "Price Product must be at least 2 characters."
     }),
-    option: z.boolean(),
     subCategory: z.array(userInfoSchema)
   });
 
@@ -77,7 +77,6 @@ const FormProduct = () => {
       nameProduct: "",
       category: "",
       description: "",
-      option: state?.data?.option ?? false,
       subCategory: []
     }
   });
@@ -95,8 +94,6 @@ const FormProduct = () => {
       keepPreviousData: false
     }
   );
-
-  console.log("allSubCategory =>", allSubCategory);
 
   const mutateAddProduct = useMutation(addProduct, {
     onMutate: () => setActive(true, null),
@@ -146,8 +143,7 @@ const FormProduct = () => {
         category: values?.category,
         description: values?.description,
         price: values?.price,
-        isOption: values.option,
-        subCategory: values.subCategory,
+        option: JSON.stringify(values?.subCategory),
         createdBy: cookie?.user?.userName
       };
 

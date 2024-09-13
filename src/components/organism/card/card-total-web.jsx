@@ -16,11 +16,31 @@ const CardTotalWeb = ({
   submitNewMember,
   memberState
 }) => {
-  let price = 0;
   const totalItems = order.length;
+  let extraPrice = 0;
+  let price = 0;
   const totalPrice = order.map((items) => Number(items?.totalPrice));
   totalPrice.forEach((element) => {
     price += element;
+  });
+
+  const getOptionData = order.map((v) => {
+    console.log("V =>", v);
+    let price = [];
+    v.options.map((a) => {
+      return a.option.map((b) => {
+        return price.push(b.price);
+      });
+    });
+    return price;
+  });
+
+  let concatOfPrice = getOptionData.reduce(function (flat, toFlatten) {
+    return flat.concat(Array.isArray(toFlatten) ? toFlatten : toFlatten);
+  }, []);
+
+  concatOfPrice.forEach((elemet) => {
+    extraPrice += Number(elemet);
   });
 
   return (
@@ -32,7 +52,9 @@ const CardTotalWeb = ({
       </div>
       <div className="flex justify-between items-center">
         <p className="text-[#737373] text-lg font-semibold">Total Harga :</p>
-        <p className="text-[#737373] text-lg font-semibold">{formatCurrencyRupiah(price)}</p>
+        <p className="text-[#737373] text-lg font-semibold">
+          {formatCurrencyRupiah(price + extraPrice)}
+        </p>
       </div>
       <div className="flex justify-between items-center">
         {/* Dialog Custom Invoice */}
