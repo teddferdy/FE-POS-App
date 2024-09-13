@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -6,10 +5,6 @@ export const orderList = create(
   persist(
     (set) => ({
       order: [],
-      updateOrderList: (item) => {
-        console.log("ITEMS =>", item);
-      },
-
       addingProduct: (item) => {
         return set((state) => {
           return {
@@ -17,6 +12,8 @@ export const orderList = create(
           };
         });
       },
+
+      // Decrement Product
       decrementOrder: (decrementOrder) => {
         return set((state) => {
           return {
@@ -34,10 +31,14 @@ export const orderList = create(
           };
         });
       },
+
+      // Increment Product
       incrementOrder: (incrementOrder) => {
         return set((state) => {
           return {
             order: state.order.map((items) => {
+              console.log("ITEMS =>", items);
+              // console.log("counTotal =>", counTotal);
               if (items?.id === incrementOrder?.id) {
                 return {
                   ...items,
@@ -51,12 +52,77 @@ export const orderList = create(
           };
         });
       },
+
+      // Delete Product
       handleDeleteOrder: (deleteItems) => {
         return set((state) => {
           return {
             order: state.order.filter((items) => items?.id !== deleteItems?.id)
           };
         });
+      },
+
+      // Update Choose Option Product
+      handleUpdateOptionProduct: (val, option, idOrder) => {
+        console.log("option =>", option);
+
+        return set((state) => {
+          // console.log("STATE NI COK =>", state);
+
+          return {
+            order: state.order.map((items) => {
+              if (items?.id === idOrder) {
+                return {
+                  ...items,
+                  options: items.options.map((opt) => {
+                    if (opt?.nameSubCategory === option?.nameSubCategory && option?.isMultiple) {
+                      return {
+                        ...opt,
+                        option: val
+                          ? [...opt.option, option]
+                          : opt.option.filter((value) => value.name !== option.name)
+                      };
+                    } else if (
+                      opt?.nameSubCategory === option?.nameSubCategory &&
+                      !option?.isMultiple
+                    ) {
+                      return {
+                        ...opt,
+                        option: option.option,
+                        value: val,
+                        dataOption: option.dataOption
+                      };
+                    } else {
+                      return { ...opt };
+                    }
+                  })
+                };
+              } else {
+                return { ...items };
+              }
+            })
+          };
+        });
+        // if (type === "checkbox") {
+        //   return set((state) => {
+        //     return {
+        //       option: val
+        //         ? [...state.option, option]
+        //         : state.option.filter((value) => value.name !== option.name)
+        //     };
+        //   });
+        // } else {
+        //   console.log("val", val);
+        //   console.log("option", option);
+        //   console.log("type", type);
+        //   return set((state) => {
+        //     return {
+        //       option: val
+        //         ? [...state.option, option]
+        //         : state.option.filter((value) => value.name !== option.name)
+        //     };
+        //   });
+        // }
       }
     }),
     {

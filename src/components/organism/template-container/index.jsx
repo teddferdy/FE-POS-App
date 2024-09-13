@@ -79,9 +79,6 @@ const TemplateContainer = ({ children }) => {
   // Side Bar Web
   const SIDEBAR_WEB = useMemo(() => {
     if (cookie?.user) {
-      console.log("cookie?.user", cookie?.user);
-      console.log("openMenu", openMenu);
-
       return (
         <SideBarMenu
           classNameContainer={`${openMenu ? "block" : "hidden"}`}
@@ -93,7 +90,6 @@ const TemplateContainer = ({ children }) => {
 
   // Side Mobile
   const SIDEBAR_MOBILE = useMemo(() => {
-    console.log("cookie?.user", cookie?.user);
     if (cookie?.user) {
       return <SideBarMenu classNameContainer="block" user={cookie?.user || {}} />;
     }

@@ -20,7 +20,29 @@ const ProductCard = ({ items }) => {
         return --prevState;
       }
     });
+
   const increment = () => setCount((prevState) => ++prevState);
+
+  const handleAddingProduct = (items) => {
+    const options = JSON.parse(items.option).map((items) => {
+      return {
+        option: [],
+        isMultiple: items.isMultiple,
+        nameSubCategory: items.nameSubCategory,
+        typeSubCategory: JSON.parse(items.typeSubCategory)
+      };
+    });
+
+    addingProduct({
+      id: Math.random().toString(),
+      orderName: items?.nameProduct,
+      price: items?.price,
+      count: count,
+      totalPrice: Number(items?.price) * count,
+      img: items?.image,
+      options: options
+    });
+  };
 
   return (
     <div className="p-2 rounded-lg flex flex-col gap-4 bg-white h-fit">
@@ -52,15 +74,7 @@ const ProductCard = ({ items }) => {
       </div>
       <button
         className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center justify-center bg-[#6853F0] text-white hover:bg-[#1ACB0A] duration-200 hover:text-white"
-        onClick={() =>
-          addingProduct({
-            id: Math.random().toString(),
-            orderName: items?.nameProduct,
-            count: count,
-            totalPrice: Number(items?.price) * count,
-            img: items?.image
-          })
-        }>
+        onClick={() => handleAddingProduct(items)}>
         Masukan Keranjang
       </button>
     </div>

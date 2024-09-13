@@ -3,8 +3,9 @@ import React, { useMemo } from "react";
 
 // Component
 import SkeletonOrderList from "../skeleton/skeleton-order-list";
-import { Label } from "../../ui/label";
+// import { Label } from "../../ui/label";
 import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
+import { Checkbox } from "../../ui/checkbox";
 
 // Utils
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
@@ -12,24 +13,20 @@ import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
 const arr = Array(40).fill(null);
 
-const FOOD_TEMPLATE = [
-  {
-    name: "Spicy",
-    value: ["Yes", "No"]
-  },
-  {
-    name: "Level Spicy",
-    value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-  }
-];
-
-const OrderList = ({ productList, order, decrementOrder, incrementOrder, setOpenModalDelete }) => {
+const OrderList = ({
+  productList,
+  order,
+  // option,
+  decrementOrder,
+  incrementOrder,
+  setOpenModalDelete,
+  handleUpdateOptionProduct
+}) => {
   const ORDER_LIST = useMemo(() => {
-    if (productList.isLoading && productList.isFetching) {
+    if (productList.isLoading && productList.isFetching)
       return arr.map((_, index) => <SkeletonOrderList key={index} />);
-    }
 
-    if (productList.data && productList.isSuccess) {
+    if (productList.data && productList.isSuccess)
       return order?.map((items, index) => {
         const linkName = generateLinkImageFromGoogleDrive(items?.img);
         return (
@@ -84,30 +81,76 @@ const OrderList = ({ productList, order, decrementOrder, incrementOrder, setOpen
             </div>
 
             <div className="flex flex-col gap-4 pl-6">
-              {FOOD_TEMPLATE.map((val, index) => {
-                return (
-                  <div className="flex flex-col gap-4 justify-between" key={index}>
-                    <h1>{val.name}</h1>
-                    <div className="flex items-center gap-6 flex-wrap">
-                      {val.value.map((items, index) => {
-                        return (
-                          <RadioGroup defaultValue="comfortable" key={index}>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="" id={items} />
-                              <Label htmlFor={items}>{items}</Label>
+              {items?.options?.map((val, index) => (
+                <div className="flex flex-col gap-4 justify-between" key={index}>
+                  <h1>{val?.nameSubCategory}</h1>
+                  <div className="flex items-center gap-6 flex-wrap">
+                    {val?.isMultiple && (
+                      <>
+                        {val?.typeSubCategory?.map((opt, index) => (
+                          <div key={index} className="flex flex-wrap items-center gap-4 h-fit">
+                            <Checkbox
+                              className="h-6 w-6"
+                              checked={val.option?.some((val) => val?.name === opt?.name)}
+                              // checked={false}
+                              onCheckedChange={(checked) =>
+                                handleUpdateOptionProduct(
+                                  checked,
+                                  {
+                                    ...opt,
+                                    nameSubCategory: val?.nameSubCategory,
+                                    isMultiple: val?.isMultiple
+                                  },
+                                  items?.id
+                                )
+                              }
+                            />
+                            <p>{opt.name}</p>
+                            <p>{opt.price !== "0" ? formatCurrencyRupiah(opt.price) : "Free"}</p>
+                          </div>
+                        ))}
+                      </>
+                    )}
+
+                    {!val?.isMultiple && (
+                      <>
+                        <RadioGroup
+                          key={index}
+                          onValueChange={(radioVal) =>
+                            handleUpdateOptionProduct(
+                              radioVal,
+                              {
+                                value: radioVal,
+                                option: val?.typeSubCategory.filter(
+                                  (items) => items.name === radioVal
+                                ),
+                                nameSubCategory: val?.nameSubCategory,
+                                isMultiple: val?.isMultiple
+                              },
+                              items?.id
+                            )
+                          }>
+                          {val?.typeSubCategory?.map((opt, index) => (
+                            <div key={index} className="flex flex-wrap items-center gap-4 h-fit">
+                              <RadioGroupItem
+                                value={opt.name}
+                                id={opt.name}
+                                checked={opt?.name === val?.value}
+                              />
+                              <p>{opt.name}</p>
+                              <p>{opt.price !== "0" ? formatCurrencyRupiah(opt.price) : "Free"}</p>
                             </div>
-                          </RadioGroup>
-                        );
-                      })}
-                    </div>
+                          ))}
+                        </RadioGroup>
+                      </>
+                    )}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         );
       });
-    }
   }, [productList, order, decrementOrder, incrementOrder, setOpenModalDelete]);
 
   return (

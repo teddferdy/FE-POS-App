@@ -32,7 +32,14 @@ const Home = () => {
     open: false
   });
 
-  const { order, decrementOrder, incrementOrder, handleDeleteOrder } = orderList();
+  const {
+    order,
+    option,
+    decrementOrder,
+    incrementOrder,
+    handleDeleteOrder,
+    handleUpdateOptionProduct
+  } = orderList();
   const { category, updateCategory } = categorySelect();
 
   // Dialog Member
@@ -119,6 +126,8 @@ const Home = () => {
           <OrderList
             productList={productList}
             order={order}
+            option={option}
+            handleUpdateOptionProduct={handleUpdateOptionProduct}
             decrementOrder={decrementOrder}
             incrementOrder={incrementOrder}
             setOpenModalDelete={(val) => setOpenModalDelete(val)}
