@@ -39,7 +39,7 @@ const TemplateContainer = ({ children }) => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const { updateTranslation, translation } = translationSelect();
-  const [openMenu, setOpenMenu] = useState(false);
+  // const [openMenu, setOpenMenu] = useState(false);
   const [openSheet, setOpenSheet] = useState(false);
   const [search, setSearch] = useState("");
   const [cookie] = useCookies(["user"]);
@@ -77,16 +77,16 @@ const TemplateContainer = ({ children }) => {
   });
 
   // Side Bar Web
-  const SIDEBAR_WEB = useMemo(() => {
-    if (cookie?.user) {
-      return (
-        <SideBarMenu
-          classNameContainer={`${openMenu ? "block" : "hidden"}`}
-          user={cookie?.user || {}}
-        />
-      );
-    }
-  }, [cookie, openMenu]);
+  // const SIDEBAR_WEB = useMemo(() => {
+  //   if (cookie?.user) {
+  //     return (
+  //       <SideBarMenu
+  //         classNameContainer={`${openMenu ? "block" : "hidden"}`}
+  //         user={cookie?.user || {}}
+  //       />
+  //     );
+  //   }
+  // }, [cookie, openMenu]);
 
   // Side Mobile
   const SIDEBAR_MOBILE = useMemo(() => {
@@ -108,7 +108,7 @@ const TemplateContainer = ({ children }) => {
 
   return (
     <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
-      <ResizablePanel
+      {/* <ResizablePanel
         onResize={(props) => {
           if (props > 12) {
             setOpenMenu(true);
@@ -124,14 +124,14 @@ const TemplateContainer = ({ children }) => {
           overflow: "scroll"
         }}>
         {SIDEBAR_WEB}
-      </ResizablePanel>
+      </ResizablePanel> */}
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className="overflow-hidden h-screen">
         <div className="flex items-center justify-between p-4 bg-white shadow-lg">
-          <div className="flex flex-1 items-center gap-4 lg:gap-0">
+          <div className="flex flex-1 items-center gap-4">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="p-0 bg-transparent border-none lg:hidden">
+                <Button variant="outline" className="p-0 bg-transparent border-none">
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
                 </Button>
               </SheetTrigger>

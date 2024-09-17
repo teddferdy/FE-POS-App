@@ -1,29 +1,31 @@
 /* eslint-disable react/prop-types */
-import React, { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useMemo } from "react";
 import { Info } from "lucide-react";
 
 // Components
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "../../ui/drawer";
 import { Button } from "../../ui/button";
 import { Separator } from "../../ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "../../ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { Input } from "../../ui/input";
 import { Switch } from "../../ui/switch";
 import DialogAddMember from "./dialogAddMember";
 import { Label } from "../../ui/label";
 
 const arr = Array(40).fill(null);
-const DialogCheckout = ({ submitNewMember, memberState, setDialogMember }) => {
+const DialogCheckout = ({
+  data,
+  handleCheckout,
+  showDialog,
+  hasMember,
+  setHasMember,
+  handleCloseDialog,
+
+  submitNewMember,
+  memberState,
+  setDialogMember
+}) => {
   // State Show Member Using Switch
-  const [hasMember, setHasMember] = useState(false);
 
   const FORM_MEMBER = useMemo(() => {
     if (hasMember) {
@@ -52,18 +54,17 @@ const DialogCheckout = ({ submitNewMember, memberState, setDialogMember }) => {
   }, [hasMember, memberState]);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
-          Check Out
-        </Button>
-      </DialogTrigger>
+    <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle> Check Out Items </DialogTitle>
-          <DialogDescription> Mohon di check lagi!! </DialogDescription>
+          <DialogTitle>Check Out Items</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Number Invoice */}
+          <div className="flex items-center justify-between">
+            <p>Number Invoice</p>
+            <p>{data?.invoice}</p>
+          </div>
           {/* Type Payment */}
           <div className="flex items-center justify-between">
             <p>Tipe Pembayaran</p>
@@ -132,7 +133,7 @@ const DialogCheckout = ({ submitNewMember, memberState, setDialogMember }) => {
 
         <DialogFooter>
           {!hasMember && <DialogAddMember submitNewMember={submitNewMember} />}
-          <Button type="submit">Checkout</Button>
+          <Button onClick={handleCheckout}>Checkout</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

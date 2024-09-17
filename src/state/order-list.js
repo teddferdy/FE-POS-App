@@ -64,11 +64,7 @@ export const orderList = create(
 
       // Update Choose Option Product
       handleUpdateOptionProduct: (val, option, idOrder) => {
-        console.log("option =>", option);
-
         return set((state) => {
-          // console.log("STATE NI COK =>", state);
-
           return {
             order: state.order.map((items) => {
               if (items?.id === idOrder) {
@@ -103,26 +99,15 @@ export const orderList = create(
             })
           };
         });
-        // if (type === "checkbox") {
-        //   return set((state) => {
-        //     return {
-        //       option: val
-        //         ? [...state.option, option]
-        //         : state.option.filter((value) => value.name !== option.name)
-        //     };
-        //   });
-        // } else {
-        //   console.log("val", val);
-        //   console.log("option", option);
-        //   console.log("type", type);
-        //   return set((state) => {
-        //     return {
-        //       option: val
-        //         ? [...state.option, option]
-        //         : state.option.filter((value) => value.name !== option.name)
-        //     };
-        //   });
-        // }
+      },
+
+      // Reset Order After Checkout
+      resetOrder: () => {
+        return set(() => {
+          return {
+            order: []
+          };
+        });
       }
     }),
     {
