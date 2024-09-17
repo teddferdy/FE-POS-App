@@ -11,10 +11,15 @@ import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
 const CardTotalMobile = ({
   order,
+  option,
+  handleUpdateOptionProduct,
+  decrementOrder,
+  incrementOrder,
   dialogMember,
   setDialogMember,
   submitNewMember,
-  memberState
+  memberState,
+  setOpenModalDelete
 }) => {
   let extraPrice = 0;
   let price = 0;
@@ -24,7 +29,6 @@ const CardTotalMobile = ({
   });
 
   const getOptionData = order.map((v) => {
-    console.log("V =>", v);
     let price = [];
     v.options.map((a) => {
       return a.option.map((b) => {
@@ -61,7 +65,14 @@ const CardTotalMobile = ({
             submitNewMember={submitNewMember}
             memberState={memberState}
           />
-          <DrawerDetailOrderMobile order={order} />
+          <DrawerDetailOrderMobile
+            order={order}
+            option={option}
+            setOpenModalDelete={setOpenModalDelete}
+            handleUpdateOptionProduct={handleUpdateOptionProduct}
+            decrementOrder={decrementOrder}
+            incrementOrder={incrementOrder}
+          />
         </div>
       </div>
     </div>

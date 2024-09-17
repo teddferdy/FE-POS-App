@@ -22,7 +22,6 @@ import { Form, FormField, FormItem, FormLabel } from "../../ui/form";
 
 const DialogAddMember = ({ classNameButtonTrigger, submitNewMember }) => {
   const [cookie] = useCookies(["user"]);
-  console.log("cookie", cookie);
 
   const formSchema = z.object({
     userName: z.string(),

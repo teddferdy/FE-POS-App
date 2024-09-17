@@ -1,10 +1,10 @@
-/* eslint-disable no-unsafe-optional-chaining */
 import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "sonner";
 import TemplateContainer from "../../components/organism/template-container";
 
-// Form
+// Component
+import DialogCheckout from "../../components/organism/dialog/dialogCheckout";
 import CardTotalMobile from "../../components/organism/card/card-total-mobile";
 import CardTotalWeb from "../../components/organism/card/card-total-web";
 import { useLoading } from "../../components/organism/loading";
@@ -16,14 +16,21 @@ import ProductList from "../../components/organism/list/product-list";
 
 import OrderList from "../../components/organism/list/order-list";
 
-// State / Services
+// State
+import { categorySelect } from "../../state/category";
+import { invoice } from "../../state/invoice";
+
+// Services
 import { getAllProduct } from "../../services/product";
 import { orderList } from "../../state/order-list";
-import { categorySelect } from "../../state/category";
 import { getAllCategory } from "../../services/category";
+import { postCheckoutItem, cancelCheckoutItem, checkoutItem } from "../../services/checkout";
 
 const Home = () => {
   const { setActive } = useLoading();
+  const { category, updateCategory } = categorySelect();
+  const { updateInvoice, cancelInvoice, data } = invoice();
+  const [hasMember, setHasMember] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const [openFilterCategory, setOpenFilterCategory] = useState(false);
 
@@ -38,9 +45,9 @@ const Home = () => {
     decrementOrder,
     incrementOrder,
     handleDeleteOrder,
-    handleUpdateOptionProduct
+    handleUpdateOptionProduct,
+    resetOrder
   } = orderList();
-  const { category, updateCategory } = categorySelect();
 
   // Dialog Member
   const [dialogMember, setDialogMember] = useState(false);
@@ -93,6 +100,84 @@ const Home = () => {
     }
   });
 
+  const mutateAddCartCheckoutItem = useMutation(postCheckoutItem, {
+    onMutate: () => setActive(true, null),
+    onSuccess: (success) => {
+      const { data } = success;
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Success add Cart"
+        });
+      }, 1000);
+      setTimeout(() => {
+        updateInvoice(data);
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message || "Failed to add Cart"
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
+  const mutateCancelItem = useMutation(cancelCheckoutItem, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        cancelInvoice();
+        setActive(null, null);
+      }, 1000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message || "Failed to Cancel Item"
+        });
+      }, 1000);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 15000);
+    }
+  });
+
+  const mutateCheckoutItem = useMutation(checkoutItem, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Success Checkout Item"
+        });
+      }, 1000);
+      setTimeout(() => {
+        resetOrder();
+        cancelInvoice();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message || "Failed to Cancel Item"
+        });
+      }, 1000);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 15000);
+    }
+  });
+
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
       <div className="flex h-screen border-t-2 border-[#ffffff10] relative">
@@ -108,7 +193,14 @@ const Home = () => {
 
           {/* Total Checkout Table / Mobile */}
           <CardTotalMobile
+            // Order
             order={order}
+            option={option}
+            handleUpdateOptionProduct={handleUpdateOptionProduct}
+            decrementOrder={decrementOrder}
+            incrementOrder={incrementOrder}
+            setOpenModalDelete={(val) => setOpenModalDelete(val)}
+            // End Order
             openMenu={openMenu}
             dialogMember={dialogMember}
             setDialogMember={() => setDialogMember(!dialogMember)}
@@ -136,13 +228,41 @@ const Home = () => {
           <CardTotalWeb
             order={order}
             openMenu={openMenu}
-            dialogMember={dialogMember}
-            setDialogMember={() => setDialogMember(!dialogMember)}
-            submitNewMember={(value) => mutateNewMember.mutate(value)}
-            memberState={memberState}
+            handleCheckout={(payload) => mutateAddCartCheckoutItem.mutate(payload)}
+            // dialogMember={dialogMember}
+            // setDialogMember={() => setDialogMember(!dialogMember)}
+            // submitNewMember={(value) => mutateNewMember.mutate(value)}
+            // memberState={memberState}
           />
         </div>
       </div>
+
+      <DialogCheckout
+        data={data}
+        showDialog={data?.open}
+        handleCloseDialog={() => mutateCancelItem.mutate(data)}
+        hasMember={hasMember}
+        setHasMember={(val) => setHasMember(val)}
+        handleCheckout={() => {
+          console.log("data =>", data);
+
+          const body = {
+            id: data.id,
+            invoice: data.invoice,
+            dateOrder: data.dateOrder,
+            totalPrice: data.totalPrice,
+            cashierName: data.cashierName,
+            totalQuantity: data.totalItems,
+            customerName: hasMember ? "" : "",
+            customerPhoneNumber: hasMember ? "" : "",
+            typePayment: "QRIS",
+            modifiedBy: data.cashierName
+          };
+          console.log("BODY =>", body);
+
+          mutateCheckoutItem.mutate(body);
+        }}
+      />
 
       <DialogMember
         dialogMember={dialogMember}
