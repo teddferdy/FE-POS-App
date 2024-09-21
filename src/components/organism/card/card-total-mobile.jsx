@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { useCookies } from "react-cookie";
 
 // Component
 import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
-import DialogCheckout from "../dialog/dialogCheckout";
+import { Button } from "../../ui/button";
 import DrawerDetailOrderMobile from "../drawer/drawer-detail-order-mobile";
 
 // Utils
@@ -15,12 +16,11 @@ const CardTotalMobile = ({
   handleUpdateOptionProduct,
   decrementOrder,
   incrementOrder,
-  dialogMember,
-  setDialogMember,
-  submitNewMember,
-  memberState,
+  handleCheckout,
   setOpenModalDelete
 }) => {
+  const [cookie] = useCookies(["user"]);
+  const totalItems = order.length;
   let extraPrice = 0;
   let price = 0;
   const totalPrice = order.map((items) => Number(items?.totalPrice));
@@ -59,12 +59,21 @@ const CardTotalMobile = ({
         <DialogCustomInvoice />
 
         <div className="flex items-center gap-10">
-          <DialogCheckout
-            dialogMember={dialogMember}
-            setDialogMember={setDialogMember}
-            submitNewMember={submitNewMember}
-            memberState={memberState}
-          />
+          <Button
+            className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full"
+            onClick={() =>
+              handleCheckout({
+                totalPrice: price + extraPrice,
+                cashierName: cookie.user.userName,
+                customerName: "",
+                customerPhoneNumber: "",
+                totalQuantity: totalItems,
+                typePayment: "",
+                createdBy: cookie.user.userName
+              })
+            }>
+            Check Out
+          </Button>
           <DrawerDetailOrderMobile
             order={order}
             option={option}

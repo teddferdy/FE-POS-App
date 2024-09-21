@@ -10,15 +10,7 @@ import { Button } from "../../ui/button";
 // Utils
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
-const CardTotalWeb = ({
-  order,
-  openMenu,
-  handleCheckout
-  // dialogMember,
-  // setDialogMember,
-  // submitNewMember,
-  // memberState
-}) => {
+const CardTotalWeb = ({ order, openMenu, handleCheckout }) => {
   const [cookie] = useCookies(["user"]);
   const totalItems = order.length;
   let extraPrice = 0;

@@ -35,6 +35,7 @@ const ProductCard = ({ items }) => {
 
     addingProduct({
       id: Math.random().toString(),
+      idProduct: items?.id,
       orderName: items?.nameProduct,
       price: items?.price,
       count: count,
