@@ -193,19 +193,13 @@ const Home = () => {
 
           {/* Total Checkout Table / Mobile */}
           <CardTotalMobile
-            // Order
             order={order}
             option={option}
             handleUpdateOptionProduct={handleUpdateOptionProduct}
             decrementOrder={decrementOrder}
             incrementOrder={incrementOrder}
             setOpenModalDelete={(val) => setOpenModalDelete(val)}
-            // End Order
-            openMenu={openMenu}
-            dialogMember={dialogMember}
-            setDialogMember={() => setDialogMember(!dialogMember)}
-            submitNewMember={(value) => mutateNewMember.mutate(value)}
-            memberState={memberState}
+            handleCheckout={(payload) => mutateAddCartCheckoutItem.mutate(payload)}
           />
 
           {/* List Items */}
@@ -229,10 +223,6 @@ const Home = () => {
             order={order}
             openMenu={openMenu}
             handleCheckout={(payload) => mutateAddCartCheckoutItem.mutate(payload)}
-            // dialogMember={dialogMember}
-            // setDialogMember={() => setDialogMember(!dialogMember)}
-            // submitNewMember={(value) => mutateNewMember.mutate(value)}
-            // memberState={memberState}
           />
         </div>
       </div>
@@ -240,16 +230,19 @@ const Home = () => {
       <DialogCheckout
         data={data}
         showDialog={data?.open}
+        memberState={memberState}
         handleCloseDialog={() => mutateCancelItem.mutate(data)}
+        submitNewMember={(value) => mutateNewMember.mutate(value)}
         hasMember={hasMember}
+        handleSearchDialog={() => setDialogMember(true)}
         setHasMember={(val) => setHasMember(val)}
         handleCheckout={() => {
-          console.log("data =>", data);
-
           const body = {
+            order: order,
             id: data.id,
             invoice: data.invoice,
             dateOrder: data.dateOrder,
+            dateCheckout: new Date(),
             totalPrice: data.totalPrice,
             cashierName: data.cashierName,
             totalQuantity: data.totalItems,
@@ -258,8 +251,6 @@ const Home = () => {
             typePayment: "QRIS",
             modifiedBy: data.cashierName
           };
-          console.log("BODY =>", body);
-
           mutateCheckoutItem.mutate(body);
         }}
       />

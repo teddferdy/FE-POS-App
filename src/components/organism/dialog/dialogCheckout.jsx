@@ -15,15 +15,15 @@ import { Label } from "../../ui/label";
 const arr = Array(40).fill(null);
 const DialogCheckout = ({
   data,
-  handleCheckout,
   showDialog,
+  handleCheckout,
   hasMember,
   setHasMember,
   handleCloseDialog,
 
   submitNewMember,
   memberState,
-  setDialogMember
+  handleSearchDialog
 }) => {
   // State Show Member Using Switch
 
@@ -44,14 +44,14 @@ const DialogCheckout = ({
           </div>
           <Button
             className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-            onClick={setDialogMember}>
+            onClick={handleSearchDialog}>
             Cari Member
           </Button>
           <Separator />
         </Fragment>
       );
     }
-  }, [hasMember, memberState]);
+  }, [hasMember, memberState, handleSearchDialog]);
 
   return (
     <Dialog open={showDialog} onOpenChange={handleCloseDialog}>
@@ -75,7 +75,7 @@ const DialogCheckout = ({
             <p>Punya Member ?</p>
             <div className="flex items-center gap-4">
               <p>Tidak</p>
-              <Switch checked={hasMember} onCheckedChange={() => setHasMember(!hasMember)} />
+              <Switch checked={hasMember} onCheckedChange={setHasMember} />
               <p>Ya</p>
             </div>
           </div>

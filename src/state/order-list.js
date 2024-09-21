@@ -37,7 +37,6 @@ export const orderList = create(
         return set((state) => {
           return {
             order: state.order.map((items) => {
-              console.log("ITEMS =>", items);
               // console.log("counTotal =>", counTotal);
               if (items?.id === incrementOrder?.id) {
                 return {
