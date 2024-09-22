@@ -56,6 +56,9 @@ const Home = () => {
     phoneNumber: ""
   });
 
+  // Type Payment
+  const [value, setValue] = useState("");
+
   // Query
   const productList = useQuery(
     ["get-product", category],
@@ -228,6 +231,9 @@ const Home = () => {
       </div>
 
       <DialogCheckout
+        order={order}
+        value={value}
+        setValue={(val) => setValue(val)}
         data={data}
         showDialog={data?.open}
         memberState={memberState}
