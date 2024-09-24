@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
-import { getAllLocation, deleteLocation } from "../../../services/location";
+import { getAllLocationTable, deleteLocation } from "../../../services/location";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
 import TemplateContainer from "../../../components/organism/template-container";
@@ -191,7 +191,7 @@ const LocationList = () => {
   ];
 
   // QUERY
-  const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
+  const allLocation = useQuery(["get-all-location-table"], () => getAllLocationTable(), {
     retry: 0,
     keepPreviousData: true
   });

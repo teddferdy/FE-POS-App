@@ -15,7 +15,14 @@ import {
   getDataCurrentNowAndTwoDayBefore,
   getDataChartByMonth
 } from "../../services/chart";
-import { getTotalEarning } from "../../services/overview";
+import {
+  getTotalEarning,
+  getOverviewProduct,
+  getOverviewCategory,
+  getOverviewLocation,
+  getOverviewMember,
+  getOverviewUser
+} from "../../services/overview";
 
 // Utils
 import { formatCurrencyRupiah } from "../../utils/formatter-currency";
@@ -23,6 +30,31 @@ import { formatCurrencyRupiah } from "../../utils/formatter-currency";
 const OverviewPage = () => {
   // QUERY
   const getEarning = useQuery(["get-earning"], () => getTotalEarning(), {
+    retry: 0,
+    keepPreviousData: false
+  });
+
+  const overviewProduct = useQuery(["get-overview-product"], () => getOverviewProduct(), {
+    retry: 0,
+    keepPreviousData: false
+  });
+
+  const overviewCategory = useQuery(["get-overview-category"], () => getOverviewCategory(), {
+    retry: 0,
+    keepPreviousData: false
+  });
+
+  const overviewLocation = useQuery(["get-overview-location"], () => getOverviewLocation(), {
+    retry: 0,
+    keepPreviousData: false
+  });
+
+  const overviewMember = useQuery(["get-overview-member"], () => getOverviewMember(), {
+    retry: 0,
+    keepPreviousData: false
+  });
+
+  const overviewUser = useQuery(["get-overview-user"], () => getOverviewUser(), {
     retry: 0,
     keepPreviousData: false
   });
@@ -50,6 +82,12 @@ const OverviewPage = () => {
     }
   );
 
+  console.log("overviewProduct =>", overviewProduct);
+  console.log("overviewCategory", overviewCategory);
+  console.log("overviewLocation", overviewLocation);
+  console.log("overviewMember", overviewMember);
+  console.log("overviewUser", overviewUser);
+
   return (
     <TemplateContainer>
       <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8 h-screen overflow-scroll">
@@ -58,35 +96,35 @@ const OverviewPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  items-center gap-4">
             <div className="p-4 bg-green-400 rounded-lg flex flex-col gap-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h2>Total Product :</h2>
+                <h2>Product :</h2>
                 <p>See All</p>
               </div>
               <p>12 Product</p>
             </div>
             <div className="p-4 bg-yellow-400 rounded-lg flex flex-col gap-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h2>Total Category :</h2>
+                <h2>Category :</h2>
                 <p>See All</p>
               </div>
               <h2>12 Category</h2>
             </div>
             <div className="p-4 bg-blue-400 rounded-lg flex flex-col gap-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h2>Total Outlet / Location :</h2>
+                <h2>Outlet / Location :</h2>
                 <p>See All</p>
               </div>
               <h2>12 Outlet / Location</h2>
             </div>
             <div className="p-4 bg-orange-400 rounded-lg flex flex-col gap-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h2>Total Member :</h2>
+                <h2>Member :</h2>
                 <p>See All</p>
               </div>
               <h2>12 Member</h2>
             </div>
             <div className="p-4 bg-amber-400 rounded-lg flex flex-col gap-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h2>Total Employee :</h2>
+                <h2>Employee :</h2>
                 <p>See All</p>
               </div>
               <h2>12 Employee</h2>

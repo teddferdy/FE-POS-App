@@ -6,25 +6,32 @@ export const getTotalEarning = async () => {
   return data;
 };
 
-// export const addCategory = async (payload) => {
-//   const { data, status } = await axiosInstance.post("/category/add-new-category", payload);
-//   if (status !== 200) throw Error(`${data.message}`);
-//   return data;
-// };
+export const getOverviewProduct = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-product");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
 
-// export const editCategory = async (payload) => {
-//   const { data, status } = await axiosInstance.put(
-//     `/category/edit-category/${payload.id}`,
-//     payload
-//   );
-//   if (status !== 200) throw Error(`${data.message || data?.error}`);
-//   return data;
-// };
+export const getOverviewCategory = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-category");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
 
-// export const deleteCategory = async (payload) => {
-//   const { data, status } = await axiosInstance.delete(`/category/delete-category/${payload.id}`, {
-//     data: payload
-//   });
-//   if (status !== 200) throw Error(data?.error);
-//   return data;
-// };
+export const getOverviewLocation = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-location");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getOverviewMember = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-member");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getOverviewUser = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-user");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

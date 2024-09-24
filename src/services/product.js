@@ -8,6 +8,12 @@ export const getAllProduct = async ({ nameProduct, category }) => {
   return data;
 };
 
+export const getAllProductTable = async () => {
+  const { data, status } = await axiosInstance.get(`product/get-product-all`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addProduct = async (payload) => {
   const { data, status } = await axiosInstance.post("/product/add-product", payload);
   if (status !== 200) throw Error(`${data.message}`);

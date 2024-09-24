@@ -22,7 +22,7 @@ import {
   TableRow
 } from "../../../components/ui/table";
 // import { getAllLocation, deleteLocation } from "../../../services/location";
-import { getAllProduct } from "../../../services/product";
+import { getAllProductTable } from "../../../services/product";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
 import TemplateContainer from "../../../components/organism/template-container";
@@ -200,16 +200,10 @@ const ProductList = () => {
   ];
 
   // QUERY
-  const allProduct = useQuery(
-    ["get-all-product"],
-    () => getAllProduct({ category: "", nameProduct: "" }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  console.log("allProduct =>", allProduct);
+  const allProduct = useQuery(["get-all-product-table"], () => getAllProductTable(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
   // const mutateDeleteLocation = useMutation(deleteLocation, {
   //   onMutate: () => setActive(true, null),
