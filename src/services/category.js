@@ -6,6 +6,12 @@ export const getAllCategory = async () => {
   return data;
 };
 
+export const getAllCategoryTable = async () => {
+  const { data, status } = await axiosInstance.get("/category/get-category-all");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addCategory = async (payload) => {
   const { data, status } = await axiosInstance.post("/category/add-new-category", payload);
   if (status !== 200) throw Error(`${data.message}`);

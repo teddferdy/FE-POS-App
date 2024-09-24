@@ -33,14 +33,14 @@ import TemplateContainer from "../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
 
 import { useMutation, useQuery } from "react-query";
-import { getAllCategory } from "../../../services/category";
+import { getAllCategoryTable } from "../../../services/category";
 
 const CategoryList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
 
   // QUERY
-  const allCategory = useQuery(["get-all-category"], () => getAllCategory(), {
+  const allCategory = useQuery(["get-all-category-table"], () => getAllCategoryTable(), {
     keepPreviousData: false
   });
 

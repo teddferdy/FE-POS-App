@@ -6,6 +6,12 @@ export const getAllLocation = async () => {
   return data;
 };
 
+export const getAllLocationTable = async () => {
+  const { data, status } = await axiosInstance.get("/location/get-location-all");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addLocation = async (payload) => {
   const { data, status } = await axiosInstance.post("/location/add-new-location", payload);
   if (status !== 200) throw Error(`${data.message}`);
