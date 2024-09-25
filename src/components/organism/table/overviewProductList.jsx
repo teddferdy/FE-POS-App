@@ -1,75 +1,77 @@
-import React from "react";
+/* eslint-disable react/prop-types */
+import React, { Fragment, useMemo } from "react";
+import moment from "moment";
 
+// Component
+import { Badge } from "../../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card"
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal"
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer"
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card"
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal"
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer"
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card"
-  }
-];
+// Utils
+import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
-const OverviewProductList = () => {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Invoice</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Method</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
-            <TableCell>{invoice.paymentMethod}</TableCell>
-            <TableCell className="text-right">{invoice.totalAmount}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+const OverviewProductList = ({ data }) => {
+  const TABLE_LIST = useMemo(() => {
+    if (data?.isLoading && data?.isFetching) {
+      return null;
+    }
+
+    if (data?.data && data?.isSuccess) {
+      const datas = data?.data;
+      console.log("DATAS =>", datas);
+
+      return (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">Image</TableHead>
+              <TableHead className="text-center">Name Product</TableHead>
+              <TableHead className="text-center">Category</TableHead>
+              <TableHead className="text-center">Option</TableHead>
+              <TableHead className="text-center">Price</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Created By</TableHead>
+              <TableHead className="text-center">Created At</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {datas.data?.map((items, index) => {
+              let optionProduct = "";
+              const listData = JSON.parse(items.option);
+              listData.map((items, index) => {
+                optionProduct += `${items.nameSubCategory} ${index > 0 ? ", " : ""}`;
+              });
+
+              const linkImage = generateLinkImageFromGoogleDrive(items?.image);
+              return (
+                <TableRow key={index}>
+                  <TableCell className="text-center">
+                    <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />
+                  </TableCell>
+                  <TableCell className="text-center">{items.nameProduct || "-"}</TableCell>
+                  <TableCell className="text-center">{items.category || "-"}</TableCell>
+                  <TableCell className="text-center">{optionProduct}</TableCell>
+                  <TableCell className="text-center">{items.price || "-"}</TableCell>
+                  <TableCell className="text-center">
+                    {items.status ? (
+                      <Badge variant="secondary">Active</Badge>
+                    ) : (
+                      <Badge variant="destructive">Not Active</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">{items.createdBy || "-"}</TableCell>
+                  <TableHead className="text-center">
+                    {moment(items.createdAt).format("DD/MM/YYYY hh:mm:ss") || "-"}
+                  </TableHead>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      );
+    }
+  }, [data]);
+
+  return <Fragment>{TABLE_LIST}</Fragment>;
 };
 
 export default OverviewProductList;

@@ -26,7 +26,7 @@ const DialogTypeSubCategory = ({ data }) => {
           <DialogDescription>Apakah Anda yakin akan menghapus item ini?</DialogDescription>
         </DialogHeader>
         <ul className="flex flex-col gap-6">
-          {data.original.typeSubCategory.map((items, index) => {
+          {data?.map((items, index) => {
             return (
               <li className="flex flex-col gap-4" key={index}>
                 <p>Nama: {items.name}</p>

@@ -35,3 +35,33 @@ export const getOverviewUser = async () => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+export const getListTableBestSellingList = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-best-selling");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getListTableMemberList = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-member-latest");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getListTableCategoryList = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-category-latest");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getListTableLocationList = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-location-latest");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getListTableProductList = async () => {
+  const { data, status } = await axiosInstance.get("/overview/get-product-latest");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

@@ -81,7 +81,10 @@ const SubCategoryList = () => {
           </Button>
         );
       },
-      cell: ({ row }) => <DialogTypeSubCategory data={row} />
+      cell: ({ row }) => {
+        const data = row.original.typeSubCategory;
+        return <DialogTypeSubCategory data={data} />;
+      }
     },
     {
       accessorKey: "isMultiple",
