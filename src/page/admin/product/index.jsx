@@ -10,8 +10,16 @@ import {
 } from "@tanstack/react-table";
 import { Utensils } from "lucide-react";
 import moment from "moment";
+import {
+  // useMutation,
+  useQuery
+} from "react-query";
+import { useNavigate } from "react-router-dom";
+
+// Component
 import { Button } from "../../../components/ui/button";
 // import { toast } from "sonner";
+import { Badge } from "../../../components/ui/badge";
 import { Input } from "../../../components/ui/input";
 import {
   Table,
@@ -21,17 +29,15 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
-// import { getAllLocation, deleteLocation } from "../../../services/location";
-import { getAllProductTable } from "../../../services/product";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
-
 import TemplateContainer from "../../../components/organism/template-container";
-import { useNavigate } from "react-router-dom";
+
 // import { useLoading } from "../../../components/organism/loading";
-import {
-  // useMutation,
-  useQuery
-} from "react-query";
+
+// Service
+import { getAllProductTable } from "../../../services/product";
+
+// Utils
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
 const ProductList = () => {
@@ -43,48 +49,6 @@ const ProductList = () => {
   const [rowSelection, setRowSelection] = useState({});
 
   const columns = [
-    {
-      accessorKey: "nameProduct",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Product
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameProduct")}</div>
-    },
-    {
-      accessorKey: "category",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Category
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("category")}</div>
-    },
-    {
-      accessorKey: "description",
-      header: () => <div className="text-right">Description</div>,
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("description")}</div>;
-      }
-    },
-    {
-      accessorKey: "price",
-      header: () => <div className="text-right">Price</div>,
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("price")}</div>;
-      }
-    },
     {
       accessorKey: "image",
       header: ({ column }) => {
@@ -104,6 +68,73 @@ const ProductList = () => {
       }
     },
     {
+      accessorKey: "nameProduct",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Name Product
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="text-center capitalize">{row.getValue("nameProduct")}</div>
+    },
+    {
+      accessorKey: "category",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Category
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="lowercase text-center">{row.getValue("category")}</div>
+    },
+    {
+      accessorKey: "description",
+      header: () => <div className="text-center">Description</div>,
+      cell: ({ row }) => {
+        return <div className="text-center font-medium">{row.getValue("description")}</div>;
+      }
+    },
+    {
+      accessorKey: "price",
+      header: () => <div className="text-center">Price</div>,
+      cell: ({ row }) => {
+        return <div className="text-center font-medium">{row.getValue("price")}</div>;
+      }
+    },
+
+    {
+      accessorKey: "status",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Status
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        console.log('row.getValue("status")  =>', row.getValue("status"));
+        return (
+          <div className="text-center font-medium">
+            {row.getValue("status") ? (
+              <Badge variant="secondary">Active</Badge>
+            ) : (
+              <Badge variant="destructive">Not Active</Badge>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
@@ -116,7 +147,7 @@ const ProductList = () => {
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("createdBy") || "-"}</div>;
       }
     },
     {
@@ -133,7 +164,7 @@ const ProductList = () => {
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -152,15 +183,15 @@ const ProductList = () => {
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>;
       }
     },
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -168,7 +199,7 @@ const ProductList = () => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-6">

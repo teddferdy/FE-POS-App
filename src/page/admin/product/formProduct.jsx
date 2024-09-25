@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 
 // Component
+import { Switch } from "../../../components/ui/switch";
 import { Textarea } from "../../../components/ui/textarea";
 import { cn } from "../../../lib/utils";
 import { useLoading } from "../../../components/organism/loading";
@@ -66,6 +67,7 @@ const FormProduct = () => {
     price: z.string().min(2, {
       message: "Price Product must be at least 2 characters."
     }),
+    status: z.boolean(),
     subCategory: z.array(userInfoSchema)
   });
 
@@ -76,6 +78,7 @@ const FormProduct = () => {
       image: "",
       nameProduct: "",
       category: "",
+      status: true,
       description: "",
       subCategory: []
     }
@@ -142,6 +145,7 @@ const FormProduct = () => {
         image: values?.image,
         category: values?.category,
         description: values?.description,
+        status: values?.status,
         price: values?.price,
         option: JSON.stringify(values?.subCategory),
         createdBy: cookie?.user?.userName
@@ -154,185 +158,206 @@ const FormProduct = () => {
   return (
     <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
       <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 max-h-full no-scrollbar">
-        <section>
-          <div className="flex items-center gap-4">
-            <MapPinPlus className="w-6 h-6" />
-            <p>Add Product</p>
-          </div>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-8 my-24 mx-auto lg:w-3/6 w-3/4 overflow-hidden">
-              <div className="col-span-3">
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => {
-                    const linkName = generateLinkImageFromGoogleDrive(field.value);
-                    return (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Image Product</FormLabel>
-                        </div>
-                        <div className="flex justify-between gap-10">
-                          <Input type="text" {...field} className="flex-1" />
-                          {linkName && (
-                            <div className="flex-1 w-48 h-48">
-                              <img
-                                src={`${linkName}`}
-                                alt={linkName}
-                                className="w-full object-cover"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
-              <div className="col-span-3">
-                <FormField
-                  control={form.control}
-                  name="nameProduct"
-                  render={({ field }) => (
+        <div className="flex items-center gap-4">
+          <MapPinPlus className="w-6 h-6" />
+          <p>Add Product</p>
+        </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8 my-24 mx-auto lg:w-3/6 w-3/4 overflow-hidden">
+            <div className="col-span-3">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => {
+                  const linkName = generateLinkImageFromGoogleDrive(field.value);
+                  return (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Name Product</FormLabel>
+                        <FormLabel className="text-base">Image Product</FormLabel>
                       </div>
-                      <Input type="text" {...field} />
+                      <div className="flex-col md:flex justify-between gap-10">
+                        <Input type="text" {...field} className="flex-1" />
+                        {linkName && (
+                          <div className="w-full h-auto mt-10 md:mt-0">
+                            <img
+                              src={`${linkName}`}
+                              alt={linkName}
+                              className="w-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-3 lg:col-span-2">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
+                  );
+                }}
+              />
+            </div>
+            <div className="col-span-3">
+              <FormField
+                control={form.control}
+                name="nameProduct"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Name Product</FormLabel>
+                    </div>
+                    <Input type="text" {...field} />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-2">
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Description</FormLabel>
+                    </div>
+                    <Textarea {...field} />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Price Product</FormLabel>
+                    </div>
+                    <Input type="text" {...field} />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Status</FormLabel>
+                    </div>
+                    <div className="flex justify-between items-center gap-6">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => {
+                  return (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Description</FormLabel>
+                        <FormLabel className="text-base">Category</FormLabel>
                       </div>
-                      <Textarea {...field} />
+                      <div>
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              disabled={allCategory.isLoading}
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-full justify-between">
+                              {field.value
+                                ? allCategory?.data?.data?.find(
+                                    (location) => location.name === field.value
+                                  )?.name
+                                : "Select Category"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search Category" />
+                              <CommandList>
+                                <CommandEmpty>No Category found.</CommandEmpty>
+                                <CommandGroup>
+                                  {allCategory?.data?.data?.map((location) => (
+                                    <CommandItem
+                                      key={location.name}
+                                      value={location.name}
+                                      onSelect={(currentValue) => {
+                                        field.onChange(currentValue);
+                                        form.setValue("subCategory", []);
+                                        setOpen(false);
+                                      }}>
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === location.name
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {location.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </FormItem>
-                  )}
-                />
-              </div>
+                  );
+                }}
+              />
+            </div>
+            {form?.getValues("category") && (
               <div className="col-span-3 lg:col-span-1">
                 <FormField
                   control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Price Product</FormLabel>
-                      </div>
-                      <Input type="text" {...field} />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-2">
-                <FormField
-                  control={form.control}
-                  name="category"
+                  name="subCategory"
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Category</FormLabel>
+                        <div className="mb-2">
+                          <FormLabel className="text-base">Sub Category</FormLabel>
                         </div>
-                        <div>
-                          <Popover open={open} onOpenChange={setOpen}>
-                            <PopoverTrigger asChild>
-                              <Button
-                                disabled={allCategory.isLoading}
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={open}
-                                className="w-full justify-between">
-                                {field.value
-                                  ? allCategory?.data?.data?.find(
-                                      (location) => location.name === field.value
-                                    )?.name
-                                  : "Select Category"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                              <Command>
-                                <CommandInput placeholder="Search Category" />
-                                <CommandList>
-                                  <CommandEmpty>No Category found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {allCategory?.data?.data?.map((location) => (
-                                      <CommandItem
-                                        key={location.name}
-                                        value={location.name}
-                                        onSelect={(currentValue) => {
-                                          field.onChange(currentValue);
-                                          form.setValue("subCategory", []);
-                                          setOpen(false);
-                                        }}>
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === location.name
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                        {location.name}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
+                        <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
                       </FormItem>
                     );
                   }}
                 />
               </div>
-              {form?.getValues("category") && (
-                <div className="col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="subCategory"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <div className="mb-2">
-                            <FormLabel className="text-base">Sub Category</FormLabel>
-                          </div>
-                          <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-              )}
+            )}
 
-              <div className="col-span-3">
-                <div className="flex justify-between items-center">
-                  <DialogCancelForm
-                    classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                    titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                    titleButtonTrigger="Cancel"
-                  />
-                  <Button
-                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                    type="submit">
-                    Add Product
-                  </Button>
-                </div>
+            <div className="col-span-3">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
+                />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  Add Product
+                </Button>
               </div>
-            </form>
-          </Form>
-        </section>
+            </div>
+          </form>
+        </Form>
       </main>
     </TemplateContainer>
   );
