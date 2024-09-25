@@ -8,7 +8,7 @@ import { Input } from "../../ui/input";
 const DrawerSelectSubCategory = ({ allSubCategory, field }) => {
   return (
     <Drawer>
-      <DrawerTrigger>
+      <DrawerTrigger className="w-full">
         <Input
           placeholder={
             field?.value?.length > 0 ? `${field.value.length} Selected` : "Select Drawer"

@@ -35,7 +35,7 @@ import { TRANSLATION } from "../../../utils/translation";
 import { logOut } from "../../../services/auth";
 import { useLoading } from "../loading";
 
-const TemplateContainer = ({ children }) => {
+const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const { updateTranslation, translation } = translationSelect();
@@ -107,7 +107,7 @@ const TemplateContainer = ({ children }) => {
   }, [mutateLogout, navigate, cookie]);
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="overflow-hidden h-screen">
+    <ResizablePanelGroup direction="horizontal" className={rootContainer}>
       {/* <ResizablePanel
         onResize={(props) => {
           if (props > 12) {
@@ -126,7 +126,7 @@ const TemplateContainer = ({ children }) => {
         {SIDEBAR_WEB}
       </ResizablePanel> */}
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={55} className="overflow-hidden h-screen">
+      <ResizablePanel defaultSize={55} className={childrenContainer}>
         <div className="flex items-center justify-between p-4 bg-white shadow-lg">
           <div className="flex flex-1 items-center gap-4">
             <Sheet>
@@ -218,7 +218,9 @@ const TemplateContainer = ({ children }) => {
 };
 
 TemplateContainer.propTypes = {
-  children: PropTypes.element
+  children: PropTypes.element,
+  rootContainer: PropTypes.string,
+  childrenContainer: PropTypes.string
 };
 
 export default TemplateContainer;
