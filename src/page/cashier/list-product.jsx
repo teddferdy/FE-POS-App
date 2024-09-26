@@ -9,11 +9,11 @@ import CardTotalMobile from "../../components/organism/card/card-total-mobile";
 import CardTotalWeb from "../../components/organism/card/card-total-web";
 import { useLoading } from "../../components/organism/loading";
 import { addMember } from "../../services/member";
+// import DialogInvoice from "../../components/organism/dialog/dialog-invoice";
 import DialogDeleteOrderList from "../../components/organism/dialog/dialog-delete-order-list";
 import DialogMember from "../../components/organism/dialog/dialogMember";
 import CategoryList from "../../components/organism/list/category-list";
 import ProductList from "../../components/organism/list/product-list";
-
 import OrderList from "../../components/organism/list/order-list";
 
 // State
@@ -76,6 +76,8 @@ const Home = () => {
   const categoryList = useQuery(["get-category"], () => getAllCategory(), {
     keepPreviousData: true
   });
+
+  console.log("order =>", order);
 
   const mutateNewMember = useMutation(addMember, {
     onMutate: () => setActive(true, null),
@@ -166,6 +168,8 @@ const Home = () => {
         resetOrder();
         cancelInvoice();
         setActive(null, null);
+
+        // tambah Function Buat Print Invoice
       }, 2000);
     },
     onError: (err) => {
@@ -293,6 +297,24 @@ const Home = () => {
           });
         }}
       />
+
+      {/* <DialogInvoice
+        order={order}
+        open
+        onClose={() =>
+          setOpenModalDelete({
+            id: null,
+            open: false
+          })
+        }
+        deleteItems={() => {
+          handleDeleteOrder(openModalDelete);
+          setOpenModalDelete({
+            id: null,
+            open: false
+          });
+        }}
+      /> */}
     </TemplateContainer>
   );
 };
