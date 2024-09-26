@@ -24,6 +24,7 @@ import ProductList from "./page/admin/product";
 import DiscountList from "./page/admin/discount";
 import ShiftList from "./page/admin/shift";
 import TypePaymentList from "./page/admin/type-payment";
+import SocialMediaList from "./page/admin/social-media";
 
 // Form
 import FormCategory from "./page/admin/category/formCategory";
@@ -33,6 +34,7 @@ import FormSubCategory from "./page/admin/sub-category/form-subcategory";
 import FormDiscount from "./page/admin/discount/formDiscount";
 import FormShift from "./page/admin/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
+import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
 
 function App() {
   const { i18n } = useTranslation();
@@ -89,6 +91,10 @@ function App() {
           path="/type-payment-list"
           element={cookie.token ? <TypePaymentList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/social-media-list"
+          element={cookie.token ? <SocialMediaList /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route
@@ -112,6 +118,10 @@ function App() {
         <Route
           path="/add-type-payment"
           element={cookie.token ? <FormTypePayment /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/add-social-media"
+          element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
         />
 
         {/* Edit */}
@@ -142,6 +152,10 @@ function App() {
         <Route
           path="/edit-type-payment/:id"
           element={cookie.token ? <FormTypePayment /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-social-media/:id"
+          element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>

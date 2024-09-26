@@ -28,6 +28,25 @@ export const sidebarMenuAdmin = [
       }
     ]
   },
+  {
+    title: "Invoice (Coming Soon)",
+    href: "/invoice-page",
+    // icon: Building,
+    children: [
+      {
+        title: "Logo Invoice (Coming Soon)",
+        href: "/logo-invoice-list"
+      },
+      {
+        title: "Footer Invoice (Coming Soon)",
+        href: "/footer-invoice-list"
+      },
+      {
+        title: "Social Media Invoice (Coming Soon)",
+        href: "/social-media-list"
+      }
+    ]
+  },
 
   {
     title: "Location",
@@ -67,6 +86,10 @@ export const sidebarMenuAdmin = [
     title: "Type Payment",
     href: "/type-payment-list"
     // icon: Settings
+  },
+  {
+    title: "Social Media",
+    href: "/social-media-list"
   }
 ];
 
