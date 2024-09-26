@@ -25,6 +25,7 @@ import DiscountList from "./page/admin/discount";
 import ShiftList from "./page/admin/shift";
 import TypePaymentList from "./page/admin/type-payment";
 import SocialMediaList from "./page/admin/social-media";
+import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 
 // Form
 import FormCategory from "./page/admin/category/formCategory";
@@ -35,6 +36,7 @@ import FormDiscount from "./page/admin/discount/formDiscount";
 import FormShift from "./page/admin/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
 import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
+import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
 
 function App() {
   const { i18n } = useTranslation();
@@ -95,6 +97,10 @@ function App() {
           path="/social-media-list"
           element={cookie.token ? <SocialMediaList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/logo-invoice-list"
+          element={cookie.token ? <InvoiceLogoList /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route
@@ -122,6 +128,10 @@ function App() {
         <Route
           path="/add-social-media"
           element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/add-invoice-logo"
+          element={cookie.token ? <FormInvoiceLogo /> : <Navigate to="/" />}
         />
 
         {/* Edit */}
@@ -156,6 +166,10 @@ function App() {
         <Route
           path="/edit-social-media/:id"
           element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-invoice-logo/:id"
+          element={cookie.token ? <FormInvoiceLogo /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
