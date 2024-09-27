@@ -29,12 +29,12 @@ export const sidebarMenuAdmin = [
     ]
   },
   {
-    title: "Invoice (Coming Soon)",
+    title: "Invoice",
     href: "/invoice-page",
     // icon: Building,
     children: [
       {
-        title: "Logo Invoice (Coming Soon)",
+        title: "Logo Invoice",
         href: "/logo-invoice-list"
       },
       {
@@ -42,8 +42,8 @@ export const sidebarMenuAdmin = [
         href: "/footer-invoice-list"
       },
       {
-        title: "Social Media Invoice (Coming Soon)",
-        href: "/social-media-list"
+        title: "Social Media Invoice",
+        href: "/social-media-invoice-list"
       }
     ]
   },

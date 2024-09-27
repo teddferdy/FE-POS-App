@@ -285,7 +285,7 @@ const FormSubCategory = () => {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
+                className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
                 <div className="col-span-2 lg:col-span-1">
                   <FormField
                     control={form.control}

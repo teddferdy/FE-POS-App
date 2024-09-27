@@ -47,3 +47,54 @@ export const activateOrNotActiveInvoiceLogo = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+// Social Media Invoice List
+export const getAllInvoiceSocialMediaByActive = async () => {
+  const { data, status } = await axiosInstance.get("/invoice/get-invoice-social-media-by-active");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getAllInvoiceSocialMedia = async () => {
+  const { data, status } = await axiosInstance.get("/invoice/get-invoice-social-media");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const addInvoiceSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.post(
+    "/invoice/add-new-invoice-social-media",
+    payload
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const editInvoiceSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/invoice/edit-invoice-social-media/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  return data;
+};
+
+export const deleteInvoiceSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.delete(
+    `/invoice/delete-invoice-social-media/${payload.id}`,
+    {
+      data: payload
+    }
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const activateOrNotActiveInvoiceSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/invoice/activate-invoice-social-media/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
