@@ -27,6 +27,7 @@ import TypePaymentList from "./page/admin/type-payment";
 import SocialMediaList from "./page/admin/social-media";
 import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
+import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 
 // Form
 import FormCategory from "./page/admin/category/formCategory";
@@ -39,6 +40,7 @@ import FormTypePayment from "./page/admin/type-payment/formTypePayment";
 import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
 import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
 import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/formInvoiceSocialMedia";
+import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
 
 function App() {
   const { i18n } = useTranslation();
@@ -107,6 +109,10 @@ function App() {
           path="/social-media-invoice-list"
           element={cookie.token ? <InvoiceSocialMediaList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/footer-invoice-list"
+          element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route
@@ -142,6 +148,10 @@ function App() {
         <Route
           path="/add-invoice-social-media"
           element={cookie.token ? <FormInvoiceSocialMedia /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/add-invoice-footer"
+          element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
         />
 
         {/* Edit */}
@@ -184,6 +194,10 @@ function App() {
         <Route
           path="/edit-invoice-social-media/:id"
           element={cookie.token ? <FormInvoiceSocialMedia /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/edit-invoice-footer/:id"
+          element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>

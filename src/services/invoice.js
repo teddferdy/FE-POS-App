@@ -98,3 +98,51 @@ export const activateOrNotActiveInvoiceSocialMedia = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+// Invoice Footer
+export const getAllInvoiceFooterByActive = async () => {
+  const { data, status } = await axiosInstance.get("/invoice/get-invoice-footer-by-active");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getAllInvoiceFooter = async () => {
+  const { data, status } = await axiosInstance.get("/invoice/get-invoice-footer");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const addInvoiceFooter = async (payload) => {
+  const { data, status } = await axiosInstance.post("/invoice/add-new-invoice-footer", payload);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const editInvoiceFooter = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/invoice/edit-invoice-footer/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  return data;
+};
+
+export const deleteInvoiceFooter = async (payload) => {
+  const { data, status } = await axiosInstance.delete(
+    `/invoice/delete-invoice-footer/${payload.id}`,
+    {
+      data: payload
+    }
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const activateOrNotActiveInvoiceFooter = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/invoice/activate-invoice-footer/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
