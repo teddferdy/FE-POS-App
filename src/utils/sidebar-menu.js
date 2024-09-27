@@ -38,7 +38,7 @@ export const sidebarMenuAdmin = [
         href: "/logo-invoice-list"
       },
       {
-        title: "Footer Invoice (Coming Soon)",
+        title: "Footer Invoice",
         href: "/footer-invoice-list"
       },
       {
