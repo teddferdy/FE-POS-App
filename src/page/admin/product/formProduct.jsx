@@ -48,7 +48,6 @@ const FormProduct = () => {
   const [cookie] = useCookies();
   const { setActive } = useLoading();
   const navigate = useNavigate();
-  const [openMenu, setOpenMenu] = useState(false);
   const [open, setOpen] = useState(false);
 
   const formSchema = z.object({
@@ -156,16 +155,16 @@ const FormProduct = () => {
   };
 
   return (
-    <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 max-h-full no-scrollbar">
-        <div className="flex items-center gap-4">
-          <MapPinPlus className="w-6 h-6" />
-          <p>Add Product</p>
-        </div>
+    <TemplateContainer>
+      <div className="flex items-center gap-4 p-4">
+        <MapPinPlus className="w-6 h-6" />
+        <p>Add Product</p>
+      </div>
+      <div className="w-full lg:w-3/4 mx-auto">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8 my-24 mx-auto lg:w-3/6 w-3/4 overflow-hidden">
+            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
             <div className="col-span-3">
               <FormField
                 control={form.control}
@@ -358,7 +357,7 @@ const FormProduct = () => {
             </div>
           </form>
         </Form>
-      </main>
+      </div>
     </TemplateContainer>
   );
 };

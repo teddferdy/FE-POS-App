@@ -3,7 +3,7 @@ import React from "react";
 import { useCookies } from "react-cookie";
 
 // Component
-import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
+// import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
 import { Button } from "../../ui/button";
 import DrawerDetailOrderMobile from "../drawer/drawer-detail-order-mobile";
 
@@ -56,7 +56,7 @@ const CardTotalMobile = ({
       </div>
       <div className="flex justify-between items-center">
         {/* Dialog Custom Invoice */}
-        <DialogCustomInvoice />
+        {/* <DialogCustomInvoice /> */}
 
         <div className="flex items-center gap-10">
           <Button

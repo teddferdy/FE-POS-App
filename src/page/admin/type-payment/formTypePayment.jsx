@@ -125,87 +125,83 @@ const FormTypePayment = () => {
 
   return (
     <TemplateContainer>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col h-screen p-4 gap-6">
-        <div className="flex items-center gap-4">
-          <MapPinPlus className="w-6 h-6" />
-          <p>Add Location</p>
-        </div>
+      <div className="flex items-center gap-4 p-4">
+        <MapPinPlus className="w-6 h-6" />
+        <p>Add Location</p>
+      </div>
 
-        <div className="w-full lg:w-3/4 mx-auto">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-8 overflow-scroll h-screen">
+      <div className="w-full lg:w-3/4 mx-auto">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel className="text-base">name</FormLabel>
+                  </div>
+                  <Input type="text" {...field} />
+                  {form.formState.errors.name && (
+                    <FormMessage>{form.formState.errors.name}</FormMessage>
+                  )}
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-between items-center gap-4">
               <FormField
                 control={form.control}
-                name="name"
+                name="description"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex-1">
                     <div className="mb-4">
-                      <FormLabel className="text-base">name</FormLabel>
+                      <FormLabel className="text-base">description</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
-                    {form.formState.errors.name && (
-                      <FormMessage>{form.formState.errors.name}</FormMessage>
+                    <Textarea {...field} />
+                    {form.formState.errors.description && (
+                      <FormMessage>{form.formState.errors.description}</FormMessage>
                     )}
                   </FormItem>
                 )}
               />
-
-              <div className="flex justify-between items-center gap-4">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <div className="mb-4">
-                        <FormLabel className="text-base">description</FormLabel>
-                      </div>
-                      <Textarea {...field} />
-                      {form.formState.errors.description && (
-                        <FormMessage>{form.formState.errors.description}</FormMessage>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Is Active</FormLabel>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex justify-between items-center">
-                <DialogCancelForm
-                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                  titleButtonTrigger="Cancel"
-                />
-                <Button
-                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                  type="submit">
-                  Yes
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </main>
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Is Active</FormLabel>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <DialogCancelForm
+                classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                titleButtonTrigger="Cancel"
+              />
+              <Button
+                className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                type="submit">
+                Yes
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </TemplateContainer>
   );
 };

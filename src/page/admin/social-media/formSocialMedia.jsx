@@ -113,50 +113,48 @@ const FormSocialMedia = () => {
 
   return (
     <TemplateContainer>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col h-screen p-4 gap-6">
-        <div className="flex items-center gap-4">
-          <AlarmClockPlus className="w-6 h-6" />
-          <p>Add Social Media</p>
-        </div>
+      <div className="flex items-center gap-4 p-4">
+        <AlarmClockPlus className="w-6 h-6" />
+        <p>Add Social Media</p>
+      </div>
 
-        <div className="w-full lg:w-3/4 mx-auto">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
-              <div className="col-span-2 lg:col-span-1">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Name Social Media</FormLabel>
-                      </div>
-                      <Input type="text" {...field} />
-                    </FormItem>
-                  )}
+      <div className="w-full lg:w-3/4 mx-auto">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Name Social Media</FormLabel>
+                    </div>
+                    <Input type="text" {...field} />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
                 />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  Add Shift
+                </Button>
               </div>
-
-              <div className="col-span-2">
-                <div className="flex justify-between items-center">
-                  <DialogCancelForm
-                    classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                    titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                    titleButtonTrigger="Cancel"
-                  />
-                  <Button
-                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                    type="submit">
-                    Add Shift
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </main>
+            </div>
+          </form>
+        </Form>
+      </div>
     </TemplateContainer>
   );
 };
