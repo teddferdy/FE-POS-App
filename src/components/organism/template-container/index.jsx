@@ -5,7 +5,7 @@ import SideBarMenu from "../sidebar/sidebar-menu";
 import SideBarProfile from "../sidebar/sidebar-profile";
 import { useMutation } from "react-query";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import AvatarUser from "../avatar-user";
 import {
@@ -18,7 +18,7 @@ import {
 } from "../../ui/select";
 
 // Import Swiper React components
-import { Menu } from "lucide-react";
+import { Menu, ArrowBigLeft } from "lucide-react";
 
 import { Button } from "../../ui/button";
 
@@ -35,11 +35,16 @@ import { TRANSLATION } from "../../../utils/translation";
 import { logOut } from "../../../services/auth";
 import { useLoading } from "../loading";
 
+import { urlWithArrowBack } from "../../../utils/sidebar-menu";
+
 const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log("location =>", location);
+
   const { updateTranslation, translation } = translationSelect();
-  // const [openMenu, setOpenMenu] = useState(false);
+
   const [openSheet, setOpenSheet] = useState(false);
   const [search, setSearch] = useState("");
   const [cookie] = useCookies(["user"]);
@@ -76,17 +81,12 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
     }
   });
 
-  // Side Bar Web
-  // const SIDEBAR_WEB = useMemo(() => {
-  //   if (cookie?.user) {
-  //     return (
-  //       <SideBarMenu
-  //         classNameContainer={`${openMenu ? "block" : "hidden"}`}
-  //         user={cookie?.user || {}}
-  //       />
-  //     );
-  //   }
-  // }, [cookie, openMenu]);
+  const arrowBackButton = urlWithArrowBack?.find((items) => {
+    console.log("ITEMS =>", items);
+    return items?.pathName === location?.pathname;
+  });
+
+  console.log("arrowBackButton =>", arrowBackButton);
 
   // Side Mobile
   const SIDEBAR_MOBILE = useMemo(() => {
@@ -108,23 +108,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
 
   return (
     <ResizablePanelGroup direction="horizontal" className={rootContainer}>
-      {/* <ResizablePanel
-        onResize={(props) => {
-          if (props > 12) {
-            setOpenMenu(true);
-          } else {
-            setOpenMenu(false);
-          }
-        }}
-        defaultSize={4}
-        maxSize={18}
-        minSize={6}
-        className="hidden overflow-scroll h-screen lg:block no-scrollbar"
-        style={{
-          overflow: "scroll"
-        }}>
-        {SIDEBAR_WEB}
-      </ResizablePanel> */}
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className={childrenContainer}>
         <div className="flex items-center justify-between p-4 bg-white shadow-lg fixed w-full z-10">
@@ -139,15 +122,26 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                 {SIDEBAR_MOBILE}
               </SheetContent>
             </Sheet>
-            <input
-              placeholder="Cari...."
-              className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
-              type="text"
-              id="search"
-              name="search"
-              onChange={setSearch}
-              value={search}
-            />
+            {arrowBackButton ? (
+              <div className="flex items-center gap-4">
+                <div
+                  className="p-2 bg-[#6853F0] rounded-md cursor-pointer"
+                  onClick={() => navigate(arrowBackButton.url)}>
+                  <ArrowBigLeft height={30} color="#fff" />
+                </div>
+                <p className="text-[#6853F0] text-base font-bold">{arrowBackButton.title}</p>
+              </div>
+            ) : (
+              <input
+                placeholder="Cari...."
+                className="w-full p-2 border-2 border-[#C5C5C5] rounded-full outline-none focus:bg-gray-300"
+                type="text"
+                id="search"
+                name="search"
+                onChange={(e) => setSearch(e.target.value)}
+                value={search}
+              />
+            )}
           </div>
           <div className="flex flex-[0.2] md:flex-1 items-end justify-end gap-10">
             <div className="hidden md:block">
@@ -191,8 +185,12 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               </Select>
             </div>
             <div className="hidden md:flex md:flex-col md:gap-1">
-              <p className="text-base font-medium text-[#737373]">welcome, John!</p>
-              <p className="text-xs font-medium text-[#D9D9D9]">Cashier on Bonta Coffe</p>
+              <p className="text-base font-medium text-[#737373]">
+                welcome, {cookie?.user?.userName}!
+              </p>
+              <p className="text-xs font-medium text-[#D9D9D9]">
+                Cashier on {cookie?.user?.location}
+              </p>
             </div>
 
             <Sheet open={openSheet} onOpenChange={() => setOpenSheet(!openSheet)}>
@@ -203,8 +201,8 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               </SheetTrigger>
               <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>Hello, John</SheetTitle>
-                  <SheetDescription>Cashier on Bonta Coffe</SheetDescription>
+                  <SheetTitle>Hello, {cookie?.user?.userName}!</SheetTitle>
+                  <SheetDescription>Cashier on {cookie?.user?.location}</SheetDescription>
                 </SheetHeader>
                 {SIDEBAR_PROFILE}
               </SheetContent>

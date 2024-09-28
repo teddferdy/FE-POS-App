@@ -64,7 +64,7 @@ export const sidebarMenuAdmin = [
     // icon: Building,
     children: [
       {
-        title: "Shift",
+        title: "Shift List",
         href: "/shift-list"
       },
       {
@@ -103,5 +103,76 @@ export const sidebarMenuUser = [
     title: "Member List",
     href: "/member-list"
     // icon: GraduationCap
+  }
+];
+
+// ARROW BACK
+export const urlWithArrowBack = [
+  {
+    url: -1,
+    title: "Admin Menu",
+    pathName: "/admin-page"
+  },
+
+  // List Page
+  {
+    url: -1,
+    title: "Member List",
+    pathName: "/member-list"
+  },
+  {
+    url: -1,
+    title: "Social Media",
+    pathName: "/social-media-list"
+  },
+  {
+    url: -1,
+    title: "Type Payment",
+    pathName: "/type-payment-list"
+  },
+  {
+    url: -1,
+    title: "Shift List",
+    pathName: "/shift-list"
+  },
+  {
+    url: -1,
+    title: "Discount",
+    pathName: "/discount-list"
+  },
+  {
+    url: -1,
+    title: "Location",
+    pathName: "/location-list"
+  },
+  {
+    url: -1,
+    title: "Social Media Invoice",
+    pathName: "/social-media-invoice-list"
+  },
+  {
+    url: -1,
+    title: "Footer Invoice",
+    pathName: "/footer-invoice-list"
+  },
+  {
+    url: -1,
+    title: "Logo Invoice",
+    pathName: "/logo-invoice-list"
+  },
+  {
+    url: -1,
+    title: "Product",
+    pathName: "/product-list"
+  },
+  {
+    url: -1,
+    title: "Sub Category",
+    pathName: "/sub-category-list"
+  },
+  {
+    url: -1,
+    title: "Category",
+    pathName: "/category-list"
   }
 ];
