@@ -9,7 +9,7 @@ import CardTotalMobile from "../../components/organism/card/card-total-mobile";
 import CardTotalWeb from "../../components/organism/card/card-total-web";
 import { useLoading } from "../../components/organism/loading";
 import { addMember } from "../../services/member";
-// import DialogInvoice from "../../components/organism/dialog/dialog-invoice";
+import DialogInvoice from "../../components/organism/dialog/dialog-invoice";
 import DialogDeleteOrderList from "../../components/organism/dialog/dialog-delete-order-list";
 import DialogMember from "../../components/organism/dialog/dialogMember";
 import CategoryList from "../../components/organism/list/category-list";
@@ -17,19 +17,26 @@ import ProductList from "../../components/organism/list/product-list";
 import OrderList from "../../components/organism/list/order-list";
 
 // State
-import { categorySelect } from "../../state/category";
 import { invoice } from "../../state/invoice";
+import { categorySelect } from "../../state/category";
+import { checkout } from "../../state/checkout";
+import { orderList } from "../../state/order-list";
 
 // Services
 import { getAllProduct } from "../../services/product";
-import { orderList } from "../../state/order-list";
 import { getAllCategory } from "../../services/category";
 import { postCheckoutItem, cancelCheckoutItem, checkoutItem } from "../../services/checkout";
+import {
+  getAllInvoiceLogoByActive,
+  getAllInvoiceSocialMediaByActive,
+  getAllInvoiceFooterByActive
+} from "../../services/invoice";
 
 const Home = () => {
   const { setActive } = useLoading();
   const { category, updateCategory } = categorySelect();
-  const { updateInvoice, cancelInvoice, data } = invoice();
+  const { updateCheckout, cancelCheckout, data } = checkout();
+  const { data: dataInvoice, resetInvoice, updateInvoiceNumber, updateInvoice } = invoice();
   const [hasMember, setHasMember] = useState(false);
   const [openFilterCategory, setOpenFilterCategory] = useState(false);
 
@@ -44,8 +51,8 @@ const Home = () => {
     decrementOrder,
     incrementOrder,
     handleDeleteOrder,
-    handleUpdateOptionProduct,
-    resetOrder
+    handleUpdateOptionProduct
+    // resetOrder
   } = orderList();
 
   // Dialog Member
@@ -57,8 +64,35 @@ const Home = () => {
 
   // Type Payment
   const [value, setValue] = useState("");
+  // Type Order
+  const [typeOrder, setTypeOrder] = useState("Dine-in");
 
   // Query
+
+  const getInvoiceLogo = useQuery(
+    ["get-invoice-logo", category],
+    () => getAllInvoiceLogoByActive(),
+    {
+      keepPreviousData: true
+    }
+  );
+
+  const getInvoiceFooter = useQuery(
+    ["get-invoice-footer", category],
+    () => getAllInvoiceFooterByActive(),
+    {
+      keepPreviousData: true
+    }
+  );
+
+  const getInvoiceSocialMedia = useQuery(
+    ["get-invoice-social-medi", category],
+    () => getAllInvoiceSocialMediaByActive(),
+    {
+      keepPreviousData: true
+    }
+  );
+
   const productList = useQuery(
     ["get-product", category],
     () =>
@@ -75,8 +109,6 @@ const Home = () => {
   const categoryList = useQuery(["get-category"], () => getAllCategory(), {
     keepPreviousData: true
   });
-
-  console.log("order =>", order);
 
   const mutateNewMember = useMutation(addMember, {
     onMutate: () => setActive(true, null),
@@ -108,6 +140,7 @@ const Home = () => {
     onMutate: () => setActive(true, null),
     onSuccess: (success) => {
       const { data } = success;
+      console.log("DATA =>", data);
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -115,7 +148,11 @@ const Home = () => {
         });
       }, 1000);
       setTimeout(() => {
-        updateInvoice(data);
+        updateCheckout(data);
+        updateInvoiceNumber({
+          noInvoice: data.invoice,
+          cashierName: data.cashierName
+        });
         setActive(null, null);
       }, 2000);
     },
@@ -137,7 +174,8 @@ const Home = () => {
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
-        cancelInvoice();
+        cancelCheckout();
+        resetInvoice();
         setActive(null, null);
       }, 1000);
     },
@@ -156,7 +194,9 @@ const Home = () => {
 
   const mutateCheckoutItem = useMutation(checkoutItem, {
     onMutate: () => setActive(true, null),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("DATA DUDE =>", data);
+
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -164,9 +204,16 @@ const Home = () => {
         });
       }, 1000);
       setTimeout(() => {
-        resetOrder();
-        cancelInvoice();
+        // resetOrder();
+        cancelCheckout();
         setActive(null, null);
+        updateInvoice({
+          typeOrder: typeOrder,
+          isMember: hasMember,
+          typePayment: value,
+          memberName: memberState.userName,
+          memberPhoneNumber: memberState.phoneNumber
+        });
 
         // tambah Function Buat Print Invoice
       }, 2000);
@@ -233,13 +280,14 @@ const Home = () => {
           />
         </div>
       </div>
-
       <DialogCheckout
         order={order}
         value={value}
         setValue={(val) => setValue(val)}
         data={data}
         showDialog={data?.open}
+        typeOrder={typeOrder}
+        setTypeOrder={(val) => setTypeOrder(val)}
         memberState={memberState}
         handleCloseDialog={() => mutateCancelItem.mutate(data)}
         submitNewMember={(value) => mutateNewMember.mutate(value)}
@@ -264,7 +312,6 @@ const Home = () => {
           mutateCheckoutItem.mutate(body);
         }}
       />
-
       <DialogMember
         dialogMember={dialogMember}
         setDialogMember={() => setDialogMember(!dialogMember)}
@@ -276,7 +323,6 @@ const Home = () => {
           });
         }}
       />
-
       <DialogDeleteOrderList
         open={openModalDelete.open}
         onClose={() =>
@@ -294,23 +340,14 @@ const Home = () => {
         }}
       />
 
-      {/* <DialogInvoice
+      <DialogInvoice
         order={order}
-        open
-        onClose={() =>
-          setOpenModalDelete({
-            id: null,
-            open: false
-          })
-        }
-        deleteItems={() => {
-          handleDeleteOrder(openModalDelete);
-          setOpenModalDelete({
-            id: null,
-            open: false
-          });
-        }}
-      /> */}
+        open={dataInvoice.open}
+        data={dataInvoice}
+        dataInvoiceLogo={getInvoiceLogo?.data?.data?.[0] || []}
+        dataInvoiceFooter={getInvoiceFooter?.data?.data?.[0] || []}
+        dataInvoiceSocialMedia={getInvoiceSocialMedia?.data?.data?.[0] || []}
+      />
     </TemplateContainer>
   );
 };

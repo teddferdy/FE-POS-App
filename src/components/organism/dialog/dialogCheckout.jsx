@@ -28,6 +28,7 @@ import {
   CommandItem,
   CommandList
 } from "../../ui/command";
+import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 
 // Services
@@ -45,10 +46,10 @@ const DialogCheckout = ({
   hasMember,
   setHasMember,
   handleCloseDialog,
-
+  typeOrder,
+  setTypeOrder,
   value,
   setValue,
-
   submitNewMember,
   memberState,
   handleSearchDialog
@@ -117,6 +118,17 @@ const DialogCheckout = ({
           <DialogTitle>Check Out Items</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Tabs */}
+          <Tabs
+            defaultValue={typeOrder}
+            className="flex justify-center"
+            onValueChange={(val) => setTypeOrder(val)}>
+            <TabsList>
+              <TabsTrigger value="Dine-in">Dine-in</TabsTrigger>
+              <TabsTrigger value="Take Away">Take Away</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Number Invoice */}
           <div className="flex items-center justify-between">
             <p>Number Invoice</p>
@@ -197,10 +209,7 @@ const DialogCheckout = ({
                   <div className="overflow-scroll no-scrollbar flex-1 flex flex-col gap-4 px-8">
                     {order.map((items, index) => {
                       console.log("INI ITEMS =>", items);
-
                       let extraPrice = 0;
-                      let price = 0;
-
                       const getOptionData = items?.options?.map((v) => {
                         console.log("VVV =>", v);
 
@@ -223,8 +232,7 @@ const DialogCheckout = ({
                         extraPrice += Number(element);
                       });
 
-                      console.log(extraPrice, price);
-
+                      const totalingPrice = Number(extraPrice) * items?.count;
                       const linkName = generateLinkImageFromGoogleDrive(items?.img);
                       return (
                         <div
@@ -246,8 +254,7 @@ const DialogCheckout = ({
                               Harga {formatCurrencyRupiah(Number(items?.price))} / pieces
                             </p>
                             <p className="text-[#6853F0] font-semibold text-base">
-                              Total Price:{" "}
-                              {formatCurrencyRupiah(Number(extraPrice) + items?.totalPrice)}
+                              Total Price: {formatCurrencyRupiah(totalingPrice + items?.totalPrice)}
                             </p>
                           </div>
                           <div className="flex flex-col md:flex-row gap-4 col-start-3 md:col-start-4">

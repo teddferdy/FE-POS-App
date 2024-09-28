@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 const INITIAL_STATE = {
-  id: 0,
   open: false,
-  invoice: "",
-  totalPrice: "",
-  cashierName: "",
-  totalItems: ""
+  typeOrder: "",
+  noInvoice: "",
+  isMember: false,
+  typePayment: "",
+  memberName: "",
+  memberPhoneNumber: "",
+  cashierName: ""
 };
 
 export const invoice = create(
@@ -15,20 +17,34 @@ export const invoice = create(
     (set) => ({
       data: INITIAL_STATE,
       updateInvoice: (invoiceData) => {
-        console.log("INVOICE DATA =>", invoiceData);
-        return set({
-          data: {
-            id: invoiceData.id,
-            dateOrder: invoiceData.dateOrder,
-            open: true,
-            invoice: invoiceData.invoice,
-            totalPrice: invoiceData.totalPrice,
-            cashierName: invoiceData.cashierName,
-            totalItems: invoiceData.totalQuantity
-          }
+        return set((items) => {
+          return {
+            data: {
+              ...items.data,
+              open: true,
+              typeOrder: invoiceData.typeOrder,
+              isMember: invoiceData.isMember,
+              typePayment: invoiceData.typePayment,
+              memberName: invoiceData.memberName,
+              memberPhoneNumber: invoiceData.memberPhoneNumber
+            }
+          };
         });
       },
-      cancelInvoice: () => {
+      updateInvoiceNumber: (invoiceData) => {
+        console.log("INVOICE DATA =>", invoiceData);
+
+        return set((items) => {
+          return {
+            data: {
+              ...items.data,
+              noInvoice: invoiceData.noInvoice,
+              cashierName: invoiceData.cashierName
+            }
+          };
+        });
+      },
+      resetInvoice: () => {
         return set({
           data: INITIAL_STATE
         });
