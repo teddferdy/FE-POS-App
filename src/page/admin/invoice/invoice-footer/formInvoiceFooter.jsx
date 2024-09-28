@@ -148,9 +148,9 @@ const FormInvoiceFooter = () => {
 
                     <FormField
                       control={form.control}
-                      name={`footerList.${index}.name`} // Bind dropdown to field value
+                      name={`footerList.${index}.content`} // Bind dropdown to field value
                       render={({ field }) => (
-                        <Input type="text" {...field} defaultValue={items.name} />
+                        <Input type="text" {...field} defaultValue={items.content} />
                       )}
                     />
                   </FormItem>

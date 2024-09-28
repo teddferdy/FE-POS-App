@@ -56,6 +56,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [addressState, setAddressState] = useState("");
   const { updateTranslation, translation } = translationSelect();
 
   const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
@@ -89,6 +90,9 @@ const Register = () => {
       location: z.string().min(1, {
         message: "Location Field Required"
       }),
+      address: z.string().min(1, {
+        message: "Location Field Required"
+      }),
       password: z.string().min(4, {
         message: "Password must be at least 4 characters."
       }),
@@ -112,6 +116,7 @@ const Register = () => {
       password: "",
       email: "",
       location: "",
+      address: "",
       confirmPassword: ""
     }
   });
@@ -122,6 +127,12 @@ const Register = () => {
       form.setValue("location", value);
     }
   }, [value]);
+
+  useEffect(() => {
+    if (addressState) {
+      form.setValue("address", addressState);
+    }
+  }, [addressState]);
 
   // QUERY
   const mutateRegister = useMutation(register, {
@@ -259,6 +270,7 @@ const Register = () => {
                                       value={location.nameStore}
                                       onSelect={(currentValue) => {
                                         setValue(currentValue === value ? "" : currentValue);
+                                        setAddressState(location.address);
                                         setOpen(false);
                                       }}>
                                       <Check
