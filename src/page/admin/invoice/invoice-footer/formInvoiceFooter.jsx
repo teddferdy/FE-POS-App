@@ -181,90 +181,88 @@ const FormInvoiceFooter = () => {
 
   return (
     <TemplateContainer>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col h-screen p-4 gap-6">
-        <div className="flex items-center gap-4">
-          <Percent className="w-6 h-6" />
-          <p>Add Footer Invoice</p>
-        </div>
+      <div className="flex items-center gap-4 p-4">
+        <Percent className="w-6 h-6" />
+        <p>Add Footer Invoice</p>
+      </div>
 
-        <div className="w-full lg:w-3/4 mx-auto">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
-              <div className="col-span-2 md:col-span-1">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => {
-                    return (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Name Template Footer Invoice</FormLabel>
-                        </div>
-                        <Input type="text" {...field} className="flex-1" />
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
+      <div className="w-full lg:w-3/4 mx-auto">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
+            <div className="col-span-2 md:col-span-1">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Status</FormLabel>
+                        <FormLabel className="text-base">Name Template Footer Invoice</FormLabel>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
+                      <Input type="text" {...field} className="flex-1" />
                     </FormItem>
-                  )}
-                />
-              </div>
+                  );
+                }}
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Status</FormLabel>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              {/* Form Adding Option */}
-              {ADDING_OPTION}
-              {/* End Form Adding Option */}
+            {/* Form Adding Option */}
+            {ADDING_OPTION}
+            {/* End Form Adding Option */}
 
-              {/* Button Adding Option */}
-              <div className="col-span-2 flex justify-center cursor-pointer">
-                <div
-                  className="col-span-2"
-                  onClick={() =>
-                    append({
-                      content: ""
-                    })
-                  }>
-                  Add Footer List
-                </div>
+            {/* Button Adding Option */}
+            <div className="col-span-2 flex justify-center cursor-pointer">
+              <div
+                className="col-span-2"
+                onClick={() =>
+                  append({
+                    content: ""
+                  })
+                }>
+                Add Footer List
               </div>
+            </div>
 
-              <div className="col-span-2 flex justify-between items-center">
-                <DialogCancelForm
-                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                  titleButtonTrigger="Cancel"
-                />
-                <Button
-                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                  type="submit">
-                  Yes
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      </main>
+            <div className="col-span-2 flex justify-between items-center">
+              <DialogCancelForm
+                classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                titleButtonTrigger="Cancel"
+              />
+              <Button
+                className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                type="submit">
+                Yes
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </TemplateContainer>
   );
 };

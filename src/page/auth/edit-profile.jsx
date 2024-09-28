@@ -15,7 +15,6 @@ const MAX_FILE_SIZE = 1024 * 1024 * 5;
 const ACCEPTED_IMAGE_TYPES = ["jpeg", "jpg", "png", "webp"];
 
 const EditProfile = () => {
-  const [openMenu, setOpenMenu] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const formSchema = z.object({
@@ -47,7 +46,7 @@ const EditProfile = () => {
   };
 
   return (
-    <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
+    <TemplateContainer>
       <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 h-full">
         <section>
           <div className="h-52 lg:h-48 w-full bg-[#6853F0] relative">

@@ -138,124 +138,122 @@ const FormShift = () => {
 
   return (
     <TemplateContainer>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col h-screen p-4 gap-6">
-        <div className="flex items-center gap-4">
-          <AlarmClockPlus className="w-6 h-6" />
-          <p>Add Shift</p>
-        </div>
+      <div className="flex items-center gap-4 p-4">
+        <AlarmClockPlus className="w-6 h-6" />
+        <p>Add Shift</p>
+      </div>
 
-        <div className="w-full lg:w-3/4 mx-auto">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
-              <div className="col-span-2 lg:col-span-1">
-                <FormField
-                  control={form.control}
-                  name="nameShift"
-                  render={({ field }) => (
+      <div className="w-full lg:w-3/4 mx-auto">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="nameShift"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Name Shift</FormLabel>
+                    </div>
+                    <Input type="text" {...field} />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => {
+                  return (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Name Shift</FormLabel>
+                        <FormLabel className="text-base">Description</FormLabel>
                       </div>
-                      <Input type="text" {...field} />
+                      <Textarea {...field} />
                     </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-2 lg:col-span-1">
+                  );
+                }}
+              />
+            </div>
+
+            <div className="flex py-6 items-start gap-6 justify-between col-span-2">
+              <div className="flex-1">
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="startHour"
                   render={({ field }) => {
                     return (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">Description</FormLabel>
+                          <FormLabel className="text-base">Start Hour</FormLabel>
                         </div>
-                        <Textarea {...field} />
+                        <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
                       </FormItem>
                     );
                   }}
                 />
               </div>
-
-              <div className="flex py-6 items-start gap-6 justify-between col-span-2">
-                <div className="flex-1">
-                  <FormField
-                    control={form.control}
-                    name="startHour"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">Start Hour</FormLabel>
-                          </div>
-                          <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div className="flex-1 flex-col">
-                  <FormField
-                    control={form.control}
-                    name="endHour"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">End Hour</FormLabel>
-                          </div>
-                          <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div className="flex justify-end self-center -mt-2">
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
+              <div className="flex-1 flex-col">
+                <FormField
+                  control={form.control}
+                  name="endHour"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">Is Active</FormLabel>
+                          <FormLabel className="text-base">End Hour</FormLabel>
                         </div>
-                        <div className="flex items-center gap-6">
-                          <p>Not Active</p>
-                          <Switch
-                            name={field.name}
-                            id={field.name}
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                          <p>Active</p>
-                        </div>
+                        <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
                       </FormItem>
-                    )}
-                  />
-                </div>
+                    );
+                  }}
+                />
               </div>
+              <div className="flex justify-end self-center -mt-2">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Is Active</FormLabel>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
-              <div className="col-span-2">
-                <div className="flex justify-between items-center">
-                  <DialogCancelForm
-                    classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                    titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                    titleButtonTrigger="Cancel"
-                  />
-                  <Button
-                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                    type="submit">
-                    Add Shift
-                  </Button>
-                </div>
+            <div className="col-span-2">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
+                />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  Add Shift
+                </Button>
               </div>
-            </form>
-          </Form>
-        </div>
-      </main>
+            </div>
+          </form>
+        </Form>
+      </div>
     </TemplateContainer>
   );
 };

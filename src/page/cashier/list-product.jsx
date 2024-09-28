@@ -31,7 +31,6 @@ const Home = () => {
   const { category, updateCategory } = categorySelect();
   const { updateInvoice, cancelInvoice, data } = invoice();
   const [hasMember, setHasMember] = useState(false);
-  const [openMenu, setOpenMenu] = useState(false);
   const [openFilterCategory, setOpenFilterCategory] = useState(false);
 
   const [openModalDelete, setOpenModalDelete] = useState({
@@ -187,8 +186,6 @@ const Home = () => {
 
   return (
     <TemplateContainer
-      setOpenMenu={(val) => setOpenMenu(val)}
-      openMenu={openMenu}
       rootContainer="overflow-hidden h-screen"
       childrenContainer="overflow-hidden h-screen">
       <div className="flex h-screen border-t-2 border-[#ffffff10] relative">
@@ -232,7 +229,6 @@ const Home = () => {
 
           <CardTotalWeb
             order={order}
-            openMenu={openMenu}
             handleCheckout={(payload) => mutateAddCartCheckoutItem.mutate(payload)}
           />
         </div>

@@ -43,8 +43,10 @@ import {
 
 // Utils
 import { formatCurrencyRupiah } from "../../utils/formatter-currency";
+import { useNavigate } from "react-router-dom";
 
 const OverviewPage = () => {
+  const navigate = useNavigate();
   const dates = new Date();
   const firtDate = new Date(dates.getFullYear(), dates.getMonth(), 1);
   const lastDate = new Date(dates.getFullYear(), dates.getMonth() + 1, 0);
@@ -167,7 +169,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-green-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Product :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/product-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <div className="flex-col gap-4">
               <div className="flex justify-between items-center">
@@ -187,7 +191,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-yellow-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Category :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/category-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <div className="flex-col gap-4">
               <div className="flex justify-between items-center">
@@ -207,7 +213,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-blue-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Outlet / Location :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/location-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <div className="flex-col gap-4">
               <div className="flex justify-between items-center">
@@ -227,7 +235,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-orange-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Member :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/member-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <div className="flex-col gap-4">
               <div className="flex justify-between items-center">
@@ -319,7 +329,9 @@ const OverviewPage = () => {
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Category List :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/category-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <OverviewCategoryList data={tableCategoryList} />
           </div>
@@ -329,14 +341,18 @@ const OverviewPage = () => {
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Member List :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/member-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <OverviewMembertList data={tableMemberList} />
           </div>
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Location List :</h2>
-              <p>See All</p>
+              <p onClick={() => navigate("/location-list")} className="cursor-pointer">
+                See All
+              </p>
             </div>
             <OverviewLocationList data={tableLocationList} />
           </div>
@@ -344,7 +360,9 @@ const OverviewPage = () => {
         <div className="p-4 shadow-lg w-full h-96 rounded-lg flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2>Product List :</h2>
-            <p>See All</p>
+            <p onClick={() => navigate("/product-list")} className="cursor-pointer">
+              See All
+            </p>
           </div>
           <OverviewProductList data={tableProductList} />
         </div>

@@ -127,7 +127,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
       </ResizablePanel> */}
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className={childrenContainer}>
-        <div className="flex items-center justify-between p-4 bg-white shadow-lg">
+        <div className="flex items-center justify-between p-4 bg-white shadow-lg fixed w-full z-10">
           <div className="flex flex-1 items-center gap-4">
             <Sheet>
               <SheetTrigger asChild>
@@ -211,7 +211,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
             </Sheet>
           </div>
         </div>
-        {children}
+        <div className="mt-[75px]">{children}</div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

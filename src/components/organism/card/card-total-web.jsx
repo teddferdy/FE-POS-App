@@ -3,14 +3,14 @@ import React from "react";
 import { useCookies } from "react-cookie";
 
 // Component
-import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
+// import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
 import { Button } from "../../ui/button";
 // import DialogCheckout from "../dialog/dialogCheckout";
 
 // Utils
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
-const CardTotalWeb = ({ order, openMenu, handleCheckout }) => {
+const CardTotalWeb = ({ order, handleCheckout }) => {
   const [cookie] = useCookies(["user"]);
   const totalItems = order.length;
   let extraPrice = 0;
@@ -40,7 +40,7 @@ const CardTotalWeb = ({ order, openMenu, handleCheckout }) => {
 
   return (
     <div
-      className={`${!openMenu ? "w-[27%]" : "w-[24%]"}  border-t border-[#D9D9D9] flex flex-col gap-4 py-4 px-8 fixed bottom-0 z-10 bg-white`}>
+      className={`w-[28%]  border-t border-[#D9D9D9] flex flex-col gap-4 py-4 px-8 fixed bottom-0 z-10 bg-white`}>
       <div className="flex justify-between items-center">
         <p className="text-[#737373] text-lg font-semibold">Total Items :</p>
         <p className="text-[#737373] text-lg font-semibold">{totalItems} Items</p>
@@ -53,11 +53,11 @@ const CardTotalWeb = ({ order, openMenu, handleCheckout }) => {
       </div>
       <div className="flex justify-between items-center">
         {/* Dialog Custom Invoice */}
-        <DialogCustomInvoice />
+        {/* <DialogCustomInvoice /> */}
 
         {/* Dialog Checkout  */}
         <Button
-          className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full"
+          className="px-3 w-full py-2 bg-[#6853F0] text-base font-bold text-white rounded-full"
           onClick={() =>
             handleCheckout({
               totalPrice: price + extraPrice,

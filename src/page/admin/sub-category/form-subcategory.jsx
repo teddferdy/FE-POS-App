@@ -44,7 +44,7 @@ const FormSubCategory = () => {
   const [cookie] = useCookies();
   const { setActive } = useLoading();
   const navigate = useNavigate();
-  const [openMenu, setOpenMenu] = useState(false);
+
   const [open, setOpen] = useState(false);
 
   const formSchema = z.object({
@@ -274,189 +274,185 @@ const FormSubCategory = () => {
   }, [form.getValues("option"), form, fields, remove, update]);
 
   return (
-    <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 h-full">
-        <section>
-          <div className="flex items-center gap-4">
-            <ClipboardType className="w-6 h-6" />
-            <p>Add Sub Category</p>
-          </div>
-          <div className="w-full lg:w-3/4 mx-auto">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
-                <div className="col-span-2 lg:col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="nameSubCategory"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Name Product</FormLabel>
-                        </div>
-                        <Input type="text" {...field} />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-2 lg:col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="parentCategory"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">Parent Category</FormLabel>
-                          </div>
-                          <div>
-                            <Popover open={open} onOpenChange={setOpen}>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  disabled={allCategory.isLoading}
-                                  variant="outline"
-                                  role="combobox"
-                                  aria-expanded={open}
-                                  className="w-full justify-between">
-                                  {field.value
-                                    ? allCategory?.data?.data?.find(
-                                        (location) => location.name === field.value
-                                      )?.name
-                                    : "Select Category"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
-                                <Command>
-                                  <CommandInput placeholder="Search Category" />
-                                  <CommandList>
-                                    <CommandEmpty>No Category found.</CommandEmpty>
-                                    <CommandGroup>
-                                      {allCategory?.data?.data?.map((location) => (
-                                        <CommandItem
-                                          key={location.name}
-                                          value={location.name}
-                                          onSelect={(currentValue) => field.onChange(currentValue)}>
-                                          <Check
-                                            className={cn(
-                                              "mr-2 h-4 w-4",
-                                              field.value === location.name
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            )}
-                                          />
-                                          {location.name}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="option"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Adding Option</FormLabel>
-                        </div>
-                        <div className="flex items-center gap-6">
-                          <p>No</p>
-                          <Switch
-                            name={field.name}
-                            id={field.name}
-                            checked={field.value}
-                            onCheckedChange={(e) => {
-                              field.onChange(e);
-                              if (e) {
-                                append({
-                                  name: "",
-                                  price: "",
-                                  isFree: false
-                                });
-                              } else {
-                                form.setValue("typeSubCategory", []);
-                              }
-                            }}
-                          />
-                          <p>Yes</p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <FormField
-                    control={form.control}
-                    name="isMultiple"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">Is Multiple</FormLabel>
-                        </div>
-                        <div className="flex items-center gap-6">
-                          <p>No</p>
-                          <Switch
-                            name={field.name}
-                            id={field.name}
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                          <p>Yes</p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                {/* Form Adding Option */}
-                {ADDING_OPTION}
-                {/* End Form Adding Option */}
-
-                {/* Button Adding Option */}
-                {form.getValues("option") && (
-                  <div className="col-span-2 flex justify-center cursor-pointer">
-                    <div
-                      className="col-span-2"
-                      onClick={() =>
-                        append({
-                          name: "",
-                          price: "",
-                          isFree: false
-                        })
-                      }>
-                      Add Option
+    <TemplateContainer>
+      <div className="flex items-center gap-4 p-4">
+        <ClipboardType className="w-6 h-6" />
+        <p>Add Sub Category</p>
+      </div>
+      <div className="w-full lg:w-3/4 mx-auto">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="nameSubCategory"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Name Product</FormLabel>
                     </div>
-                  </div>
+                    <Input type="text" {...field} />
+                  </FormItem>
                 )}
+              />
+            </div>
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="parentCategory"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Parent Category</FormLabel>
+                      </div>
+                      <div>
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              disabled={allCategory.isLoading}
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-full justify-between">
+                              {field.value
+                                ? allCategory?.data?.data?.find(
+                                    (location) => location.name === field.value
+                                  )?.name
+                                : "Select Category"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search Category" />
+                              <CommandList>
+                                <CommandEmpty>No Category found.</CommandEmpty>
+                                <CommandGroup>
+                                  {allCategory?.data?.data?.map((location) => (
+                                    <CommandItem
+                                      key={location.name}
+                                      value={location.name}
+                                      onSelect={(currentValue) => field.onChange(currentValue)}>
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === location.name
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {location.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </FormItem>
+                  );
+                }}
+              />
+            </div>
+            <div className="col-span-1">
+              <FormField
+                control={form.control}
+                name="option"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Adding Option</FormLabel>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <p>No</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={(e) => {
+                          field.onChange(e);
+                          if (e) {
+                            append({
+                              name: "",
+                              price: "",
+                              isFree: false
+                            });
+                          } else {
+                            form.setValue("typeSubCategory", []);
+                          }
+                        }}
+                      />
+                      <p>Yes</p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-1">
+              <FormField
+                control={form.control}
+                name="isMultiple"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Is Multiple</FormLabel>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <p>No</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Yes</p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            {/* Form Adding Option */}
+            {ADDING_OPTION}
+            {/* End Form Adding Option */}
 
-                <div className="col-span-2">
-                  <div className="flex justify-between items-center">
-                    <DialogCancelForm
-                      classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                      titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                      titleButtonTrigger="Cancel"
-                    />
-                    <Button
-                      className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                      type="submit">
-                      Add Sub Category
-                    </Button>
-                  </div>
+            {/* Button Adding Option */}
+            {form.getValues("option") && (
+              <div className="col-span-2 flex justify-center cursor-pointer">
+                <div
+                  className="col-span-2"
+                  onClick={() =>
+                    append({
+                      name: "",
+                      price: "",
+                      isFree: false
+                    })
+                  }>
+                  Add Option
                 </div>
-              </form>
-            </Form>
-          </div>
-        </section>
-      </main>
+              </div>
+            )}
+
+            <div className="col-span-2">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
+                />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  Add Sub Category
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </div>
     </TemplateContainer>
   );
 };

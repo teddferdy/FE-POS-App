@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,8 +22,6 @@ import { Card, CardContent } from "../../components/ui/card";
 const arr = new Array(20).fill(null);
 
 const MemberCashier = () => {
-  const [openMenu, setOpenMenu] = useState(false);
-
   const formSchema = z.object({
     userName: z.string(),
     phoneNumber: z.string()
@@ -41,7 +39,7 @@ const MemberCashier = () => {
   };
 
   return (
-    <TemplateContainer setOpenMenu={(val) => setOpenMenu(val)} openMenu={openMenu}>
+    <TemplateContainer>
       <div className="border-t-2 border-[#ffffff10] overflow-scroll p-4 flex flex-col h-screen">
         <div className="flex justify-end mb-6">
           <Dialog>
