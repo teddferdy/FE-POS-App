@@ -78,34 +78,54 @@ const Register = () => {
       confirmationPassword: t("translation:confirmationPassword"),
       descRegister: t("translation:descRegister"),
       selectLanguage: t("translation:selectLanguage"),
-      sidebarAuth: t("translation:descAuth")
+      sidebarAuth: t("translation:descAuth"),
+
+      // Placeholder
+      placeholderInputUser: t("translation:placeholder.input.register.username"),
+      placeholderInputEmail: t("translation:placeholder.input.register.email"),
+      placeholderInputLocation: t("translation:placeholder.input.register.location"),
+      placeholderInputPassword: t("translation:placeholder.input.register.password"),
+      placeholderInputConfirmationPassword: t(
+        "translation:placeholder.input.register.confirmationPassword"
+      ),
+
+      // Error
+      errorMessageUserName: t("translation:formError.input.register.username"),
+      errorMessageUserEmail: t("translation:formError.input.register.email"),
+      errorMessageValidationEmail: t("translation:formError.input.register.validationEmail"),
+      errorMessageLocation: t("translation:formError.input.register.location"),
+      errorMessagePassword: t("translation:formError.input.register.password"),
+      errorMessageConfirmationPassword: t(
+        "translation:formError.input.register.confirmationPassword"
+      ),
+      errorMessageValidationConfirmationPassword: t(
+        "translation:formError.input.register.validationConfirmationPassword"
+      )
     };
   }, [t]);
 
   const formSchema = z
     .object({
       userName: z.string().min(4, {
-        message: "userName must be at least 4 characters."
+        message: translationMemo.errorMessageUserName
       }),
       location: z.string().min(1, {
-        message: "Location Field Required"
+        message: translationMemo.errorMessageLocation
       }),
-      address: z.string().min(1, {
-        message: "Location Field Required"
-      }),
+      address: z.string(),
       password: z.string().min(4, {
-        message: "Password must be at least 4 characters."
+        message: translationMemo.errorMessagePassword
       }),
       email: z
         .string()
-        .min(1, { message: "This field has to be filled." })
-        .email("This is not a valid email."),
+        .min(1, { message: translationMemo.errorMessageUserEmail })
+        .email(translationMemo.errorMessageValidationEmail),
       confirmPassword: z.string().min(4, {
-        message: "Confirmation Password must be at least 4 characters."
+        message: translationMemo.errorMessageConfirmationPassword
       })
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: "Passwords don't match",
+      message: translationMemo.errorMessageValidationConfirmationPassword,
       path: ["confirmPassword"]
     });
 
@@ -222,7 +242,12 @@ const Register = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
                       </div>
-                      <Input type="text" {...field} placeholder="User Name" />
+
+                      <Input
+                        type="text"
+                        {...field}
+                        placeholder={translationMemo.placeholderInputUser}
+                      />
                       {form.formState.errors.userName && (
                         <FormMessage>{form.formState.errors.userName}</FormMessage>
                       )}
@@ -234,9 +259,7 @@ const Register = () => {
                 <FormField
                   control={form.control}
                   name="location"
-                  render={({ field }) => {
-                    console.log("FIELD =>", field);
-
+                  render={() => {
                     return (
                       <FormItem>
                         <div className="mb-2">
@@ -249,12 +272,12 @@ const Register = () => {
                               variant="outline"
                               role="combobox"
                               aria-expanded={open}
-                              className="w-full justify-between">
+                              className={`w-full justify-between ${!value ? "text-muted-foreground font-normal" : ""}`}>
                               {value
                                 ? allLocation?.data?.data?.find(
                                     (location) => location.nameStore === value
                                   )?.nameStore
-                                : "Select location..."}
+                                : `${translationMemo.placeholderInputLocation}`}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
@@ -287,6 +310,9 @@ const Register = () => {
                             </Command>
                           </PopoverContent>
                         </Popover>
+                        {form.formState.errors.location && (
+                          <FormMessage>{form.formState.errors.location}</FormMessage>
+                        )}
                       </FormItem>
                     );
                   }}
@@ -301,7 +327,11 @@ const Register = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">{translationMemo.email}</FormLabel>
                       </div>
-                      <Input type="email" {...field} placeholder="Email" />
+                      <Input
+                        type="email"
+                        {...field}
+                        placeholder={translationMemo.placeholderInputEmail}
+                      />
                       {form.formState.errors.email && (
                         <FormMessage>{form.formState.errors.email}</FormMessage>
                       )}
@@ -322,7 +352,7 @@ const Register = () => {
                         <Input
                           type={showPassword ? "text" : "password"}
                           {...field}
-                          placeholder="Password"
+                          placeholder={translationMemo.placeholderInputPassword}
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showPassword ? (
@@ -361,7 +391,7 @@ const Register = () => {
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           {...field}
-                          placeholder="Konfirmasi Password"
+                          placeholder={translationMemo.placeholderInputConfirmationPassword}
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showConfirmPassword ? (

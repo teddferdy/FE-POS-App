@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
+import { Badge } from "../../../components/ui/badge";
 import { getAllLocation, deleteLocation } from "../../../services/location";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
@@ -40,12 +41,14 @@ const TypePaymentList = () => {
       accessorKey: "nameStore",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Store
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Name Store
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="capitalize">{row.getValue("nameStore")}</div>
@@ -54,77 +57,93 @@ const TypePaymentList = () => {
       accessorKey: "address",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            address
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              address
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="lowercase">{row.getValue("address")}</div>
     },
     {
       accessorKey: "detailLocation",
-      header: () => <div className="text-right">Detail Location</div>,
+      header: () => <div className="text-center">Detail Location</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("detailLocation")}</div>;
+        return <div className="text-center font-medium">{row.getValue("detailLocation")}</div>;
       }
     },
     {
       accessorKey: "phoneNumber",
-      header: () => <div className="text-right">Phone Number</div>,
+      header: () => <div className="text-center">Phone Number</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("phoneNumber")}</div>;
+        return <div className="text-center font-medium">{row.getValue("phoneNumber")}</div>;
       }
     },
     {
       accessorKey: "status",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Status
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Status
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("status")}</div>;
+        return (
+          <div className="lowercase text-center">
+            {row.getValue("status") ? (
+              <Badge variant="secondary">Active</Badge>
+            ) : (
+              <Badge variant="destructive">Not Active</Badge>
+            )}
+          </div>
+        );
       }
     },
     {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -134,24 +153,26 @@ const TypePaymentList = () => {
       accessorKey: "modifiedBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Modified By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Modified By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>;
       }
     },
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -159,7 +180,7 @@ const TypePaymentList = () => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-6">

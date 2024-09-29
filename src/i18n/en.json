@@ -6,12 +6,31 @@
   "userNameOrEmail": "User Name / Email",
   "userName": "Nama Pengguna",
   "email": "Email",
-  "location": "Location",
+  "location": "Location Store",
   "password": "Password",
   "confirmationPassword": "Confirmation Password",
   "selectLanguage": "Select Language",
 
   "btnLogin": "Login",
   "btnCreateAcc": "Create Account",
-  "btnResetPassword": "Reset Password"
+  "btnResetPassword": "Reset Password",
+
+  "placeholder.input.login.username": "Enter Your Email / User Name",
+  "placeholder.input.login.password": "Enter Your Password",
+  "placeholder.input.register.username": "Enter User Name",
+  "placeholder.input.register.email": "Enter Your Email",
+  "placeholder.input.register.location": "Select Location Store",
+  "placeholder.input.register.password": "Enter Password",
+  "placeholder.input.register.confirmationPassword": "Enter Confirmation Password",
+
+  "formError.input.login.username": "User Name / Email required not empty.",
+  "formError.input.login.password": "Password required not empty.",
+
+  "formError.input.register.username": "User Name must be at least 4 characters.",
+  "formError.input.register.email": "This field has to be filled.",
+  "formError.input.register.validationEmail": "This is not a valid email.",
+  "formError.input.register.location": "Location Store required not empty.",
+  "formError.input.register.password": "Password must be at least 4 characters.",
+  "formError.input.register.confirmationPassword": "This field has to be filled.",
+  "formError.input.register.validationConfirmationPassword": "Passwords don't match"
 }
