@@ -42,38 +42,42 @@ const SocialMediaList = () => {
       accessorKey: "name",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Social Media
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Name Social Media
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("name")}</div>
     },
     {
       accessorKey: "createdBy",
-      header: () => <div className="text-right">createdBy</div>,
+      header: () => <div className="text-center">createdBy</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -82,10 +86,10 @@ const SocialMediaList = () => {
 
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -93,7 +97,7 @@ const SocialMediaList = () => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-6">

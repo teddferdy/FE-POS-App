@@ -38,12 +38,14 @@ const MemberList = () => {
       accessorKey: "nameMember",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Member
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Name Member
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="capitalize">{row.getValue("nameMember")}</div>
@@ -52,84 +54,92 @@ const MemberList = () => {
       accessorKey: "phoneNumber",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Phone Number Member
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Phone Number Member
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="lowercase">{row.getValue("phoneNumber")}</div>
     },
     {
       accessorKey: "location",
-      header: () => <div className="text-right">Location Make Member</div>,
+      header: () => <div className="text-center">Location Make Member</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("location")}</div>;
+        return <div className="text-center font-medium">{row.getValue("location")}</div>;
       }
     },
     {
       accessorKey: "phoneNumber",
-      header: () => <div className="text-right">Phone Number</div>,
+      header: () => <div className="text-center">Phone Number</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("phoneNumber")}</div>;
+        return <div className="text-center font-medium">{row.getValue("phoneNumber")}</div>;
       }
     },
     {
       accessorKey: "point",
-      header: () => <div className="text-right">Point Member</div>,
+      header: () => <div className="text-center">Point Member</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("point")}</div>;
+        return <div className="text-center font-medium">{row.getValue("point")}</div>;
       }
     },
-    {
-      accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Status
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("status")}</div>;
-      }
-    },
+    // {
+    //   accessorKey: "status",
+    //   header: ({ column }) => {
+    //     return (
+    //       <div className="justify-center flex">
+    //         <Button
+    //           variant="ghost"
+    //           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+    //           Status
+    //           {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+    //         </Button>
+    //       </div>
+    //     );
+    //   },
+    //   cell: ({ row }) => {
+    //     return <div className="text-center font-medium">{row.getValue("status")}</div>;
+    //   }
+    // },
     {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -137,10 +147,10 @@ const MemberList = () => {
     },
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -148,7 +158,7 @@ const MemberList = () => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-6">

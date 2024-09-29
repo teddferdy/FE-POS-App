@@ -46,6 +46,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { updateTranslation, translation } = translationSelect();
 
+  console.log("translation =>", translation);
+
   // Translation
   const translationMemo = useMemo(() => {
     return {
@@ -56,18 +58,28 @@ const Login = () => {
       selectLanguage: t("translation:selectLanguage"),
       btnCreateAcc: t("translation:btnCreateAcc"),
       btnResetPassword: t("translation:btnResetPassword"),
-      sidebarAuth: t("translation:descAuth")
+      sidebarAuth: t("translation:descAuth"),
+
+      // Placeholder
+      placeholderInputUser: t("translation:placeholder.input.login.username"),
+      placeholderInputPassword: t("translation:placeholder.input.login.password"),
+
+      // Error
+      errorMessageUserName: t("translation:formError.input.login.username"),
+      errorMessagePassword: t("translation:formError.input.login.password")
     };
   }, [t]);
 
-  const formSchema = z.object({
-    userName: z.string().min(4, {
-      message: "Username must be at least 4 characters."
-    }),
-    password: z.string().min(4, {
-      message: "Password must be at least 4 characters."
-    })
-  });
+  const formSchema = useMemo(() => {
+    return z.object({
+      userName: z.string().min(1, {
+        message: translationMemo.errorMessageUserName
+      }),
+      password: z.string().min(1, {
+        message: translationMemo.errorMessagePassword
+      })
+    });
+  }, [translation, translationMemo]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -165,9 +177,13 @@ const Login = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
-                    {form.formState.errors.userName && (
-                      <FormMessage>{form.formState.errors.userName}</FormMessage>
+                    <Input
+                      type="text"
+                      {...field}
+                      placeholder={translationMemo.placeholderInputUser}
+                    />
+                    {form?.formState?.errors?.userName && (
+                      <FormMessage>{form?.formState?.errors?.userName}</FormMessage>
                     )}
                   </FormItem>
                 )}
@@ -181,7 +197,11 @@ const Login = () => {
                       <FormLabel className="text-base">{translationMemo.password}</FormLabel>
                     </div>
                     <div className="relative">
-                      <Input type={showPassword ? "text" : "password"} {...field} />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        {...field}
+                        placeholder={translationMemo.placeholderInputPassword}
+                      />
                       <div className="absolute top-[24%] right-[4%]">
                         {showPassword ? (
                           <Eye
@@ -197,8 +217,8 @@ const Login = () => {
                         )}
                       </div>
                     </div>
-                    {form.formState.errors.password && (
-                      <FormMessage>{form.formState.errors.password}</FormMessage>
+                    {form?.formState?.errors?.password && (
+                      <FormMessage>{form?.formState?.errors?.password}</FormMessage>
                     )}
                   </FormItem>
                 )}

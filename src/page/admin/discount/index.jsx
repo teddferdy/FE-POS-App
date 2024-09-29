@@ -12,6 +12,7 @@ import moment from "moment";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
 import { Input } from "../../../components/ui/input";
+import { Badge } from "../../../components/ui/badge";
 import {
   Table,
   TableBody,
@@ -41,12 +42,14 @@ const DiscountList = () => {
       accessorKey: "description",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Description Discount
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Description Discount
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="capitalize">{row.getValue("description")}</div>
@@ -55,63 +58,79 @@ const DiscountList = () => {
       accessorKey: "percentage",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            percentage
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              percentage
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("percentage")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("percentage")}</div>
     },
     {
       accessorKey: "isActive",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            isActive
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Is Active
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("isActive")}</div>;
+        return (
+          <div className="lowercase text-center">
+            {row.getValue("isActive") ? (
+              <Badge variant="secondary">Active</Badge>
+            ) : (
+              <Badge variant="destructive">Not Active</Badge>
+            )}
+          </div>
+        );
       }
     },
     {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center">{row.getValue("createdBy")}</div>;
       }
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -122,7 +141,7 @@ const DiscountList = () => {
       header: () => <div className="text-right">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );

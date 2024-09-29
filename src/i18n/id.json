@@ -6,12 +6,31 @@
   "userNameOrEmail": "Nama Pengguna / Email",
   "userName": "Nama Pengguna",
   "email": "Email",
-  "location": "Lokasi",
+  "location": "Lokasi Toko",
   "password": "Kata Sandi",
   "confirmationPassword": "Konfirmasi Kata Sandi",
   "selectLanguage": "Pilih Bahasa",
 
   "btnLogin": "Masuk",
   "btnCreateAcc": "Buat Akun",
-  "btnResetPassword": "Ubah Kata Sandi"
+  "btnResetPassword": "Ubah Kata Sandi",
+
+  "placeholder.input.login.username": "Masukan Email / Nama Pengguna Anda",
+  "placeholder.input.login.password": "Masukan Kata Sandi Anda",
+  "placeholder.input.register.username": "Masukan Nama Pengguna",
+  "placeholder.input.register.email": "Masukan Email Anda",
+  "placeholder.input.register.location": "Pilih Lokasi Toko",
+  "placeholder.input.register.password": "Masukan Kata Sandi",
+  "placeholder.input.register.confirmationPassword": "Masukan Konfirmasi Kata Sandi",
+
+  "formError.input.login.username": "Nama Pengguna / Email Tidak Boleh Kosong.",
+  "formError.input.login.password": "Kata Sandi Tidak Boleh Kosong.",
+
+  "formError.input.register.username": "Nama Pengguna Harus Lebih dari 4 Karakter.",
+  "formError.input.register.email": "Bidang Ini Tidak Boleh Kosong",
+  "formError.input.register.validationEmail": "Format Email Tidak Benar.",
+  "formError.input.register.location": "Lokasi Toko Tidak Boleh Kosong.",
+  "formError.input.register.password": "Kata Sandi Harus Lebih dari 4 Karakter.",
+  "formError.input.register.confirmationPassword": "Bidang Ini Tidak Boleh Kosong",
+  "formError.input.register.validationConfirmationPassword": "Passwords Tidak Cocok"
 }
