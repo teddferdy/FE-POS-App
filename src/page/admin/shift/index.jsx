@@ -20,6 +20,12 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../components/ui/dropdown-menu";
 import { getAllShift, deleteShift } from "../../../services/shift";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
@@ -27,6 +33,22 @@ import TemplateContainer from "../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
+const FILTER_BY = [
+  {
+    value: "nameShift",
+    name: "Name Shift"
+  },
+
+  {
+    value: "description",
+    name: "Description"
+  },
+
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
 
 const ShiftList = () => {
   const navigate = useNavigate();
@@ -36,96 +58,111 @@ const ShiftList = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
 
+  const [filterBy, setFilterBy] = useState({
+    value: "nameShift",
+    name: "Name Shift"
+  });
+
   const columns = [
     {
       accessorKey: "nameShift",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Shift
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Name Shift
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameShift")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("nameShift")}</div>
     },
     {
       accessorKey: "description",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            description
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              description
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("description")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("description")}</div>
     },
     {
       accessorKey: "startHour",
-      header: () => <div className="text-right">Detail Location</div>,
+      header: () => <div className="text-center">Start Hour</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("startHour")}</div>;
+        return <div className="text-center">{row.getValue("startHour")}</div>;
       }
     },
     {
       accessorKey: "endHour",
-      header: () => <div className="text-right">Phone Number</div>,
+      header: () => <div className="text-center">End Hour</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("endHour")}</div>;
+        return <div className="text-center">{row.getValue("endHour")}</div>;
       }
     },
     {
       accessorKey: "status",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Status
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Status
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("status")}</div>;
+        return <div className="text-center">{row.getValue("status")}</div>;
       }
     },
     {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
+        return <div className="text-center">{row.getValue("createdBy")}</div>;
       }
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center">
             {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -135,24 +172,26 @@ const ShiftList = () => {
       accessorKey: "modifiedBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Modified By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Modified By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("modifiedBy")}</div>;
+        return <div className="text-center">{row.getValue("modifiedBy")}</div>;
       }
     },
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center">
             {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
           </div>
         );
@@ -160,7 +199,7 @@ const ShiftList = () => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-6">
@@ -258,13 +297,56 @@ const ShiftList = () => {
 
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex items-center py-4">
+        <div className="flex flex-col md:flex-row gap-10 py-4">
           <Input
-            placeholder="Filter..."
-            value={table.getColumn("nameShift")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("nameShift")?.setFilterValue(event.target.value)}
+            placeholder="Search..."
+            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
+          <div className="flex gap-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">{filterBy.name}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {FILTER_BY.map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.value === filterBy.value}
+                      onCheckedChange={() => setFilterBy(column)}>
+                      {column.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Show / Hide Columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>
