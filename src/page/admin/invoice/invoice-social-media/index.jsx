@@ -28,6 +28,12 @@ import {
   deleteInvoiceSocialMedia,
   activateOrNotActiveInvoiceSocialMedia
 } from "../../../../services/invoice";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../../components/ui/dropdown-menu";
 import DialogSocialMediaInvoice from "../../../../components/organism/dialog/dialog-social-media-invoice";
 import DialogDeleteItem from "../../../../components/organism/dialog/dialogDeleteItem";
 import DialogBySwitch from "../../../../components/organism/dialog/dialog-switch";
@@ -36,6 +42,17 @@ import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
 
+const FILTER_BY = [
+  {
+    value: "name",
+    name: "Name"
+  },
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
+
 const InvoiceSocialMediaList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
@@ -43,6 +60,78 @@ const InvoiceSocialMediaList = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+
+  const [filterBy, setFilterBy] = useState({
+    value: "name",
+    name: "Name"
+  });
+
+  // QUERY
+  const invoiceSocialMedia = useQuery(
+    ["get-all-invoice-social-media"],
+    () => getAllInvoiceSocialMedia(),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
+
+  const mutateDeleteInvoiceSocialMedia = useMutation(deleteInvoiceSocialMedia, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Delete Discount"
+        });
+      }, 1000);
+      setTimeout(() => {
+        invoiceSocialMedia.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
+  const mutateChangeIsActiveInvoiceSocialMedia = useMutation(
+    activateOrNotActiveInvoiceSocialMedia,
+    {
+      onMutate: () => setActive(true, null),
+      onSuccess: () => {
+        setActive(false, "success");
+        setTimeout(() => {
+          toast.success("Success", {
+            description: "Successfull, Change Logo To Invoce"
+          });
+        }, 1000);
+        setTimeout(() => {
+          invoiceSocialMedia.refetch();
+          setActive(null, null);
+        }, 2000);
+      },
+      onError: (err) => {
+        setActive(false, "error");
+        setTimeout(() => {
+          toast.error("Failed", {
+            description: err.message
+          });
+        }, 1500);
+        setTimeout(() => {
+          setActive(null, null);
+        }, 2000);
+      }
+    }
+  );
 
   const columns = [
     {
@@ -224,73 +313,6 @@ const InvoiceSocialMediaList = () => {
     }
   ];
 
-  // QUERY
-  const invoiceSocialMedia = useQuery(
-    ["get-all-invoice-social-media"],
-    () => getAllInvoiceSocialMedia(),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  const mutateDeleteInvoiceSocialMedia = useMutation(deleteInvoiceSocialMedia, {
-    onMutate: () => setActive(true, null),
-    onSuccess: () => {
-      setActive(false, "success");
-      setTimeout(() => {
-        toast.success("Success", {
-          description: "Successfull, Delete Discount"
-        });
-      }, 1000);
-      setTimeout(() => {
-        invoiceSocialMedia.refetch();
-        setActive(null, null);
-      }, 2000);
-    },
-    onError: (err) => {
-      setActive(false, "error");
-      setTimeout(() => {
-        toast.error("Failed", {
-          description: err.message
-        });
-      }, 1500);
-      setTimeout(() => {
-        setActive(null, null);
-      }, 2000);
-    }
-  });
-
-  const mutateChangeIsActiveInvoiceSocialMedia = useMutation(
-    activateOrNotActiveInvoiceSocialMedia,
-    {
-      onMutate: () => setActive(true, null),
-      onSuccess: () => {
-        setActive(false, "success");
-        setTimeout(() => {
-          toast.success("Success", {
-            description: "Successfull, Change Logo To Invoce"
-          });
-        }, 1000);
-        setTimeout(() => {
-          invoiceSocialMedia.refetch();
-          setActive(null, null);
-        }, 2000);
-      },
-      onError: (err) => {
-        setActive(false, "error");
-        setTimeout(() => {
-          toast.error("Failed", {
-            description: err.message
-          });
-        }, 1500);
-        setTimeout(() => {
-          setActive(null, null);
-        }, 2000);
-      }
-    }
-  );
-
   const table = useReactTable({
     data: invoiceSocialMedia?.data?.data || [],
     columns,
@@ -325,13 +347,56 @@ const InvoiceSocialMediaList = () => {
 
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex items-center py-4">
+        <div className="flex flex-col md:flex-row gap-10 py-4">
           <Input
-            placeholder="Filter..."
-            value={table.getColumn("description")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("description")?.setFilterValue(event.target.value)}
+            placeholder="Search..."
+            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
+          <div className="flex gap-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">{filterBy.name}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {FILTER_BY.map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.value === filterBy.value}
+                      onCheckedChange={() => setFilterBy(column)}>
+                      {column.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Show / Hide Columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>

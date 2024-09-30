@@ -21,6 +21,12 @@ import {
   TableHeader,
   TableRow
 } from "../../../../components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../../components/ui/dropdown-menu";
 import { Badge } from "../../../../components/ui/badge";
 import { Switch } from "../../../../components/ui/switch";
 import {
@@ -36,6 +42,17 @@ import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
 
+const FILTER_BY = [
+  {
+    value: "name",
+    name: "Name"
+  },
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
+
 const InvoiceFooterList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
@@ -43,186 +60,10 @@ const InvoiceFooterList = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-
-  const columns = [
-    {
-      accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("name")}</div>;
-      }
-    },
-    {
-      accessorKey: "footerList",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Footer List
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const data = row.original.footerList;
-        return <DialogFooterInvoice data={data} />;
-      }
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Status
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="lowercase">
-          {row.getValue("status") ? (
-            <Badge variant="secondary">Active</Badge>
-          ) : (
-            <Badge variant="destructive">Not Active</Badge>
-          )}
-        </div>
-      )
-    },
-    {
-      accessorKey: "isActive",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            isActive
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {row.getValue("isActive") ? (
-              <Badge variant="secondary">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Not Active</Badge>
-            )}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "createdBy",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("createdBy")}</div>;
-      }
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-right font-medium">
-            {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="flex flex-col gap-6">
-            {/* If Status Active Can Change Logo */}
-            {row.original.status ? (
-              <DialogBySwitch
-                checked={row.original.isActive}
-                onChange={() =>
-                  mutateChangeIsActiveInvoiceFooter.mutate({
-                    id: row.original.id,
-                    name: row.original.name,
-                    isActive: true
-                  })
-                }
-              />
-            ) : (
-              <div className="flex justify-between items-center gap-6">
-                <p>Not Active</p>
-                <Switch disabled checked={row.original.isActive} />
-                <p>Active</p>
-              </div>
-            )}
-
-            <Button
-              className="h-8 w-full p-4"
-              onClick={() =>
-                navigate(`/edit-invoice-footer/${row?.original?.id}`, {
-                  state: {
-                    data: row.original
-                  }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
-                const body = {
-                  id: `${row?.original?.id}`,
-                  name: row?.original?.name
-                };
-                mutateDeleteInvoiceFooter.mutate(body);
-              }}
-            />
-          </div>
-        );
-      }
-    }
-  ];
+  const [filterBy, setFilterBy] = useState({
+    value: "name",
+    name: "Name"
+  });
 
   // QUERY
   const invoiceFooter = useQuery(["get-all-invoice-footer"], () => getAllInvoiceFooter(), {
@@ -284,6 +125,186 @@ const InvoiceFooterList = () => {
     }
   });
 
+  const columns = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Name
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="text-center font-medium">{row.getValue("name")}</div>;
+      }
+    },
+    {
+      accessorKey: "footerList",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Footer List
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const data = row.original.footerList;
+        return <DialogFooterInvoice data={data} />;
+      }
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Status
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="lowercase">
+          {row.getValue("status") ? (
+            <Badge variant="secondary">Active</Badge>
+          ) : (
+            <Badge variant="destructive">Not Active</Badge>
+          )}
+        </div>
+      )
+    },
+    {
+      accessorKey: "isActive",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            isActive
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <div className="text-center font-medium">
+            {row.getValue("isActive") ? (
+              <Badge variant="secondary">Active</Badge>
+            ) : (
+              <Badge variant="destructive">Not Active</Badge>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "createdBy",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Created By
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
+      }
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Created At
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <div className="text-center font-medium">
+            {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "updatedAt",
+      header: () => <div className="text-center">Updated At</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-center font-medium">
+            {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "action",
+      header: () => <div className="text-center">Action</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="flex flex-col gap-6">
+            {/* If Status Active Can Change Logo */}
+            {row.original.status ? (
+              <DialogBySwitch
+                checked={row.original.isActive}
+                onChange={() =>
+                  mutateChangeIsActiveInvoiceFooter.mutate({
+                    id: row.original.id,
+                    name: row.original.name,
+                    isActive: true
+                  })
+                }
+              />
+            ) : (
+              <div className="flex justify-between items-center gap-6">
+                <p>Not Active</p>
+                <Switch disabled checked={row.original.isActive} />
+                <p>Active</p>
+              </div>
+            )}
+
+            <Button
+              className="h-8 w-full p-4"
+              onClick={() =>
+                navigate(`/edit-invoice-footer/${row?.original?.id}`, {
+                  state: {
+                    data: row.original
+                  }
+                })
+              }>
+              <span>Edit</span>
+              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
+            </Button>
+            <DialogDeleteItem
+              actionDelete={() => {
+                const body = {
+                  id: `${row?.original?.id}`,
+                  name: row?.original?.name
+                };
+                mutateDeleteInvoiceFooter.mutate(body);
+              }}
+            />
+          </div>
+        );
+      }
+    }
+  ];
+
   const table = useReactTable({
     data: invoiceFooter?.data?.data || [],
     columns,
@@ -318,13 +339,56 @@ const InvoiceFooterList = () => {
 
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex items-center py-4">
+        <div className="flex flex-col md:flex-row gap-10 py-4">
           <Input
-            placeholder="Filter..."
-            value={table.getColumn("description")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("description")?.setFilterValue(event.target.value)}
+            placeholder="Search..."
+            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
+          <div className="flex gap-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">{filterBy.name}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {FILTER_BY.map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.value === filterBy.value}
+                      onCheckedChange={() => setFilterBy(column)}>
+                      {column.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Show / Hide Columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>

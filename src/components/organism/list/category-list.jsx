@@ -2,7 +2,7 @@
 /* eslint-disable no-unsafe-optional-chaining */
 import React, { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode, Pagination } from "swiper/modules";
+import { Pagination, FreeMode } from "swiper/modules";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 // Import Swiper styles
@@ -54,17 +54,28 @@ const CategoryList = ({
 
       return (
         <Swiper
-          slidesPerView={getData?.length < 5 ? getData?.length : 5}
+          modules={[Pagination, FreeMode]}
           spaceBetween={10}
-          freeMode={true}
-          modules={[FreeMode, Pagination]}
-          className="overflow-x-auto no-scrollbar max-w-6xl pb-9 pr-[200px] hidden lg:flex">
-          {getData.map((items, index) => (
-            <SwiperSlide
-              className={`rounded-full flex items-center justify-center py-6 ${items.name === valueFilterCategory ? "bg-[#6853F0] text-white" : "text-[#CECECE] bg-white"} font-bold text-base cursor-pointer hover:bg-[#1ACB0A] duration-200 hover:text-white`}
-              key={index}
-              onClick={() => setValueFilterCategory(items?.name)}>
-              {items.name}
+          slidesPerView={2} // Default for mobile
+          freeMode
+          // pagination={{ clickable: true }}
+          breakpoints={{
+            640: {
+              slidesPerView: 3 // On tablets, show 3 categories
+            },
+            768: {
+              slidesPerView: 4 // On small laptops, show 4 categories
+            },
+            1024: {
+              slidesPerView: 5 // On larger screens, show 5 categories
+            }
+          }}>
+          {getData.map((category, index) => (
+            <SwiperSlide key={index}>
+              <div
+                className={`rounded-full flex items-center justify-center ${category.name === valueFilterCategory ? "bg-[#6853F0] text-white" : "text-[#CECECE] bg-white"} font-bold text-base cursor-pointer hover:bg-[#1ACB0A] duration-200 hover:text-white px-10 py-4`}>
+                {category.name}
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>

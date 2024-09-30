@@ -15,7 +15,6 @@ import { sidebarMenuAdmin, sidebarMenuUser } from "../../../utils/sidebar-menu";
 
 const SideBarMenu = ({ classNameContainer, user }) => {
   const navigate = useNavigate();
-  // const urlNow = useLocation();
 
   const MENU_LIST = useMemo(() => {
     if (user.userType === "admin") {

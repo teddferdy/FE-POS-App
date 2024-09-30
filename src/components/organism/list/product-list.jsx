@@ -37,7 +37,7 @@ const ProductList = ({ productList }) => {
     }
   }, [productList]);
 
-  return <div className="pb-20">{LIST_PRODUCT}</div>;
+  return <div className="pb-20 mt-6">{LIST_PRODUCT}</div>;
 };
 
 export default ProductList;
