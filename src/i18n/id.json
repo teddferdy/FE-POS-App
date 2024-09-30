@@ -3,12 +3,15 @@
   "descRegister": "Jika sudah punya akun, silahkan",
   "login": "Masuk",
   "register": "Daftar",
+  "resetPassword": "Ubah Kata Sandi",
   "userNameOrEmail": "Nama Pengguna / Email",
   "userName": "Nama Pengguna",
   "email": "Email",
   "location": "Lokasi Toko",
   "password": "Kata Sandi",
+  "newPassword": "Kata Sandi Baru",
   "confirmationPassword": "Konfirmasi Kata Sandi",
+  "confirmationNewPassword": "Konfirmasi Kata Sandi baru",
   "selectLanguage": "Pilih Bahasa",
 
   "btnLogin": "Masuk",
@@ -22,6 +25,10 @@
   "placeholder.input.register.location": "Pilih Lokasi Toko",
   "placeholder.input.register.password": "Masukan Kata Sandi",
   "placeholder.input.register.confirmationPassword": "Masukan Konfirmasi Kata Sandi",
+
+  "placeholder.input.resetPassword.username": "Masukan Nama Pengguna Anda",
+  "placeholder.input.password.username": "Masukan Kata Sandi Baru",
+  "placeholder.input.password.confirmationPassword": "Masukan Konfirmasi Kata Sandi Baru",
 
   "formError.input.login.username": "Nama Pengguna / Email Tidak Boleh Kosong.",
   "formError.input.login.password": "Kata Sandi Tidak Boleh Kosong.",
