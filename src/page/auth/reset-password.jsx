@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 
 // Assets
 import { Eye, EyeOff } from "lucide-react";
@@ -41,20 +42,54 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { updateTranslation, translation } = translationSelect();
 
+  const { t } = useTranslation();
+  // Translation
+  const translationMemo = useMemo(() => {
+    return {
+      title: t("translation:resetPassword"),
+      userName: t("translation:userName"),
+      password: t("translation:newPassword"),
+      confirmationPassword: t("translation:confirmationNewPassword"),
+      descRegister: t("translation:descRegister"),
+      btnLogin: t("translation:btnLogin"),
+      selectLanguage: t("translation:selectLanguage"),
+      btnCreateAcc: t("translation:btnCreateAcc"),
+      btnResetPassword: t("translation:btnResetPassword"),
+      sidebarAuth: t("translation:descAuth"),
+
+      // Placeholder
+      placeholderInputUser: t("translation:placeholder.input.resetPassword.username"),
+      placeholderInputPassword: t("translation:placeholder.input.password.username"),
+      placeholderInputConfirmationPassword: t(
+        "translation:placeholder.input.password.confirmationPassword"
+      ),
+
+      // Error
+      errorMessageUserName: t("translation:formError.input.register.username"),
+      errorMessagePassword: t("translation:formError.input.register.password"),
+      errorMessageConfirmationPassword: t(
+        "translation:formError.input.register.confirmationPassword"
+      ),
+      errorMessageValidationConfirmationPassword: t(
+        "translation:formError.input.register.validationConfirmationPassword"
+      )
+    };
+  }, [t]);
+
   const formSchema = z
     .object({
       userName: z.string().min(4, {
-        message: "userName must be at least 4 characters."
+        message: translationMemo.errorMessageUserName
       }),
       password: z.string().min(4, {
-        message: "Password must be at least 4 characters."
+        message: translationMemo.errorMessagePassword
       }),
       confirmPassword: z.string().min(4, {
-        message: "Confirmation Password must be at least 4 characters."
+        message: translationMemo.errorMessageConfirmationPassword
       })
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: "Passwords don't match",
+      message: translationMemo.errorMessageValidationConfirmationPassword,
       path: ["confirmPassword"]
     });
 
@@ -106,7 +141,7 @@ const ResetPassword = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
+        className="w-full flex flex-col rounded p-8 md:p-[61px] h-screen overflow-x-scroll no-scrollbar"
         defaultSize={55}
         maxSize={55}
         minSize={55}
@@ -131,7 +166,7 @@ const ResetPassword = () => {
                 )?.[0]
               }>
               <SelectGroup>
-                <SelectLabel>Select Language</SelectLabel>
+                <SelectLabel>{translationMemo.selectLanguage}</SelectLabel>
                 {TRANSLATION.map((items, index) => (
                   <SelectItem value={items.value} className="w-full flex items-center" key={index}>
                     <div className="flex justify-between items-center gap-4">
@@ -144,8 +179,10 @@ const ResetPassword = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-4 mt-10">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">Reset Password</p>
+        <div className="flex xl:m-auto flex-col w-full xl:w-3/5 gap-11">
+          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
+            {translationMemo.title}
+          </p>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -157,9 +194,13 @@ const ResetPassword = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">User Name</FormLabel>
+                        <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
                       </div>
-                      <Input type="text" {...field} placeholder="User Name Yang terdaftar" />
+                      <Input
+                        type="text"
+                        {...field}
+                        placeholder={translationMemo.placeholderInputUser}
+                      />
                       {form.formState.errors.userName && (
                         <FormMessage>{form.formState.errors.userName}</FormMessage>
                       )}
@@ -167,20 +208,20 @@ const ResetPassword = () => {
                   )}
                 />
               </div>
-              <div className="col-span-1 mt-4">
+              <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Password</FormLabel>
+                        <FormLabel className="text-base">{translationMemo.password}</FormLabel>
                       </div>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           {...field}
-                          placeholder="Password"
+                          placeholder={translationMemo.placeholderInputPassword}
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showPassword ? (
@@ -204,20 +245,22 @@ const ResetPassword = () => {
                   )}
                 />
               </div>
-              <div className="col-span-1 mt-4">
+              <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Confirmation Password</FormLabel>
+                        <FormLabel className="text-base">
+                          {translationMemo.confirmationPassword}
+                        </FormLabel>
                       </div>
                       <div className="relative">
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           {...field}
-                          placeholder="Konfirmasi Password"
+                          placeholder={translationMemo.placeholderInputConfirmationPassword}
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showConfirmPassword ? (
@@ -245,19 +288,20 @@ const ResetPassword = () => {
                 <Button
                   type="submit"
                   className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                  Reset Password
+                  {translationMemo.btnResetPassword}
                 </Button>
               </div>
             </form>
           </Form>
-          <div className="flex justify-center items-center gap-2">
-            <p className="text-[#CECECE] font-semibold text-lg">Jika sudah punya akun, silahkan</p>
+
+          <p className="text-[#CECECE] font-semibold text-lg text-center">
+            {translationMemo.descRegister}{" "}
             <Button
               className="font-semibold text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
               onClick={() => navigate("/")}>
-              Login
+              {translationMemo.btnLogin}
             </Button>
-          </div>
+          </p>
         </div>
       </ResizablePanel>
       <ResizablePanel
@@ -267,7 +311,7 @@ const ResetPassword = () => {
         minSize={45}>
         <div className="bg-[#ADA3EC] h-full rounded-3xl flex flex-col relative">
           <p className="text-[25px] px-[43px] py-[43px] xl:px-[81px] xl:text-[32px] font-bold text-white">
-            Optimalkan Efisiensi Transaksi, Tingkatkan Keuntungan
+            {translationMemo.sidebarAuth}
           </p>
           <div className="absolute top-[42%] -left-8 overflow-hidden">
             <img src={MiniLogo} className="w-16 h-16 object-cover" alt="mini-logo" />

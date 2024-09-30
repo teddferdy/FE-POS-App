@@ -3,12 +3,15 @@
   "descRegister": "If you already have an account, please",
   "login": "Login",
   "register": "Register",
+  "resetPassword": "Reset Password",
   "userNameOrEmail": "User Name / Email",
   "userName": "Nama Pengguna",
   "email": "Email",
   "location": "Location Store",
   "password": "Password",
+  "newPassword": "New Password",
   "confirmationPassword": "Confirmation Password",
+  "confirmationNewPassword": "Confirmation New Password",
   "selectLanguage": "Select Language",
 
   "btnLogin": "Login",
@@ -22,6 +25,10 @@
   "placeholder.input.register.location": "Select Location Store",
   "placeholder.input.register.password": "Enter Password",
   "placeholder.input.register.confirmationPassword": "Enter Confirmation Password",
+
+  "placeholder.input.resetPassword.username": "Enter Your User Name",
+  "placeholder.input.password.username": "Enter New Password",
+  "placeholder.input.password.confirmationPassword": "Enter Confirmation New Password",
 
   "formError.input.login.username": "User Name / Email required not empty.",
   "formError.input.login.password": "Password required not empty.",

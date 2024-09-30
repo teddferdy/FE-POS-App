@@ -46,8 +46,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { updateTranslation, translation } = translationSelect();
 
-  console.log("translation =>", translation);
-
   // Translation
   const translationMemo = useMemo(() => {
     return {
@@ -125,7 +123,7 @@ const Login = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
+        className="w-full flex flex-col rounded p-8 md:p-[61px] h-screen overflow-x-scroll no-scrollbar"
         defaultSize={55}
         maxSize={55}
         minSize={55}
@@ -163,7 +161,7 @@ const Login = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-11">
+        <div className="flex mt-6 xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-11">
           <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
             {translationMemo.title}
           </p>

@@ -13,6 +13,12 @@ import { Badge } from "../../../components/ui/badge";
 import moment from "moment";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../components/ui/dropdown-menu";
 import { Input } from "../../../components/ui/input";
 import {
   Table,
@@ -262,6 +268,31 @@ const SubCategoryList = () => {
             }
             className="max-w-sm"
           />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Show / Hide Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  console.log("COLUMN", column);
+
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="rounded-md border">
           <Table>

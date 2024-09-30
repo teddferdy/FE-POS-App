@@ -187,7 +187,7 @@ const Register = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-[61px] h-screen overflow-x-scroll no-scrollbar"
+        className="w-full flex flex-col rounded p-8 md:p-[61px] h-screen overflow-scroll no-scrollbar"
         defaultSize={55}
         maxSize={55}
         minSize={55}
@@ -225,7 +225,7 @@ const Register = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex m-auto flex-col w-full md:w-10/12 xl:w-3/5 gap-4 mt-10">
+        <div className="flex mt-6 xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-11">
           <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
             {translationMemo.title}
           </p>
@@ -233,7 +233,7 @@ const Register = () => {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid grid-cols-2 items-center gap-2">
-              <div className="col-span-1">
+              <div className="col-span-2 md:col-span-1">
                 <FormField
                   control={form.control}
                   name="userName"
@@ -255,7 +255,7 @@ const Register = () => {
                   )}
                 />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-2 md:col-span-1">
                 <FormField
                   control={form.control}
                   name="location"
@@ -424,14 +424,14 @@ const Register = () => {
               </div>
             </form>
           </Form>
-          <div className="flex justify-center items-center gap-2">
-            <p className="text-[#CECECE] font-semibold text-lg">{translationMemo.descRegister}</p>
+          <p className="text-[#CECECE] font-semibold text-lg text-center">
+            {translationMemo.descRegister}{" "}
             <Button
               className="font-semibold text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
               onClick={() => navigate("/")}>
               {translationMemo.login}
             </Button>
-          </div>
+          </p>
         </div>
       </ResizablePanel>
       <ResizablePanel

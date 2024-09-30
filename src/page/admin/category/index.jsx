@@ -270,7 +270,7 @@ const CategoryList = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="ml-auto">
-                  Columns
+                  Show / Hide Columns
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
