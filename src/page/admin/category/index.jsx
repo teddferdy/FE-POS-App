@@ -36,9 +36,28 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { getAllCategoryTable } from "../../../services/category";
 
+const FILTER_BY = [
+  {
+    value: "name",
+    name: "Name Category"
+  },
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
+
 const CategoryList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [filterBy, setFilterBy] = useState({
+    value: "name",
+    name: "Name Category"
+  });
 
   // QUERY
   const allCategory = useQuery(["get-all-category-table"], () => getAllCategoryTable(), {
@@ -220,11 +239,6 @@ const CategoryList = () => {
     }
   ];
 
-  const [sorting, setSorting] = useState([]);
-  const [columnFilters, setColumnFilters] = useState([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [rowSelection, setRowSelection] = useState({});
-
   const table = useReactTable({
     data: allCategory?.data?.data || [],
     columns,
@@ -260,36 +274,56 @@ const CategoryList = () => {
       {/* List Member */}
       <div className="w-full p-4">
         <div className="w-full">
-          <div className="flex items-center py-4">
+          <div className="flex flex-col md:flex-row gap-10 py-4">
             <Input
-              placeholder="Filter emails..."
-              // value={table.getColumn("email")?.getFilterValue() ?? ""}
-              // onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+              placeholder="Search..."
+              value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+              onChange={(event) =>
+                table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+              }
               className="max-w-sm"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                  Show / Hide Columns
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
+            <div className="flex gap-10">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">{filterBy.name}</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {FILTER_BY.map((column) => {
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
                         className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
-                        {column.id}
+                        checked={column.value === filterBy.value}
+                        onCheckedChange={() => setFilterBy(column)}>
+                        {column.name}
                       </DropdownMenuCheckboxItem>
                     );
                   })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">Show / Hide Columns</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                          {column.id}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <div className="rounded-md border">
             <Table>
