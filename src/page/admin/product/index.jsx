@@ -29,6 +29,12 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../components/ui/dropdown-menu";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 import TemplateContainer from "../../../components/organism/template-container";
 
@@ -40,6 +46,30 @@ import { getAllProductTable } from "../../../services/product";
 // Utils
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
+const FILTER_BY = [
+  {
+    value: "nameProduct",
+    name: "Name Product"
+  },
+  {
+    value: "category",
+    name: "Category"
+  },
+  {
+    value: "description",
+    name: "Description"
+  },
+  {
+    value: "price",
+    name: "Price"
+  },
+
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
+
 const ProductList = () => {
   const navigate = useNavigate();
   // const { setActive } = useLoading();
@@ -47,18 +77,57 @@ const ProductList = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+  const [filterBy, setFilterBy] = useState({
+    value: "nameProduct",
+    name: "Name Product"
+  });
+
+  // QUERY
+  const allProduct = useQuery(["get-all-product-table"], () => getAllProductTable(), {
+    retry: 0,
+    keepPreviousData: true
+  });
+
+  // const mutateDeleteLocation = useMutation(deleteLocation, {
+  //   onMutate: () => setActive(true, null),
+  //   onSuccess: () => {
+  //     setActive(false, "success");
+  //     setTimeout(() => {
+  //       toast.success("Success", {
+  //         description: "Successfull, Delete Location"
+  //       });
+  //     }, 1000);
+  //     setTimeout(() => {
+  //       allLocation.refetch();
+  //       setActive(null, null);
+  //     }, 2000);
+  //   },
+  //   onError: (err) => {
+  //     setActive(false, "error");
+  //     setTimeout(() => {
+  //       toast.error("Failed", {
+  //         description: err.message
+  //       });
+  //     }, 1500);
+  //     setTimeout(() => {
+  //       setActive(null, null);
+  //     }, 2000);
+  //   }
+  // });
 
   const columns = [
     {
       accessorKey: "image",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Image
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Image
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
@@ -71,12 +140,14 @@ const ProductList = () => {
       accessorKey: "nameProduct",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Name Product
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Name Product
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="text-center capitalize">{row.getValue("nameProduct")}</div>
@@ -85,12 +156,14 @@ const ProductList = () => {
       accessorKey: "category",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Category
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Category
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => <div className="lowercase text-center">{row.getValue("category")}</div>
@@ -114,15 +187,16 @@ const ProductList = () => {
       accessorKey: "status",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Status
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Status
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
-        console.log('row.getValue("status")  =>', row.getValue("status"));
         return (
           <div className="text-center font-medium">
             {row.getValue("status") ? (
@@ -138,12 +212,14 @@ const ProductList = () => {
       accessorKey: "createdBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
@@ -154,12 +230,14 @@ const ProductList = () => {
       accessorKey: "createdAt",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Created At
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Created At
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
@@ -174,12 +252,14 @@ const ProductList = () => {
       accessorKey: "modifiedBy",
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Modified By
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-          </Button>
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Modified By
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
         );
       },
       cell: ({ row }) => {
@@ -230,39 +310,6 @@ const ProductList = () => {
     }
   ];
 
-  // QUERY
-  const allProduct = useQuery(["get-all-product-table"], () => getAllProductTable(), {
-    retry: 0,
-    keepPreviousData: true
-  });
-
-  // const mutateDeleteLocation = useMutation(deleteLocation, {
-  //   onMutate: () => setActive(true, null),
-  //   onSuccess: () => {
-  //     setActive(false, "success");
-  //     setTimeout(() => {
-  //       toast.success("Success", {
-  //         description: "Successfull, Delete Location"
-  //       });
-  //     }, 1000);
-  //     setTimeout(() => {
-  //       allLocation.refetch();
-  //       setActive(null, null);
-  //     }, 2000);
-  //   },
-  //   onError: (err) => {
-  //     setActive(false, "error");
-  //     setTimeout(() => {
-  //       toast.error("Failed", {
-  //         description: err.message
-  //       });
-  //     }, 1500);
-  //     setTimeout(() => {
-  //       setActive(null, null);
-  //     }, 2000);
-  //   }
-  // });
-
   const table = useReactTable({
     data: allProduct?.data?.data || [],
     columns,
@@ -297,13 +344,56 @@ const ProductList = () => {
 
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex items-center py-4">
+        <div className="flex flex-col md:flex-row gap-10 py-4">
           <Input
-            placeholder="Filter..."
-            value={table.getColumn("nameProduct")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("nameProduct")?.setFilterValue(event.target.value)}
+            placeholder="Search..."
+            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
+          <div className="flex gap-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">{filterBy.name}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {FILTER_BY.map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.value === filterBy.value}
+                      onCheckedChange={() => setFilterBy(column)}>
+                      {column.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Show / Hide Columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>

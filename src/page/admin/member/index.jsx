@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import {
   flexRender,
@@ -22,16 +22,60 @@ import {
   TableHeader,
   TableRow
 } from "../../../components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../components/ui/dropdown-menu";
 import { getAllMember } from "../../../services/member";
 import TemplateContainer from "../../../components/organism/template-container";
 
+const FILTER_BY = [
+  {
+    value: "nameMember",
+    name: "Name Member"
+  },
+  {
+    value: "phoneNumber",
+    name: "Phone Number"
+  },
+  {
+    value: "location",
+    name: "Location"
+  },
+  {
+    value: "point",
+    name: "Point"
+  },
+
+  {
+    value: "createdBy",
+    name: "Created By"
+  }
+];
+
 const MemberList = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+  const [filterBy, setFilterBy] = useState({
+    value: "nameStore",
+    name: "Name Store"
+  });
+
+  // QUERY
+  const allMember = useQuery(
+    ["get-all-member"],
+    () => getAllMember({ nameMember: "", phoneNumber: "" }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const columns = [
     {
@@ -48,7 +92,7 @@ const MemberList = () => {
           </div>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameMember")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("nameMember")}</div>
     },
     {
       accessorKey: "phoneNumber",
@@ -64,7 +108,7 @@ const MemberList = () => {
           </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("phoneNumber")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("phoneNumber")}</div>
     },
     {
       accessorKey: "location",
@@ -160,17 +204,11 @@ const MemberList = () => {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
+        console.log("ROW =>", row);
+
         return (
           <div className="flex flex-col gap-6">
-            <Button
-              className="h-8 w-full p-4"
-              onClick={() =>
-                navigate(`/edit-location/${row?.original?.id}`, {
-                  state: {
-                    data: row.original
-                  }
-                })
-              }>
+            <Button className="h-8 w-full p-4" onClick={() => {}}>
               <span>Lihat Detail Member</span>
               {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
             </Button>
@@ -179,18 +217,6 @@ const MemberList = () => {
       }
     }
   ];
-
-  // QUERY
-  const allMember = useQuery(
-    ["get-all-member"],
-    () => getAllMember({ nameMember: "", phoneNumber: "" }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  console.log("allMember =>", allMember);
 
   const table = useReactTable({
     data: allMember?.data?.data || [],
@@ -215,13 +241,56 @@ const MemberList = () => {
     <TemplateContainer>
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex items-center py-4">
+        <div className="flex flex-col md:flex-row gap-10 py-4">
           <Input
-            placeholder="Filter..."
-            value={table.getColumn("nameMember")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("nameMember")?.setFilterValue(event.target.value)}
+            placeholder="Search..."
+            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
+          <div className="flex gap-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">{filterBy.name}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {FILTER_BY.map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.value === filterBy.value}
+                      onCheckedChange={() => setFilterBy(column)}>
+                      {column.name}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">Show / Hide Columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="rounded-md border">
           <Table>
