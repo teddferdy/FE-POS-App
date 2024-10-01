@@ -8,12 +8,18 @@ import { toast } from "sonner";
 // import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
-import { Percent } from "lucide-react";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { addDiscount, editDiscount } from "../../../services/discount";
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -122,9 +128,29 @@ const FormDiscount = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <Percent className="w-6 h-6" />
-        <p>Add Discount</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Form Discount</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/discount-list">Discount List</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Form Discount</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto p-4">
@@ -193,7 +219,7 @@ const FormDiscount = () => {
               <Button
                 className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                 type="submit">
-                Yes
+                {state?.data?.id ? "Submit Edit Discount" : "Save Discount"}
               </Button>
             </div>
           </form>

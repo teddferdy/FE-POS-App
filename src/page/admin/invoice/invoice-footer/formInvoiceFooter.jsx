@@ -10,11 +10,25 @@ import { toast } from "sonner";
 import { Separator } from "../../../../components/ui/separator";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
-import { Percent } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
 import { addInvoiceFooter, editInvoiceFooter } from "../../../../services/invoice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
 
 import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
@@ -178,9 +192,53 @@ const FormInvoiceFooter = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <Percent className="w-6 h-6" />
-        <p>Add Footer Invoice</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Footer Form</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Invoice Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/logo-invoice-list">Logo</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/footer-invoice-list">Footer</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/social-media-invoice-list">
+                          Social Media
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/footer-invoice-list">Footer List</BreadcrumbLink>
+              </BreadcrumbLink>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Footer" : "Form Add Footer"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto">
@@ -254,7 +312,7 @@ const FormInvoiceFooter = () => {
               <Button
                 className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                 type="submit">
-                Yes
+                {state?.data?.id ? "Submit Edit Footer" : "Save Add Footer"}
               </Button>
             </div>
           </form>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -45,6 +45,8 @@ import { useNavigate } from "react-router-dom";
 
 import { useMutation, useQuery } from "react-query";
 import { getAllCategoryTable } from "../../../../services/category";
+import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
+import AbortController from "../../../../components/organism/abort-controller";
 
 const FILTER_BY = [
   {
@@ -101,225 +103,186 @@ const CategoryList = () => {
     }
   });
 
-  const columns = [
-    {
-      accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-              className="text-center">
-              Name Category
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => <div className="text-center">{row.getValue("name")}</div>
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Status
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="lowercase text-center">
-            {row.getValue("status") ? (
-              <Badge variant="secondary">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Not Active</Badge>
-            )}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "createdBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Created By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center">{row.getValue("createdBy") || "-"}</div>;
-      }
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Created At
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="text-center">
-            {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "modifiedBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Modified By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center">{row.getValue("modifiedBy") || "-"}</div>;
-      }
-    },
-    {
-      accessorKey: "updatedAt",
-      header: () => <div className="text-center">Updated At</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-center">
-            {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss")}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="flex flex-col gap-6">
-            <Button
-              className="h-8 w-full p-4 text-center"
-              onClick={() =>
-                navigate(`/edit-category/${row?.original?.id}`, {
-                  state: {
-                    data: row.original
-                  }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
-                const body = {
-                  id: row?.original?.id,
-                  name: row.getValue("name")
-                };
-                mutateDeleteCategory.mutate(body);
-              }}
-            />
-          </div>
-        );
-      }
+  const TABLE_SHOW = useMemo(() => {
+    if (allCategory.isLoading && allCategory.isFetching) {
+      return <SkeletonTable />;
     }
-  ];
 
-  const table = useReactTable({
-    data: allCategory?.data?.data || [],
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection
-    }
-  });
-
-  return (
-    <TemplateContainer>
-      <div className="flex justify-between mb-6 p-4">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">Category</h1>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center gap-1">
-                      Product Menu
-                      <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Category List</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+    if (allCategory.isError) {
+      return (
+        <div className="p-4">
+          <AbortController refetch={() => allCategory.refetch()} />
         </div>
-        <Button
-          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => navigate("/add-category")}>
-          <div className="flex items-center gap-4">
-            <ClipboardPlus className="w-6 h-6" />
-            <p>Add Category</p>
-          </div>
-        </Button>
-      </div>
+      );
+    }
 
-      {/* List Member */}
-      <div className="w-full p-4">
-        <div className="w-full">
+    if (allCategory.data && allCategory.isSuccess) {
+      const columns = [
+        {
+          accessorKey: "name",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                  className="text-center">
+                  Name Category
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => <div className="text-center">{row.getValue("name")}</div>
+        },
+        {
+          accessorKey: "status",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Status
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="lowercase text-center">
+                {row.getValue("status") ? (
+                  <Badge variant="secondary">Active</Badge>
+                ) : (
+                  <Badge variant="destructive">Not Active</Badge>
+                )}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "createdBy",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Created By
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return <div className="text-center">{row.getValue("createdBy") || "-"}</div>;
+          }
+        },
+        {
+          accessorKey: "createdAt",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Created At
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="text-center">
+                {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "modifiedBy",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Modified By
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return <div className="text-center">{row.getValue("modifiedBy") || "-"}</div>;
+          }
+        },
+        {
+          accessorKey: "updatedAt",
+          header: () => <div className="text-center">Updated At</div>,
+          cell: ({ row }) => {
+            return (
+              <div className="text-center">
+                {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss")}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "action",
+          header: () => <div className="text-center">Action</div>,
+          cell: ({ row }) => {
+            return (
+              <div className="flex flex-col gap-6">
+                <Button
+                  className="h-8 w-full p-4 text-center"
+                  onClick={() =>
+                    navigate(`/edit-category/${row?.original?.id}`, {
+                      state: {
+                        data: row.original
+                      }
+                    })
+                  }>
+                  <span>Edit</span>
+                  {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
+                </Button>
+                <DialogDeleteItem
+                  actionDelete={() => {
+                    const body = {
+                      id: row?.original?.id,
+                      name: row.getValue("name")
+                    };
+                    mutateDeleteCategory.mutate(body);
+                  }}
+                />
+              </div>
+            );
+          }
+        }
+      ];
+
+      const table = useReactTable({
+        data: allCategory?.data?.data || [],
+        columns,
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
+        onRowSelectionChange: setRowSelection,
+        state: {
+          sorting,
+          columnFilters,
+          columnVisibility,
+          rowSelection
+        }
+      });
+      return (
+        <div className="w-full p-4">
           <div className="flex flex-col md:flex-row gap-10 py-4">
             <Input
               placeholder="Search..."
@@ -432,7 +395,63 @@ const CategoryList = () => {
             </div>
           </div>
         </div>
+      );
+    }
+  }, [allCategory]);
+
+  return (
+    <TemplateContainer>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Category</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Product Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Category List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <Button
+          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+          onClick={() => navigate("/add-category")}>
+          <div className="flex items-center gap-4">
+            <ClipboardPlus className="w-6 h-6" />
+            <p>Add Category</p>
+          </div>
+        </Button>
       </div>
+
+      {/* List Member */}
+      {TABLE_SHOW}
     </TemplateContainer>
   );
 };
