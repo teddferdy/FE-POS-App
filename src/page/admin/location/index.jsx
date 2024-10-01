@@ -27,6 +27,14 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import { getAllLocationTable, deleteLocation } from "../../../services/location";
 import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
 
@@ -299,7 +307,23 @@ const LocationList = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex justify-end mb-6 p-4">
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Footer</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Location List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-location")}>

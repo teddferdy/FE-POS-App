@@ -15,7 +15,6 @@ export const checkout = create(
     (set) => ({
       data: INITIAL_STATE,
       updateCheckout: (checkoutData) => {
-        console.log("INVOICE DATA =>", checkoutData);
         return set({
           data: {
             id: checkoutData.id,

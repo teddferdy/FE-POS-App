@@ -126,8 +126,6 @@ const OverviewPage = () => {
     keepPreviousData: true
   });
 
-  console.log("tableMemberList =>", tableMemberList);
-
   const tableCategoryList = useQuery(
     ["get-list-table-category-list"],
     () => getListTableCategoryList(),
@@ -158,8 +156,6 @@ const OverviewPage = () => {
     retry: 0,
     keepPreviousData: true
   });
-
-  console.log("getYears =>", getYears);
 
   return (
     <TemplateContainer>
@@ -303,7 +299,6 @@ const OverviewPage = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuRadioGroup value={yearNow} onValueChange={setYearNow}>
                   {getYears?.data?.data?.map((column) => {
-                    console.log("column", column);
                     return (
                       <DropdownMenuRadioItem value={column} key={column}>
                         {column}

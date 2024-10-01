@@ -15,7 +15,6 @@ const OverviewBestSellingList = ({ data }) => {
 
     if (data?.data && data?.isSuccess) {
       const datas = data?.data;
-      console.log("datas => =>", datas);
 
       return (
         <Table>

@@ -26,15 +26,12 @@ const DialogSocialMediaInvoice = ({ data }) => {
           <DialogDescription>Apakah Anda yakin akan menghapus item ini?</DialogDescription>
         </DialogHeader>
         <ul className="flex flex-col gap-6">
-          {data?.map((items, index) => {
-            console.log("ITEMS =>", items);
-            return (
-              <li className="flex flex-col gap-4" key={index}>
-                <p>Social Media: {items?.socialMedia}</p>
-                <p>Nama Social Media: {items?.name}</p>
-              </li>
-            );
-          })}
+          {data?.map((items, index) => (
+            <li className="flex flex-col gap-4" key={index}>
+              <p>Social Media: {items?.socialMedia}</p>
+              <p>Nama Social Media: {items?.name}</p>
+            </li>
+          ))}
         </ul>
         <DialogFooter>
           <DialogClose asChild>

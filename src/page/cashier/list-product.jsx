@@ -140,7 +140,6 @@ const Home = () => {
     onMutate: () => setActive(true, null),
     onSuccess: (success) => {
       const { data } = success;
-      console.log("DATA =>", data);
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -194,9 +193,7 @@ const Home = () => {
 
   const mutateCheckoutItem = useMutation(checkoutItem, {
     onMutate: () => setActive(true, null),
-    onSuccess: (data) => {
-      console.log("DATA DUDE =>", data);
-
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {

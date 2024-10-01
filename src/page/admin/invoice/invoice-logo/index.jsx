@@ -7,8 +7,7 @@ import {
   getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
-
-import { Percent } from "lucide-react";
+import { Percent, ChevronDown } from "lucide-react";
 import moment from "moment";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
@@ -32,8 +31,17 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuItem
 } from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
 import DialogDeleteItem from "../../../../components/organism/dialog/dialogDeleteItem";
 import DialogBySwitch from "../../../../components/organism/dialog/dialog-switch";
 import TemplateContainer from "../../../../components/organism/template-container";
@@ -307,7 +315,47 @@ const InvoiceLogoList = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex justify-end mb-6 p-4">
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Footer</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Logo Invoice</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Invoice Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/logo-invoice-list">Logo</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/footer-invoice-list">Footer</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/social-media-invoice-list">
+                          Social Media
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Invoice Logo List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-invoice-logo")}>

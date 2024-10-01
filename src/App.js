@@ -12,15 +12,15 @@ import EditProfile from "./page/auth/edit-profile";
 
 // Cashier
 import ListProduct from "./page/cashier/list-product"; // List Product Cashier
-import MemberCashier from "./page/cashier/member-cashier";
+// import MemberCashier from "./page/cashier/member-cashier";
 
 // Admin
-import SubCategoryList from "./page/admin/sub-category";
+import SubCategoryList from "./page/admin/product/sub-category";
 import OverviewPage from "./page/admin/overview";
-import CategoryList from "./page/admin/category";
+import CategoryList from "./page/admin/product/category";
 import LocationList from "./page/admin/location";
 import MemberList from "./page/admin/member";
-import ProductList from "./page/admin/product";
+import ProductList from "./page/admin/product/product";
 import DiscountList from "./page/admin/discount";
 import ShiftList from "./page/admin/shift";
 import TypePaymentList from "./page/admin/type-payment";
@@ -30,10 +30,10 @@ import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 
 // Form
-import FormCategory from "./page/admin/category/formCategory";
+import FormCategory from "./page/admin/product/category/formCategory";
 import FormLocation from "./page/admin/location/formLocation";
-import FormProduct from "./page/admin/product/formProduct";
-import FormSubCategory from "./page/admin/sub-category/form-subcategory";
+import FormProduct from "./page/admin/product/product/formProduct";
+import FormSubCategory from "./page/admin/product/sub-category/form-subcategory";
 import FormDiscount from "./page/admin/discount/formDiscount";
 import FormShift from "./page/admin/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
@@ -66,10 +66,10 @@ function App() {
           element={cookie.token ? <EditProfile /> : <Navigate to="/" />}
         />
         <Route path="/home" element={cookie.token ? <ListProduct /> : <Navigate to="/" />} />
-        <Route
+        {/* <Route
           path="/membership"
           element={cookie.token ? <MemberCashier /> : <Navigate to="/" />}
-        />
+        /> */}
         <Route path="/admin-page" element={cookie.token ? <OverviewPage /> : <Navigate to="/" />} />
         <Route
           path="/category-list"

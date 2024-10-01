@@ -10,14 +10,14 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 
 // Component
-import { cn } from "../../../lib/utils";
-import { useLoading } from "../../../components/organism/loading";
-import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
-import { Input } from "../../../components/ui/input";
-import { Button } from "../../../components/ui/button";
-import TemplateContainer from "../../../components/organism/template-container";
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../components/ui/popover";
+import { cn } from "../../../../lib/utils";
+import { useLoading } from "../../../../components/organism/loading";
+import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
+import { Input } from "../../../../components/ui/input";
+import { Button } from "../../../../components/ui/button";
+import TemplateContainer from "../../../../components/organism/template-container";
+import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -25,13 +25,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList
-} from "../../../components/ui/command";
-import { Switch } from "../../../components/ui/switch";
-import { Separator } from "../../../components/ui/separator";
+} from "../../../../components/ui/command";
+import { Switch } from "../../../../components/ui/switch";
+import { Separator } from "../../../../components/ui/separator";
 
 // Services
-import { addSubCategory, editSubCategory } from "../../../services/sub-category";
-import { getAllCategory } from "../../../services/category";
+import { addSubCategory, editSubCategory } from "../../../../services/sub-category";
+import { getAllCategory } from "../../../../services/category";
 
 const userInfoSchema = z.object({
   name: z.string(),
@@ -136,8 +136,6 @@ const FormSubCategory = () => {
   });
 
   const onSubmit = (values) => {
-    console.log("values =>", values);
-
     if (state?.data?.id) {
       const body = {
         id: state?.data?.id,
@@ -249,9 +247,6 @@ const FormSubCategory = () => {
                   <div
                     className="flex justify-end self-center -mt-2"
                     onClick={() => {
-                      console.log("fields", fields);
-                      console.log("fields.length", fields.length);
-
                       if (fields?.length === 1) {
                         form.setValue("option", false);
                         form.setValue("typeSubCategory", []);

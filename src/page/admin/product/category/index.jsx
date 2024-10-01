@@ -7,19 +7,29 @@ import {
   getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { ClipboardPlus } from "lucide-react";
+import { ClipboardPlus, ChevronDown } from "lucide-react";
 import moment from "moment";
-import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
-import { deleteCategory } from "../../../services/category";
-import { Button } from "../../../components/ui/button";
-import { Badge } from "../../../components/ui/badge";
+// import useMediaQuery from "@/hooks/";
+import DialogDeleteItem from "../../../../components/organism/dialog/dialogDeleteItem";
+import { deleteCategory } from "../../../../services/category";
+import { Button } from "../../../../components/ui/button";
+import { Badge } from "../../../../components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger
-} from "../../../components/ui/dropdown-menu";
-import { Input } from "../../../components/ui/input";
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
+import { Input } from "../../../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -27,14 +37,14 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../../../components/ui/table";
+} from "../../../../components/ui/table";
 import { toast } from "sonner";
-import { useLoading } from "../../../components/organism/loading";
-import TemplateContainer from "../../../components/organism/template-container";
+import { useLoading } from "../../../../components/organism/loading";
+import TemplateContainer from "../../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
 
 import { useMutation, useQuery } from "react-query";
-import { getAllCategoryTable } from "../../../services/category";
+import { getAllCategoryTable } from "../../../../services/category";
 
 const FILTER_BY = [
   {
@@ -208,8 +218,6 @@ const CategoryList = () => {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
-        console.log("INI ROW", row);
-
         return (
           <div className="flex flex-col gap-6">
             <Button
@@ -260,7 +268,45 @@ const CategoryList = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex justify-end mb-6 p-4">
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Category</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Product Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Category List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-category")}>

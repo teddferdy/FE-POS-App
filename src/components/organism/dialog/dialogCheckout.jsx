@@ -208,11 +208,8 @@ const DialogCheckout = ({
                   </DrawerHeader>
                   <div className="overflow-scroll no-scrollbar flex-1 flex flex-col gap-4 px-8">
                     {order.map((items, index) => {
-                      console.log("INI ITEMS =>", items);
                       let extraPrice = 0;
                       const getOptionData = items?.options?.map((v) => {
-                        console.log("VVV =>", v);
-
                         let price = [];
                         v?.option?.length > 0
                           ? v?.option?.map((a) => {
@@ -227,8 +224,6 @@ const DialogCheckout = ({
                       }, []);
 
                       concatOfPrice.forEach((element) => {
-                        console.log("element", element);
-
                         extraPrice += Number(element);
                       });
 

@@ -8,19 +8,18 @@ import {
   getSortedRowModel,
   useReactTable
 } from "@tanstack/react-table";
-import { Utensils } from "lucide-react";
+import { ClipboardType } from "lucide-react";
+import { Badge } from "../../../../components/ui/badge";
 import moment from "moment";
+import { Button } from "../../../../components/ui/button";
+import { toast } from "sonner";
 import {
-  // useMutation,
-  useQuery
-} from "react-query";
-import { useNavigate } from "react-router-dom";
-
-// Component
-import { Button } from "../../../components/ui/button";
-// import { toast } from "sonner";
-import { Badge } from "../../../components/ui/badge";
-import { Input } from "../../../components/ui/input";
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from "../../../../components/ui/dropdown-menu";
+import { Input } from "../../../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -28,116 +27,29 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "../../../components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger
-} from "../../../components/ui/dropdown-menu";
-import DialogDeleteItem from "../../../components/organism/dialog/dialogDeleteItem";
-import TemplateContainer from "../../../components/organism/template-container";
+} from "../../../../components/ui/table";
+import DialogTypeSubCategory from "../../../../components/organism/dialog/dialog-type-sub-category";
+import { getAllSubCategory } from "../../../../services/sub-category";
+import DialogDeleteItem from "../../../../components/organism/dialog/dialogDeleteItem";
 
-// import { useLoading } from "../../../components/organism/loading";
+import TemplateContainer from "../../../../components/organism/template-container";
+import { useNavigate } from "react-router-dom";
+import { useLoading } from "../../../../components/organism/loading";
+import { useMutation, useQuery } from "react-query";
 
-// Service
-import { getAllProductTable } from "../../../services/product";
+import { deleteSubCategory } from "../../../../services/sub-category";
 
-// Utils
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
-
-const FILTER_BY = [
-  {
-    value: "nameProduct",
-    name: "Name Product"
-  },
-  {
-    value: "category",
-    name: "Category"
-  },
-  {
-    value: "description",
-    name: "Description"
-  },
-  {
-    value: "price",
-    name: "Price"
-  },
-
-  {
-    value: "createdBy",
-    name: "Created By"
-  }
-];
-
-const ProductList = () => {
+const SubCategoryList = () => {
   const navigate = useNavigate();
-  // const { setActive } = useLoading();
+  const { setActive } = useLoading();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [filterBy, setFilterBy] = useState({
-    value: "nameProduct",
-    name: "Name Product"
-  });
-
-  // QUERY
-  const allProduct = useQuery(["get-all-product-table"], () => getAllProductTable(), {
-    retry: 0,
-    keepPreviousData: true
-  });
-
-  // const mutateDeleteLocation = useMutation(deleteLocation, {
-  //   onMutate: () => setActive(true, null),
-  //   onSuccess: () => {
-  //     setActive(false, "success");
-  //     setTimeout(() => {
-  //       toast.success("Success", {
-  //         description: "Successfull, Delete Location"
-  //       });
-  //     }, 1000);
-  //     setTimeout(() => {
-  //       allLocation.refetch();
-  //       setActive(null, null);
-  //     }, 2000);
-  //   },
-  //   onError: (err) => {
-  //     setActive(false, "error");
-  //     setTimeout(() => {
-  //       toast.error("Failed", {
-  //         description: err.message
-  //       });
-  //     }, 1500);
-  //     setTimeout(() => {
-  //       setActive(null, null);
-  //     }, 2000);
-  //   }
-  // });
 
   const columns = [
     {
-      accessorKey: "image",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Image
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
-
-        return <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />;
-      }
-    },
-    {
-      accessorKey: "nameProduct",
+      accessorKey: "parentCategory",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
@@ -150,59 +62,57 @@ const ProductList = () => {
           </div>
         );
       },
-      cell: ({ row }) => <div className="text-center capitalize">{row.getValue("nameProduct")}</div>
+      cell: ({ row }) => <div className="capitalize">{row.getValue("parentCategory")}</div>
     },
     {
-      accessorKey: "category",
+      accessorKey: "nameSubCategory",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Category
+              Name Product
               {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase text-center">{row.getValue("category")}</div>
+      cell: ({ row }) => <div className="capitalize">{row.getValue("nameSubCategory")}</div>
     },
     {
-      accessorKey: "description",
-      header: () => <div className="text-center">Description</div>,
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("description")}</div>;
-      }
-    },
-    {
-      accessorKey: "price",
-      header: () => <div className="text-center">Price</div>,
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("price")}</div>;
-      }
-    },
-
-    {
-      accessorKey: "status",
+      accessorKey: "typeSubCategory",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Status
+              typeSubCategory
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
         );
       },
       cell: ({ row }) => {
+        const data = row.original.typeSubCategory;
         return (
-          <div className="text-center font-medium">
-            {row.getValue("status") ? (
-              <Badge variant="secondary">Active</Badge>
+          <div className="justify-center flex">
+            <DialogTypeSubCategory data={data} />
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "isMultiple",
+      header: () => <div className="text-center">isMultiple</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="lowercase text-center">
+            {row.getValue("isMultiple") ? (
+              <Badge variant="secondary">Yes</Badge>
             ) : (
-              <Badge variant="destructive">Not Active</Badge>
+              <Badge variant="destructive">Not Multiple</Badge>
             )}
           </div>
         );
@@ -210,22 +120,12 @@ const ProductList = () => {
     },
     {
       accessorKey: "createdBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Created By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
+      header: () => <div className="text-center">createdBy</div>,
       cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("createdBy") || "-"}</div>;
+        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }
     },
+
     {
       accessorKey: "createdAt",
       header: ({ column }) => {
@@ -248,24 +148,7 @@ const ProductList = () => {
         );
       }
     },
-    {
-      accessorKey: "modifiedBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Modified By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>;
-      }
-    },
+
     {
       accessorKey: "updatedAt",
       header: () => <div className="text-center">Updated At</div>,
@@ -286,7 +169,7 @@ const ProductList = () => {
             <Button
               className="h-8 w-full p-4"
               onClick={() =>
-                navigate(`/edit-location/${row?.original?.id}`, {
+                navigate(`/edit-sub-category/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
@@ -297,11 +180,10 @@ const ProductList = () => {
             </Button>
             <DialogDeleteItem
               actionDelete={() => {
-                // const body = {
-                //   id: row?.original?.id,
-                //   nameProduct: row.getValue("nameProduct")
-                // };
-                // mutateDeleteLocation.mutate(body);
+                const body = {
+                  id: row?.original?.id
+                };
+                mutateDeleteSubCategory.mutate(body);
               }}
             />
           </div>
@@ -310,8 +192,41 @@ const ProductList = () => {
     }
   ];
 
+  // QUERY
+  const allSubCategory = useQuery(["get-all-sub-caytegory"], () => getAllSubCategory(), {
+    retry: 0,
+    keepPreviousData: true
+  });
+
+  const mutateDeleteSubCategory = useMutation(deleteSubCategory, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Delete Sub Category"
+        });
+      }, 1000);
+      setTimeout(() => {
+        allSubCategory.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
   const table = useReactTable({
-    data: allProduct?.data?.data || [],
+    data: allSubCategory?.data?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -334,66 +249,48 @@ const ProductList = () => {
       <div className="flex justify-end mb-6 p-4">
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => navigate("/add-product")}>
+          onClick={() => navigate("/add-sub-category")}>
           <div className="flex items-center gap-4">
-            <Utensils className="w-6 h-6" />
-            <p>Add Product</p>
+            <ClipboardType className="w-6 h-6" />
+            <p>Add Sub Category</p>
           </div>
         </Button>
       </div>
 
       {/* List Member */}
       <div className="w-full p-4">
-        <div className="flex flex-col md:flex-row gap-10 py-4">
+        <div className="flex items-center py-4">
           <Input
-            placeholder="Search..."
-            value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+            placeholder="Filter..."
+            value={table.getColumn("parentCategory")?.getFilterValue() ?? ""}
             onChange={(event) =>
-              table.getColumn(filterBy.value)?.setFilterValue(event.target.value)
+              table.getColumn("parentCategory")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
-          <div className="flex gap-10">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">{filterBy.name}</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {FILTER_BY.map((column) => {
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Show / Hide Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       className="capitalize"
-                      checked={column.value === filterBy.value}
-                      onCheckedChange={() => setFilterBy(column)}>
-                      {column.name}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                      {column.id}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">Show / Hide Columns</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) => column.toggleVisibility(!!value)}>
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    );
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="rounded-md border">
           <Table>
@@ -460,4 +357,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default SubCategoryList;

@@ -32,8 +32,6 @@ export const invoice = create(
         });
       },
       updateInvoiceNumber: (invoiceData) => {
-        console.log("INVOICE DATA =>", invoiceData);
-
         return set((items) => {
           return {
             data: {
