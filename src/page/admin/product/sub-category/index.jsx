@@ -76,7 +76,7 @@ const SubCategoryList = () => {
         </div>
       );
     }
-  }, [invoiceSocialMedia]);
+  }, [allSubCategory]);
 
   return (
     <TemplateContainer>
