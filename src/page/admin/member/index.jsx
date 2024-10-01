@@ -28,6 +28,14 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import { getAllMember } from "../../../services/member";
 import TemplateContainer from "../../../components/organism/template-container";
 
@@ -203,9 +211,7 @@ const MemberList = () => {
     {
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => {
-        console.log("ROW =>", row);
-
+      cell: () => {
         return (
           <div className="flex flex-col gap-6">
             <Button className="h-8 w-full p-4" onClick={() => {}}>
@@ -239,6 +245,25 @@ const MemberList = () => {
 
   return (
     <TemplateContainer>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">MemberShip</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Member List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </div>
+
       {/* List Member */}
       <div className="w-full p-4">
         <div className="flex flex-col md:flex-row gap-10 py-4">

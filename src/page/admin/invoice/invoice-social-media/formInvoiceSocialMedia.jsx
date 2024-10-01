@@ -144,8 +144,6 @@ const FormInvoiceSocialMedia = () => {
         createdBy: cookie.user.userName
       };
 
-      console.log("BODY =>", body);
-
       mutateAddInvoiceSocialMedia.mutate(body);
     }
   };
@@ -154,7 +152,6 @@ const FormInvoiceSocialMedia = () => {
     return (
       <div className="col-span-2">
         {fields?.map((items, index) => {
-          console.log("ITEMS =>", items);
           const numb = index + 1;
           return (
             <div key={index}>
@@ -180,7 +177,6 @@ const FormInvoiceSocialMedia = () => {
                             <DropdownMenuContent>
                               <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
                                 {allSocialMedia?.data?.data?.map((column) => {
-                                  console.log("column", column);
                                   return (
                                     <DropdownMenuRadioItem value={column.name} key={column}>
                                       {column.name}
@@ -213,9 +209,6 @@ const FormInvoiceSocialMedia = () => {
                 <div
                   className="flex justify-end self-center mt-10"
                   onClick={() => {
-                    console.log("fields", fields);
-                    console.log("fields.length", fields.length);
-
                     if (fields?.length === 1) {
                       form.setValue("option", false);
                       form.setValue("socialMediaList", []);

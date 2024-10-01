@@ -17,7 +17,6 @@ const OverviewProductList = ({ data }) => {
 
     if (data?.data && data?.isSuccess) {
       const datas = data?.data;
-      console.log("DATAS =>", datas);
 
       return (
         <Table>

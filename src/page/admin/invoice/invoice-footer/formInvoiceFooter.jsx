@@ -158,9 +158,6 @@ const FormInvoiceFooter = () => {
                 <div
                   className="flex justify-end self-center mt-10"
                   onClick={() => {
-                    console.log("fields", fields);
-                    console.log("fields.length", fields.length);
-
                     if (fields?.length === 1) {
                       form.setValue("option", false);
                       form.setValue("footerList", []);

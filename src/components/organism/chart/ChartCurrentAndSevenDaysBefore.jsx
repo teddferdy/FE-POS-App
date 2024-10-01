@@ -10,8 +10,6 @@ import {
   ResponsiveContainer
 } from "recharts";
 const ChartCurrentAndSevenDaysBefore = ({ data, style }) => {
-  console.log("data =>", data);
-
   return (
     <div style={style}>
       <ResponsiveContainer>

@@ -10,17 +10,17 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 
 // Component
-import { Switch } from "../../../components/ui/switch";
-import { Textarea } from "../../../components/ui/textarea";
-import { cn } from "../../../lib/utils";
-import { useLoading } from "../../../components/organism/loading";
-import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
-import { Input } from "../../../components/ui/input";
-import { Button } from "../../../components/ui/button";
-import TemplateContainer from "../../../components/organism/template-container";
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../components/ui/popover";
+import { Switch } from "../../../../components/ui/switch";
+import { Textarea } from "../../../../components/ui/textarea";
+import { cn } from "../../../../lib/utils";
+import { useLoading } from "../../../../components/organism/loading";
+import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
+import { Input } from "../../../../components/ui/input";
+import { Button } from "../../../../components/ui/button";
+import TemplateContainer from "../../../../components/organism/template-container";
+import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { generateLinkImageFromGoogleDrive } from "../../../../utils/generateLinkImageFromGoogleDrive";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -28,13 +28,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList
-} from "../../../components/ui/command";
-import DrawerSelectSubCategory from "../../../components/organism/drawer/drawer-select-sub-category";
+} from "../../../../components/ui/command";
+import DrawerSelectSubCategory from "../../../../components/organism/drawer/drawer-select-sub-category";
 
 // Services
-import { addProduct } from "../../../services/product";
-import { getAllCategory } from "../../../services/category";
-import { getSubCategoryByCategory } from "../../../services/sub-category";
+import { addProduct } from "../../../../services/product";
+import { getAllCategory } from "../../../../services/category";
+import { getSubCategoryByCategory } from "../../../../services/sub-category";
 
 const userInfoSchema = z.object({
   nameSubCategory: z.string(),
@@ -124,8 +124,6 @@ const FormProduct = () => {
     }
   });
   const onSubmit = (values) => {
-    console.log("values =>", values);
-
     if (state?.data?.id) {
       //   const body = {
       //     id: state?.data?.id,

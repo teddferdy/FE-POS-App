@@ -29,13 +29,10 @@ const DialogInvoice = ({
   dataInvoiceFooter,
   dataInvoiceSocialMedia
 }) => {
-  console.log("dataInvoiceFooter =>", dataInvoiceFooter);
-
   const { resetInvoice } = invoice();
   const { cancelCheckout } = checkout();
   const { resetOrder } = orderList();
   const [cookie] = useCookies(["user"]);
-  console.log("cookie =>", cookie);
 
   const extraPrice = [];
   const totalOrder = order.map((items) => items.count);

@@ -7,20 +7,20 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useLoading } from "../../../components/organism/loading";
-import { Button } from "../../../components/ui/button";
+import { useLoading } from "../../../../components/organism/loading";
+import { Button } from "../../../../components/ui/button";
 import { ClipboardPlus } from "lucide-react";
-import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
-import { Switch } from "../../../components/ui/switch";
+import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
+import { Switch } from "../../../../components/ui/switch";
 import { useLocation } from "react-router-dom";
 
-import { Input } from "../../../components/ui/input";
+import { Input } from "../../../../components/ui/input";
 
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
-import TemplateContainer from "../../../components/organism/template-container";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
+import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
 
-import { addCategory, editCategory } from "../../../services/category";
+import { addCategory, editCategory } from "../../../../services/category";
 
 const FormCategory = () => {
   const [cookie] = useCookies();

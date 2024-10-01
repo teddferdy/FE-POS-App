@@ -64,8 +64,6 @@ const Register = () => {
     keepPreviousData: true
   });
 
-  console.log("allLocation =>", allLocation);
-
   // Translation
   const translationMemo = useMemo(() => {
     return {

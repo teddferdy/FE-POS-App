@@ -7,7 +7,6 @@ export const postCheckoutItem = async (payload) => {
 };
 
 export const checkoutItem = async (payload) => {
-  console.log("PAYLOAD =>", payload);
   const { data, status } = await axiosInstance.put(
     `/checkout/edit-checkout-item/${payload.id}`,
     payload

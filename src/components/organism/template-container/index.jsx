@@ -41,7 +41,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const location = useLocation();
-  console.log("location =>", location);
 
   const { updateTranslation, translation } = translationSelect();
 
@@ -82,11 +81,8 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   });
 
   const arrowBackButton = urlWithArrowBack?.find((items) => {
-    console.log("ITEMS =>", items);
     return items?.pathName === location?.pathname;
   });
-
-  console.log("arrowBackButton =>", arrowBackButton);
 
   // Side Mobile
   const SIDEBAR_MOBILE = useMemo(() => {
