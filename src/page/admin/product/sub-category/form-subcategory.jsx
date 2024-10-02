@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { Check, ChevronsUpDown, ChevronDown } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown, TrashIcon, PlusIcon } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ import DialogCancelForm from "../../../../components/organism/dialog/dialogCance
 import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";
 import TemplateContainer from "../../../../components/organism/template-container";
-import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import {
   Command,
@@ -42,6 +42,7 @@ import {
 } from "../../../../components/ui/command";
 import { Switch } from "../../../../components/ui/switch";
 import { Separator } from "../../../../components/ui/separator";
+import Hint from "../../../../components/organism/label/hint";
 
 // Services
 import { addSubCategory, editSubCategory } from "../../../../services/sub-category";
@@ -210,17 +211,23 @@ const FormSubCategory = () => {
             return (
               <div key={index}>
                 <Separator />
-                <div key={index} className="flex py-6 items-start gap-6 justify-between">
+                <div key={index} className="flex py-6 items-start gap-6 justify-between relative">
                   <div className="flex-1">
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Option {numb}</FormLabel>
+                        <FormLabel className="text-base">Name Option {numb}</FormLabel>
                       </div>
                       <Input
                         type="text"
                         {...form.register(`typeSubCategory.${index}.name`)}
                         defaultValue={items.titleOption}
+                        placeholder="Enter Name Option"
                       />
+                      {items?.titleOption?.length < 1 ? (
+                        <FormMessage>Name Option Must Be Filled</FormMessage>
+                      ) : (
+                        <Hint>Enter Name Option Minimum 2 Character</Hint>
+                      )}
                     </FormItem>
                   </div>
                   <div className="flex-1 flex-col">
@@ -235,19 +242,24 @@ const FormSubCategory = () => {
                           value="0"
                           {...form.register(`typeSubCategory.${index}.price`)}
                           defaultValue={items.price}
+                          placeholder="Enter Price Option"
                         />
                       ) : (
                         <Input
                           type="text"
-                          disabled={items.isFree}
                           {...form.register(`typeSubCategory.${index}.price`)}
                           defaultValue={items.price}
+                          placeholder="Enter Price Option"
                         />
                       )}
+                      <Hint>If Free switch position on yes, Input Price automated in Rp. 0</Hint>
                     </FormItem>
                     <div className="flex justify-between mt-6">
-                      <FormLabel className="text-base">Is Free</FormLabel>
-                      <div className="flex items-center gap-6">
+                      <div className="flex-col">
+                        <FormLabel className="text-base">Is Free</FormLabel>
+                        <Hint>Select yes if option price 0 / free</Hint>
+                      </div>
+                      <div className="flex items-center gap-6 mb-4">
                         <p>No</p>
                         <Switch
                           name="isFree"
@@ -258,8 +270,9 @@ const FormSubCategory = () => {
                       </div>
                     </div>
                   </div>
+                  {/* Delete on Resolution Table - Desktop */}
                   <div
-                    className="flex justify-end self-center -mt-2"
+                    className="justify-end self-center -mt-14 hidden md:flex"
                     onClick={() => {
                       if (fields?.length === 1) {
                         form.setValue("option", false);
@@ -268,7 +281,30 @@ const FormSubCategory = () => {
                         remove(index);
                       }
                     }}>
-                    <Button>Delete</Button>
+                    <Button
+                      variant="ghost"
+                      className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2">
+                      <TrashIcon className="h-4 w-4" />
+                      <p>Delete</p>
+                    </Button>
+                  </div>
+
+                  {/* Delete on Mobile */}
+                  <div
+                    className="absolute right-1 top-1 md:hidden"
+                    onClick={() => {
+                      if (fields?.length === 1) {
+                        form.setValue("option", false);
+                        form.setValue("typeSubCategory", []);
+                      } else {
+                        remove(index);
+                      }
+                    }}>
+                    <Button
+                      variant="ghost" // No background initially (ghost)
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 h-8 w-8 flex items-center justify-center transition-colors duration-200">
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 <Separator />
@@ -331,11 +367,11 @@ const FormSubCategory = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-3/4 mx-auto">
+      <div className="w-full lg:w-3/4 mx-auto p-4">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
             <div className="col-span-2 lg:col-span-1">
               <FormField
                 control={form.control}
@@ -345,7 +381,12 @@ const FormSubCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Product</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} placeholder="Enter Name Product" />
+                    {form.formState.errors.nameSubCategory ? (
+                      <FormMessage>{form.formState.errors.nameSubCategory}</FormMessage>
+                    ) : (
+                      <Hint>Enter Name Product Minimum 4 Character</Hint>
+                    )}
                   </FormItem>
                 )}
               />
@@ -405,12 +446,17 @@ const FormSubCategory = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
+                      {form.formState.errors.parentCategory ? (
+                        <FormMessage>{form.formState.errors.parentCategory}</FormMessage>
+                      ) : (
+                        <Hint>Select Sub Category From Category Product</Hint>
+                      )}
                     </FormItem>
                   );
                 }}
               />
             </div>
-            <div className="col-span-1">
+            <div className="col-span-2 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="option"
@@ -419,32 +465,35 @@ const FormSubCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Adding Option</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>No</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={(e) => {
-                          field.onChange(e);
-                          if (e) {
-                            append({
-                              name: "",
-                              price: "",
-                              isFree: false
-                            });
-                          } else {
-                            form.setValue("typeSubCategory", []);
-                          }
-                        }}
-                      />
-                      <p>Yes</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>No</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={(e) => {
+                            field.onChange(e);
+                            if (e) {
+                              append({
+                                name: "",
+                                price: "",
+                                isFree: false
+                              });
+                            } else {
+                              form.setValue("typeSubCategory", []);
+                            }
+                          }}
+                        />
+                        <p>Yes</p>
+                      </div>
+                      <Hint>Select yes if you want to adding option</Hint>
                     </div>
                   </FormItem>
                 )}
               />
             </div>
-            <div className="col-span-1">
+            <div className="col-span-2 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="isMultiple"
@@ -453,15 +502,18 @@ const FormSubCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Multiple</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>No</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Yes</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>No</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Yes</p>
+                      </div>
+                      <Hint>Select yes if customer can choose more than one option</Hint>
                     </div>
                   </FormItem>
                 )}
@@ -475,7 +527,7 @@ const FormSubCategory = () => {
             {form.getValues("option") && (
               <div className="col-span-2 flex justify-center cursor-pointer">
                 <div
-                  className="col-span-2"
+                  className="col-span-2 flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
                   onClick={() =>
                     append({
                       name: "",
@@ -483,7 +535,8 @@ const FormSubCategory = () => {
                       isFree: false
                     })
                   }>
-                  Add Option
+                  <PlusIcon className="h-5 w-5" />
+                  <span>Add Option</span>
                 </div>
               </div>
             )}

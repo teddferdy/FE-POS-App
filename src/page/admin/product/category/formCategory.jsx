@@ -28,7 +28,7 @@ import {
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
 import { Input } from "../../../../components/ui/input";
-
+import Hint from "../../../../components/organism/label/hint";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -185,8 +185,8 @@ const FormCategory = () => {
 
       <div className="w-full lg:w-3/4 mx-auto p-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
-            <div className="flex justify-between items-center gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -195,9 +195,11 @@ const FormCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Category</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
-                    {form.formState.errors.name && (
+                    <Input type="text" {...field} placeholder="Name Category" />
+                    {form.formState.errors.name ? (
                       <FormMessage>{form.formState.errors.name}</FormMessage>
+                    ) : (
+                      <Hint>Enter Description Category Minimum Character 4</Hint>
                     )}
                   </FormItem>
                 )}
@@ -210,15 +212,18 @@ const FormCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if percentage want to active</Hint>
                     </div>
                   </FormItem>
                 )}
