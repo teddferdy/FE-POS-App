@@ -26,13 +26,14 @@ import {
 } from "../../../../components/ui/breadcrumb";
 import { Switch } from "../../../../components/ui/switch";
 import { Textarea } from "../../../../components/ui/textarea";
+import DialogCarouselImage from "../../../../components/organism/dialog/dialog-carousel-image";
 import { cn } from "../../../../lib/utils";
 import { useLoading } from "../../../../components/organism/loading";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";
 import TemplateContainer from "../../../../components/organism/template-container";
-import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import { generateLinkImageFromGoogleDrive } from "../../../../utils/generateLinkImageFromGoogleDrive";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import {
@@ -44,6 +45,7 @@ import {
   CommandList
 } from "../../../../components/ui/command";
 import DrawerSelectSubCategory from "../../../../components/organism/drawer/drawer-select-sub-category";
+import Hint from "../../../../components/organism/label/hint";
 
 // Services
 import { addProduct } from "../../../../services/product";
@@ -72,7 +74,7 @@ const FormProduct = () => {
       message: "Name Product Store must be at least 4 characters."
     }),
     category: z.string().min(4, {
-      message: "Name Product Store must be at least 4 characters."
+      message: "Category Must Be Selected."
     }),
     description: z.string().min(4, {
       message: "Description Store must be at least 4 characters."
@@ -215,11 +217,11 @@ const FormProduct = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-3/4 mx-auto">
+      <div className="w-full lg:w-3/4 mx-auto p-4">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full ">
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
             <div className="col-span-3">
               <FormField
                 control={form.control}
@@ -232,14 +234,34 @@ const FormProduct = () => {
                         <FormLabel className="text-base">Image Product</FormLabel>
                       </div>
                       <div className="flex-col md:flex justify-between gap-10">
-                        <Input type="text" {...field} className="flex-1" />
-                        {linkName && (
-                          <div className="w-full h-auto mt-10 md:mt-0">
-                            <img
-                              src={`${linkName}`}
-                              alt={linkName}
-                              className="w-full object-cover"
+                        <div className="flex flex-col gap-4">
+                          <div className="relative w-full">
+                            <Input
+                              type="text"
+                              {...field}
+                              className="flex-1"
+                              placeholder="Enter Image URL"
                             />
+                            <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
+                              <DialogCarouselImage />
+                            </div>
+                          </div>
+                          {form.formState.errors.image ? (
+                            <FormMessage>{form.formState.errors.image}</FormMessage>
+                          ) : (
+                            <Hint>Image URL in Google Drive</Hint>
+                          )}
+                        </div>
+                        {linkName && (
+                          <div className="flex flex-col gap-4">
+                            <p>Result Image</p>
+                            <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
+                              <img
+                                src={`${linkName}`}
+                                alt={linkName}
+                                className="w-full object-cover"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -257,7 +279,12 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Product</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} placeholder="Enter Name Product" />
+                    {form.formState.errors.nameProduct ? (
+                      <FormMessage>{form.formState.errors.nameProduct}</FormMessage>
+                    ) : (
+                      <Hint>Enter Name Product Minimum Character 4</Hint>
+                    )}
                   </FormItem>
                 )}
               />
@@ -271,7 +298,12 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Description</FormLabel>
                     </div>
-                    <Textarea {...field} />
+                    <Textarea {...field} placeholder="Enter Description Product" />
+                    {form.formState.errors.description ? (
+                      <FormMessage>{form.formState.errors.description}</FormMessage>
+                    ) : (
+                      <Hint>Enter Description Product Minimum Character 4</Hint>
+                    )}
                   </FormItem>
                 )}
               />
@@ -285,7 +317,12 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Price Product</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} placeholder="Enter Price Product" />
+                    {form.formState.errors.price ? (
+                      <FormMessage>{form.formState.errors.price}</FormMessage>
+                    ) : (
+                      <Hint>Enter Price Product Minimum 2 character</Hint>
+                    )}
                   </FormItem>
                 )}
               />
@@ -299,15 +336,18 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex justify-between items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if percentage want to active</Hint>
                     </div>
                   </FormItem>
                 )}
@@ -372,6 +412,11 @@ const FormProduct = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
+                      {form.formState.errors.category ? (
+                        <FormMessage>{form.formState.errors.category}</FormMessage>
+                      ) : (
+                        <Hint>Select Category Product</Hint>
+                      )}
                     </FormItem>
                   );
                 }}
@@ -389,6 +434,11 @@ const FormProduct = () => {
                           <FormLabel className="text-base">Sub Category</FormLabel>
                         </div>
                         <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
+                        {form.formState.errors.subCategory ? (
+                          <FormMessage>{form.formState.errors.subCategory}</FormMessage>
+                        ) : (
+                          <Hint>Select Sub Category Product</Hint>
+                        )}
                       </FormItem>
                     );
                   }}
