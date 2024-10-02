@@ -133,12 +133,12 @@ const FormSocialMedia = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/social-media-list">Shift List</BreadcrumbLink>
+                  <BreadcrumbLink href="/social-media-list">Social Media List</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Form Add Shift</BreadcrumbPage>
+                <BreadcrumbPage>Form Add Social Media</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -176,7 +176,7 @@ const FormSocialMedia = () => {
                 <Button
                   className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                   type="submit">
-                  Add Shift
+                  Save Social Media
                 </Button>
               </div>
             </div>

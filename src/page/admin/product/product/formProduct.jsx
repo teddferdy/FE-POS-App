@@ -407,7 +407,7 @@ const FormProduct = () => {
                 <Button
                   className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                   type="submit">
-                  Add Product
+                  {state?.data?.id ? "Submit Edit Product" : "Save Product"}
                 </Button>
               </div>
             </div>

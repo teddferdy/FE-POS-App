@@ -499,7 +499,7 @@ const FormSubCategory = () => {
                 <Button
                   className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                   type="submit">
-                  Add Sub Category
+                  {state?.data?.id ? "Submit Edit Sub Category" : "Save Sub Category"}
                 </Button>
               </div>
             </div>
