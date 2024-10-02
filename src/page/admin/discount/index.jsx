@@ -57,7 +57,7 @@ const DiscountList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allDiscount.isLoading && allDiscount.isFetching) {
+    if (allDiscount.isLoading && allDiscount.isFetching && !allDiscount.isError) {
       return <SkeletonTable />;
     }
 
@@ -69,7 +69,7 @@ const DiscountList = () => {
       );
     }
 
-    if (allDiscount.data && allDiscount.isSuccess) {
+    if (allDiscount.data && allDiscount.isSuccess && !allDiscount.isError) {
       return (
         <div className="w-full p-4">
           <TableDiscountList
@@ -79,7 +79,7 @@ const DiscountList = () => {
         </div>
       );
     }
-  }, [allDiscount]);
+  }, [allDiscount, mutateDeleteDiscount]);
 
   return (
     <TemplateContainer>

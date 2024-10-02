@@ -95,7 +95,7 @@ const InvoiceLogoList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (invoiceLogo.isLoading && invoiceLogo.isFetching) {
+    if (invoiceLogo.isLoading && invoiceLogo.isFetching && !invoiceLogo.isError) {
       return <SkeletonTable />;
     }
 
@@ -107,7 +107,7 @@ const InvoiceLogoList = () => {
       );
     }
 
-    if (invoiceLogo.data && invoiceLogo.isSuccess) {
+    if (invoiceLogo.data && invoiceLogo.isSuccess && !invoiceLogo.isError) {
       return (
         <div className="w-full p-4">
           <TableInvoiceLogoList
@@ -118,7 +118,7 @@ const InvoiceLogoList = () => {
         </div>
       );
     }
-  }, [invoiceLogo]);
+  }, [invoiceLogo, mutateChangeIsActiveInvoiceLogo, mutateDeleteInvoiceLogo]);
 
   return (
     <TemplateContainer>

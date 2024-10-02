@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { ClipboardType, Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,6 +10,20 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 
 // Component
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
 import { cn } from "../../../../lib/utils";
 import { useLoading } from "../../../../components/organism/loading";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
@@ -270,10 +284,53 @@ const FormSubCategory = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <ClipboardType className="w-6 h-6" />
-        <p>Add Sub Category</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Form Sub Category</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Product Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/sub-category-list">Sub Category List</BreadcrumbLink>
+              </BreadcrumbLink>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Sub Category" : "Form Add Sub Category"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
+
       <div className="w-full lg:w-3/4 mx-auto">
         <Form {...form}>
           <form

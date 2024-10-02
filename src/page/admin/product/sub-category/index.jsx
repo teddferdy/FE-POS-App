@@ -68,7 +68,7 @@ const SubCategoryList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allSubCategory.isLoading && allSubCategory.isFetching) {
+    if (allSubCategory.isLoading && allSubCategory.isFetching && !allSubCategory.isError) {
       return <SkeletonTable />;
     }
 
@@ -80,7 +80,7 @@ const SubCategoryList = () => {
       );
     }
 
-    if (allSubCategory.data && allSubCategory.isSuccess) {
+    if (allSubCategory.data && allSubCategory.isSuccess && !allSubCategory.isError) {
       return (
         <div className="w-full p-4">
           <TableSubCategoryList
@@ -90,7 +90,7 @@ const SubCategoryList = () => {
         </div>
       );
     }
-  }, [allSubCategory]);
+  }, [allSubCategory, mutateDeleteSubCategory]);
 
   return (
     <TemplateContainer>
