@@ -129,7 +129,7 @@ const InvoiceLogoList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Logo Invoice</BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

@@ -23,6 +23,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
+import Hint from "../../../components/organism/label/hint";
 
 const FormDiscount = () => {
   const { state } = useLocation();
@@ -31,10 +32,10 @@ const FormDiscount = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     description: z.string().min(4, {
-      message: "Name Store must be at least 4 characters."
+      message: "Description Field Required"
     }),
     percentage: z.string().min(1, {
-      message: "Address must be at least 1 characters."
+      message: "Precentage Filed Required"
     }),
     isActive: z.boolean()
   });
@@ -164,15 +165,17 @@ const FormDiscount = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Description</FormLabel>
                   </div>
-                  <Input type="text" {...field} />
-                  {form.formState.errors.description && (
+                  <Input type="text" {...field} placeholder="Enter Description" />
+                  {form.formState.errors.description ? (
                     <FormMessage>{form.formState.errors.description}</FormMessage>
+                  ) : (
+                    <Hint>Enter Description Percentage Minimum Character 4</Hint>
                   )}
                 </FormItem>
               )}
             />
 
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
               <FormField
                 control={form.control}
                 name="percentage"
@@ -181,9 +184,12 @@ const FormDiscount = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Percentage</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
-                    {form.formState.errors.percentage && (
+                    <Input type="text" {...field} placeholder="Enter Percentage Number" />
+
+                    {form.formState.errors.percentage ? (
                       <FormMessage>{form.formState.errors.percentage}</FormMessage>
+                    ) : (
+                      <Hint>Enter Percentage Number Cannot Character</Hint>
                     )}
                   </FormItem>
                 )}
@@ -196,15 +202,18 @@ const FormDiscount = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Active</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if percentage want to active</Hint>
                     </div>
                   </FormItem>
                 )}
@@ -212,6 +221,7 @@ const FormDiscount = () => {
             </div>
             <div className="flex justify-between items-center">
               <DialogCancelForm
+                handleBack={() => navigate("/discount-list")}
                 classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                 titleDialog="Apakah Anda Ingin Membatalkan Ini"
                 titleButtonTrigger="Cancel"

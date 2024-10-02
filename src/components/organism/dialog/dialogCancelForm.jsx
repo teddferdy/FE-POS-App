@@ -13,7 +13,7 @@ import {
   DialogClose
 } from "../../ui/dialog";
 
-const DialogCancelForm = ({ classNameButtonTrigger }) => {
+const DialogCancelForm = ({ classNameButtonTrigger, handleBack }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -29,7 +29,7 @@ const DialogCancelForm = ({ classNameButtonTrigger }) => {
               Close
             </Button>
           </DialogClose>
-          <Button type="submit">Yes</Button>
+          <Button onClick={handleBack}>Yes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

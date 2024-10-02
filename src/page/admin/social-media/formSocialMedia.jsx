@@ -141,6 +141,7 @@ const FormSocialMedia = () => {
             <div className="col-span-2">
               <div className="flex justify-between items-center">
                 <DialogCancelForm
+                  handleBack={() => navigate("/social-media-list")}
                   classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                   titleDialog="Apakah Anda Ingin Membatalkan Ini"
                   titleButtonTrigger="Cancel"
