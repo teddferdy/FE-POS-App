@@ -56,7 +56,7 @@ const ShiftList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allShift.isLoading && allShift.isFetching) {
+    if (allShift.isLoading && allShift.isFetching && !allShift.isError) {
       return <SkeletonTable />;
     }
 
@@ -68,7 +68,7 @@ const ShiftList = () => {
       );
     }
 
-    if (allShift.data && allShift.isSuccess) {
+    if (allShift.data && allShift.isSuccess && !allShift.isError) {
       return (
         <div className="w-full p-4">
           <TableShiftList
@@ -78,7 +78,7 @@ const ShiftList = () => {
         </div>
       );
     }
-  }, [allShift]);
+  }, [allShift, mutateDeleteShift]);
 
   return (
     <TemplateContainer>

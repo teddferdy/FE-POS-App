@@ -68,7 +68,7 @@ const ProductList = () => {
   // });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allProduct?.isLoading && allProduct?.isFetching) {
+    if (allProduct?.isLoading && allProduct?.isFetching && !allProduct.isError) {
       return <SkeletonTable />;
     }
 

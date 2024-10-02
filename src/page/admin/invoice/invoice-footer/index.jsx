@@ -94,7 +94,7 @@ const InvoiceFooterList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (invoiceFooter.isLoading && invoiceFooter.isFetching) {
+    if (invoiceFooter.isLoading && invoiceFooter.isFetching && !invoiceFooter.isError) {
       return <SkeletonTable />;
     }
 
@@ -106,7 +106,7 @@ const InvoiceFooterList = () => {
       );
     }
 
-    if (invoiceFooter.data && invoiceFooter.isSuccess) {
+    if (invoiceFooter.data && invoiceFooter.isSuccess && !invoiceFooter.isError) {
       return (
         <div className="w-full p-4">
           <TableInvoiceFooterList
@@ -117,7 +117,7 @@ const InvoiceFooterList = () => {
         </div>
       );
     }
-  }, [invoiceFooter]);
+  }, [invoiceFooter, mutateChangeIsActiveInvoiceFooter, mutateDeleteInvoiceFooter]);
 
   return (
     <TemplateContainer>

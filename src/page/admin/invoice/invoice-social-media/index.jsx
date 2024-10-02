@@ -102,7 +102,11 @@ const InvoiceSocialMediaList = () => {
   );
 
   const TABLE_SHOW = useMemo(() => {
-    if (invoiceSocialMedia.isLoading && invoiceSocialMedia.isFetching) {
+    if (
+      invoiceSocialMedia.isLoading &&
+      invoiceSocialMedia.isFetching &&
+      !invoiceSocialMedia.isError
+    ) {
       return <SkeletonTable />;
     }
 
@@ -114,7 +118,7 @@ const InvoiceSocialMediaList = () => {
       );
     }
 
-    if (invoiceSocialMedia.data && invoiceSocialMedia.isSuccess) {
+    if (invoiceSocialMedia.data && invoiceSocialMedia.isSuccess && !invoiceSocialMedia.isError) {
       return (
         <div className="w-full p-4">
           <TableInvoiceSocialMediaList
@@ -125,7 +129,7 @@ const InvoiceSocialMediaList = () => {
         </div>
       );
     }
-  }, [invoiceSocialMedia]);
+  }, [invoiceSocialMedia, mutateChangeIsActiveInvoiceSocialMedia, mutateDeleteInvoiceSocialMedia]);
 
   return (
     <TemplateContainer>

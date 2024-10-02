@@ -58,7 +58,7 @@ const LocationList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allLocation.isLoading && allLocation.isFetching) {
+    if (allLocation.isLoading && allLocation.isFetching && !allLocation.isError) {
       return <SkeletonTable />;
     }
 
@@ -70,7 +70,7 @@ const LocationList = () => {
       );
     }
 
-    if (allLocation.data && allLocation.isSuccess) {
+    if (allLocation.data && allLocation.isSuccess && !allLocation.isError) {
       return (
         <div className="w-full p-4">
           <TableLocationList
@@ -80,7 +80,7 @@ const LocationList = () => {
         </div>
       );
     }
-  }, [allLocation]);
+  }, [allLocation, mutateDeleteLocation]);
 
   return (
     <TemplateContainer>

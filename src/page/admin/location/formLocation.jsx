@@ -14,7 +14,14 @@ import DialogCancelForm from "../../../components/organism/dialog/dialogCancelFo
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { addLocation, editLocation } from "../../../services/location";
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -135,9 +142,31 @@ const FormLocation = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <MapPinPlus className="w-6 h-6" />
-        <p>Add Location</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Form Location</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/location-list">Location List</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Location" : "Form Add Location"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto">

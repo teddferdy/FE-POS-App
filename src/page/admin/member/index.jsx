@@ -26,7 +26,7 @@ const MemberList = () => {
   );
 
   const TABLE_SHOW = useMemo(() => {
-    if (allMember.isLoading && allMember.isFetching) {
+    if (allMember.isLoading && allMember.isFetching && !allMember.isError) {
       return <SkeletonTable />;
     }
 
@@ -38,7 +38,7 @@ const MemberList = () => {
       );
     }
 
-    if (allMember.data && allMember.isSuccess) {
+    if (allMember.data && allMember.isSuccess && !allMember.isError) {
       return (
         <div className="w-full p-4">
           <TableMembershipList allMember={allMember} />

@@ -10,7 +10,23 @@ import { toast } from "sonner";
 import { Separator } from "../../../../components/ui/separator";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
-import { Percent } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
+} from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
@@ -19,13 +35,6 @@ import { getAllSocialMedia } from "../../../../services/social-media";
 
 import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
-} from "../../../../components/ui/dropdown-menu";
 
 import { useCookies } from "react-cookie";
 
@@ -229,9 +238,55 @@ const FormInvoiceSocialMedia = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <Percent className="w-6 h-6" />
-        <p>Add Social Media Invoice</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Social Media Invoice</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Invoice Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/logo-invoice-list">Logo</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/footer-invoice-list">Footer</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/social-media-invoice-list">
+                          Social Media
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/social-media-invoice-list">
+                  Invoice Social Media List
+                </BreadcrumbLink>
+              </BreadcrumbLink>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Social Media" : "Form Add Social Media"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto p-4">

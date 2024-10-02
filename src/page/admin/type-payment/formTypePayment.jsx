@@ -9,7 +9,14 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
-import { MapPinPlus } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
@@ -125,9 +132,31 @@ const FormTypePayment = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <MapPinPlus className="w-6 h-6" />
-        <p>Add Location</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Form Type Payment</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/type-payment-list">Type Payment List</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Type Payment" : "Form Add Type Payment"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto">

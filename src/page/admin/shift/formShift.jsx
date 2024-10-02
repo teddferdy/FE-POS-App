@@ -12,7 +12,14 @@ import { useCookies } from "react-cookie";
 // Component
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
-import { AlarmClockPlus } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../components/ui/breadcrumb";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
@@ -138,9 +145,31 @@ const FormShift = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex items-center gap-4 p-4">
-        <AlarmClockPlus className="w-6 h-6" />
-        <p>Add Shift</p>
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Form Shift</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/shift-list">Shift List</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {state?.data?.id ? "Form Edit Shift" : "Form Add Shift"}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto">
