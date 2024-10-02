@@ -175,6 +175,7 @@ const FormInvoiceLogo = () => {
             </div>
             <div className="flex justify-between items-center">
               <DialogCancelForm
+                handleBack={() => navigate("/logo-invoice-list")}
                 classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                 titleDialog="Apakah Anda Ingin Membatalkan Ini"
                 titleButtonTrigger="Cancel"

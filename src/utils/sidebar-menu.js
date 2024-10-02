@@ -174,5 +174,29 @@ export const urlWithArrowBack = [
     url: -1,
     title: "Category",
     pathName: "/category-list"
+  },
+
+  // Form Page Category
+  {
+    url: "/category-list",
+    title: "Add Category",
+    pathName: "/add-category"
+  },
+  {
+    url: "/category-list",
+    title: "Edit Category",
+    pathName: "/edit-category"
+  },
+
+  // Form Page Sub Category
+  {
+    url: "/sub-category-list",
+    title: "Add Sub Category",
+    pathName: "/add-sub-category"
+  },
+  {
+    url: "/sub-category-list",
+    title: "Edit Sub Category",
+    pathName: "/edit-sub-category"
   }
 ];

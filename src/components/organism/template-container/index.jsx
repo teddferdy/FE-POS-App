@@ -81,7 +81,13 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   });
 
   const arrowBackButton = urlWithArrowBack?.find((items) => {
-    return items?.pathName === location?.pathname;
+    const split = location.pathname.split("/");
+    const pathNme = split?.[1];
+
+    console.log("PATHNAME =>", pathNme);
+    console.log("ITEMS =>", items);
+
+    return items?.pathName === `/${pathNme}`;
   });
 
   // Side Mobile

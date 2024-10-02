@@ -1,11 +1,25 @@
 /* eslint-disable no-undef */
 import React, { useMemo } from "react";
-import { ClipboardType } from "lucide-react";
+import { ClipboardType, ChevronDown } from "lucide-react";
 
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
 
 import { getAllSubCategory } from "../../../../services/sub-category";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "../../../../components/ui/breadcrumb";
 
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
@@ -80,7 +94,45 @@ const SubCategoryList = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex justify-end mb-6 p-4">
+      <div className="flex justify-between mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Sub Category</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Product Menu
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Sub Category List</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-sub-category")}>
