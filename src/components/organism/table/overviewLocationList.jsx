@@ -32,11 +32,7 @@ const OverviewLocationList = ({ data }) => {
                 <TableCell className="text-center">{items.nameStore || "-"}</TableCell>
                 <TableCell className="text-center">{items.phoneNumber || "-"}</TableCell>
                 <TableCell className="text-center">
-                  {items.status ? (
-                    <Badge variant="secondary">Active</Badge>
-                  ) : (
-                    <Badge variant="destructive">Not Active</Badge>
-                  )}
+                  {items.status ? <Badge isActive /> : <Badge isActive={false} />}
                 </TableCell>
                 <TableCell className="text-center">{items.createdBy || "-"}</TableCell>
                 <TableCell className="text-center">

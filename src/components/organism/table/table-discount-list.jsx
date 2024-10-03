@@ -94,11 +94,7 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
       cell: ({ row }) => {
         return (
           <div className="lowercase text-center">
-            {row.getValue("isActive") ? (
-              <Badge variant="secondary">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Not Active</Badge>
-            )}
+            {row.getValue("isActive") ? <Badge isActive /> : <Badge isActive={false} />}
           </div>
         );
       }

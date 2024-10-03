@@ -93,11 +93,7 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
       cell: ({ row }) => {
         return (
           <div className="lowercase text-center">
-            {row.getValue("isMultiple") ? (
-              <Badge variant="secondary">Yes</Badge>
-            ) : (
-              <Badge variant="destructive">Not Multiple</Badge>
-            )}
+            {row.getValue("isMultiple") ? <Badge isActive /> : <Badge isActive={false} />}
           </div>
         );
       }

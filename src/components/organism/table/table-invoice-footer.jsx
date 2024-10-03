@@ -95,11 +95,7 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
       },
       cell: ({ row }) => (
         <div className="lowercase">
-          {row.getValue("status") ? (
-            <Badge variant="secondary">Active</Badge>
-          ) : (
-            <Badge variant="destructive">Not Active</Badge>
-          )}
+          {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
         </div>
       )
     },
@@ -118,11 +114,7 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
       cell: ({ row }) => {
         return (
           <div className="text-center font-medium">
-            {row.getValue("isActive") ? (
-              <Badge variant="secondary">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Not Active</Badge>
-            )}
+            {row.getValue("isActive") ? <Badge isActive /> : <Badge isActive={false} />}
           </div>
         );
       }
