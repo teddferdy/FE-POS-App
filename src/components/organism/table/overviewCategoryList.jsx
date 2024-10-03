@@ -26,11 +26,7 @@ const OverviewCategoryList = ({ data }) => {
               <TableRow key={index}>
                 <TableCell className="text-center">{items.name || "-"}</TableCell>
                 <TableCell className="text-center">
-                  {items.status ? (
-                    <Badge variant="secondary">Active</Badge>
-                  ) : (
-                    <Badge variant="destructive">Not Active</Badge>
-                  )}
+                  {items.status ? <Badge isActive /> : <Badge isActive={false} />}
                 </TableCell>
                 <TableCell className="text-center">{items.createdBy || "-"}</TableCell>
               </TableRow>

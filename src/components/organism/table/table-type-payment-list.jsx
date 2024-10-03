@@ -87,11 +87,7 @@ const TableTypePaymentList = ({ allLocation, handleDelete }) => {
       cell: ({ row }) => {
         return (
           <div className="lowercase text-center">
-            {row.getValue("status") ? (
-              <Badge variant="secondary">Active</Badge>
-            ) : (
-              <Badge variant="destructive">Not Active</Badge>
-            )}
+            {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
           </div>
         );
       }

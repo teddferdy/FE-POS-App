@@ -51,11 +51,7 @@ const OverviewProductList = ({ data }) => {
                   <TableCell className="text-center">{optionProduct}</TableCell>
                   <TableCell className="text-center">{items.price || "-"}</TableCell>
                   <TableCell className="text-center">
-                    {items.status ? (
-                      <Badge variant="secondary">Active</Badge>
-                    ) : (
-                      <Badge variant="destructive">Not Active</Badge>
-                    )}
+                    {items.status ? <Badge isActive /> : <Badge isActive={false} />}
                   </TableCell>
                   <TableCell className="text-center">{items.createdBy || "-"}</TableCell>
                   <TableHead className="text-center">
