@@ -27,9 +27,10 @@ import DialogCancelForm from "../../../../components/organism/dialog/dialogCance
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
 import { addInvoiceLogo, editInvoiceLogo } from "../../../../services/invoice";
-
+import DialogCarouselImage from "../../../../components/organism/dialog/dialog-carousel-image";
+import Hint from "../../../../components/organism/label/hint";
 import { generateLinkImageFromGoogleDrive } from "../../../../utils/generateLinkImageFromGoogleDrive";
-import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
 
@@ -193,13 +194,37 @@ const FormInvoiceLogo = () => {
                 return (
                   <FormItem>
                     <div className="mb-4">
-                      <FormLabel className="text-base">Invoice Logo</FormLabel>
+                      <FormLabel className="text-base">Image Product</FormLabel>
                     </div>
-                    <div className="lg:flex justify-between gap-10">
-                      <Input type="text" {...field} className="flex-1" />
+                    <div className="flex-col md:flex justify-between gap-10">
+                      <div className="flex flex-col gap-4">
+                        <div className="relative w-full">
+                          <Input
+                            type="text"
+                            {...field}
+                            className="flex-1"
+                            placeholder="Enter Image URL"
+                          />
+                          <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
+                            <DialogCarouselImage />
+                          </div>
+                        </div>
+                        {form.formState.errors.image ? (
+                          <FormMessage>{form.formState.errors.image}</FormMessage>
+                        ) : (
+                          <Hint>Image URL in Google Drive</Hint>
+                        )}
+                      </div>
                       {linkName && (
-                        <div className="w-full lg:w-2/4 h-auto mt-10 md:mt-0">
-                          <img src={`${linkName}`} alt={linkName} className="w-full object-cover" />
+                        <div className="flex flex-col gap-4">
+                          <p>Result Image</p>
+                          <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
+                            <img
+                              src={`${linkName}`}
+                              alt={linkName}
+                              className="w-full object-cover"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -215,17 +240,20 @@ const FormInvoiceLogo = () => {
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <div className="mb-4">
-                      <FormLabel className="text-base">Is Active</FormLabel>
+                      <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if Image Logo want to active</Hint>
                     </div>
                   </FormItem>
                 )}

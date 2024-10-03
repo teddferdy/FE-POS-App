@@ -21,7 +21,7 @@ import DialogCancelForm from "../../../components/organism/dialog/dialogCancelFo
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { Textarea } from "../../../components/ui/textarea";
-
+import Hint from "../../../components/organism/label/hint";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -39,7 +39,6 @@ const FormTypePayment = () => {
     description: z.string().min(4, {
       message: "Description must be at least 4 characters."
     }),
-
     status: z.boolean()
   });
 
@@ -161,35 +160,39 @@ const FormTypePayment = () => {
 
       <div className="w-full lg:w-3/4 mx-auto">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-4">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
                   <div className="mb-4">
-                    <FormLabel className="text-base">name</FormLabel>
+                    <FormLabel className="text-base">Name</FormLabel>
                   </div>
-                  <Input type="text" {...field} />
-                  {form.formState.errors.name && (
+                  <Input type="text" {...field} placeholder="Enter Name Type Payment" />
+                  {form.formState.errors.name ? (
                     <FormMessage>{form.formState.errors.name}</FormMessage>
+                  ) : (
+                    <Hint>Enter Name Type Payment Minimum 4 Character</Hint>
                   )}
                 </FormItem>
               )}
             />
 
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
               <FormField
                 control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <div className="mb-4">
-                      <FormLabel className="text-base">description</FormLabel>
+                      <FormLabel className="text-base">Description</FormLabel>
                     </div>
-                    <Textarea {...field} />
-                    {form.formState.errors.description && (
+                    <Textarea {...field} placeholder="Enter Description Type Payment" />
+                    {form.formState.errors.description ? (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
+                    ) : (
+                      <Hint>Enter Description Type Payment Minimum 4 Character</Hint>
                     )}
                   </FormItem>
                 )}
@@ -198,19 +201,22 @@ const FormTypePayment = () => {
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
+                  <FormItem className="flex-1 md:-mt-8">
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Active</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if percentage want to active</Hint>
                     </div>
                   </FormItem>
                 )}
