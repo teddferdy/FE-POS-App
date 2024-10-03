@@ -231,5 +231,71 @@ export const urlWithArrowBack = [
     url: "/footer-invoice-list",
     title: "Edit Invoice Footer",
     pathName: "/edit-invoice-footer"
+  },
+  // Form Invoice Social Media
+  {
+    url: "/social-media-invoice-list",
+    title: "Add Invoice Social Media",
+    pathName: "/add-invoice-social-media"
+  },
+  {
+    url: "/social-media-invoice-list",
+    title: "Edit Invoice Social Media",
+    pathName: "/edit-invoice-social-media"
+  },
+  // Form Add Location
+  {
+    url: "/location-list",
+    title: "Add Location Store",
+    pathName: "/add-location"
+  },
+  {
+    url: "/location-list",
+    title: "Edit Location Store",
+    pathName: "/edit-location"
+  },
+  // Form Discount
+  {
+    url: "/discount-list",
+    title: "Add Discount",
+    pathName: "/add-discount"
+  },
+  {
+    url: "/discount-list",
+    title: "Edit Discount",
+    pathName: "/edit-discount"
+  },
+  // Form Shift
+  {
+    url: "/shift-list",
+    title: "Add Shift",
+    pathName: "/add-shift"
+  },
+  {
+    url: "/shift-list",
+    title: "Edit Shift",
+    pathName: "/edit-shift"
+  },
+  // Form Type Payment
+  {
+    url: "/type-payment-list",
+    title: "Add Type Payment",
+    pathName: "/add-type-payment"
+  },
+  {
+    url: "/type-payment-list",
+    title: "Edit Type Payment",
+    pathName: "/edit-type-payment"
+  },
+  // Form Social Media
+  {
+    url: "/social-media-list",
+    title: "Add Social Media",
+    pathName: "/add-social-media"
+  },
+  {
+    url: "/social-media-list",
+    title: "Edit Social Media",
+    pathName: "/edit-social-media"
   }
 ];

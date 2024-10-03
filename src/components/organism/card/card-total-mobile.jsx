@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useCookies } from "react-cookie";
+import { CreditCard } from "lucide-react";
 
 // Component
 // import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
@@ -54,35 +55,36 @@ const CardTotalMobile = ({
           {formatCurrencyRupiah(price + extraPrice)}
         </p>
       </div>
-      <div className="flex justify-between items-center">
-        {/* Dialog Custom Invoice */}
-        {/* <DialogCustomInvoice /> */}
+      <div className="flex justify-between items-center gap-10">
+        {/* Order List Button */}
+        <DrawerDetailOrderMobile
+          order={order}
+          option={option}
+          setOpenModalDelete={setOpenModalDelete}
+          handleUpdateOptionProduct={handleUpdateOptionProduct}
+          decrementOrder={decrementOrder}
+          incrementOrder={incrementOrder}
+        />
 
-        <div className="flex items-center gap-10">
-          <Button
-            className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full"
-            onClick={() =>
-              handleCheckout({
-                totalPrice: price + extraPrice,
-                cashierName: cookie.user.userName,
-                customerName: "",
-                customerPhoneNumber: "",
-                totalQuantity: totalItems,
-                typePayment: "",
-                createdBy: cookie.user.userName
-              })
-            }>
-            Check Out
-          </Button>
-          <DrawerDetailOrderMobile
-            order={order}
-            option={option}
-            setOpenModalDelete={setOpenModalDelete}
-            handleUpdateOptionProduct={handleUpdateOptionProduct}
-            decrementOrder={decrementOrder}
-            incrementOrder={incrementOrder}
-          />
-        </div>
+        {/* Checkout Button */}
+        <Button
+          variant="default"
+          size="lg"
+          className="flex items-center space-x-2 bg-[#6853F0] text-base font-bold text-white hover:bg-green-600 w-full py-3"
+          onClick={() =>
+            handleCheckout({
+              totalPrice: price + extraPrice,
+              cashierName: cookie.user.userName,
+              customerName: "",
+              customerPhoneNumber: "",
+              totalQuantity: totalItems,
+              typePayment: "",
+              createdBy: cookie.user.userName
+            })
+          }>
+          <CreditCard className="text-xl" />
+          <span>Checkout</span>
+        </Button>
       </div>
     </div>
   );

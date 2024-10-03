@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useCookies } from "react-cookie";
+import { ShoppingCart } from "lucide-react";
 
 // Component
 // import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
@@ -57,7 +58,10 @@ const CardTotalWeb = ({ order, handleCheckout }) => {
 
         {/* Dialog Checkout  */}
         <Button
-          className="px-3 w-full py-2 bg-[#6853F0] text-base font-bold text-white rounded-full"
+          disabled={order.length < 1}
+          variant="default"
+          size="lg"
+          className="flex items-center w-full text-base font-bold space-x-2 bg-[#6853F0] text-white hover:bg-green-600 cursor-pointer"
           onClick={() =>
             handleCheckout({
               totalPrice: price + extraPrice,
@@ -69,7 +73,11 @@ const CardTotalWeb = ({ order, handleCheckout }) => {
               createdBy: cookie.user.userName
             })
           }>
-          Check Out
+          {/* Icon */}
+          <ShoppingCart className="text-lg" />
+
+          {/* Button Text */}
+          <span>Checkout</span>
         </Button>
       </div>
     </div>
