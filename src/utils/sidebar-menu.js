@@ -198,5 +198,38 @@ export const urlWithArrowBack = [
     url: "/sub-category-list",
     title: "Edit Sub Category",
     pathName: "/edit-sub-category"
+  },
+  // Form Page Product
+  {
+    url: "/product-list",
+    title: "Add Product",
+    pathName: "/add-product"
+  },
+  {
+    url: "/product-list",
+    title: "Edit Product",
+    pathName: "/edit-product"
+  },
+  // Form Invoice Logo
+  {
+    url: "/logo-invoice-list",
+    title: "Add Invoice Logo",
+    pathName: "/add-invoice-logo"
+  },
+  {
+    url: "/logo-invoice-list",
+    title: "Edit Invoice Logo",
+    pathName: "/edit-invoice-logo"
+  },
+  // Form Invoice Footer
+  {
+    url: "/footer-invoice-list",
+    title: "Add Invoice Footer",
+    pathName: "/add-invoice-footer"
+  },
+  {
+    url: "/footer-invoice-list",
+    title: "Edit Invoice Footer",
+    pathName: "/edit-invoice-footer"
   }
 ];

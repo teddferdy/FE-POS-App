@@ -19,9 +19,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
+import Hint from "../../../components/organism/label/hint";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 
 // Services / Utils
@@ -159,7 +160,12 @@ const FormSocialMedia = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Social Media</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} placeholder="Enter Social Media Name" />
+                    {form.formState.errors.description ? (
+                      <FormMessage>{form.formState.errors.description}</FormMessage>
+                    ) : (
+                      <Hint>Enter Name Social Media Minimum 2 Character</Hint>
+                    )}
                   </FormItem>
                 )}
               />

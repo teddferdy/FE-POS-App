@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
-import { MapPinPlus } from "lucide-react";
+import { Textarea } from "../../../components/ui/textarea";
 import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
@@ -23,6 +23,7 @@ import {
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
+import Hint from "../../../components/organism/label/hint";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
 
@@ -39,10 +40,10 @@ const FormLocation = () => {
       message: "Address must be at least 4 characters."
     }),
     detailLocation: z.string().min(4, {
-      message: "Address must be at least 4 characters."
+      message: "Detail Location must be at least 4 characters."
     }),
     phoneNumber: z.string().min(4, {
-      message: "Address must be at least 4 characters."
+      message: "Phone Number must be at least 4 characters."
     }),
     status: z.boolean()
   });
@@ -180,9 +181,11 @@ const FormLocation = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Name Store</FormLabel>
                   </div>
-                  <Input type="text" {...field} />
-                  {form.formState.errors.nameStore && (
+                  <Input type="text" {...field} placeholder="Enter Name Store" />
+                  {form.formState.errors.nameStore ? (
                     <FormMessage>{form.formState.errors.nameStore}</FormMessage>
+                  ) : (
+                    <Hint>Enter Name Store Minimum 4 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -195,9 +198,11 @@ const FormLocation = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Address</FormLabel>
                   </div>
-                  <Input type="text" {...field} />
-                  {form.formState.errors.address && (
+                  <Textarea type="text" {...field} placeholder="Enter Address Store" />
+                  {form.formState.errors.address ? (
                     <FormMessage>{form.formState.errors.address}</FormMessage>
+                  ) : (
+                    <Hint>Enter Address Store Minimum 4 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -210,9 +215,16 @@ const FormLocation = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Detail Location</FormLabel>
                   </div>
-                  <Input type="text" {...field} />
-                  {form.formState.errors.detailLocation && (
+                  <Textarea type="text" {...field} placeholder="Enter Detail Location" />
+                  {form.formState.errors.detailLocation ? (
                     <FormMessage>{form.formState.errors.detailLocation}</FormMessage>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      <Hint>Enter Detail Location Store Minimum 4 Character</Hint>
+                      <Hint>
+                        Example: go to west 700m from Near Gas Station Manahan, left distro store
+                      </Hint>
+                    </div>
                   )}
                 </FormItem>
               )}
@@ -226,9 +238,14 @@ const FormLocation = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Phone Number</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
-                    {form.formState.errors.phoneNumber && (
+                    <Input type="text" {...field} placeholder="Enter Phone Number Store" />
+                    {form.formState.errors.phoneNumber ? (
                       <FormMessage>{form.formState.errors.phoneNumber}</FormMessage>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        <Hint>Enter Phone Number Store Minimum 4 Character</Hint>
+                        <Hint>Example: 081388921....</Hint>
+                      </div>
                     )}
                   </FormItem>
                 )}
@@ -237,19 +254,22 @@ const FormLocation = () => {
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
+                  <FormItem className="flex-1 -mt-8">
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if percentage want to active</Hint>
                     </div>
                   </FormItem>
                 )}

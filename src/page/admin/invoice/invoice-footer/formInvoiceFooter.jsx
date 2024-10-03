@@ -10,11 +10,12 @@ import { toast } from "sonner";
 import { Separator } from "../../../../components/ui/separator";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, PlusIcon, TrashIcon } from "lucide-react";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
 import { addInvoiceFooter, editInvoiceFooter } from "../../../../services/invoice";
+import Hint from "../../../../components/organism/label/hint";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,7 @@ import {
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
 
-import { Form, FormField, FormItem, FormLabel } from "../../../../components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
 
 import { useCookies } from "react-cookie";
@@ -153,7 +154,7 @@ const FormInvoiceFooter = () => {
           return (
             <div key={index}>
               <Separator />
-              <div key={index} className="flex py-6 items-start gap-6 justify-between">
+              <div key={index} className="flex py-6 items-center gap-6 justify-between relative">
                 <div className="flex-1 flex-col">
                   <FormItem>
                     <div className="mb-4">
@@ -164,13 +165,20 @@ const FormInvoiceFooter = () => {
                       control={form.control}
                       name={`footerList.${index}.content`} // Bind dropdown to field value
                       render={({ field }) => (
-                        <Input type="text" {...field} defaultValue={items.content} />
+                        <Input
+                          type="text"
+                          {...field}
+                          defaultValue={items.content}
+                          placeholder="Enter Content Footer"
+                        />
                       )}
                     />
+                    <Hint>Enter Content Footer Invoice Minimum 4 Character</Hint>
                   </FormItem>
                 </div>
+                {/* Delete on Resolution Table - Desktop */}
                 <div
-                  className="flex justify-end self-center mt-10"
+                  className="mt-3 hidden md:flex"
                   onClick={() => {
                     if (fields?.length === 1) {
                       form.setValue("option", false);
@@ -179,7 +187,30 @@ const FormInvoiceFooter = () => {
                       remove(index);
                     }
                   }}>
-                  <Button>Delete</Button>
+                  <Button
+                    variant="ghost"
+                    className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2">
+                    <TrashIcon className="h-4 w-4" />
+                    <p>Delete</p>
+                  </Button>
+                </div>
+
+                {/* Delete on Mobile */}
+                <div
+                  className="absolute right-1 top-1 md:hidden"
+                  onClick={() => {
+                    if (fields?.length === 1) {
+                      form.setValue("option", false);
+                      form.setValue("footerList", []);
+                    } else {
+                      remove(index);
+                    }
+                  }}>
+                  <Button
+                    variant="ghost" // No background initially (ghost)
+                    className="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 h-8 w-8 flex items-center justify-center transition-colors duration-200">
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               <Separator />
@@ -241,11 +272,11 @@ const FormInvoiceFooter = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-3/4 mx-auto">
+      <div className="w-full lg:w-3/4 mx-auto p-4">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 lg:grid-cols-2 w-3/4 gap-8 my-24 mx-auto lg:w-full">
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
             <div className="col-span-2 md:col-span-1">
               <FormField
                 control={form.control}
@@ -256,7 +287,17 @@ const FormInvoiceFooter = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">Name Template Footer Invoice</FormLabel>
                       </div>
-                      <Input type="text" {...field} className="flex-1" />
+                      <Input
+                        type="text"
+                        {...field}
+                        className="flex-1"
+                        placeholder="Enter Name Template Footer"
+                      />
+                      {form.formState.errors.name ? (
+                        <FormMessage>{form.formState.errors.name}</FormMessage>
+                      ) : (
+                        <Hint>Enter Name Template Footer Invoice Minimum 4 Character</Hint>
+                      )}
                     </FormItem>
                   );
                 }}
@@ -271,15 +312,18 @@ const FormInvoiceFooter = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <p>Not Active</p>
-                      <Switch
-                        name={field.name}
-                        id={field.name}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <p>Active</p>
+                    <div className="flex-col">
+                      <div className="flex items-center gap-6 mb-4">
+                        <p>Not Active</p>
+                        <Switch
+                          name={field.name}
+                          id={field.name}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <p>Active</p>
+                      </div>
+                      <Hint>Select yes if Template Footer want to active</Hint>
                     </div>
                   </FormItem>
                 )}
@@ -293,13 +337,14 @@ const FormInvoiceFooter = () => {
             {/* Button Adding Option */}
             <div className="col-span-2 flex justify-center cursor-pointer">
               <div
-                className="col-span-2"
+                className="col-span-2 flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
                 onClick={() =>
                   append({
                     content: ""
                   })
                 }>
-                Add Footer List
+                <PlusIcon className="h-5 w-5" />
+                <span>Add Option</span>
               </div>
             </div>
 
