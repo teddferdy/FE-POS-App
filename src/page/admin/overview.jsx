@@ -7,7 +7,7 @@ import OverviewMembertList from "../../components/organism/table/overviewMemberL
 import OverviewCategoryList from "../../components/organism/table/overviewCategoryList";
 import OverviewLocationList from "../../components/organism/table/overviewLocationList";
 import OverviewBestSellingList from "../../components/organism/table/overviewBestSelling";
-// import BarChartComponent from "../../components/organism/chart/BarChartComponent";
+import GreetingCard from "../../components/organism/greeting";
 import ChartLineMonth from "../../components/organism/chart/ChartLineMonth";
 import BarChartComponent from "../../components/organism/chart/BarChartComponent";
 import { DatePickerWithRange } from "../../components/ui/date-picker-range";
@@ -160,6 +160,7 @@ const OverviewPage = () => {
   return (
     <TemplateContainer>
       <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8 overflow-scroll max-h-full no-scrollbar">
+        <GreetingCard />
         {/* Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 bg-green-400 rounded-lg flex flex-col gap-6 shadow-lg">
