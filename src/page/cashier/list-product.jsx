@@ -38,7 +38,6 @@ const Home = () => {
   const { updateCheckout, cancelCheckout, data } = checkout();
   const { data: dataInvoice, resetInvoice, updateInvoiceNumber, updateInvoice } = invoice();
   const [hasMember, setHasMember] = useState(false);
-  const [openFilterCategory, setOpenFilterCategory] = useState(false);
 
   const [openModalDelete, setOpenModalDelete] = useState({
     id: null,
@@ -229,17 +228,13 @@ const Home = () => {
   });
 
   return (
-    <TemplateContainer
-      rootContainer="overflow-hidden h-screen"
-      childrenContainer="overflow-hidden h-screen">
+    <TemplateContainer rootContainer="h-screen" childrenContainer="h-screen">
       <div className="flex h-screen border-t-2 border-[#ffffff10] relative">
-        <div className="flex-1 overflow-hidden py-10 flex-col flex bg-gray-200 h-screen px-4">
+        <div className="flex-1 py-10 flex-col flex bg-gray-200 h-screen px-4">
           {/* Slider Category When Desktop Resolution */}
           <CategoryList
             categoryList={categoryList}
-            openFilterCategory={openFilterCategory}
             valueFilterCategory={category}
-            setOpenFilterCategory={() => setOpenFilterCategory(!openFilterCategory)}
             setValueFilterCategory={(val) => updateCategory(val)}
           />
 

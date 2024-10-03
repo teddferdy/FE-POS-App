@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "../../ui/button";
 import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
 import { Checkbox } from "../../ui/checkbox";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
@@ -15,10 +17,14 @@ const DrawerDetailOrderMobile = ({
 }) => {
   return (
     <Drawer>
-      <DrawerTrigger>
-        <button className="px-3 py-2 bg-[#6853F0] text-base font-bold text-white rounded-full">
-          Order List
-        </button>
+      <DrawerTrigger className="w-full">
+        <Button
+          variant="outline"
+          size="lg"
+          className="flex items-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 w-full py-3">
+          <ShoppingCart className="text-xl" />
+          <span>Order List</span>
+        </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader>

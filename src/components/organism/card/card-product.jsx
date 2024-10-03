@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { PlusIcon, MinusIcon } from "lucide-react";
+import { Button } from "../../../components/ui/button";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
@@ -60,22 +62,26 @@ const ProductCard = ({ items }) => {
       <div className="flex flex-col gap-1">
         <p className="text-[#CECECE] text-sm">Masukan Jumlah :</p>
         <div className="flex justify-between items-center">
-          <button
-            className="flex-1 py-1 rounded-full flex items-center justify-center bg-[#6853F0] text-white"
-            onClick={decrement}>
-            -
-          </button>
-          <div className="flex-1 text-black font-bold text-lg text-center">{count}</div>
-          <button
-            className="flex-1 py-1 rounded-full flex items-center justify-center bg-[#6853F0] text-white"
-            onClick={increment}>
-            +
-          </button>
+          <Button
+            onClick={decrement}
+            className="bg-[#6853F0] hover:hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
+            <MinusIcon className="h-8 w-8" />
+          </Button>
+          <div className="flex-1 text-black font-bold text-lg text-center">{count} Items</div>
+          <Button
+            onClick={increment}
+            className="bg-[#6853F0] hover:hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
+            <PlusIcon className="h-8 w-8" />
+          </Button>
         </div>
       </div>
       <button
-        className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center justify-center bg-[#6853F0] text-white hover:bg-[#1ACB0A] duration-200 hover:text-white"
-        onClick={() => handleAddingProduct(items)}>
+        disabled={count === 0}
+        className="w-full h-6 py-6 text-xs font-bold rounded-md flex items-center cursor-pointer justify-center bg-[#6853F0] text-white hover:bg-[#1ACB0A] duration-200 hover:text-white disabled:bg-slate-400"
+        onClick={() => {
+          handleAddingProduct(items);
+          setCount(0);
+        }}>
         Masukan Keranjang
       </button>
     </div>
