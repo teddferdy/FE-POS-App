@@ -34,7 +34,12 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               "justify-between",
                               item.disabled && "cursor-not-allowed opacity-80"
                             )}>
-                            {item.title}
+                            <div className="flex items-center justify-start">
+                              {item.icon && (
+                                <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                              )}
+                              {item.title}
+                            </div>
                           </AccordionTrigger>
                         </Link>
                       ) : (

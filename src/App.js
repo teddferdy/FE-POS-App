@@ -16,6 +16,7 @@ import ListProduct from "./page/cashier/list-product"; // List Product Cashier
 
 // Admin
 import Product from "./page/admin/product";
+import Invoice from "./page/admin/invoice";
 import SubCategoryList from "./page/admin/product/sub-category";
 import OverviewPage from "./page/admin/overview";
 import CategoryList from "./page/admin/product/category";
@@ -115,6 +116,7 @@ function App() {
           element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
         />
         <Route path="/product-page" element={cookie.token ? <Product /> : <Navigate to="/" />} />
+        <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
 
         {/* Add Routes */}
         <Route
