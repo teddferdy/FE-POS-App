@@ -35,7 +35,7 @@ const StepFlow = () => {
         title="Create Category"
         description="Select a plan that best suits your needs. We offer multiple options for every kind of user."
         icon={<span>📋</span>}
-        onClick={() => navigate("category-list")}
+        onClick={() => navigate("/category-list")}
       />
       {/* Arrow for Desktop */}
       <div className="hidden lg:block">
@@ -49,7 +49,7 @@ const StepFlow = () => {
         title="Create Sub Category"
         description="Sign up by providing your details. It only takes a few minutes to get started!"
         icon={<span>🍴</span>}
-        onClick={() => navigate("sub-category-list")}
+        onClick={() => navigate("/sub-category-list")}
       />
       {/* Arrow for Desktop */}
       <div className="hidden lg:block">
@@ -63,7 +63,7 @@ const StepFlow = () => {
         title="Create Product"
         description="Now you're all set! Start exploring and using all the features we offer."
         icon={<span>🍽</span>}
-        onClick={() => navigate("product-list")}
+        onClick={() => navigate("/product-list")}
       />
     </div>
   );
