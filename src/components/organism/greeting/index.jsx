@@ -4,7 +4,6 @@ import { useCookies } from "react-cookie";
 
 const GreetingCard = () => {
   const [cookie] = useCookies(["user"]);
-  console.log("cookie =>", cookie);
 
   const [greeting, setGreeting] = useState("");
   const [currentTime, setCurrentTime] = useState("");

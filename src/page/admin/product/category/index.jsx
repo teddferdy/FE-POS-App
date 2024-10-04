@@ -67,8 +67,6 @@ const CategoryList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    console.log("allCategory =>", allCategory);
-
     if (allCategory.isLoading && allCategory.isFetching && !allCategory.isError) {
       return <SkeletonTable />;
     }
