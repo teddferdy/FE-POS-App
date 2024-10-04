@@ -126,7 +126,7 @@ const FormCategory = () => {
       const body = {
         name: values.name,
         value: values.name.toLowerCase(),
-        status: true,
+        status: values?.status,
         createdBy: cookie.user.userName
       };
 
