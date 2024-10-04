@@ -1,18 +1,31 @@
+import {
+  Crown,
+  Calculator,
+  UtensilsCrossed,
+  Clipboard,
+  Map,
+  TicketPercent,
+  Users,
+  BookUser,
+  WalletCards,
+  Globe
+} from "lucide-react";
+
 export const sidebarMenuAdmin = [
   {
     title: "Admin Menu",
-    href: "/admin-page"
-    // icon: LayoutDashboard
+    href: "/admin-page",
+    icon: Crown
   },
   {
     title: "Cashier",
-    href: "/home"
-    // icon: Calendar
+    href: "/home",
+    icon: Calculator
   },
   {
     title: "Product Menu",
     href: "/product-page",
-    // icon: Building,
+    icon: UtensilsCrossed,
     children: [
       {
         title: "Category",
@@ -30,8 +43,8 @@ export const sidebarMenuAdmin = [
   },
   {
     title: "Invoice",
-    href: "",
-    // icon: Building,
+    href: "/invoice-page",
+    icon: Clipboard,
     children: [
       {
         title: "Logo Invoice",
@@ -50,18 +63,18 @@ export const sidebarMenuAdmin = [
 
   {
     title: "Location",
-    href: "/location-list"
-    // icon: Briefcase
+    href: "/location-list",
+    icon: Map
   },
   {
     title: "Discount",
-    href: "/discount-list"
-    // icon: Backpack
+    href: "/discount-list",
+    icon: TicketPercent
   },
   {
     title: "My Teams",
     href: "",
-    // icon: Building,
+    icon: Users,
     children: [
       {
         title: "Shift List",
@@ -79,17 +92,18 @@ export const sidebarMenuAdmin = [
   },
   {
     title: "Member List",
-    href: "/member-list"
-    // icon: GraduationCap
+    href: "/member-list",
+    icon: BookUser
   },
   {
     title: "Type Payment",
-    href: "/type-payment-list"
-    // icon: Settings
+    href: "/type-payment-list",
+    icon: WalletCards
   },
   {
     title: "Social Media",
-    href: "/social-media-list"
+    href: "/social-media-list",
+    icon: Globe
   }
 ];
 
