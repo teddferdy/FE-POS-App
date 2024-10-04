@@ -30,7 +30,7 @@ export const sidebarMenuAdmin = [
   },
   {
     title: "Invoice",
-    href: "/invoice-page",
+    href: "",
     // icon: Building,
     children: [
       {
@@ -60,7 +60,7 @@ export const sidebarMenuAdmin = [
   },
   {
     title: "My Teams",
-    href: "/product-page",
+    href: "",
     // icon: Building,
     children: [
       {
@@ -159,6 +159,11 @@ export const urlWithArrowBack = [
     url: -1,
     title: "Logo Invoice",
     pathName: "/logo-invoice-list"
+  },
+  {
+    url: -1,
+    title: "Product Page",
+    pathName: "/product-page"
   },
   {
     url: -1,

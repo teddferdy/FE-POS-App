@@ -114,6 +114,11 @@ const SubCategoryList = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuItem>
+                        <BreadcrumbLink href="/product-page">
+                          Step By Step Adding Product
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
                         <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>

@@ -1,9 +1,6 @@
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
-import {
-  useNavigate
-  // useLocation
-} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // Assets
 import LogoSidebar from "../../../assets/logo-sidebar.png";
@@ -26,22 +23,38 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 item.children ? (
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
-                      <AccordionTrigger
-                        className={cn(
-                          buttonVariants({
-                            size: "sm",
-                            variant: "ghost"
-                          }),
-                          "justify-between",
-                          item.disabled && "cursor-not-allowed opacity-80"
-                        )}>
-                        <div className="flex items-center justify-start">
-                          {item.icon && (
-                            <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
-                          )}
-                          {item.title}
-                        </div>
-                      </AccordionTrigger>
+                      {item.href ? (
+                        <Link to={item.href} className="block py-1 hover:text-blue-500">
+                          <AccordionTrigger
+                            className={cn(
+                              buttonVariants({
+                                size: "sm",
+                                variant: "ghost"
+                              }),
+                              "justify-between",
+                              item.disabled && "cursor-not-allowed opacity-80"
+                            )}>
+                            {item.title}
+                          </AccordionTrigger>
+                        </Link>
+                      ) : (
+                        <AccordionTrigger
+                          className={cn(
+                            buttonVariants({
+                              size: "sm",
+                              variant: "ghost"
+                            }),
+                            "justify-between",
+                            item.disabled && "cursor-not-allowed opacity-80"
+                          )}>
+                          <div className="flex items-center justify-start">
+                            {item.icon && (
+                              <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                            )}
+                            {item.title}
+                          </div>
+                        </AccordionTrigger>
+                      )}
                       <AccordionContent>
                         <div className="ml-7 flex flex-col space-y-1">
                           {item.children.map((child, index) => (
