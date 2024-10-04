@@ -3,7 +3,7 @@ import React from "react";
 
 // Components
 import { Button } from "../../ui/button";
-import { Switch } from "../../ui/switch";
+import { Badge } from "../../ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -18,15 +18,14 @@ const DialogBySwitch = ({ checked, onChange }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex items-center gap-6">
-          <p>Not Active</p>
-          <Switch name="isActive" id="isActive" checked={checked} />
-          <p>Active</p>
-        </div>
+        <button className="flex items-center gap-1 hover:bg-gray-100 w-full">
+          <Badge isActive={checked} />
+          {checked ? "Active" : "No Active"}
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Apakah Anda Ingin Membatalkan Ini</DialogTitle>
+          <DialogTitle>Apakah Anda Ingin {checked ? "Non Aktifkan" : "Aktifkan"}</DialogTitle>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>

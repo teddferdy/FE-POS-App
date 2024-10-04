@@ -4,7 +4,7 @@ import { PlusIcon, MinusIcon } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
-
+import LineClampText from "../label/lineclamp";
 // State
 import { orderList } from "../../../state/order-list";
 
@@ -54,7 +54,8 @@ const ProductCard = ({ items }) => {
       )}
       <div className="flex flex-col gap-1">
         <p className="text-[#737373] font-bold text-base">{items?.nameProduct || "-"}</p>
-        <p className="text-[#737373] text-sm w-4/5">{items?.description || "-"}</p>
+        <LineClampText text={items?.description || "-"} />
+        {/* <p className="text-[#737373] text-sm w-4/5 line-clamp-2">{items?.description || "-"}</p> */}
         <p className="text-[#737373] font-bold text-base">
           {formatCurrencyRupiah(items?.price) || "-"}
         </p>

@@ -21,7 +21,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
-import DialogDeleteItem from "../../organism/dialog/dialogDeleteItem";
+import ThreeDotsMenu from "../popover/three-dots-menu";
 
 const FILTER_BY = [
   {
@@ -159,27 +159,24 @@ const TableCategoryList = ({ allCategory, handleDelete }) => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col gap-6">
-            <Button
-              className="h-8 w-full p-4 text-center"
-              onClick={() =>
+          <div className="flex justify-center">
+            <ThreeDotsMenu
+              content={["edit", "delete"]}
+              handleEdit={() => {
                 navigate(`/edit-category/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
+                });
+              }}
+              handleDelete={() => {
                 const body = {
                   id: row?.original?.id,
                   name: row.getValue("name")
                 };
                 handleDelete(body);
               }}
+              checkedActiveOrInactive={false}
             />
           </div>
         );
@@ -210,14 +207,16 @@ const TableCategoryList = ({ allCategory, handleDelete }) => {
       <div className="flex flex-col md:flex-row gap-10 py-4">
         <Input
           placeholder="Search..."
-          value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
-          onChange={(event) => table.getColumn(filterBy.value)?.setFilterValue(event.target.value)}
+          value={table.getColumn(filterBy?.value)?.getFilterValue() ?? ""}
+          onChange={(event) =>
+            table.getColumn(filterBy?.value)?.setFilterValue(event?.target?.value)
+          }
           className="max-w-sm"
         />
         <div className="flex gap-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">{filterBy.name}</Button>
+              <Button variant="outline">{filterBy?.name}</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {FILTER_BY.map((column) => {
@@ -225,9 +224,9 @@ const TableCategoryList = ({ allCategory, handleDelete }) => {
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     className="capitalize"
-                    checked={column.value === filterBy.value}
+                    checked={column.value === filterBy?.value}
                     onCheckedChange={() => setFilterBy(column)}>
-                    {column.name}
+                    {column?.name}
                   </DropdownMenuCheckboxItem>
                 );
               })}

@@ -19,11 +19,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
-import DialogDeleteItem from "../../organism/dialog/dialogDeleteItem";
-import DialogBySwitch from "../dialog/dialog-switch";
-import { Switch } from "../../ui/switch";
 import { Badge } from "../../ui/badge";
 import DialogSocialMediaInvoice from "../dialog/dialog-social-media-invoice";
+import ThreeDotsMenu from "../popover/three-dots-menu";
 
 const FILTER_BY = [
   {
@@ -171,47 +169,31 @@ const TableInvoiceSocialMediaList = ({ invoiceSocialMedia, handleActivate, handl
       header: () => <div className="text-right">Action</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col gap-6">
-            {/* If Status Active Can Change Logo */}
-            {row.original.status ? (
-              <DialogBySwitch
-                checked={row.original.isActive}
-                onChange={() => {
-                  const body = {
-                    id: row.original.id,
-                    name: row.original.name,
-                    isActive: true
-                  };
-                  handleActivate(body);
-                }}
-              />
-            ) : (
-              <div className="flex justify-between items-center gap-6">
-                <p>Not Active</p>
-                <Switch disabled checked={row.original.isActive} />
-                <p>Active</p>
-              </div>
-            )}
-
-            <Button
-              className="h-8 w-full p-4"
-              onClick={() =>
+          <div className="flex justify-center">
+            <ThreeDotsMenu
+              content={["edit", "delete", "activeOrInactive"]}
+              checkedActiveOrInactive={row.original.isActive}
+              handleEdit={() => {
                 navigate(`/edit-invoice-social-media/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
+                });
+              }}
+              handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
                   name: row?.original?.name
                 };
                 handleDelete(body);
+              }}
+              handleActivateOrInactive={() => {
+                const body = {
+                  id: row.original.id,
+                  name: row.original.name,
+                  isActive: true
+                };
+                handleActivate(body);
               }}
             />
           </div>

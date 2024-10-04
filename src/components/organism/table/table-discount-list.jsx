@@ -20,7 +20,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
-import DialogDeleteItem from "../../organism/dialog/dialogDeleteItem";
+import ThreeDotsMenu from "../popover/three-dots-menu";
 
 const FILTER_BY = [
   {
@@ -40,8 +40,8 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [filterBy, setFilterBy] = useState({
-    value: "name",
-    name: "Name Category"
+    value: "description",
+    name: "Description Discount"
   });
 
   const columns = [
@@ -141,7 +141,7 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
     },
     {
       accessorKey: "updatedAt",
-      header: () => <div className="text-right">Updated At</div>,
+      header: () => <div className="text-center">Updated At</div>,
       cell: ({ row }) => {
         return (
           <div className="text-center">
@@ -152,24 +152,20 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
     },
     {
       accessorKey: "action",
-      header: () => <div className="text-right">Action</div>,
+      header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col gap-6">
-            <Button
-              className="h-8 w-full p-4"
-              onClick={() =>
+          <div className="flex justify-center">
+            <ThreeDotsMenu
+              content={["edit", "delete"]}
+              handleEdit={() => {
                 navigate(`/edit-discount/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
+                });
+              }}
+              handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
                   description: row.getValue("description")
@@ -206,24 +202,26 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
       <div className="flex flex-col md:flex-row gap-10 py-4">
         <Input
           placeholder="Search..."
-          value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
-          onChange={(event) => table.getColumn(filterBy.value)?.setFilterValue(event.target.value)}
+          value={table.getColumn(filterBy?.value)?.getFilterValue() ?? ""}
+          onChange={(event) =>
+            table.getColumn(filterBy?.value)?.setFilterValue(event?.target?.value)
+          }
           className="max-w-sm"
         />
         <div className="flex gap-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">{filterBy.name}</Button>
+              <Button variant="outline">{filterBy?.name}</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {FILTER_BY.map((column) => {
+              {FILTER_BY?.map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     className="capitalize"
                     checked={column.value === filterBy.value}
                     onCheckedChange={() => setFilterBy(column)}>
-                    {column.name}
+                    {column?.name}
                   </DropdownMenuCheckboxItem>
                 );
               })}
