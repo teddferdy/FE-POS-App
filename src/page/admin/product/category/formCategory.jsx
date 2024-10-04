@@ -43,9 +43,9 @@ const FormCategory = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(4, {
-      message: "Username must be at least 4 characters.",
-      status: z.boolean()
-    })
+      message: "Username must be at least 4 characters."
+    }),
+    status: z.boolean()
   });
 
   const form = useForm({

@@ -16,8 +16,6 @@ const ThreeDotsMenu = ({
   checkedActiveOrInactive,
   handleActivateOrInactive
 }) => {
-  console.log("content =>", content);
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -28,8 +26,6 @@ const ThreeDotsMenu = ({
       <PopoverContent className="bg-white shadow-lg p-4 rounded-md w-48 z-10">
         <ul className="flex flex-col">
           {content.map((items) => {
-            console.log("ITEMS =>", items);
-
             // Edit
             if (items === "edit") {
               return (

@@ -84,9 +84,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
     const split = location.pathname.split("/");
     const pathNme = split?.[1];
 
-    console.log("PATHNAME =>", pathNme);
-    console.log("ITEMS =>", items);
-
     return items?.pathName === `/${pathNme}`;
   });
 
