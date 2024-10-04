@@ -21,7 +21,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
-import DialogDeleteItem from "../../organism/dialog/dialogDeleteItem";
+import ThreeDotsMenu from "../popover/three-dots-menu";
 
 const FILTER_BY = [
   {
@@ -199,21 +199,17 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col gap-6">
-            <Button
-              className="h-8 w-full p-4"
-              onClick={() =>
+          <div className="flex justify-center">
+            <ThreeDotsMenu
+              content={["edit", "delete"]}
+              handleEdit={() => {
                 navigate(`/edit-location/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
-                })
-              }>
-              <span>Edit</span>
-              {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-            </Button>
-            <DialogDeleteItem
-              actionDelete={() => {
+                });
+              }}
+              handleDelete={() => {
                 const body = {
                   id: row?.original?.id,
                   nameStore: row.getValue("nameStore")

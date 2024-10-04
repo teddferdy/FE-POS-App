@@ -23,7 +23,7 @@ const ProductList = ({ productList }) => {
         <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
           {productList?.data?.data?.map((items, index) => (
             <div
-              className={`${productList?.data?.data?.length === index + 1 ? "mb-72 lg:mb-0" : ""}`}
+              className={`${productList?.data?.data?.length === index + 1 ? "mb-72 lg:mb-36" : ""}`}
               key={index}>
               <ProductCard items={items} />
             </div>

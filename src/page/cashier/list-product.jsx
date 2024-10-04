@@ -228,9 +228,11 @@ const Home = () => {
   });
 
   return (
-    <TemplateContainer rootContainer="h-screen" childrenContainer="h-screen">
+    <TemplateContainer
+      rootContainer="overflow-scroll h-screen"
+      childrenContainer="h-screen overflow-scroll">
       <div className="flex h-screen border-t-2 border-[#ffffff10] relative">
-        <div className="flex-1 py-10 flex-col flex bg-gray-200 h-screen px-4">
+        <div className="flex-1 py-10 flex-col flex bg-gray-200 h-screen px-4 w-full">
           {/* Slider Category When Desktop Resolution */}
           <CategoryList
             categoryList={categoryList}

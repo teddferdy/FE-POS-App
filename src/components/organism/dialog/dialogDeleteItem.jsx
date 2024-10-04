@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { Trash } from "lucide-react";
 
 // Components
 import { Button } from "../../ui/button";
@@ -17,10 +18,10 @@ const DialogDeleteItem = ({ actionDelete }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="h-8 w-full p-4">
-          <span>Delete</span>
-          {/* <DotsHorizontalIcon className="h-4 w-4" /> */}
-        </Button>
+        <button className="flex items-center gap-4 p-2 hover:bg-gray-100 w-full">
+          <Trash className="w-5 h-5 mr-2 text-gray-500" />
+          Delete
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
