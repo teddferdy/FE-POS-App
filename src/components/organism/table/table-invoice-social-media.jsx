@@ -171,8 +171,10 @@ const TableInvoiceSocialMediaList = ({ invoiceSocialMedia, handleActivate, handl
         return (
           <div className="flex justify-center">
             <ThreeDotsMenu
-              content={["edit", "delete", "activeOrInactive"]}
-              checkedActiveOrInactive={row.original.isActive}
+              content={["edit", "delete", "activeOrInactive", "viewsInvoice"]}
+              checkedActiveOrInactive={row?.original?.isActive}
+              invoiceType="social-media"
+              socialMediaList={row?.original?.socialMediaList}
               handleEdit={() => {
                 navigate(`/edit-invoice-social-media/${row?.original?.id}`, {
                   state: {

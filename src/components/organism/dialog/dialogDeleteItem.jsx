@@ -19,7 +19,7 @@ const DialogDeleteItem = ({ actionDelete }) => {
     <Dialog>
       <DialogTrigger asChild>
         <button className="flex items-center gap-4 p-2 hover:bg-gray-100 w-full">
-          <Trash className="w-5 h-5 mr-2 text-gray-500" />
+          <Trash className="w-6 h-6 mr-2 text-gray-500" />
           Delete
         </button>
       </DialogTrigger>

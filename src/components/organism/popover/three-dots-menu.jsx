@@ -8,13 +8,18 @@ import {
 } from "lucide-react";
 import DialogDeleteItem from "../dialog/dialogDeleteItem";
 import DialogBySwitch from "../dialog/dialog-switch";
+import DialogViewInvoice from "../dialog/dialog-view-invoice";
 
 const ThreeDotsMenu = ({
   content,
   handleEdit,
   handleDelete,
   checkedActiveOrInactive,
-  handleActivateOrInactive
+  handleActivateOrInactive,
+  footerList,
+  socialMediaList,
+  logoInvoice,
+  invoiceType
 }) => {
   return (
     <Popover>
@@ -33,7 +38,7 @@ const ThreeDotsMenu = ({
                   <button
                     className="flex items-center gap-4 p-2 hover:bg-gray-100 w-full"
                     onClick={handleEdit}>
-                    <Pencil className="w-5 h-5 mr-2 text-gray-500" />
+                    <Pencil className="w-6 h-6 mr-2 text-gray-500" />
                     Edit
                   </button>
                 </li>
@@ -59,26 +64,19 @@ const ThreeDotsMenu = ({
                 />
               );
             }
+
+            if (items === "viewsInvoice") {
+              return (
+                <DialogViewInvoice
+                  key={items}
+                  logoInvoice={logoInvoice}
+                  footerList={footerList}
+                  socialMediaList={socialMediaList}
+                  invoiceType={invoiceType}
+                />
+              );
+            }
           })}
-          {/* <li>
-            <button
-              className="flex items-center text-left w-full p-2 hover:bg-gray-100"
-              onClick={handleEdit}>
-              <Pencil className="w-5 h-5 mr-2 text-gray-500" />
-              Edit
-            </button>
-          </li>
-          <li>
-            <DialogDeleteItem actionDelete={handleDelete} />
-          </li> */}
-          {/* {withView && (
-            <li>
-              <button className="flex items-center text-left w-full p-2 hover:bg-gray-100">
-                <Eye className="w-5 h-5 mr-2 text-gray-500" />
-                View
-              </button>
-            </li>
-          )} */}
         </ul>
       </PopoverContent>
     </Popover>

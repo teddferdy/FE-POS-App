@@ -72,7 +72,7 @@ const DialogInvoice = ({
               <img
                 src={generateLinkImageFromGoogleDrive(dataInvoiceLogo.image)}
                 alt="Company Logo"
-                className="mx-auto h-16"
+                className={`mx-auto h-16 ${dataInvoiceLogo.image ? "" : "hidden"}`}
               />
             )}
 
@@ -204,7 +204,11 @@ const DialogInvoice = ({
                       </div>
                     );
                   }
-                  if (items.socialMedia === "website" || items.socialMedia === "Website") {
+                  if (
+                    items.socialMedia ||
+                    items.socialMedia === "website" ||
+                    items.socialMedia === "Website"
+                  ) {
                     return (
                       <div className="flex items-center gap-4 mt-4">
                         <Globe height={20} />
