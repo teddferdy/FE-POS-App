@@ -152,7 +152,9 @@ const TableInvoiceLogoList = ({ invoiceLogo, handleActivate, handleDelete }) => 
         return (
           <div className="flex justify-center">
             <ThreeDotsMenu
-              content={["edit", "delete", "activeOrInactive"]}
+              content={["edit", "delete", "activeOrInactive", "viewsInvoice"]}
+              invoiceType="logo"
+              logoInvoice={row?.original?.image}
               checkedActiveOrInactive={row.original.isActive}
               handleEdit={() => {
                 navigate(`/edit-invoice-logo/${row?.original?.id}`, {

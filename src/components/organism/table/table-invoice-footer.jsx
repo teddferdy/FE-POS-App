@@ -168,11 +168,15 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
+        console.log("ROW =>", row);
+
         return (
           <div className="flex justify-center">
             <ThreeDotsMenu
-              content={["edit", "delete", "activeOrInactive"]}
-              checkedActiveOrInactive={row.original.isActive}
+              content={["edit", "delete", "activeOrInactive", "viewsInvoice"]}
+              checkedActiveOrInactive={row?.original?.isActive}
+              footerList={row?.original?.footerList}
+              invoiceType="footer"
               handleEdit={() => {
                 navigate(`/edit-invoice-footer/${row?.original?.id}`, {
                   state: {
