@@ -16,7 +16,7 @@ import {
   AccordionTrigger,
   AccordionContent
 } from "../../../components/ui/accordion";
-
+import { Card } from "../../../components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -87,33 +87,6 @@ const index = () => {
         </div>
         <Accordion type="single" collapsible defaultValue="step1">
           {/* Step 1 */}
-          {/* <AccordionItem value="step1">
-            <AccordionTrigger>Invoice Logo</AccordionTrigger>
-            <AccordionContent>
-              <div
-                className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
-                onClick={() => {
-                  navigate("/logo-invoice-list");
-                }}>
-                <div className="mb-4 text-4xl">🐋</div>
-                <h2 className="text-2xl font-bold mb-2">Invoice Logo</h2>
-                <p>
-                  Select a plan that best suits your needs. We offer multiple options for every kind
-                  of user.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem> */}
-
-          {/* Step 2 */}
-          {/* <AccordionItem value="step2">
-            <AccordionTrigger>Invoice Social Media</AccordionTrigger>
-            <AccordionContent className="p-6 mb-6">
-              <StepFlow />
-            </AccordionContent>
-          </AccordionItem> */}
-
-          {/* Step 3 */}
           <AccordionItem value="step1">
             <AccordionTrigger>User</AccordionTrigger>
             <AccordionContent>
@@ -127,6 +100,38 @@ const index = () => {
                   });
                 }}
               />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Step 2 */}
+          <AccordionItem value="step2">
+            <AccordionTrigger>Position</AccordionTrigger>
+            <AccordionContent>
+              <Card
+                className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
+                onClick={() => {
+                  navigate("/position-list");
+                }}>
+                <div className="mb-4 text-4xl">🌐</div>
+                <h2 className="text-2xl font-bold mb-2">Position</h2>
+                <p>Description Position Job</p>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Step 3 */}
+          <AccordionItem value="step3">
+            <AccordionTrigger>Role</AccordionTrigger>
+            <AccordionContent>
+              <Card
+                className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
+                onClick={() => {
+                  navigate("/role-list");
+                }}>
+                <div className="mb-4 text-4xl">🌐</div>
+                <h2 className="text-2xl font-bold mb-2">Role</h2>
+                <p>Description Role Job</p>
+              </Card>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
