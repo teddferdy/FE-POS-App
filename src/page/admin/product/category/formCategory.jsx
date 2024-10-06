@@ -116,8 +116,8 @@ const FormCategory = () => {
       const body = {
         id: state?.data?.id,
         name: values?.name,
-        value: values?.name?.toLowerCase(),
         status: values?.status,
+        store: cookie?.user?.location,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
@@ -125,7 +125,7 @@ const FormCategory = () => {
     } else {
       const body = {
         name: values.name,
-        value: values.name.toLowerCase(),
+        store: cookie?.user?.location,
         status: values?.status,
         createdBy: cookie.user.userName
       };

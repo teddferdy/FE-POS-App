@@ -61,7 +61,9 @@ const userInfoSchema = z.object({
 
 const FormProduct = () => {
   const { state } = useLocation();
-  const [cookie] = useCookies();
+  const [cookie] = useCookies(["user"]);
+  console.log("cookie =>", cookie);
+
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -83,6 +85,7 @@ const FormProduct = () => {
       message: "Price Product must be at least 2 characters."
     }),
     status: z.boolean(),
+    store: z.string(),
     subCategory: z.array(userInfoSchema)
   });
 
@@ -95,6 +98,7 @@ const FormProduct = () => {
       category: "",
       status: true,
       description: "",
+      store: "",
       subCategory: []
     }
   });
@@ -161,6 +165,7 @@ const FormProduct = () => {
         status: values?.status,
         price: values?.price,
         option: JSON.stringify(values?.subCategory),
+        store: cookie?.user?.location,
         createdBy: cookie?.user?.userName
       };
 

@@ -8,15 +8,65 @@ import {
   Users,
   BookUser,
   WalletCards,
-  Globe
+  Globe,
+  CalendarDays
 } from "lucide-react";
 
-export const sidebarMenuAdmin = [
+export const sidebarMenuSuperAdmin = [
+  // Overview Page
   {
     title: "Admin Menu",
     href: "/admin-page",
     icon: Crown
   },
+  // Product List
+  {
+    title: "See Product Menu",
+    href: "/location-available",
+    icon: UtensilsCrossed
+  },
+  // Location
+  {
+    title: "Location",
+    href: "/location-list",
+    icon: Map
+  },
+  {
+    title: "My Teams",
+    href: "/my-teams",
+    icon: Users,
+    children: [
+      {
+        title: "Shift List",
+        href: "/shift-list"
+      },
+      {
+        title: "Position",
+        href: "/#"
+      },
+      {
+        title: "Role",
+        href: "/#"
+      },
+      {
+        title: "User",
+        href: "/#"
+      }
+    ]
+  },
+  {
+    title: "Member List",
+    href: "/member-list",
+    icon: BookUser
+  },
+  {
+    title: "Social Media",
+    href: "/social-media-list",
+    icon: Globe
+  }
+];
+
+export const sidebarMenuAdmin = [
   {
     title: "Cashier",
     href: "/home",
@@ -59,12 +109,6 @@ export const sidebarMenuAdmin = [
         href: "/social-media-invoice-list"
       }
     ]
-  },
-
-  {
-    title: "Location",
-    href: "/location-list",
-    icon: Map
   },
   {
     title: "Discount",
@@ -110,13 +154,18 @@ export const sidebarMenuAdmin = [
 export const sidebarMenuUser = [
   {
     title: "Cashier",
-    href: "/home"
-    // icon: Calendar
+    href: "/home",
+    icon: Calculator
   },
   {
     title: "Member List",
-    href: "/member-list"
-    // icon: GraduationCap
+    href: "/member-list",
+    icon: BookUser
+  },
+  {
+    title: "Shift List",
+    href: "/shift-list",
+    icon: CalendarDays
   }
 ];
 

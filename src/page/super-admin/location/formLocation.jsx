@@ -25,6 +25,8 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import Hint from "../../../components/organism/label/hint";
 import TemplateContainer from "../../../components/organism/template-container";
+import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+import DialogCarouselImage from "../../../components/organism/dialog/dialog-carousel-image";
 import { useCookies } from "react-cookie";
 
 const FormLocation = () => {
@@ -33,6 +35,9 @@ const FormLocation = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
   const formSchema = z.object({
+    image: z.string().min(4, {
+      message: "Invoice Logo must be at least 4 characters."
+    }),
     nameStore: z.string().min(4, {
       message: "Name Store must be at least 4 characters."
     }),
@@ -51,6 +56,7 @@ const FormLocation = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      image: state?.data?.image ?? "",
       nameStore: state?.data?.nameStore ?? "",
       address: state?.data?.address ?? "",
       detailLocation: state?.data?.detailLocation ?? "",
@@ -118,6 +124,7 @@ const FormLocation = () => {
     if (state?.data?.id) {
       const body = {
         id: state?.data?.id,
+        image: values?.image,
         nameStore: values?.nameStore,
         address: values?.address,
         detailLocation: values?.detailLocation,
@@ -129,6 +136,7 @@ const FormLocation = () => {
       mutateEditLocation.mutate(body);
     } else {
       const body = {
+        image: values?.image,
         nameStore: values?.nameStore,
         address: values?.address,
         detailLocation: values?.detailLocation,
@@ -173,6 +181,52 @@ const FormLocation = () => {
       <div className="w-full lg:w-3/4 mx-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-4">
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => {
+                const linkName = generateLinkImageFromGoogleDrive(field.value);
+                return (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Image Product</FormLabel>
+                    </div>
+                    <div className="flex-col md:flex justify-between gap-10">
+                      <div className="flex flex-col gap-4">
+                        <div className="relative w-full">
+                          <Input
+                            type="text"
+                            {...field}
+                            className="flex-1"
+                            placeholder="Enter Image URL"
+                          />
+                          <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
+                            <DialogCarouselImage />
+                          </div>
+                        </div>
+                        {form.formState.errors.image ? (
+                          <FormMessage>{form.formState.errors.image}</FormMessage>
+                        ) : (
+                          <Hint>Image URL in Google Drive</Hint>
+                        )}
+                      </div>
+                      {linkName && (
+                        <div className="flex flex-col gap-4">
+                          <p>Result Image</p>
+                          <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
+                            <img
+                              src={`${linkName}`}
+                              alt={linkName}
+                              className="w-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </FormItem>
+                );
+              }}
+            />
             <FormField
               control={form.control}
               name="nameStore"

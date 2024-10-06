@@ -16,30 +16,35 @@ import ListProduct from "./page/cashier/list-product"; // List Product Cashier
 
 // Admin
 import Product from "./page/admin/product";
+import LocationCardList from "./page/super-admin/location/location-card-list";
 import Invoice from "./page/admin/invoice";
 import SubCategoryList from "./page/admin/product/sub-category";
 import OverviewPage from "./page/admin/overview";
 import CategoryList from "./page/admin/product/category";
-import LocationList from "./page/admin/location";
+import LocationList from "./page/super-admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product/product";
 import DiscountList from "./page/admin/discount";
 import ShiftList from "./page/admin/shift";
 import TypePaymentList from "./page/admin/type-payment";
-import SocialMediaList from "./page/admin/social-media";
+import SocialMediaList from "./page/super-admin/social-media";
 import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 
+// Super Admin
+import MyTeamsSuperAdmin from "./page/super-admin/my-teams";
+import UserListByLocation from "./page/super-admin/my-teams/user";
+
 // Form
 import FormCategory from "./page/admin/product/category/formCategory";
-import FormLocation from "./page/admin/location/formLocation";
+import FormLocation from "./page/super-admin/location/formLocation";
 import FormProduct from "./page/admin/product/product/formProduct";
 import FormSubCategory from "./page/admin/product/sub-category/form-subcategory";
 import FormDiscount from "./page/admin/discount/formDiscount";
 import FormShift from "./page/admin/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
-import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
+import FormSocialMedia from "./page/super-admin/social-media/formSocialMedia";
 import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
 import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/formInvoiceSocialMedia";
 import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
@@ -115,6 +120,20 @@ function App() {
           path="/footer-invoice-list"
           element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/location-available"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/my-teams"
+          element={cookie.token ? <MyTeamsSuperAdmin /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/my-teams-user"
+          element={cookie.token ? <UserListByLocation /> : <Navigate to="/" />}
+        />
+
         <Route path="/product-page" element={cookie.token ? <Product /> : <Navigate to="/" />} />
         <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
 

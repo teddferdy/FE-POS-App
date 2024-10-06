@@ -159,6 +159,7 @@ const FormSubCategory = () => {
         typeSubCategory:
           values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
         isMultiple: values?.isMultiple,
+        store: cookie?.user?.location,
         createdBy: state?.data?.userName,
         modifiedBy: cookie.user.userName
       };
@@ -170,6 +171,7 @@ const FormSubCategory = () => {
         typeSubCategory:
           values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
         isMultiple: values?.isMultiple,
+        store: cookie?.user?.location,
         createdBy: cookie?.user?.userName
       };
 

@@ -8,12 +8,114 @@ import LogoSidebar from "../../../assets/logo-sidebar.png";
 import { cn } from "../../../lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../ui/accordion";
 import { buttonVariants } from "../../ui/button";
-import { sidebarMenuAdmin, sidebarMenuUser } from "../../../utils/sidebar-menu";
+import {
+  sidebarMenuAdmin,
+  sidebarMenuUser,
+  sidebarMenuSuperAdmin
+} from "../../../utils/sidebar-menu";
 
 const SideBarMenu = ({ classNameContainer, user }) => {
+  console.log("USER =>", user);
+
   const navigate = useNavigate();
 
   const MENU_LIST = useMemo(() => {
+    // Super Admin
+    if (user.userType === "super-admin") {
+      return (
+        <>
+          {sidebarMenuSuperAdmin?.length ? (
+            <nav className="flex flex-col gap-6">
+              {sidebarMenuSuperAdmin?.map((item, index) =>
+                item.children ? (
+                  <Accordion type="single" collapsible key={index}>
+                    <AccordionItem value={item.title} className="border-b-0">
+                      {item.href ? (
+                        <Link to={item.href} className="block py-1 hover:text-blue-500">
+                          <AccordionTrigger
+                            className={cn(
+                              buttonVariants({
+                                size: "sm",
+                                variant: "ghost"
+                              }),
+                              "justify-between",
+                              item.disabled && "cursor-not-allowed opacity-80"
+                            )}>
+                            <div className="flex items-center justify-start">
+                              {item.icon && (
+                                <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                              )}
+                              {item.title}
+                            </div>
+                          </AccordionTrigger>
+                        </Link>
+                      ) : (
+                        <AccordionTrigger
+                          className={cn(
+                            buttonVariants({
+                              size: "sm",
+                              variant: "ghost"
+                            }),
+                            "justify-between",
+                            item.disabled && "cursor-not-allowed opacity-80"
+                          )}>
+                          <div className="flex items-center justify-start">
+                            {item.icon && (
+                              <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                            )}
+                            {item.title}
+                          </div>
+                        </AccordionTrigger>
+                      )}
+                      <AccordionContent>
+                        <div className="ml-7 flex flex-col space-y-1">
+                          {item.children.map((child, index) => (
+                            <div
+                              onClick={() => navigate(child.href)}
+                              key={index}
+                              className={cn(
+                                buttonVariants({
+                                  size: "sm",
+                                  variant: "ghost"
+                                }),
+                                "justify-start",
+                                child.disabled && "cursor-not-allowed opacity-80"
+                              )}>
+                              {child.title}
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                ) : (
+                  item.href && (
+                    <div
+                      onClick={() => navigate(item.href)}
+                      key={index}
+                      className={cn(
+                        buttonVariants({
+                          size: "sm",
+                          variant: "ghost"
+                        }),
+                        "justify-start",
+                        item.disabled && "cursor-not-allowed opacity-80"
+                      )}>
+                      {item.icon && (
+                        <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                      )}
+                      {item.title}
+                    </div>
+                  )
+                )
+              )}
+            </nav>
+          ) : null}
+        </>
+      );
+    }
+
+    // Admin
     if (user.userType === "admin") {
       return (
         <>
@@ -108,12 +210,13 @@ const SideBarMenu = ({ classNameContainer, user }) => {
       );
     }
 
+    // Cashier
     if (user.userType === "user") {
       return (
         <>
           {sidebarMenuUser?.length ? (
             <nav className="flex flex-col gap-6">
-              {sidebarMenuAdmin?.map((item, index) =>
+              {sidebarMenuUser?.map((item, index) =>
                 item.children ? (
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
