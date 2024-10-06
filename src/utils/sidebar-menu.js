@@ -37,20 +37,12 @@ export const sidebarMenuSuperAdmin = [
     icon: Users,
     children: [
       {
-        title: "Shift List",
-        href: "/shift-list"
-      },
-      {
         title: "Position",
-        href: "/#"
+        href: "/position-list"
       },
       {
         title: "Role",
-        href: "/#"
-      },
-      {
-        title: "User",
-        href: "/#"
+        href: "/role-list"
       }
     ]
   },

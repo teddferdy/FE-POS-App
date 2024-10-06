@@ -11,7 +11,7 @@ import { Button } from "../../../../components/ui/button";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
-import { addRole, editRole } from "../../../../services/role";
+import { addPosition, editPosition } from "../../../../services/position";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,14 +25,14 @@ import TemplateContainer from "../../../../components/organism/template-containe
 import { useCookies } from "react-cookie";
 import Hint from "../../../../components/organism/label/hint";
 
-const FormRole = () => {
+const FormPosition = () => {
   const { state } = useLocation();
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(1, {
-      message: "Precentage Filed Required"
+      message: "Name Filed Required"
     }),
     description: z.string().min(4, {
       message: "Description Field Required"
@@ -51,24 +51,24 @@ const FormRole = () => {
   });
 
   // QUERY
-  const mutateAddRole = useMutation(addRole, {
+  const mutateAddPosition = useMutation(addPosition, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Added New Role"
+          description: "Successfull, Added New Position"
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/role-list");
+        navigate("/position-list");
         setActive(null, null);
       }, 2000);
     },
     onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Failed Add New Role", {
+        toast.error("Failed Add New Position", {
           description: err.message
         });
       }, 1500);
@@ -78,17 +78,17 @@ const FormRole = () => {
     }
   });
 
-  const mutateEditRole = useMutation(editRole, {
+  const mutateEditPosition = useMutation(editPosition, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Edit Role"
+          description: "Successfull, Edit Position"
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/role-list");
+        navigate("/position-list");
         setActive(null, null);
       }, 2000);
     },
@@ -115,7 +115,7 @@ const FormRole = () => {
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
-      mutateEditRole.mutate(body);
+      mutateEditPosition.mutate(body);
     } else {
       const body = {
         name: values?.name,
@@ -124,7 +124,7 @@ const FormRole = () => {
         createdBy: cookie.user.userName
       };
 
-      mutateAddRole.mutate(body);
+      mutateAddPosition.mutate(body);
     }
   };
 
@@ -143,12 +143,12 @@ const FormRole = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/role-list">Role List</BreadcrumbLink>
+                  <BreadcrumbLink href="/position-list">Position List</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Form Role</BreadcrumbPage>
+                <BreadcrumbPage>Form Position</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -222,7 +222,7 @@ const FormRole = () => {
             </div>
             <div className="flex justify-between items-center">
               <DialogCancelForm
-                handleBack={() => navigate("/role-list")}
+                handleBack={() => navigate("/position-list")}
                 classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
                 titleDialog="Apakah Anda Ingin Membatalkan Ini"
                 titleButtonTrigger="Cancel"
@@ -230,7 +230,7 @@ const FormRole = () => {
               <Button
                 className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                 type="submit">
-                {state?.data?.id ? "Submit Edit Role" : "Save Role"}
+                {state?.data?.id ? "Submit Edit Position" : "Save Position"}
               </Button>
             </div>
           </form>
@@ -240,4 +240,4 @@ const FormRole = () => {
   );
 };
 
-export default FormRole;
+export default FormPosition;

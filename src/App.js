@@ -35,6 +35,8 @@ import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 // Super Admin
 import MyTeamsSuperAdmin from "./page/super-admin/my-teams";
 import UserListByLocation from "./page/super-admin/my-teams/user";
+import PositionList from "./page/super-admin/my-teams/position";
+import RoleList from "./page/super-admin/my-teams/role";
 
 // Form
 import FormCategory from "./page/admin/product/category/formCategory";
@@ -48,6 +50,8 @@ import FormSocialMedia from "./page/super-admin/social-media/formSocialMedia";
 import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
 import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/formInvoiceSocialMedia";
 import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
+import FormPosition from "./page/super-admin/my-teams/position/formPosition";
+import FormRole from "./page/super-admin/my-teams/role/formRole";
 
 function App() {
   const { i18n } = useTranslation();
@@ -134,6 +138,11 @@ function App() {
           element={cookie.token ? <UserListByLocation /> : <Navigate to="/" />}
         />
 
+        <Route
+          path="/position-list"
+          element={cookie.token ? <PositionList /> : <Navigate to="/" />}
+        />
+        <Route path="/role-list" element={cookie.token ? <RoleList /> : <Navigate to="/" />} />
         <Route path="/product-page" element={cookie.token ? <Product /> : <Navigate to="/" />} />
         <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
 
@@ -176,6 +185,11 @@ function App() {
           path="/add-invoice-footer"
           element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
         />
+        <Route
+          path="/add-position"
+          element={cookie.token ? <FormPosition /> : <Navigate to="/" />}
+        />
+        <Route path="/add-role" element={cookie.token ? <FormRole /> : <Navigate to="/" />} />
 
         {/* Edit */}
         <Route
@@ -222,6 +236,11 @@ function App() {
           path="/edit-invoice-footer/:id"
           element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
         />
+        <Route
+          path="/edit-position/:id"
+          element={cookie.token ? <FormPosition /> : <Navigate to="/" />}
+        />
+        <Route path="/edit-role/:id" element={cookie.token ? <FormRole /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
