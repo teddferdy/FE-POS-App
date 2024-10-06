@@ -91,6 +91,8 @@ const Login = () => {
   const mutateLogin = useMutation(login, {
     onMutate: () => setActive(true, null),
     onSuccess: (success) => {
+      console.log("SUCCESS =>", success);
+
       setCookie("token", success.token);
       setCookie("user", success.user);
 
@@ -101,7 +103,11 @@ const Login = () => {
         });
       }, 1000);
       setTimeout(() => {
-        navigate("/home");
+        if (success.user.userType !== "user") {
+          navigate("/admin-page");
+        } else {
+          navigate("/home");
+        }
         setActive(null, null);
       }, 2000);
     },

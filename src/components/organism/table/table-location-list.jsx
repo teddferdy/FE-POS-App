@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
 import ThreeDotsMenu from "../popover/three-dots-menu";
+import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
 const FILTER_BY = [
   {
@@ -57,6 +58,24 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
     name: "Name Category"
   });
   const columns = [
+    {
+      accessorKey: "image",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Image
+            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
+
+        return <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />;
+      }
+    },
     {
       accessorKey: "nameStore",
       header: ({ column }) => {
