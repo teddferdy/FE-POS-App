@@ -33,7 +33,6 @@ import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 
 // Super Admin
-import MyTeamsSuperAdmin from "./page/super-admin/my-teams";
 import UserListByLocation from "./page/super-admin/my-teams/user";
 import PositionList from "./page/super-admin/my-teams/position";
 import RoleList from "./page/super-admin/my-teams/role";
@@ -137,11 +136,6 @@ function App() {
         />
 
         {/* End Location Available */}
-
-        <Route
-          path="/my-teams"
-          element={cookie.token ? <MyTeamsSuperAdmin /> : <Navigate to="/" />}
-        />
         <Route
           path="/my-teams-user"
           element={cookie.token ? <UserListByLocation /> : <Navigate to="/" />}

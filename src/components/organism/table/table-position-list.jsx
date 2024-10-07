@@ -38,7 +38,7 @@ const FILTER_BY = [
   }
 ];
 
-const TablePositionList = ({ allLocation, handleDelete }) => {
+const TablePositionList = ({ allPosition, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -202,7 +202,7 @@ const TablePositionList = ({ allLocation, handleDelete }) => {
   ];
 
   const table = useReactTable({
-    data: allLocation?.data?.data || [],
+    data: allPosition?.data?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card } from "../../ui/card";
 import { useCookies } from "react-cookie";
+import moment from "moment";
 
 const GreetingCard = () => {
   const [cookie] = useCookies(["user"]);
@@ -68,8 +69,8 @@ const GreetingCard = () => {
           Hello {cookie?.user?.userName}, {greeting}!
         </h1>
         <div className="flex flex-col gap-4">
-          <p className="text-lg text-gray-500">{currentTime}</p>
-          <p className="text-lg text-gray-500">{currentDate}</p>
+          <p className="text-lg text-gray-500">{moment(currentDate).format("DD-MM-YYYY")}</p>
+          <p className="text-lg text-gray-500 text-right">{currentTime}</p>
         </div>
       </div>
     </Card>

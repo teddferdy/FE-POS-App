@@ -18,7 +18,7 @@ const SideBarProfile = ({ navigate, mutateLogout }) => {
   const { updateTranslation, translation } = translationSelect();
 
   return (
-    <div className="flex flex-col gap-8 h-[90%] py-8">
+    <div className="flex flex-col gap-8">
       <div
         className="flex items-center w-full cursor-pointer gap-8"
         onClick={() => navigate("/edit-profile")}>
