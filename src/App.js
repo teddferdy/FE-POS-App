@@ -124,10 +124,19 @@ function App() {
           path="/footer-invoice-list"
           element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
         />
+
+        {/* Location Available */}
         <Route
           path="/location-available"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
+
+        <Route
+          path="/my-teams-location-available"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
+
+        {/* End Location Available */}
 
         <Route
           path="/my-teams"

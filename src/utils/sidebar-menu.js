@@ -21,9 +21,14 @@ export const sidebarMenuSuperAdmin = [
   },
   // Product List
   {
-    title: "See Product Menu",
+    title: "See Product",
     href: "/location-available",
     icon: UtensilsCrossed
+  },
+  {
+    title: "See Invoice",
+    href: "/location-available",
+    icon: Clipboard
   },
   // Location
   {
@@ -36,6 +41,10 @@ export const sidebarMenuSuperAdmin = [
     href: "/my-teams",
     icon: Users,
     children: [
+      {
+        title: "User",
+        href: "/my-teams-location-available"
+      },
       {
         title: "Position",
         href: "/position-list"
