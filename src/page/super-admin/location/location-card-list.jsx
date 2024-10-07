@@ -12,14 +12,15 @@ import {
 } from "../../../components/ui/breadcrumb";
 import { getAllLocation } from "../../../services/location";
 import TemplateContainer from "../../../components/organism/template-container";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "react-query";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../components/organism/abort-controller";
 import LocationCard from "../../../components/organism/card/location-card";
 
 const LocationCardList = () => {
-  //   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   // QUERY
   const allLocation = useQuery(["get-all-location-card"], () => getAllLocation(), {
@@ -50,6 +51,15 @@ const LocationCardList = () => {
               nameStore={location.nameStore}
               address={location.address}
               phoneNumber={location.phoneNumber}
+              handleLocation={() => {
+                if (pathname === "/my-teams-location-available") {
+                  navigate("/my-teams-user", {
+                    state: {
+                      location: location.nameStore
+                    }
+                  });
+                }
+              }}
             />
           ))}
         </div>
