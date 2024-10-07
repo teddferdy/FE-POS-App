@@ -15,8 +15,6 @@ import {
 } from "../../../utils/sidebar-menu";
 
 const SideBarMenu = ({ classNameContainer, user }) => {
-  console.log("USER =>", user);
-
   const navigate = useNavigate();
 
   const MENU_LIST = useMemo(() => {
@@ -31,17 +29,16 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
                       {item.href ? (
-                        <Link to={item.href} className="block py-1 hover:text-blue-500">
+                        <Link to={item.href} className="block py-1">
                           <AccordionTrigger
                             className={cn(
                               buttonVariants({
                                 size: "sm",
                                 variant: "ghost"
                               }),
-                              "justify-between",
-                              item.disabled && "cursor-not-allowed opacity-80"
+                              "justify-between"
                             )}>
-                            <div className="flex items-center justify-start">
+                            <div className="flex items-center justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer">
                               {item.icon && (
                                 <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
                               )}
@@ -56,8 +53,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               size: "sm",
                               variant: "ghost"
                             }),
-                            "justify-between",
-                            item.disabled && "cursor-not-allowed opacity-80"
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
                           )}>
                           <div className="flex items-center justify-start">
                             {item.icon && (
@@ -78,8 +74,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                                   size: "sm",
                                   variant: "ghost"
                                 }),
-                                "justify-start",
-                                child.disabled && "cursor-not-allowed opacity-80"
+                                "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
                               )}>
                               {child.title}
                             </div>
@@ -98,7 +93,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                           size: "sm",
                           variant: "ghost"
                         }),
-                        "justify-start",
+                        "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer",
                         item.disabled && "cursor-not-allowed opacity-80"
                       )}>
                       {item.icon && (
@@ -126,17 +121,16 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
                       {item.href ? (
-                        <Link to={item.href} className="block py-1 hover:text-blue-500">
+                        <Link to={item.href} className="block py-1">
                           <AccordionTrigger
                             className={cn(
                               buttonVariants({
                                 size: "sm",
                                 variant: "ghost"
                               }),
-                              "justify-between",
-                              item.disabled && "cursor-not-allowed opacity-80"
+                              "justify-between"
                             )}>
-                            <div className="flex items-center justify-start">
+                            <div className="flex items-center justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer">
                               {item.icon && (
                                 <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
                               )}
@@ -151,8 +145,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               size: "sm",
                               variant: "ghost"
                             }),
-                            "justify-between",
-                            item.disabled && "cursor-not-allowed opacity-80"
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
                           )}>
                           <div className="flex items-center justify-start">
                             {item.icon && (
@@ -173,8 +166,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                                   size: "sm",
                                   variant: "ghost"
                                 }),
-                                "justify-start",
-                                child.disabled && "cursor-not-allowed opacity-80"
+                                "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
                               )}>
                               {child.title}
                             </div>
@@ -193,7 +185,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                           size: "sm",
                           variant: "ghost"
                         }),
-                        "justify-start",
+                        "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer",
                         item.disabled && "cursor-not-allowed opacity-80"
                       )}>
                       {item.icon && (
@@ -220,22 +212,41 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 item.children ? (
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
-                      <AccordionTrigger
-                        className={cn(
-                          buttonVariants({
-                            size: "sm",
-                            variant: "ghost"
-                          }),
-                          "justify-between",
-                          item.disabled && "cursor-not-allowed opacity-80"
-                        )}>
-                        <div className="flex items-center justify-start">
-                          {item.icon && (
-                            <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
-                          )}
-                          {item.title}
-                        </div>
-                      </AccordionTrigger>
+                      {item.href ? (
+                        <Link to={item.href} className="block py-1">
+                          <AccordionTrigger
+                            className={cn(
+                              buttonVariants({
+                                size: "sm",
+                                variant: "ghost"
+                              }),
+                              "justify-between"
+                            )}>
+                            <div className="flex items-center justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer">
+                              {item.icon && (
+                                <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                              )}
+                              {item.title}
+                            </div>
+                          </AccordionTrigger>
+                        </Link>
+                      ) : (
+                        <AccordionTrigger
+                          className={cn(
+                            buttonVariants({
+                              size: "sm",
+                              variant: "ghost"
+                            }),
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
+                          )}>
+                          <div className="flex items-center justify-start">
+                            {item.icon && (
+                              <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                            )}
+                            {item.title}
+                          </div>
+                        </AccordionTrigger>
+                      )}
                       <AccordionContent>
                         <div className="ml-7 flex flex-col space-y-1">
                           {item.children.map((child, index) => (
@@ -247,8 +258,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                                   size: "sm",
                                   variant: "ghost"
                                 }),
-                                "justify-start",
-                                child.disabled && "cursor-not-allowed opacity-80"
+                                "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
                               )}>
                               {child.title}
                             </div>
@@ -267,7 +277,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                           size: "sm",
                           variant: "ghost"
                         }),
-                        "justify-start",
+                        "justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer",
                         item.disabled && "cursor-not-allowed opacity-80"
                       )}>
                       {item.icon && (

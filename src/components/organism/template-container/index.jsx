@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
+import { ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
 import SideBarMenu from "../sidebar/sidebar-menu";
 import SideBarProfile from "../sidebar/sidebar-profile";
 import { useMutation } from "react-query";
@@ -21,15 +21,8 @@ import {
 import { Menu, ArrowBigLeft } from "lucide-react";
 
 import { Button } from "../../ui/button";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from "../../ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "../../ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../../ui/dropdown-menu";
 import { translationSelect } from "../../../state/translation";
 import { TRANSLATION } from "../../../utils/translation";
 import { logOut } from "../../../services/auth";
@@ -44,7 +37,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
 
   const { updateTranslation, translation } = translationSelect();
 
-  const [openSheet, setOpenSheet] = useState(false);
   const [search, setSearch] = useState("");
   const [cookie] = useCookies(["user"]);
 
@@ -53,7 +45,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
     retry: 2,
     onMutate: () => {
       setActive(true, null);
-      setOpenSheet(false);
     },
     onSuccess: () => {
       setActive(false, "success");
@@ -107,7 +98,6 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
 
   return (
     <ResizablePanelGroup direction="horizontal" className={rootContainer}>
-      <ResizableHandle withHandle />
       <ResizablePanel defaultSize={55} className={childrenContainer}>
         <div className="flex items-center justify-between p-4 bg-white shadow-lg fixed w-full z-10">
           <div className="flex flex-1 items-center gap-4">
@@ -117,17 +107,19 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-3/6 overflow-scroll h-screen no-scrollbar">
+              <SheetContent side="left" className="w-1/6 overflow-scroll h-screen no-scrollbar">
                 {SIDEBAR_MOBILE}
               </SheetContent>
             </Sheet>
             {arrowBackButton ? (
               <div className="flex items-center gap-4">
-                <div
-                  className="p-2 bg-[#6853F0] rounded-md cursor-pointer"
-                  onClick={() => navigate(arrowBackButton.url)}>
-                  <ArrowBigLeft height={30} color="#fff" />
-                </div>
+                {arrowBackButton.url !== 0 && (
+                  <div
+                    className="p-2 bg-[#6853F0] rounded-md cursor-pointer"
+                    onClick={() => navigate(arrowBackButton.url)}>
+                    <ArrowBigLeft height={30} color="#fff" />
+                  </div>
+                )}
                 <p className="text-[#6853F0] text-base font-bold">{arrowBackButton.title}</p>
               </div>
             ) : (
@@ -142,7 +134,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               />
             )}
           </div>
-          <div className="flex flex-[0.2] md:flex-1 items-end justify-end gap-10">
+          <div className="flex flex-[0.2] md:flex-1 items-center justify-end gap-10">
             <div className="hidden md:block">
               <Select
                 onValueChange={(e) => updateTranslation(e)}
@@ -187,25 +179,23 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               <p className="text-base font-medium text-[#737373]">
                 welcome, {cookie?.user?.userName}!
               </p>
-              <p className="text-xs font-medium text-[#D9D9D9]">
-                Cashier on {cookie?.user?.location}
-              </p>
+              {cookie?.user?.userType !== "super-admin" && (
+                <p className="text-xs font-medium text-[#D9D9D9]">
+                  Cashier on {cookie?.user?.location}
+                </p>
+              )}
             </div>
 
-            <Sheet open={openSheet} onOpenChange={() => setOpenSheet(!openSheet)}>
-              <SheetTrigger onClick={() => setOpenSheet(!openSheet)}>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1">
                 <Button variant="outline" className="p-0 bg-transparent border-none">
                   <AvatarUser />
                 </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Hello, {cookie?.user?.userName}!</SheetTitle>
-                  <SheetDescription>Cashier on {cookie?.user?.location}</SheetDescription>
-                </SheetHeader>
-                {SIDEBAR_PROFILE}
-              </SheetContent>
-            </Sheet>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                <div className="p-4">{SIDEBAR_PROFILE}</div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="mt-[75px]">{children}</div>

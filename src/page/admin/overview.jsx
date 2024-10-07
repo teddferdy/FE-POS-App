@@ -79,6 +79,8 @@ const OverviewPage = () => {
     keepPreviousData: true
   });
 
+  console.log("overviewCategory =>", overviewCategory);
+
   const overviewLocation = useQuery(["get-overview-location"], () => getOverviewLocation(), {
     retry: 0,
     keepPreviousData: true
@@ -166,7 +168,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-green-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Product :</h2>
-              <p onClick={() => navigate("/product-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/product-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -188,7 +192,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-yellow-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Category :</h2>
-              <p onClick={() => navigate("/category-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/category-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -210,7 +216,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-blue-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Outlet / Location :</h2>
-              <p onClick={() => navigate("/location-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/location-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -232,7 +240,9 @@ const OverviewPage = () => {
           <div className="p-4 bg-orange-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Member :</h2>
-              <p onClick={() => navigate("/member-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/member-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -318,14 +328,18 @@ const OverviewPage = () => {
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Best Selling List :</h2>
-              <p>See All</p>
+              <p className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
+                See All
+              </p>
             </div>
             <OverviewBestSellingList data={getDataTableBestSelling} />
           </div>
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Category List :</h2>
-              <p onClick={() => navigate("/category-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/category-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -337,7 +351,9 @@ const OverviewPage = () => {
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Member List :</h2>
-              <p onClick={() => navigate("/member-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/member-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -346,7 +362,9 @@ const OverviewPage = () => {
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2>Location List :</h2>
-              <p onClick={() => navigate("/location-list")} className="cursor-pointer">
+              <p
+                onClick={() => navigate("/location-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
@@ -356,7 +374,9 @@ const OverviewPage = () => {
         <div className="p-4 shadow-lg w-full h-96 rounded-lg flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2>Product List :</h2>
-            <p onClick={() => navigate("/product-list")} className="cursor-pointer">
+            <p
+              onClick={() => navigate("/product-list")}
+              className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
               See All
             </p>
           </div>

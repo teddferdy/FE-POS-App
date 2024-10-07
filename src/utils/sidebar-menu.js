@@ -38,7 +38,7 @@ export const sidebarMenuSuperAdmin = [
   },
   {
     title: "My Teams",
-    href: "/my-teams",
+    href: "",
     icon: Users,
     children: [
       {
@@ -173,7 +173,7 @@ export const sidebarMenuUser = [
 // ARROW BACK
 export const urlWithArrowBack = [
   {
-    url: -1,
+    url: 0,
     title: "Admin Menu",
     pathName: "/admin-page"
   },

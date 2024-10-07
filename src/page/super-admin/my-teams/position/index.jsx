@@ -19,7 +19,8 @@ import { toast } from "sonner";
 import { useLoading } from "../../../../components/organism/loading";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
-import TableRoleList from "../../../../components/organism/table/table-role-list";
+import TablePositionList from "../../../../components/organism/table/table-position-list";
+
 import { useMutation, useQuery } from "react-query";
 import { getAllPositionTable, deletePosition } from "../../../../services/position";
 import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
@@ -77,7 +78,7 @@ const PositionList = () => {
     if (allPosition.data && allPosition.isSuccess && !allPosition.isError) {
       return (
         <div className="w-full p-4">
-          <TableRoleList
+          <TablePositionList
             allPosition={allPosition}
             handleDelete={(body) => mutateDeletePosition.mutate(body)}
           />
