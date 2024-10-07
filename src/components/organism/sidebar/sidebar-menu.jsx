@@ -30,14 +30,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                     <AccordionItem value={item.title} className="border-b-0">
                       {item.href ? (
                         <Link to={item.href} className="block py-1">
-                          <AccordionTrigger
-                            className={cn(
-                              buttonVariants({
-                                size: "sm",
-                                variant: "ghost"
-                              }),
-                              "justify-between"
-                            )}>
+                          <AccordionTrigger>
                             <div className="flex items-center justify-start hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer">
                               {item.icon && (
                                 <item.icon className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
@@ -53,7 +46,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               size: "sm",
                               variant: "ghost"
                             }),
-                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:no-underline"
                           )}>
                           <div className="flex items-center justify-start">
                             {item.icon && (
@@ -145,7 +138,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               size: "sm",
                               variant: "ghost"
                             }),
-                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:no-underline"
                           )}>
                           <div className="flex items-center justify-start">
                             {item.icon && (
@@ -237,7 +230,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                               size: "sm",
                               variant: "ghost"
                             }),
-                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer"
+                            "justify-between hover:text-white text-base hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:no-underline"
                           )}>
                           <div className="flex items-center justify-start">
                             {item.icon && (
