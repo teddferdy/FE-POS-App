@@ -85,12 +85,12 @@ const DiscountList = () => {
     <TemplateContainer>
       <div className="flex justify-between mb-6 p-4">
         <div className="flex flex-col gap-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">Category</h1>
+          <h1 className="text-[#6853F0] text-lg font-bold">Discount</h1>
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

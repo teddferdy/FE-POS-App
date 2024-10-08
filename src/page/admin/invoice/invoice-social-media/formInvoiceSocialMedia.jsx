@@ -275,7 +275,7 @@ const FormInvoiceSocialMedia = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -341,11 +341,14 @@ const FormInvoiceSocialMedia = () => {
                         {...field}
                         placeholder="Enter Name Template Social Media"
                         className="flex-1"
+                        maxLength={255}
                       />
                       {form.formState.errors.name ? (
                         <FormMessage>{form.formState.errors.name}</FormMessage>
                       ) : (
-                        <Hint>Enter Name Template Social Media Minimum 4 Character</Hint>
+                        <Hint>
+                          Enter Name Template Social Media Minimum 4 Character & Max 255 Character
+                        </Hint>
                       )}
                     </FormItem>
                   );

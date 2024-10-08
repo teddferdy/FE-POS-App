@@ -120,7 +120,7 @@ export const sidebarMenuAdmin = [
     icon: Users,
     children: [
       {
-        title: "Shift List",
+        title: "Shift",
         href: "/shift-list"
       },
       {

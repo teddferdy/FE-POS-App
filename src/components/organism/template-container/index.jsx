@@ -107,7 +107,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-1/6 overflow-scroll h-screen no-scrollbar">
+              <SheetContent side="left" className="w-[20%] overflow-scroll h-screen no-scrollbar">
                 {SIDEBAR_MOBILE}
               </SheetContent>
             </Sheet>
@@ -139,7 +139,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               <Select
                 onValueChange={(e) => updateTranslation(e)}
                 value={localStorage.getItem("translation")}>
-                <SelectTrigger className="w-fit border-hidden flex items-center gap-2 ring-0 focus:ring-0">
+                <SelectTrigger className="w-fit border-hidden flex items-center gap-2 ring-0 hover:bg-[#1ACB0A] duration-200 focus:ring-0">
                   {TRANSLATION?.filter((items) => items.value === translation)?.map(
                     (items, index) => (
                       <img
@@ -180,7 +180,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                 welcome, {cookie?.user?.userName}!
               </p>
               {cookie?.user?.userType !== "super-admin" && (
-                <p className="text-xs font-medium text-[#D9D9D9]">
+                <p className="text-xs font-medium text-[#737373]">
                   Cashier on {cookie?.user?.location}
                 </p>
               )}
