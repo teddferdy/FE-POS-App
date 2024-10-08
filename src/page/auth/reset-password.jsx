@@ -170,7 +170,10 @@ const ResetPassword = () => {
               <SelectGroup>
                 <SelectLabel>{translationMemo.selectLanguage}</SelectLabel>
                 {TRANSLATION.map((items, index) => (
-                  <SelectItem value={items.value} className="w-full flex items-center" key={index}>
+                  <SelectItem
+                    value={items.value}
+                    className="w-full flex items-center focus:bg-[#1ACB0A] focus:text-white"
+                    key={index}>
                     <div className="flex justify-between items-center gap-4">
                       <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
                       <p>{items.name}</p>

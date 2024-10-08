@@ -40,6 +40,9 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   const [search, setSearch] = useState("");
   const [cookie] = useCookies(["user"]);
 
+  const [openSidebar, setOpenSidebar] = useState(false);
+  const [openLogout, setOpenLogout] = useState(false);
+
   // Query
   const mutateLogout = useMutation(logOut, {
     retry: 2,
@@ -81,7 +84,16 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
   // Side Mobile
   const SIDEBAR_MOBILE = useMemo(() => {
     if (cookie?.user) {
-      return <SideBarMenu classNameContainer="block" user={cookie?.user || {}} />;
+      return (
+        <SideBarMenu
+          classNameContainer="block"
+          user={cookie?.user || {}}
+          handleNavigate={(val) => {
+            navigate(val);
+            setOpenSidebar(false);
+          }}
+        />
+      );
     }
   }, [cookie]);
 
@@ -90,7 +102,10 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
       return (
         <SideBarProfile
           navigate={navigate}
-          mutateLogout={() => mutateLogout.mutate({ id: cookie?.user?.id })}
+          mutateLogout={() => {
+            mutateLogout.mutate({ id: cookie?.user?.id });
+            setOpenLogout(false);
+          }}
         />
       );
     }
@@ -101,7 +116,11 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
       <ResizablePanel defaultSize={55} className={childrenContainer}>
         <div className="flex items-center justify-between p-4 bg-white shadow-lg fixed w-full z-10">
           <div className="flex flex-1 items-center gap-4">
-            <Sheet>
+            <Sheet
+              open={openSidebar}
+              onOpenChange={(val) => {
+                setOpenSidebar(val);
+              }}>
               <SheetTrigger asChild>
                 <Button variant="outline" className="p-0 bg-transparent border-none">
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
@@ -163,7 +182,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                     {TRANSLATION.map((items, index) => (
                       <SelectItem
                         value={items.value}
-                        className="w-full flex items-center"
+                        className="w-full flex items-center focus:bg-[#1ACB0A] focus:text-white"
                         key={index}>
                         <div className="flex justify-between items-center gap-4">
                           <img src={items.img} alt={items.name} className="max-w-6 max-h-6" />
@@ -186,8 +205,14 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               )}
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 ring-0 focus:bg-transparent">
+            <DropdownMenu
+              open={openLogout}
+              onOpenChange={(val) => {
+                setOpenLogout(val);
+              }}>
+              <DropdownMenuTrigger
+                className="flex items-center gap-1 ring-0 focus:bg-transparent"
+                asChild>
                 <Button variant="outline" className="p-0 bg-transparent border-none">
                   <AvatarUser />
                 </Button>

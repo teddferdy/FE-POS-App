@@ -186,7 +186,7 @@ const FormShift = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Shift</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} maxLength={30} />
                   </FormItem>
                 )}
               />

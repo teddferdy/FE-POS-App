@@ -62,7 +62,7 @@ const MemberList = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>MemberShip</BreadcrumbPage>
+              <BreadcrumbPage>Membership</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -78,7 +78,7 @@ const MemberList = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>MemberShip</BreadcrumbPage>
+              <BreadcrumbPage>Membership</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

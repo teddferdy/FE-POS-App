@@ -190,14 +190,14 @@ const FormPosition = () => {
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <div className="mb-4">
-                    <FormLabel className="text-base">name Position</FormLabel>
+                    <FormLabel className="text-base">Name Position</FormLabel>
                   </div>
-                  <Input type="text" {...field} placeholder="Enter name Position" />
+                  <Input type="text" {...field} placeholder="Enter name Position" maxLength={30} />
 
                   {form.formState.errors.name ? (
                     <FormMessage>{form.formState.errors.name}</FormMessage>
                   ) : (
-                    <Hint>Enter name Position Minimum Character 4</Hint>
+                    <Hint>Enter name Position Minimum Character 4 & Max 30 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -207,7 +207,7 @@ const FormPosition = () => {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex-1">
                     <div className="mb-4">
                       <FormLabel className="text-base">Description</FormLabel>
                     </div>

@@ -65,13 +65,13 @@ const ProductCard = ({ items }) => {
         <div className="flex justify-between items-center">
           <Button
             onClick={decrement}
-            className="bg-[#6853F0] hover:hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
+            className="bg-[#6853F0] hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
             <MinusIcon className="h-8 w-8" />
           </Button>
           <div className="flex-1 text-black font-bold text-lg text-center">{count} Items</div>
           <Button
             onClick={increment}
-            className="bg-[#6853F0] hover:hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
+            className="bg-[#6853F0] hover:bg-[#1ACB0A] text-white rounded-full p-2 h-14 w-14 flex items-center justify-center">
             <PlusIcon className="h-8 w-8" />
           </Button>
         </div>

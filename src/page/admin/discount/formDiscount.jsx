@@ -50,7 +50,11 @@ const FormDiscount = () => {
   });
 
   const handleInput = (e) => {
-    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    if (Number(value) > 100) {
+      value = "100"; // Cap the value at 100
+    }
+    e.target.value = value;
   };
 
   // QUERY
@@ -195,11 +199,10 @@ const FormDiscount = () => {
                       maxLength={3}
                       onInput={handleInput}
                     />
-
                     {form.formState.errors.percentage ? (
                       <FormMessage>{form.formState.errors.percentage}</FormMessage>
                     ) : (
-                      <Hint>Enter Percentage Max 3 Number</Hint>
+                      <Hint>Enter Percentage Max 3 Number and max number 100</Hint>
                     )}
                   </FormItem>
                 )}
