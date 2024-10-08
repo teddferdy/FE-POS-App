@@ -135,7 +135,7 @@ export const sidebarMenuAdmin = [
     icon: Store,
     children: [
       {
-        title: "Member List",
+        title: "Membership",
         href: "/member-list"
       }
     ]
@@ -166,7 +166,7 @@ export const sidebarMenuUser = [
     icon: Calculator
   },
   {
-    title: "MemberShip",
+    title: "Membership",
     href: "/member-list",
     icon: BookUser
   },
@@ -188,7 +188,7 @@ export const urlWithArrowBack = [
   // List Page
   {
     url: -1,
-    title: "Member List",
+    title: "Membership",
     pathName: "/member-list"
   },
   {
