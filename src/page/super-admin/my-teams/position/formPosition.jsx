@@ -230,7 +230,7 @@ const FormPosition = () => {
               <Button
                 className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                 type="submit">
-                {state?.data?.id ? "Submit Edit Position" : "Save Position"}
+                {state?.data?.id ? "Edit" : "Save"}
               </Button>
             </div>
           </form>
