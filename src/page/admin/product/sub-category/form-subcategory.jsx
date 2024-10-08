@@ -64,7 +64,7 @@ const FormSubCategory = () => {
 
   const formSchema = z.object({
     nameSubCategory: z.string().min(4, {
-      message: "Name Product Store must be at least 4 characters."
+      message: "Name Sub Category Store must be at least 4 characters."
     }),
     parentCategory: z.string().min(4, {
       message: "Name Product Store must be at least 4 characters."
@@ -81,8 +81,8 @@ const FormSubCategory = () => {
       nameSubCategory: state?.data?.nameSubCategory || "",
       parentCategory: state?.data?.parentCategory || "",
       isMultiple: state?.data?.isMultiple ?? false,
-      option: state?.data?.option ?? true,
-      typeSubCategory: state?.data?.typeSubCategory || [{ name: "", price: "", isFree: false }]
+      option: state?.data?.option ?? false,
+      typeSubCategory: state?.data?.typeSubCategory || []
     }
   });
 
@@ -387,7 +387,7 @@ const FormSubCategory = () => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="mb-4">
-                      <FormLabel className="text-base">Name Product</FormLabel>
+                      <FormLabel className="text-base">Name Sub Category</FormLabel>
                     </div>
                     <Input type="text" {...field} placeholder="Enter Name Product" />
                     {form.formState.errors.nameSubCategory ? (

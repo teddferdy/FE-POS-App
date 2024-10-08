@@ -28,7 +28,7 @@ export const sidebarMenuSuperAdmin = [
     children: [
       {
         title: "Products By Outlet",
-        href: "/location-available",
+        href: "/product-by-outlet",
         icon: UtensilsCrossed
       },
       {
@@ -64,7 +64,7 @@ export const sidebarMenuSuperAdmin = [
     children: [
       {
         title: "Invoice By Outlet",
-        href: "/location-available",
+        href: "/invoice-by-outlet",
         icon: Clipboard
       }
     ]

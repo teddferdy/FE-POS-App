@@ -125,8 +125,16 @@ function App() {
         />
 
         {/* Location Available */}
-        <Route
+        {/* <Route
           path="/location-available"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        /> */}
+        <Route
+          path="/invoice-by-outlet"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/product-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
 

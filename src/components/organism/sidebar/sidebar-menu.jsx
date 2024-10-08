@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // Assets
 import LogoSidebar from "../../../assets/logo-sidebar.png";
@@ -14,9 +14,7 @@ import {
   sidebarMenuSuperAdmin
 } from "../../../utils/sidebar-menu";
 
-const SideBarMenu = ({ classNameContainer, user }) => {
-  const navigate = useNavigate();
-
+const SideBarMenu = ({ classNameContainer, user, handleNavigate }) => {
   const MENU_LIST = useMemo(() => {
     // Super Admin
     if (user.userType === "super-admin") {
@@ -60,7 +58,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                         <div className="ml-7 flex flex-col space-y-1">
                           {item.children.map((child, index) => (
                             <div
-                              onClick={() => navigate(child.href)}
+                              onClick={() => handleNavigate(child.href)}
                               key={index}
                               className={cn(
                                 buttonVariants({
@@ -79,7 +77,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 ) : (
                   item.href && (
                     <div
-                      onClick={() => navigate(item.href)}
+                      onClick={() => handleNavigate(item.href)}
                       key={index}
                       className={cn(
                         buttonVariants({
@@ -152,7 +150,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                         <div className="ml-7 flex flex-col space-y-1">
                           {item.children.map((child, index) => (
                             <div
-                              onClick={() => navigate(child.href)}
+                              onClick={() => handleNavigate(child.href)}
                               key={index}
                               className={cn(
                                 buttonVariants({
@@ -171,7 +169,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 ) : (
                   item.href && (
                     <div
-                      onClick={() => navigate(item.href)}
+                      onClick={() => handleNavigate(item.href)}
                       key={index}
                       className={cn(
                         buttonVariants({
@@ -244,7 +242,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                         <div className="ml-7 flex flex-col space-y-1">
                           {item.children.map((child, index) => (
                             <div
-                              onClick={() => navigate(child.href)}
+                              onClick={() => handleNavigate(child.href)}
                               key={index}
                               className={cn(
                                 buttonVariants({
@@ -263,7 +261,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
                 ) : (
                   item.href && (
                     <div
-                      onClick={() => navigate(item.href)}
+                      onClick={() => handleNavigate(item.href)}
                       key={index}
                       className={cn(
                         buttonVariants({
@@ -290,7 +288,7 @@ const SideBarMenu = ({ classNameContainer, user }) => {
 
   return (
     <div className="flex flex-col my-6 gap-14">
-      <div className="flex justify-center" onClick={() => navigate("/home")}>
+      <div className="flex justify-center" onClick={() => handleNavigate("/home")}>
         <img
           src={LogoSidebar}
           alt="logo-sidebar"
@@ -304,12 +302,14 @@ const SideBarMenu = ({ classNameContainer, user }) => {
 
 SideBarMenu.defaultProps = {
   classNameContainer: "",
-  user: {}
+  user: {},
+  handleNavigate: () => {}
 };
 
 SideBarMenu.propTypes = {
   classNameContainer: PropTypes.string,
-  user: PropTypes.object
+  user: PropTypes.object,
+  handleNavigate: PropTypes.func
 };
 
 export default SideBarMenu;

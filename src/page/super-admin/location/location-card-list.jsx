@@ -31,7 +31,7 @@ const LocationCardList = () => {
   // QUERY
   const allLocation = useQuery(["get-all-location-card"], () => getAllLocation(), {
     retry: 0,
-    keepPreviousData: true
+    keepPreviousData: false
   });
 
   const TABLE_SHOW = useMemo(() => {
@@ -86,46 +86,95 @@ const LocationCardList = () => {
     }
   }, [allLocation]);
 
+  const BREADCRUMB = useMemo(() => {
+    if (pathname === "/invoice-by-outlet") {
+      return (
+        <div className="flex flex-col gap-4 p-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Invoice By Outlet</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Transaction</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Invoice By Outlet</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      );
+    }
+    if (pathname === "/product-by-outlet") {
+      return (
+        <div className="flex flex-col gap-4 p-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Product By Outlet</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Product By Outlet</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      );
+    }
+
+    if (pathname === "/my-teams-location-available") {
+      return (
+        <div className="flex flex-col gap-4 p-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">User</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      My Teams
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>User</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      );
+    }
+  }, [pathname]);
+
   return (
     <TemplateContainer>
-      <div className="flex flex-col gap-4 p-4">
-        <h1 className="text-[#6853F0] text-lg font-bold">User</h1>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink>
-                <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-1">
-                    My Teams
-                    <ChevronDown className="h-4 w-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem>
-                      <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>User</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      {BREADCRUMB}
 
       {/* List Member */}
       <div className="p-4">{TABLE_SHOW}</div>
