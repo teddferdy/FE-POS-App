@@ -86,73 +86,46 @@ const LocationCardList = () => {
     }
   }, [allLocation]);
 
-  const BREADCRUMB = useMemo(() => {
-    if (pathname === "/my-teams-location-available") {
-      return (
-        <div className="flex flex-col gap-4 p-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">User</h1>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center gap-1">
-                      My Teams
-                      <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>User</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex flex-col gap-4 p-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">Location List</h1>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Location List</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      );
-    }
-  }, [pathname]);
-
   return (
     <TemplateContainer>
-      {BREADCRUMB}
+      <div className="flex flex-col gap-4 p-4">
+        <h1 className="text-[#6853F0] text-lg font-bold">User</h1>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-1">
+                    My Teams
+                    <ChevronDown className="h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>User</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
 
       {/* List Member */}
       <div className="p-4">{TABLE_SHOW}</div>

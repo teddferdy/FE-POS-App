@@ -28,6 +28,7 @@ import {
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
+import { Textarea } from "../../../../components/ui/textarea";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
 import Hint from "../../../../components/organism/label/hint";
@@ -185,37 +186,37 @@ const FormPosition = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="description"
+              name="name"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1">
                   <div className="mb-4">
-                    <FormLabel className="text-base">Description</FormLabel>
+                    <FormLabel className="text-base">name Position</FormLabel>
                   </div>
-                  <Input type="text" {...field} placeholder="Enter Description" />
-                  {form.formState.errors.description ? (
-                    <FormMessage>{form.formState.errors.description}</FormMessage>
+                  <Input type="text" {...field} placeholder="Enter name Position" />
+
+                  {form.formState.errors.name ? (
+                    <FormMessage>{form.formState.errors.name}</FormMessage>
                   ) : (
-                    <Hint>Enter Description name Minimum Character 4</Hint>
+                    <Hint>Enter name Position Minimum Character 4</Hint>
                   )}
                 </FormItem>
               )}
             />
-
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
               <FormField
                 control={form.control}
-                name="name"
+                name="description"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
+                  <FormItem>
                     <div className="mb-4">
-                      <FormLabel className="text-base">name</FormLabel>
+                      <FormLabel className="text-base">Description</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter name Number" />
+                    <Textarea {...field} placeholder="Enter Description Product" maxLength={255} />
 
-                    {form.formState.errors.name ? (
-                      <FormMessage>{form.formState.errors.name}</FormMessage>
+                    {form.formState.errors.description ? (
+                      <FormMessage>{form.formState.errors.description}</FormMessage>
                     ) : (
-                      <Hint>Enter name Number Cannot Character</Hint>
+                      <Hint>Enter Description Minimum 4 Character & Max 255 Character</Hint>
                     )}
                   </FormItem>
                 )}
