@@ -8,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
+import { useCookies } from "react-cookie";
 import { getAllMember } from "../../../services/member";
 import TemplateContainer from "../../../components/organism/template-container";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
@@ -15,6 +16,8 @@ import AbortController from "../../../components/organism/abort-controller";
 import TableMembershipList from "../../../components/organism/table/table-membership-list";
 
 const MemberList = () => {
+  const [cookie] = useCookies(["user"]);
+
   // QUERY
   const allMember = useQuery(
     ["get-all-member"],
@@ -47,24 +50,48 @@ const MemberList = () => {
     }
   }, [allMember]);
 
+  const BREADCRUMB = useMemo(() => {
+    if (cookie.user.userType === "user") {
+      return (
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>MemberShip</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      );
+    } else {
+      return (
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>MemberShip</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      );
+    }
+  }, [cookie]);
+
   return (
     <TemplateContainer>
       <div className="flex justify-between mb-6 p-4">
         <div className="flex flex-col gap-4">
           <h1 className="text-[#6853F0] text-lg font-bold">MemberShip</h1>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Member List</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          {BREADCRUMB}
         </div>
       </div>
 

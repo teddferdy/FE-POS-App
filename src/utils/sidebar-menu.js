@@ -166,7 +166,7 @@ export const sidebarMenuUser = [
     icon: Calculator
   },
   {
-    title: "Member List",
+    title: "MemberShip",
     href: "/member-list",
     icon: BookUser
   },
