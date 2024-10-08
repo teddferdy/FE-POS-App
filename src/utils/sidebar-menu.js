@@ -4,7 +4,7 @@ import {
   UtensilsCrossed,
   Clipboard,
   // Map,
-  TicketPercent,
+  // TicketPercent,
   Users,
   BookUser,
   WalletCards,
@@ -96,47 +96,23 @@ export const sidebarMenuAdmin = [
     icon: Crown
   },
   {
-    title: "Product Menu",
-    href: "/product-page",
+    title: "Master Data",
+    href: "",
     icon: UtensilsCrossed,
     children: [
       {
-        title: "Category",
-        href: "/category-list"
-      },
-      {
-        title: "Sub Category",
-        href: "/sub-category-list"
-      },
-      {
         title: "Product",
-        href: "/product-list"
-      }
-    ]
-  },
-  {
-    title: "Invoice",
-    href: "/invoice-page",
-    icon: Clipboard,
-    children: [
-      {
-        title: "Logo Invoice",
-        href: "/logo-invoice-list"
+        href: "/product-page"
       },
       {
-        title: "Footer Invoice",
-        href: "/footer-invoice-list"
+        title: "Type Payment",
+        href: "/type-payment-list"
       },
       {
-        title: "Social Media Invoice",
-        href: "/social-media-invoice-list"
+        title: "Discount",
+        href: "/discount-list"
       }
     ]
-  },
-  {
-    title: "Discount",
-    href: "/discount-list",
-    icon: TicketPercent
   },
   {
     title: "My Teams",
@@ -148,30 +124,39 @@ export const sidebarMenuAdmin = [
         href: "/shift-list"
       },
       {
-        title: "Edit Employee (Coming Soon)",
-        href: "/#"
+        title: "User (Coming Soon)",
+        href: "#"
       }
-      //   {
-      //     title: "Product",
-      //     href: "/product-list"
-      //   }
     ]
   },
   {
-    title: "Member List",
-    href: "/member-list",
-    icon: BookUser
+    title: "Outlet",
+    href: "",
+    icon: Store,
+    children: [
+      {
+        title: "Member List",
+        href: "/member-list"
+      }
+    ]
   },
   {
-    title: "Type Payment",
-    href: "/type-payment-list",
-    icon: WalletCards
-  },
-  {
-    title: "Social Media",
-    href: "/social-media-list",
-    icon: Globe
+    title: "Transaction",
+    href: "",
+    icon: Store,
+    children: [
+      {
+        title: "Invoice",
+        href: "/invoice-page"
+      }
+    ]
   }
+
+  // {
+  //   title: "Social Media",
+  //   href: "/social-media-list",
+  //   icon: Globe
+  // }
 ];
 
 export const sidebarMenuUser = [
@@ -186,8 +171,8 @@ export const sidebarMenuUser = [
     icon: BookUser
   },
   {
-    title: "Shift List",
-    href: "/shift-list",
+    title: "My Shift (Coming Soon)",
+    href: "#",
     icon: CalendarDays
   }
 ];

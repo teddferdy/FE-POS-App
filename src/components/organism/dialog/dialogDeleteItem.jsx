@@ -14,11 +14,14 @@ import {
   DialogClose
 } from "../../ui/dialog";
 
-const DialogDeleteItem = ({ actionDelete }) => {
+const DialogDeleteItem = ({
+  actionDelete,
+  classNameBtn = "flex items-center gap-4 p-2 hover:bg-gray-100 w-full"
+}) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="flex items-center gap-4 p-2 hover:bg-gray-100 w-full">
+        <button className={classNameBtn}>
           <Trash className="w-6 h-6 mr-2 text-gray-500" />
           Delete
         </button>

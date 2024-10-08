@@ -14,19 +14,19 @@ import {
 // import { deleteLocation } from "../../../../services/location";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useLocation } from "react-router-dom";
-// import { useLoading } from "../../../../components/organism/loading";
+import { useLoading } from "../../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
 import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../../components/organism/abort-controller";
 import { getUserByLocation, changeRoleUser } from "../../../../services/user";
-import DrawerDetailUser from "../../../../components/organism/drawer/drawer-detail-user";
-import { useLoading } from "../../../../components/organism/loading";
+// import DrawerDetailUser from "../../../../components/organism/drawer/drawer-detail-user";
+import UserCard from "../../../../components/organism/card/user-card";
+// import { useLoading } from "../../../../components/organism/loading";
 import { toast } from "sonner";
 
 const UserListByLocation = () => {
   const { state } = useLocation();
   const { setActive } = useLoading();
-  console.log("STATE =>", state);
 
   // QUERY
   const allLocation = useQuery(
@@ -66,25 +66,32 @@ const UserListByLocation = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allLocation.isLoading && allLocation.isFetching && !allLocation.isError) {
+    if (allLocation?.isLoading && allLocation?.isFetching && !allLocation?.isError) {
       return <SkeletonTable />;
     }
 
-    if (allLocation.isError) {
+    if (allLocation?.isError) {
       return (
         <div className="p-4">
-          <AbortController refetch={() => allLocation.refetch()} />
+          <AbortController refetch={() => allLocation?.refetch()} />
         </div>
       );
     }
 
-    if (allLocation.data && allLocation.isSuccess && !allLocation.isError) {
-      return (
+    if (allLocation?.data && allLocation?.isSuccess && !allLocation?.isError) {
+      console.log("allLocation =>", allLocation);
+
+      return allLocation?.data?.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {allLocation?.data?.data?.map((user) => (
-            <DrawerDetailUser
+            <UserCard
               key={user.id}
-              user={user}
+              image={user.image}
+              name={user.userName}
+              address={user.address}
+              location={user.location}
+              phoneNumber={user.phoneNumber}
+              role={user.userType}
               onChangeRole={(val) => {
                 const body = {
                   location: user.location,
@@ -95,6 +102,11 @@ const UserListByLocation = () => {
               }}
             />
           ))}
+        </div>
+      ) : (
+        <div className="h-[65vh] flex justify-center flex-col items-center bg-gray-500 w-full rounded-lg gap-6 mt-4">
+          <h1>Location Still Empty</h1>
+          <p>Please Add New Location</p>
         </div>
       );
     }
