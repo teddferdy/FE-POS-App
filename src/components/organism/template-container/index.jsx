@@ -139,7 +139,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               <Select
                 onValueChange={(e) => updateTranslation(e)}
                 value={localStorage.getItem("translation")}>
-                <SelectTrigger className="w-fit border-hidden">
+                <SelectTrigger className="w-fit border-hidden flex items-center gap-2 ring-0 focus:ring-0">
                   {TRANSLATION?.filter((items) => items.value === translation)?.map(
                     (items, index) => (
                       <img
@@ -187,12 +187,17 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
             </div>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1">
+              <DropdownMenuTrigger className="flex items-center gap-1 ring-0 focus:bg-transparent">
                 <Button variant="outline" className="p-0 bg-transparent border-none">
                   <AvatarUser />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="center">
+              <DropdownMenuContent
+                align="center"
+                onCloseAutoFocus={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}>
                 <div className="p-4">{SIDEBAR_PROFILE}</div>
               </DropdownMenuContent>
             </DropdownMenu>

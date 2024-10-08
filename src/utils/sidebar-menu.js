@@ -3,38 +3,40 @@ import {
   Calculator,
   UtensilsCrossed,
   Clipboard,
-  Map,
+  // Map,
   TicketPercent,
   Users,
   BookUser,
   WalletCards,
   Globe,
-  CalendarDays
+  CalendarDays,
+  Store
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
   // Overview Page
   {
-    title: "Admin Menu",
+    title: "Dashboard",
     href: "/admin-page",
     icon: Crown
   },
   // Product List
   {
-    title: "See Product",
-    href: "/location-available",
-    icon: UtensilsCrossed
-  },
-  {
-    title: "See Invoice",
-    href: "/location-available",
-    icon: Clipboard
-  },
-  // Location
-  {
-    title: "Location",
-    href: "/location-list",
-    icon: Map
+    title: "Master Data",
+    href: "",
+    icon: Crown,
+    children: [
+      {
+        title: "Products By Outlet",
+        href: "/location-available",
+        icon: UtensilsCrossed
+      },
+      {
+        title: "Social Media",
+        href: "/social-media-list",
+        icon: Globe
+      }
+    ]
   },
   {
     title: "My Teams",
@@ -56,22 +58,42 @@ export const sidebarMenuSuperAdmin = [
     ]
   },
   {
-    title: "Member List",
-    href: "/member-list",
-    icon: BookUser
+    title: "Transaction",
+    href: "",
+    icon: WalletCards,
+    children: [
+      {
+        title: "Invoice By Outlet",
+        href: "/location-available",
+        icon: Clipboard
+      }
+    ]
   },
   {
-    title: "Social Media",
-    href: "/social-media-list",
-    icon: Globe
+    title: "Outlet",
+    href: "",
+    icon: Store,
+    children: [
+      {
+        title: "Location",
+        href: "/location-list"
+      }
+    ]
   }
+
+  // Location
+  // {
+  //   title: "Member List",
+  //   href: "/member-list",
+  //   icon: BookUser
+  // }
 ];
 
 export const sidebarMenuAdmin = [
   {
-    title: "Cashier",
-    href: "/home",
-    icon: Calculator
+    title: "Dashboard",
+    href: "/admin-page",
+    icon: Crown
   },
   {
     title: "Product Menu",
@@ -174,7 +196,7 @@ export const sidebarMenuUser = [
 export const urlWithArrowBack = [
   {
     url: 0,
-    title: "Admin Menu",
+    title: "Dashboard",
     pathName: "/admin-page"
   },
 

@@ -96,7 +96,7 @@ const PositionList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-menu">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -104,23 +104,18 @@ const PositionList = () => {
                 <BreadcrumbLink>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex items-center gap-1">
-                      Product Menu
+                      My Teams
                       <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-page">
-                          Step By Step Adding Product
-                        </BreadcrumbLink>
+                        <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                        <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                        <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -128,7 +123,7 @@ const PositionList = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Position List</BreadcrumbPage>
+                <BreadcrumbPage>Position</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

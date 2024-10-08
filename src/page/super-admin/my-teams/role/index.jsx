@@ -90,12 +90,12 @@ const RoleList = () => {
     <TemplateContainer>
       <div className="flex justify-between mb-6 p-4">
         <div className="flex flex-col gap-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">Category</h1>
+          <h1 className="text-[#6853F0] text-lg font-bold">Position</h1>
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-menu">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -103,23 +103,18 @@ const RoleList = () => {
                 <BreadcrumbLink>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex items-center gap-1">
-                      Product Menu
+                      My Teams
                       <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-page">
-                          Step By Step Adding Product
-                        </BreadcrumbLink>
+                        <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>
+                        <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/sub-category-list">Sub Category</BreadcrumbLink>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-list">Product</BreadcrumbLink>
+                        <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -127,7 +122,7 @@ const RoleList = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Category List</BreadcrumbPage>
+                <BreadcrumbPage>Role</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

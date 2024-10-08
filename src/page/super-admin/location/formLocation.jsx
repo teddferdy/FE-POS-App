@@ -53,6 +53,10 @@ const FormLocation = () => {
     status: z.boolean()
   });
 
+  const handleInput = (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  };
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -252,11 +256,16 @@ const FormLocation = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Address</FormLabel>
                   </div>
-                  <Textarea type="text" {...field} placeholder="Enter Address Store" />
+                  <Textarea
+                    type="text"
+                    {...field}
+                    placeholder="Enter Address Store"
+                    maxLength={255}
+                  />
                   {form.formState.errors.address ? (
                     <FormMessage>{form.formState.errors.address}</FormMessage>
                   ) : (
-                    <Hint>Enter Address Store Minimum 4 Character</Hint>
+                    <Hint>Enter Address Store Minimum 4 Character & Max 255 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -269,12 +278,19 @@ const FormLocation = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Detail Location</FormLabel>
                   </div>
-                  <Textarea type="text" {...field} placeholder="Enter Detail Location" />
+                  <Textarea
+                    type="text"
+                    {...field}
+                    placeholder="Enter Detail Location"
+                    maxLength={255}
+                  />
                   {form.formState.errors.detailLocation ? (
                     <FormMessage>{form.formState.errors.detailLocation}</FormMessage>
                   ) : (
                     <div className="flex flex-col gap-4">
-                      <Hint>Enter Detail Location Store Minimum 4 Character</Hint>
+                      <Hint>
+                        Enter Detail Location Store Minimum 4 Character & Max 255 Character
+                      </Hint>
                       <Hint>
                         Example: go to west 700m from Near Gas Station Manahan, left distro store
                       </Hint>
@@ -292,7 +308,13 @@ const FormLocation = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Phone Number</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter Phone Number Store" />
+                    <Input
+                      type="text"
+                      {...field}
+                      placeholder="Enter Phone Number Store"
+                      maxLength={15}
+                      onInput={handleInput}
+                    />
                     {form.formState.errors.phoneNumber ? (
                       <FormMessage>{form.formState.errors.phoneNumber}</FormMessage>
                     ) : (
@@ -340,7 +362,7 @@ const FormLocation = () => {
               <Button
                 className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
                 type="submit">
-                {state?.data?.id ? "Submit Edit Location" : "Save Location"}
+                {state?.data?.id ? "Edit" : "Save"}
               </Button>
             </div>
           </form>

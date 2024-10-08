@@ -153,7 +153,9 @@ const ResetPassword = () => {
           <Select
             onValueChange={(e) => updateTranslation(e)}
             value={localStorage.getItem("translation")}>
-            <SelectTrigger className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200">
+            <SelectTrigger
+              classNameIcon="w-5 h-5"
+              className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200 flex items-center gap-2 text-white ring-0 focus:ring-0">
               {TRANSLATION?.filter((items) => items.value === translation)?.map((items, index) => (
                 <img src={items.img} alt={items.name} className="max-w-6 max-h-6" key={index} />
               ))}
