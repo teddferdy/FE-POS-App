@@ -143,7 +143,7 @@ const FormCategory = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

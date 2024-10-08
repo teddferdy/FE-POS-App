@@ -95,7 +95,7 @@ const RoleList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-menu">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -129,7 +129,7 @@ const RoleList = () => {
         </div>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => navigate("/add-category")}>
+          onClick={() => navigate("/add-role")}>
           <div className="flex items-center gap-4">
             <ClipboardPlus className="w-6 h-6" />
             <p>Add Role</p>

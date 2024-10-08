@@ -152,7 +152,7 @@ const FormShift = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -201,7 +201,7 @@ const FormShift = () => {
                       <div className="mb-4">
                         <FormLabel className="text-base">Description</FormLabel>
                       </div>
-                      <Textarea {...field} />
+                      <Textarea {...field} maxLength={255} />
                     </FormItem>
                   );
                 }}

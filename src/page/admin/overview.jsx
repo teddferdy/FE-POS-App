@@ -161,7 +161,7 @@ const OverviewPage = () => {
 
   return (
     <TemplateContainer>
-      <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8 overflow-scroll max-h-full no-scrollbar">
+      <div className="border-t-2 border-[#ffffff10] p-4 flex flex-col gap-8 no-scrollbar">
         <GreetingCard />
         {/* Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

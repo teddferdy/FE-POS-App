@@ -38,7 +38,7 @@ const FILTER_BY = [
   }
 ];
 
-const TableRoleList = ({ allLocation, handleDelete }) => {
+const TableRoleList = ({ allRole, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -202,7 +202,7 @@ const TableRoleList = ({ allLocation, handleDelete }) => {
   ];
 
   const table = useReactTable({
-    data: allLocation?.data?.data || [],
+    data: allRole?.data?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

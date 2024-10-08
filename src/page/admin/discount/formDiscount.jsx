@@ -49,6 +49,10 @@ const FormDiscount = () => {
     }
   });
 
+  const handleInput = (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  };
+
   // QUERY
   const mutateAddDiscount = useMutation(addDiscount, {
     onMutate: () => setActive(true, null),
@@ -136,7 +140,7 @@ const FormDiscount = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -165,7 +169,7 @@ const FormDiscount = () => {
                   <div className="mb-4">
                     <FormLabel className="text-base">Description</FormLabel>
                   </div>
-                  <Input type="text" {...field} placeholder="Enter Description" />
+                  <Input type="text" {...field} placeholder="Enter Description" maxLength={255} />
                   {form.formState.errors.description ? (
                     <FormMessage>{form.formState.errors.description}</FormMessage>
                   ) : (
@@ -184,12 +188,18 @@ const FormDiscount = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Percentage</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter Percentage Number" />
+                    <Input
+                      type="text"
+                      {...field}
+                      placeholder="Enter Percentage Number"
+                      maxLength={3}
+                      onInput={handleInput}
+                    />
 
                     {form.formState.errors.percentage ? (
                       <FormMessage>{form.formState.errors.percentage}</FormMessage>
                     ) : (
-                      <Hint>Enter Percentage Number Cannot Character</Hint>
+                      <Hint>Enter Percentage Max 3 Number</Hint>
                     )}
                   </FormItem>
                 )}

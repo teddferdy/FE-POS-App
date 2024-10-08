@@ -138,7 +138,7 @@ const FormTypePayment = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -188,11 +188,17 @@ const FormTypePayment = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Description</FormLabel>
                     </div>
-                    <Textarea {...field} placeholder="Enter Description Type Payment" />
+                    <Textarea
+                      {...field}
+                      placeholder="Enter Description Type Payment"
+                      maxLength={255}
+                    />
                     {form.formState.errors.description ? (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
                     ) : (
-                      <Hint>Enter Description Type Payment Minimum 4 Character</Hint>
+                      <Hint>
+                        Enter Description Type Payment Minimum 4 Character & Max 255 Character
+                      </Hint>
                     )}
                   </FormItem>
                 )}

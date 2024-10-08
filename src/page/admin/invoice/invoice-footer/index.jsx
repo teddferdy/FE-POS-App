@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Percent, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
 import {
@@ -128,7 +128,7 @@ const InvoiceFooterList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -169,7 +169,6 @@ const InvoiceFooterList = () => {
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-invoice-footer")}>
           <div className="flex items-center gap-4">
-            <Percent className="w-6 h-6" />
             <p>Add Footer Invoice</p>
           </div>
         </Button>

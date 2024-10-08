@@ -1,5 +1,6 @@
 import React from "react";
 import { useMutation } from "react-query";
+import { ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -12,6 +13,12 @@ import DialogCancelForm from "../../../../components/organism/dialog/dialogCance
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
 import { addPosition, editPosition } from "../../../../services/position";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -130,29 +137,47 @@ const FormPosition = () => {
 
   return (
     <TemplateContainer>
-      <div className="flex justify-between mb-6 p-4">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-[#6853F0] text-lg font-bold">Form Role</h1>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <BreadcrumbLink href="/position-list">Position List</BreadcrumbLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Form Position</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
+      <div className="flex flex-col gap-4 p-4">
+        <h1 className="text-[#6853F0] text-lg font-bold">Position</h1>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-1">
+                    My Teams
+                    <ChevronDown className="h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/my-teams-location-available">User</BreadcrumbLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/position-list">Position</BreadcrumbLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <BreadcrumbLink href="/role-list">Role</BreadcrumbLink>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbLink>
+              <BreadcrumbLink href="/position-list">Position List</BreadcrumbLink>
+            </BreadcrumbLink>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Position</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
 
       <div className="w-full lg:w-3/4 mx-auto p-4">

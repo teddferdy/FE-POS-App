@@ -150,6 +150,10 @@ const FormSubCategory = () => {
     }
   });
 
+  const handleInput = (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  };
+
   const onSubmit = (values) => {
     if (state?.data?.id) {
       const body = {
@@ -245,6 +249,7 @@ const FormSubCategory = () => {
                           {...form.register(`typeSubCategory.${index}.price`)}
                           defaultValue={items.price}
                           placeholder="Enter Price Option"
+                          onInput={handleInput}
                         />
                       ) : (
                         <Input
@@ -252,6 +257,7 @@ const FormSubCategory = () => {
                           {...form.register(`typeSubCategory.${index}.price`)}
                           defaultValue={items.price}
                           placeholder="Enter Price Option"
+                          onInput={handleInput}
                         />
                       )}
                       <Hint>If Free switch position on yes, Input Price automated in Rp. 0</Hint>
@@ -329,7 +335,7 @@ const FormSubCategory = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

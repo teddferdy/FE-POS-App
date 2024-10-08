@@ -182,7 +182,7 @@ const FormProduct = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/home">Cashier</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -303,11 +303,11 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Description</FormLabel>
                     </div>
-                    <Textarea {...field} placeholder="Enter Description Product" />
+                    <Textarea {...field} placeholder="Enter Description Product" maxLength={255} />
                     {form.formState.errors.description ? (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
                     ) : (
-                      <Hint>Enter Description Product Minimum Character 4</Hint>
+                      <Hint>Enter Minimum 4 Character & Max 255 Character</Hint>
                     )}
                   </FormItem>
                 )}
