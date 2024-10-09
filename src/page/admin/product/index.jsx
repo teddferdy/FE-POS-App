@@ -1,5 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
+import { useQuery } from "react-query";
 import TemplateContainer from "../../../components/organism/template-container";
 import StepFlow from "../../../components/organism/step/product";
 import {
@@ -17,7 +18,32 @@ import {
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
 
+import { getAllCategory } from "../../../services/category";
+import { getAllSubCategory } from "../../../services/sub-category";
+import { getAllProduct } from "../../../services/product";
+
 const index = () => {
+  // QUERY
+
+  const categoryList = useQuery(["get-category"], () => getAllCategory(), {
+    keepPreviousData: true
+  });
+  const subCategoryList = useQuery(["get-all-subcategory"], () => getAllSubCategory(), {
+    keepPreviousData: true
+  });
+
+  const productList = useQuery(
+    ["get-product"],
+    () =>
+      getAllProduct({
+        category: "",
+        nameProduct: ""
+      }),
+    {
+      keepPreviousData: false
+    }
+  );
+
   return (
     <TemplateContainer>
       <div className="flex flex-col justify-between mb-6 p-4">
@@ -64,7 +90,11 @@ const index = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <StepFlow />
+        <StepFlow
+          categoryList={categoryList}
+          subCategoryList={subCategoryList}
+          productList={productList}
+        />
       </div>
     </TemplateContainer>
   );

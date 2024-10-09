@@ -8,7 +8,7 @@ import {
   Users,
   BookUser,
   WalletCards,
-  Globe,
+  // Globe,
   CalendarDays,
   Store
 } from "lucide-react";
@@ -30,12 +30,12 @@ export const sidebarMenuSuperAdmin = [
         title: "Products By Outlet",
         href: "/product-by-outlet",
         icon: UtensilsCrossed
-      },
-      {
-        title: "Social Media",
-        href: "/social-media-list",
-        icon: Globe
       }
+      // {
+      //   title: "Social Media",
+      //   href: "/social-media-list",
+      //   icon: Globe
+      // }
     ]
   },
   {
