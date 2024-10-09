@@ -1,15 +1,25 @@
 import { axiosInstance } from ".";
 
-export const getAllProduct = async ({ nameProduct, category }) => {
+export const getAllProduct = async ({ location, nameProduct, category }) => {
   const { data, status } = await axiosInstance.get(
-    `product/get-product?nameProduct=${nameProduct}&category=${category}`
+    `product/get-product?store=${location}&nameProduct=${nameProduct}&category=${category}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllProductTable = async () => {
-  const { data, status } = await axiosInstance.get(`product/get-product-all`);
+export const getProductByOutlet = async ({ location }) => {
+  console.log("location =>", location);
+
+  const { data, status } = await axiosInstance.get(
+    `product/get-product-by-super-admin?store=${location}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getAllProductTable = async ({ location }) => {
+  const { data, status } = await axiosInstance.get(`product/get-product-all?store=${location}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -36,6 +36,7 @@ import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 import UserListByLocation from "./page/super-admin/my-teams/user";
 import PositionList from "./page/super-admin/my-teams/position";
 import RoleList from "./page/super-admin/my-teams/role";
+import ProductListByLocation from "./page/super-admin/product-by-outlet";
 
 // Form
 import FormCategory from "./page/admin/product/category/formCategory";
@@ -147,6 +148,11 @@ function App() {
         <Route
           path="/my-teams-user"
           element={cookie.token ? <UserListByLocation /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/product-list-by-outlet"
+          element={cookie.token ? <ProductListByLocation /> : <Navigate to="/" />}
         />
 
         <Route
