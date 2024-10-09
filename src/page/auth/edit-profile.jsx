@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useCookies } from "react-cookie";
 
 // Component
+import DialogCancelForm from "../../components/organism/dialog/dialogCancelForm";
 import { Avatar, AvatarImage } from "../../components/ui/avatar";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
@@ -11,22 +14,18 @@ import TemplateContainer from "../../components/organism/template-container";
 import { Form, FormField, FormItem, FormLabel } from "../../components/ui/form";
 import AvatarUser from "../../components/organism/avatar-user";
 
-const MAX_FILE_SIZE = 1024 * 1024 * 5;
-const ACCEPTED_IMAGE_TYPES = ["jpeg", "jpg", "png", "webp"];
+import { generateLinkImageFromGoogleDrive } from "../../utils/generateLinkImageFromGoogleDrive";
+import DialogCarouselImage from "../../components/organism/dialog/dialog-carousel-image";
+import Hint from "../../components/organism/label/hint";
 
 const EditProfile = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
+  const navigate = useNavigate();
+
+  const [cookie] = useCookies(["user"]);
+  console.log("cookie =>", cookie);
 
   const formSchema = z.object({
-    image: z
-      .any()
-      .refine((files) => {
-        return files?.[0]?.size <= MAX_FILE_SIZE;
-      }, `Max image size is 5MB.`)
-      .refine(
-        (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-        "Only .jpg, .jpeg, .png and .webp formats are supported."
-      ),
+    image: z.string(),
     userName: z.string(),
     phoneNumber: z.string()
   });
@@ -47,46 +46,67 @@ const EditProfile = () => {
 
   return (
     <TemplateContainer>
-      <main className="border-t-2 border-[#ffffff10] overflow-scroll flex flex-col gap-8 h-full">
-        <section>
-          <div className="h-52 lg:h-48 w-full bg-[#6853F0] relative">
-            <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 ">
-              {selectedImage ? (
-                <Avatar>
-                  <AvatarImage src={URL.createObjectURL(selectedImage)} alt="Selected" />
-                </Avatar>
-              ) : (
-                <AvatarUser size={36} classNameContainer="w-36 h-36" showIndicatorOnline={false} />
-              )}
-            </div>
+      <div className="border-t-2 border-[#ffffff10] flex flex-col gap-8 no-scrollbar">
+        <div className="h-52 lg:h-48 w-full bg-[#6853F0] relative">
+          <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 ">
+            {form.getValues("image") ? (
+              <Avatar>
+                <AvatarImage
+                  src={`${generateLinkImageFromGoogleDrive(form.getValues("image"))}`}
+                  alt="Selected"
+                />
+              </Avatar>
+            ) : (
+              <AvatarUser size={36} classNameContainer="w-36 h-36" showIndicatorOnline={false} />
+            )}
           </div>
+        </div>
+        <div className="w-full lg:w-3/4 mx-auto p-4 mt-10">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-24 mx-auto lg:w-3/6 w-3/4">
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
               <FormField
                 control={form.control}
                 name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-base">Change Image</FormLabel>
-                    </div>
-                    <Input
-                      {...field}
-                      placeholder="Picture"
-                      type="file"
-                      accept="image/*"
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                      onChange={(e) => {
-                        field.onChange(e.target.files);
-                        setSelectedImage(e.target.files?.[0] || null);
-                      }}
-                    />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const linkName = generateLinkImageFromGoogleDrive(field.value);
+                  return (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Image Product</FormLabel>
+                      </div>
+                      <div className="flex-col md:flex justify-between gap-10">
+                        <div className="flex flex-col gap-4">
+                          <div className="relative w-full">
+                            <Input
+                              type="text"
+                              {...field}
+                              className="flex-1"
+                              placeholder="Enter Image URL"
+                            />
+                            <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
+                              <DialogCarouselImage />
+                            </div>
+                          </div>
+                          <Hint>Image URL in Google Drive</Hint>
+                        </div>
+                        {linkName && (
+                          <div className="flex flex-col gap-4">
+                            <p>Result Image</p>
+                            <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
+                              <img
+                                src={`${linkName}`}
+                                alt={linkName}
+                                className="w-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </FormItem>
+                  );
+                }}
               />
               <FormField
                 control={form.control}
@@ -135,7 +155,16 @@ const EditProfile = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Gender</FormLabel>
                     </div>
-                    <Input type="address" {...field} />
+                    <div className="mt-4">
+                      <select
+                        id="role"
+                        value={field.value}
+                        onChange={field.onChange}
+                        className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="super-admin">Male</option>
+                        <option value="admin">Female</option>
+                      </select>
+                    </div>
                   </FormItem>
                 )}
               />
@@ -151,15 +180,26 @@ const EditProfile = () => {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="py-2 lg:col-span-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                Edit Profile
-              </Button>
+
+              <div className="col-span-2">
+                <div className="flex justify-between items-center">
+                  <DialogCancelForm
+                    handleBack={() => navigate("/home")}
+                    classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                    titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                    titleButtonTrigger="Cancel"
+                  />
+                  <Button
+                    type="submit"
+                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
+                    Edit Profile
+                  </Button>
+                </div>
+              </div>
             </form>
           </Form>
-        </section>
-      </main>
+        </div>
+      </div>
     </TemplateContainer>
   );
 };

@@ -11,8 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from "../../ui/dialog";
 
 const DialogChangeRole = ({
@@ -21,23 +20,24 @@ const DialogChangeRole = ({
   ...user
 }) => {
   const [selectedRole, setSelectedRole] = useState(user.userType);
-
+  const [open, setOpen] = useState(false);
   const handleRoleChange = (e) => {
     setSelectedRole(e.target.value);
   };
 
   const handleSave = () => {
+    setOpen(false);
     onChangeRole(selectedRole);
   };
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog open={open} onOpenChange={() => setOpen(true)}>
+      <DialogTrigger>
         <button className={classNameBtn}>
           <Pencil className="w-6 h-6 mr-2 text-gray-500" />
           Update
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" withX={false}>
         <DialogHeader>
           <DialogTitle>Update Role User {user.name}</DialogTitle>
         </DialogHeader>
@@ -66,11 +66,10 @@ const DialogChangeRole = ({
           </div>
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
-            </Button>
-          </DialogClose>
+          <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+            Close
+          </Button>
+
           <Button onClick={handleSave}>Yes</Button>
         </DialogFooter>
       </DialogContent>

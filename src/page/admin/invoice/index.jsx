@@ -10,13 +10,6 @@ import {
 } from "../../../components/ui/dropdown-menu";
 
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent
-} from "../../../components/ui/accordion";
-
-import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -75,53 +68,37 @@ const index = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <Accordion type="single" collapsible defaultValue="step1">
-          {/* Step 1 */}
-          <AccordionItem value="step1">
-            <AccordionTrigger>Invoice Logo</AccordionTrigger>
-            <AccordionContent>
-              <div
-                className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
-                onClick={() => {
-                  navigate("/logo-invoice-list");
-                }}>
-                <div className="mb-4 text-4xl">🐋</div>
-                <h2 className="text-2xl font-bold mb-2">Invoice Logo</h2>
-                <p>
-                  Select a plan that best suits your needs. We offer multiple options for every kind
-                  of user.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
 
-          {/* Step 2 */}
-          <AccordionItem value="step2">
-            <AccordionTrigger>Invoice Social Media</AccordionTrigger>
-            <AccordionContent className="p-6 mb-6">
-              <StepFlow />
-            </AccordionContent>
-          </AccordionItem>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <div
+            className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
+            onClick={() => {
+              navigate("/logo-invoice-list");
+            }}>
+            <h2 className="text-2xl font-bold mb-2">Invoice Logo</h2>
+            <p>
+              Select a plan that best suits your needs. We offer multiple options for every kind of
+              user.
+            </p>
+          </div>
 
-          {/* Step 3 */}
-          <AccordionItem value="step3">
-            <AccordionTrigger>Invoice Footer</AccordionTrigger>
-            <AccordionContent>
-              <div
-                className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
-                onClick={() => {
-                  navigate("/footer-invoice-list");
-                }}>
-                <div className="mb-4 text-4xl">🐋</div>
-                <h2 className="text-2xl font-bold mb-2">Invoice Footer</h2>
-                <p>
-                  Select a plan that best suits your needs. We offer multiple options for every kind
-                  of user.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+          <div className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full">
+            <h2 className="text-2xl font-bold mb-2">Invoice Social Media</h2>
+            <StepFlow />
+          </div>
+
+          <div
+            className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full cursor-pointer hover:bg-[#1ACB0A] hover:text-white"
+            onClick={() => {
+              navigate("/footer-invoice-list");
+            }}>
+            <h2 className="text-2xl font-bold mb-2">Invoice Footer</h2>
+            <p>
+              Select a plan that best suits your needs. We offer multiple options for every kind of
+              user.
+            </p>
+          </div>
+        </div>
       </div>
     </TemplateContainer>
   );
