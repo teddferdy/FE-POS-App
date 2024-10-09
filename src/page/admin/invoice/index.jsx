@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import TemplateContainer from "../../../components/organism/template-container";
-// import StepFlow from "../../../components/organism/step/product";
+import { useQuery } from "react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +20,15 @@ import {
 import StepFlow from "../../../components/organism/step/invoice-social-media";
 import { useNavigate } from "react-router-dom";
 
+import { getAllSocialMedia } from "../../../services/social-media";
+
 const index = () => {
   const navigate = useNavigate();
+
+  const allSocialMedia = useQuery(["get-all-social-media"], () => getAllSocialMedia(), {
+    retry: 0
+  });
+
   return (
     <TemplateContainer>
       <div className="flex flex-col justify-between mb-6 p-4">
@@ -84,7 +91,7 @@ const index = () => {
 
           <div className="p-6 mb-6 text-center shadow-md rounded-lg bg-white w-full">
             <h2 className="text-2xl font-bold mb-2">Invoice Social Media</h2>
-            <StepFlow />
+            <StepFlow allSocialMedia={allSocialMedia} />
           </div>
 
           <div
