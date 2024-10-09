@@ -195,11 +195,13 @@ const FormCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Category</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Name Category" />
+                    <Input type="text" {...field} placeholder="Name Category" maxLength={30} />
                     {form.formState.errors.name ? (
                       <FormMessage>{form.formState.errors.name}</FormMessage>
                     ) : (
-                      <Hint>Enter Description Category Minimum Character 4</Hint>
+                      <Hint>
+                        Enter Description Category Minimum Character 4 and max character 30
+                      </Hint>
                     )}
                   </FormItem>
                 )}

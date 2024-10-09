@@ -68,6 +68,11 @@ const FormProduct = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
+  const handleInput = (e) => {
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    e.target.value = value;
+  };
+
   const formSchema = z.object({
     image: z.string().min(4, {
       message: "Image Store must be at least 4 characters."
@@ -82,7 +87,7 @@ const FormProduct = () => {
       message: "Description Store must be at least 4 characters."
     }),
     price: z.string().min(2, {
-      message: "Price Product must be at least 2 characters."
+      message: "Price Product Must Number And Not Alphabet"
     }),
     status: z.boolean(),
     store: z.string(),
@@ -284,11 +289,11 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Product</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter Name Product" />
+                    <Input type="text" {...field} placeholder="Enter Name Product" maxLength={30} />
                     {form.formState.errors.nameProduct ? (
                       <FormMessage>{form.formState.errors.nameProduct}</FormMessage>
                     ) : (
-                      <Hint>Enter Name Product Minimum Character 4</Hint>
+                      <Hint>Enter Name Product Minimum Character 4 and max character 30</Hint>
                     )}
                   </FormItem>
                 )}
@@ -322,11 +327,16 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Price Product</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter Price Product" />
+                    <Input
+                      type="text"
+                      {...field}
+                      placeholder="Enter Price Product"
+                      onInput={handleInput}
+                    />
                     {form.formState.errors.price ? (
                       <FormMessage>{form.formState.errors.price}</FormMessage>
                     ) : (
-                      <Hint>Enter Price Product Minimum 2 character</Hint>
+                      <Hint>Price Product Must Number And Not Alphabet</Hint>
                     )}
                   </FormItem>
                 )}

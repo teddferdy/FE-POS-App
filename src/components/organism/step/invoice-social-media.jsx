@@ -18,7 +18,7 @@ const StepCard = ({ stepNumber, title, description, icon, onClick }) => {
 
 const Arrow = () => {
   return (
-    <div className="lg:hidden flex justify-center my-4">
+    <div className="justify-center my-4">
       {/* Arrow pointing down (for vertical layout) */}
       <span className="text-3xl">↓</span>
     </div>
@@ -28,7 +28,7 @@ const Arrow = () => {
 const StepFlow = () => {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col lg:flex-row items-center lg:justify-between mt-10 space-y-6 lg:space-y-0 lg:space-x-6">
+    <div className="flex flex-col items-center mt-10 space-y-6">
       {/* Step 1 */}
       <StepCard
         stepNumber={1}
@@ -37,10 +37,6 @@ const StepFlow = () => {
         icon={<span>🌐</span>}
         onClick={() => navigate("/social-media-list")}
       />
-      {/* Arrow for Desktop */}
-      <div className="hidden lg:block">
-        <span className="text-3xl">→</span> {/* Right arrow for desktop */}
-      </div>
       {/* Arrow for Mobile */}
       <Arrow /> {/* Down arrow for mobile */}
       {/* Step 2 */}

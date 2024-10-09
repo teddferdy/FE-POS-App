@@ -389,11 +389,11 @@ const FormSubCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Name Sub Category</FormLabel>
                     </div>
-                    <Input type="text" {...field} placeholder="Enter Name Product" />
+                    <Input type="text" {...field} placeholder="Enter Name Product" maxLength={30} />
                     {form.formState.errors.nameSubCategory ? (
                       <FormMessage>{form.formState.errors.nameSubCategory}</FormMessage>
                     ) : (
-                      <Hint>Enter Name Product Minimum 4 Character</Hint>
+                      <Hint>Enter Name Product Minimum 4 Character and max character 30</Hint>
                     )}
                   </FormItem>
                 )}
