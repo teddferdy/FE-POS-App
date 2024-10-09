@@ -35,10 +35,14 @@ const ProductList = () => {
   const navigate = useNavigate();
 
   // QUERY
-  const allProduct = useQuery(["get-all-product-table"], () => getAllProductTable(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const allProduct = useQuery(
+    ["get-all-product-table"],
+    () => getAllProductTable({ location: "" }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   // const mutateDeleteLocation = useMutation(deleteLocation, {
   //   onMutate: () => setActive(true, null),

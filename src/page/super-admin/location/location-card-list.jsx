@@ -65,6 +65,14 @@ const LocationCardList = () => {
                     }
                   });
                 }
+
+                if (pathname === "/product-by-outlet") {
+                  navigate("/product-list-by-outlet", {
+                    state: {
+                      location: location.nameStore
+                    }
+                  });
+                }
               }}
             />
           ))}
