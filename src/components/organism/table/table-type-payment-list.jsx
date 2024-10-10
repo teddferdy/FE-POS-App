@@ -16,7 +16,7 @@ import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import ThreeDotsMenu from "../popover/three-dots-menu";
 
-const TableTypePaymentList = ({ allLocation, handleDelete }) => {
+const TableTypePaymentList = ({ allTypePayment, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -25,50 +25,36 @@ const TableTypePaymentList = ({ allLocation, handleDelete }) => {
 
   const columns = [
     {
-      accessorKey: "nameStore",
+      accessorKey: "name",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Name Store
+              Name Type Payment
               {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameStore")}</div>
+      cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>
     },
     {
-      accessorKey: "address",
+      accessorKey: "description",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              address
+              Description
               {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("address")}</div>
-    },
-    {
-      accessorKey: "detailLocation",
-      header: () => <div className="text-center">Detail Location</div>,
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("detailLocation")}</div>;
-      }
-    },
-    {
-      accessorKey: "phoneNumber",
-      header: () => <div className="text-center">Phone Number</div>,
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("phoneNumber")}</div>;
-      }
+      cell: ({ row }) => <div className="lowercase">{row.getValue("description")}</div>
     },
     {
       accessorKey: "status",
@@ -90,24 +76,6 @@ const TableTypePaymentList = ({ allLocation, handleDelete }) => {
             {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
           </div>
         );
-      }
-    },
-    {
-      accessorKey: "createdBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Created By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }
     },
     {
@@ -191,7 +159,7 @@ const TableTypePaymentList = ({ allLocation, handleDelete }) => {
   ];
 
   const table = useReactTable({
-    data: allLocation?.data?.data || [],
+    data: allTypePayment?.data?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+// import { useTranslation } from "react-i18next";
+import { Asterisk } from "lucide-react";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
@@ -23,7 +23,6 @@ import {
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
-import Hint from "../../../components/organism/label/hint";
 import TemplateContainer from "../../../components/organism/template-container";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import DialogCarouselImage from "../../../components/organism/dialog/dialog-carousel-image";
@@ -36,19 +35,19 @@ const FormLocation = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     image: z.string().min(4, {
-      message: "Invoice Logo must be at least 4 characters."
+      message: "Invoice Logo Field Required."
     }),
     nameStore: z.string().min(4, {
-      message: "Name Store must be at least 4 characters."
+      message: "Name Store must be at least 4 characters & Max Long Character 30."
     }),
     address: z.string().min(4, {
-      message: "Address must be at least 4 characters."
+      message: "Address must be at least 4 characters & Max Long Character 255."
     }),
     detailLocation: z.string().min(4, {
-      message: "Detail Location must be at least 4 characters."
+      message: "Detail Location must be at least 4 characters & Max Long Character 255.."
     }),
     phoneNumber: z.string().min(4, {
-      message: "Phone Number must be at least 4 characters."
+      message: "Phone Number Field Required."
     }),
     status: z.boolean()
   });
@@ -72,7 +71,7 @@ const FormLocation = () => {
   // QUERY
   const mutateAddLocation = useMutation(addLocation, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -99,7 +98,7 @@ const FormLocation = () => {
 
   const mutateEditLocation = useMutation(editLocation, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -192,8 +191,9 @@ const FormLocation = () => {
                 const linkName = generateLinkImageFromGoogleDrive(field.value);
                 return (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Image Product</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <div className="flex-col md:flex justify-between gap-10">
                       <div className="flex flex-col gap-4">
@@ -202,16 +202,14 @@ const FormLocation = () => {
                             type="text"
                             {...field}
                             className="flex-1"
-                            placeholder="Enter Image URL"
+                            placeholder="Enter Image URL From Google Drive"
                           />
                           <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
                             <DialogCarouselImage />
                           </div>
                         </div>
-                        {form.formState.errors.image ? (
+                        {form.formState.errors.image && (
                           <FormMessage>{form.formState.errors.image}</FormMessage>
-                        ) : (
-                          <Hint>Image URL in Google Drive</Hint>
                         )}
                       </div>
                       {linkName && (
@@ -236,14 +234,13 @@ const FormLocation = () => {
               name="nameStore"
               render={({ field }) => (
                 <FormItem>
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center gap-2">
                     <FormLabel className="text-base">Name Store</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
                   </div>
-                  <Input type="text" {...field} placeholder="Enter Name Store" />
-                  {form.formState.errors.nameStore ? (
+                  <Input type="text" {...field} placeholder="Enter Name Store" maxLength={30} />
+                  {form.formState.errors.nameStore && (
                     <FormMessage>{form.formState.errors.nameStore}</FormMessage>
-                  ) : (
-                    <Hint>Enter Name Store Minimum 4 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -253,8 +250,9 @@ const FormLocation = () => {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center gap-2">
                     <FormLabel className="text-base">Address</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
                   </div>
                   <Textarea
                     type="text"
@@ -262,10 +260,8 @@ const FormLocation = () => {
                     placeholder="Enter Address Store"
                     maxLength={255}
                   />
-                  {form.formState.errors.address ? (
+                  {form.formState.errors.address && (
                     <FormMessage>{form.formState.errors.address}</FormMessage>
-                  ) : (
-                    <Hint>Enter Address Store Minimum 4 Character & Max 255 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -275,26 +271,18 @@ const FormLocation = () => {
               name="detailLocation"
               render={({ field }) => (
                 <FormItem>
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center gap-2">
                     <FormLabel className="text-base">Detail Location</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
                   </div>
                   <Textarea
                     type="text"
                     {...field}
-                    placeholder="Enter Detail Location"
+                    placeholder="Example: go to west 700m from Near Gas Station Manahan, left distro store"
                     maxLength={255}
                   />
-                  {form.formState.errors.detailLocation ? (
+                  {form.formState.errors.detailLocation && (
                     <FormMessage>{form.formState.errors.detailLocation}</FormMessage>
-                  ) : (
-                    <div className="flex flex-col gap-4">
-                      <Hint>
-                        Enter Detail Location Store Minimum 4 Character & Max 255 Character
-                      </Hint>
-                      <Hint>
-                        Example: go to west 700m from Near Gas Station Manahan, left distro store
-                      </Hint>
-                    </div>
                   )}
                 </FormItem>
               )}
@@ -305,23 +293,19 @@ const FormLocation = () => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Phone Number</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input
                       type="text"
                       {...field}
-                      placeholder="Enter Phone Number Store"
+                      placeholder="Example: 081388921...."
                       maxLength={15}
                       onInput={handleInput}
                     />
-                    {form.formState.errors.phoneNumber ? (
+                    {form.formState.errors.phoneNumber && (
                       <FormMessage>{form.formState.errors.phoneNumber}</FormMessage>
-                    ) : (
-                      <div className="flex flex-col gap-4">
-                        <Hint>Enter Phone Number Store Minimum 4 Character</Hint>
-                        <Hint>Example: 081388921....</Hint>
-                      </div>
                     )}
                   </FormItem>
                 )}
@@ -330,22 +314,19 @@ const FormLocation = () => {
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex-1 -mt-8">
+                  <FormItem className="flex-1">
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                      <Hint>Select yes if percentage want to active</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
                     </div>
                   </FormItem>
                 )}

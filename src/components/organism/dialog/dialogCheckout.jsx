@@ -63,7 +63,7 @@ const DialogCheckout = ({
     }
   ]);
 
-  const allTypePayment = useQuery(["get-all-type-payment"], () => getAllTypePayment(), {
+  const allTypePayment = useQuery(["get-all-type-checkout-payment"], () => getAllTypePayment(), {
     retry: 0,
     keepPreviousData: true,
     enabled: showDialog
