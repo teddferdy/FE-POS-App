@@ -91,8 +91,6 @@ const Login = () => {
   const mutateLogin = useMutation(login, {
     onMutate: () => setActive(true, null),
     onSuccess: (success) => {
-      console.log("SUCCESS =>", success);
-
       setCookie("token", success.token);
       setCookie("user", success.user);
 

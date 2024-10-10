@@ -20,8 +20,6 @@ const DialogViewDetail = ({
   classNameBtn = "flex items-center gap-4 p-2 hover:bg-gray-100 w-full",
   ...user
 }) => {
-  console.log("USER =>", user);
-
   return (
     <Dialog>
       <DialogTrigger asChild>

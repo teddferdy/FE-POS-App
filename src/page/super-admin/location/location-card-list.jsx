@@ -34,7 +34,7 @@ const LocationCardList = () => {
     keepPreviousData: false
   });
 
-  const TABLE_SHOW = useMemo(() => {
+  const SHOW_LIST = useMemo(() => {
     if (allLocation.isLoading && allLocation.isFetching && !allLocation.isError) {
       return <SkeletonTable />;
     }
@@ -185,7 +185,7 @@ const LocationCardList = () => {
       {BREADCRUMB}
 
       {/* List Member */}
-      <div className="p-4">{TABLE_SHOW}</div>
+      <div className="p-4">{SHOW_LIST}</div>
     </TemplateContainer>
   );
 };

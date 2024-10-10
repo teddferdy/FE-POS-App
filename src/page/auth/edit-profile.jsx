@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useCookies } from "react-cookie";
+// import { useCookies } from "react-cookie";
 
 // Component
 import DialogCancelForm from "../../components/organism/dialog/dialogCancelForm";
@@ -21,8 +21,7 @@ import Hint from "../../components/organism/label/hint";
 const EditProfile = () => {
   const navigate = useNavigate();
 
-  const [cookie] = useCookies(["user"]);
-  console.log("cookie =>", cookie);
+  // const [cookie] = useCookies(["user"]);
 
   const formSchema = z.object({
     image: z.string(),

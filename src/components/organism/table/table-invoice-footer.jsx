@@ -168,8 +168,6 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
       accessorKey: "action",
       header: () => <div className="text-center">Action</div>,
       cell: ({ row }) => {
-        console.log("ROW =>", row);
-
         return (
           <div className="flex justify-center">
             <ThreeDotsMenu

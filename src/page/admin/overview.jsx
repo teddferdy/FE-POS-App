@@ -79,8 +79,6 @@ const OverviewPage = () => {
     keepPreviousData: true
   });
 
-  console.log("overviewCategory =>", overviewCategory);
-
   const overviewLocation = useQuery(["get-overview-location"], () => getOverviewLocation(), {
     retry: 0,
     keepPreviousData: true
