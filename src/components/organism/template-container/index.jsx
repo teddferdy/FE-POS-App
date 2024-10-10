@@ -126,7 +126,9 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
                   <Menu color="#6853F0" className="w-6 h-6 cursor-pointer" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[20%] overflow-scroll h-screen no-scrollbar">
+              <SheetContent
+                side="left"
+                className="w-fit md:w-1/3 lg:w-[20%] overflow-scroll h-screen no-scrollbar">
                 {SIDEBAR_MOBILE}
               </SheetContent>
             </Sheet>

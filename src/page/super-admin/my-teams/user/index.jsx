@@ -33,8 +33,7 @@ const UserListByLocation = () => {
     ["get-all-location-table"],
     () => getUserByLocation({ location: state.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -81,25 +80,27 @@ const UserListByLocation = () => {
     if (allLocation?.data && allLocation?.isSuccess && !allLocation?.isError) {
       return allLocation?.data?.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {allLocation?.data?.data?.map((user) => (
-            <UserCard
-              key={user.id}
-              image={user.image}
-              name={user.userName}
-              address={user.address}
-              location={user.location}
-              phoneNumber={user.phoneNumber}
-              role={user.userType}
-              onChangeRole={(val) => {
-                const body = {
-                  location: user.location,
-                  id: user.id,
-                  userType: val
-                };
-                mutateChangeRole.mutate(body);
-              }}
-            />
-          ))}
+          {allLocation?.data?.data?.map((user, index) => {
+            return (
+              <UserCard
+                key={user.id}
+                image={user.image}
+                name={user.userName}
+                address={user.address}
+                location={user.location}
+                phoneNumber={user.phoneNumber}
+                role={allLocation?.data?.data[index].userType}
+                onChangeRole={(val) => {
+                  const body = {
+                    location: user.location,
+                    id: user.id,
+                    userType: val
+                  };
+                  mutateChangeRole.mutate(body);
+                }}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="h-[65vh] flex justify-center flex-col items-center bg-gray-500 w-full rounded-lg gap-6 mt-4">
