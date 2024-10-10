@@ -30,7 +30,7 @@ const UserListByLocation = () => {
 
   // QUERY
   const allLocation = useQuery(
-    ["get-all-location-table"],
+    ["get-all-user-location-table"],
     () => getUserByLocation({ location: state.location }),
     {
       retry: 0
@@ -78,6 +78,8 @@ const UserListByLocation = () => {
     }
 
     if (allLocation?.data && allLocation?.isSuccess && !allLocation?.isError) {
+      console.log("allLocation?.data?.data.length =>", allLocation?.data?.data.length);
+
       return allLocation?.data?.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {allLocation?.data?.data?.map((user, index) => {

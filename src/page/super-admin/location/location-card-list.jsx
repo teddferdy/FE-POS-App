@@ -92,7 +92,7 @@ const LocationCardList = () => {
         </div>
       );
     }
-  }, [allLocation]);
+  }, [allLocation, pathname]);
 
   const BREADCRUMB = useMemo(() => {
     if (pathname === "/invoice-by-outlet") {
