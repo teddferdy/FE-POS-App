@@ -49,8 +49,6 @@ const ProductListByLocation = () => {
     }
 
     if (productList?.data && productList?.isSuccess && !productList?.isError) {
-      console.log("productList =>", productList);
-
       return productList?.data?.data.length > 0 ? (
         <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
           {productList?.data?.data?.map((items, index) => (

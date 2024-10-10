@@ -9,8 +9,6 @@ export const getAllProduct = async ({ location, nameProduct, category }) => {
 };
 
 export const getProductByOutlet = async ({ location }) => {
-  console.log("location =>", location);
-
   const { data, status } = await axiosInstance.get(
     `product/get-product-by-super-admin?store=${location}`
   );

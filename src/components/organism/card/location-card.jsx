@@ -1,15 +1,19 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+import { ArrowRight } from "lucide-react";
+import { useLocation } from "react-router-dom";
+
+import DialogViewInvoiceByLocation from "../dialog/dialog-view-invoice-by-location";
 
 const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }) => {
   const linkImage = generateLinkImageFromGoogleDrive(image);
+  const location = useLocation();
+
   return (
-    <div
-      className="w-full rounded overflow-hidden shadow-lg bg-white text-gray-700 hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:text-white"
-      onClick={handleLocation}>
+    <div className="shadow-lg p-4">
       <img className="w-full h-48 object-cover" src={linkImage} alt={nameStore} />
-      <div className="px-6 py-4">
+      <div className="py-4">
         <div className="font-bold text-xl mb-2">{nameStore}</div>
         <p className="text-base">
           <strong>Address:</strong> {address}
@@ -17,6 +21,19 @@ const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }
         <p className="text-base">
           <strong>Phone:</strong> {phoneNumber}
         </p>
+      </div>
+
+      <div className="flex justify-end">
+        {location.pathname === "/invoice-by-outlet" ? (
+          <DialogViewInvoiceByLocation nameStore={nameStore} />
+        ) : (
+          <button
+            className="flex gap-4 p-2 w-fit rounded overflow-hidden bg-white text-gray-700 hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:text-white"
+            onClick={handleLocation}>
+            View Detail
+            <ArrowRight className="w-6 h-6 mr-2 text-gray-500" />
+          </button>
+        )}
       </div>
     </div>
   );

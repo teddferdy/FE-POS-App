@@ -62,7 +62,6 @@ const userInfoSchema = z.object({
 const FormProduct = () => {
   const { state } = useLocation();
   const [cookie] = useCookies(["user"]);
-  console.log("cookie =>", cookie);
 
   const { setActive } = useLoading();
   const navigate = useNavigate();

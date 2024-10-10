@@ -146,3 +146,28 @@ export const activateOrNotActiveInvoiceFooter = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+// Invoice By Location Super Admin
+export const getInvoiceLogoByLocation = async ({ store }) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-logo-by-location?store=${store}`
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const getInvoiceSocialMediaByLocation = async ({ store }) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-social-media-by-location?store=${store}`
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const getInvoiceFooterByLocation = async ({ store }) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-footer-by-location?store=${store}`
+  );
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
