@@ -10,7 +10,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../../../components/ui/breadcrumb";
-import { getAllLocation, deleteLocation } from "../../../services/location";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
 import { useLoading } from "../../../components/organism/loading";
@@ -18,27 +17,30 @@ import { useMutation, useQuery } from "react-query";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../components/organism/abort-controller";
 import TableTypePaymentList from "../../../components/organism/table/table-type-payment-list";
+import { getAllTypePayment, deleteTypePayment } from "../../../services/type-payment";
+
 const TypePaymentList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
 
   // QUERY
-  const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
+
+  const allTypePayment = useQuery(["get-all-type-checkout-payment"], () => getAllTypePayment(), {
     retry: 0,
     keepPreviousData: true
   });
 
-  const mutateDeleteLocation = useMutation(deleteLocation, {
+  const mutateDeleteTypePayment = useMutation(deleteTypePayment, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Delete Location"
+          description: "Successfull, Delete Type Payment"
         });
       }, 1000);
       setTimeout(() => {
-        allLocation.refetch();
+        allTypePayment.refetch();
         setActive(null, null);
       }, 2000);
     },
@@ -56,29 +58,29 @@ const TypePaymentList = () => {
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allLocation.isLoading && allLocation.isFetching && !allLocation.isError) {
+    if (allTypePayment.isLoading && allTypePayment.isFetching && !allTypePayment.isError) {
       return <SkeletonTable />;
     }
 
-    if (allLocation.isError) {
+    if (allTypePayment.isError) {
       return (
         <div className="p-4">
-          <AbortController refetch={() => allLocation.refetch()} />
+          <AbortController refetch={() => allTypePayment.refetch()} />
         </div>
       );
     }
 
-    if (allLocation.data && allLocation.isSuccess && !allLocation.isError) {
+    if (allTypePayment.data && allTypePayment.isSuccess && !allTypePayment.isError) {
       return (
         <div className="w-full p-4">
           <TableTypePaymentList
-            allLocation={allLocation}
-            handleDelete={(body) => mutateDeleteLocation.mutate(body)}
+            allTypePayment={allTypePayment}
+            handleDelete={(body) => mutateDeleteTypePayment.mutate(body)}
           />
         </div>
       );
     }
-  }, [allLocation, mutateDeleteLocation]);
+  }, [allTypePayment, mutateDeleteTypePayment]);
 
   return (
     <TemplateContainer>

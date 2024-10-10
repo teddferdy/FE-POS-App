@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { Asterisk } from "lucide-react";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
 import {
@@ -21,7 +20,6 @@ import DialogCancelForm from "../../../components/organism/dialog/dialogCancelFo
 import { Input } from "../../../components/ui/input";
 import { Switch } from "../../../components/ui/switch";
 import { Textarea } from "../../../components/ui/textarea";
-import Hint from "../../../components/organism/label/hint";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -34,10 +32,10 @@ const FormTypePayment = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(1, {
-      message: "Name Store must be at least 1 characters."
+      message: "Enter Name Type Payment Minimum Character 2 & Max 30 Character."
     }),
     description: z.string().min(4, {
-      message: "Description must be at least 4 characters."
+      message: "Enter Description Minimum Character 4 & Max 255 Character."
     }),
     status: z.boolean()
   });
@@ -54,7 +52,7 @@ const FormTypePayment = () => {
   // QUERY
   const mutateAddTypePayment = useMutation(addTypePayment, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -81,7 +79,7 @@ const FormTypePayment = () => {
 
   const mutateEditTypePayment = useMutation(editTypePayment, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -166,14 +164,18 @@ const FormTypePayment = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <div className="mb-4">
-                    <FormLabel className="text-base">Name</FormLabel>
+                  <div className="mb-4 flex items-center gap-2">
+                    <FormLabel className="text-base">Name Type Payment</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
                   </div>
-                  <Input type="text" {...field} placeholder="Enter Name Type Payment" />
-                  {form.formState.errors.name ? (
+                  <Input
+                    type="text"
+                    {...field}
+                    placeholder="Example: QRIS, OVO, GOPAY"
+                    maxLength={30}
+                  />
+                  {form.formState.errors.name && (
                     <FormMessage>{form.formState.errors.name}</FormMessage>
-                  ) : (
-                    <Hint>Enter Name Type Payment Minimum 4 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -185,20 +187,17 @@ const FormTypePayment = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Description</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Textarea
                       {...field}
                       placeholder="Enter Description Type Payment"
                       maxLength={255}
                     />
-                    {form.formState.errors.description ? (
+                    {form.formState.errors.description && (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
-                    ) : (
-                      <Hint>
-                        Enter Description Type Payment Minimum 4 Character & Max 255 Character
-                      </Hint>
                     )}
                   </FormItem>
                 )}
@@ -207,22 +206,20 @@ const FormTypePayment = () => {
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex-1 md:-mt-8">
+                  <FormItem className="flex-1">
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Active</FormLabel>
                     </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                      <Hint>Select yes if percentage want to active</Hint>
+
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
                     </div>
                   </FormItem>
                 )}

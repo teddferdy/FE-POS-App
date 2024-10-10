@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Asterisk } from "lucide-react";
 // import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
@@ -31,7 +32,6 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../c
 import { Textarea } from "../../../../components/ui/textarea";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
-import Hint from "../../../../components/organism/label/hint";
 
 const FormPosition = () => {
   const { state } = useLocation();
@@ -40,10 +40,10 @@ const FormPosition = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(1, {
-      message: "Name Filed Required"
+      message: "Enter Name Position Minimum Character 4 & Max 30 Character."
     }),
     description: z.string().min(4, {
-      message: "Description Field Required"
+      message: "Enter Description Position Minimum Character 4 & Max 255 Character."
     }),
 
     status: z.boolean()
@@ -189,15 +189,13 @@ const FormPosition = () => {
               name="name"
               render={({ field }) => (
                 <FormItem className="flex-1">
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center gap-2">
                     <FormLabel className="text-base">Name Position</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
                   </div>
                   <Input type="text" {...field} placeholder="Enter name Position" maxLength={30} />
-
-                  {form.formState.errors.name ? (
+                  {form.formState.errors.name && (
                     <FormMessage>{form.formState.errors.name}</FormMessage>
-                  ) : (
-                    <Hint>Enter name Position Minimum Character 4 & Max 30 Character</Hint>
                   )}
                 </FormItem>
               )}
@@ -208,15 +206,13 @@ const FormPosition = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Description</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Textarea {...field} placeholder="Enter Description Product" maxLength={255} />
-
-                    {form.formState.errors.description ? (
+                    {form.formState.errors.description && (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
-                    ) : (
-                      <Hint>Enter Description Minimum 4 Character & Max 255 Character</Hint>
                     )}
                   </FormItem>
                 )}
@@ -229,18 +225,15 @@ const FormPosition = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Active</FormLabel>
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                      <Hint>Select yes if name want to active</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
                     </div>
                   </FormItem>
                 )}

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { Check, ChevronsUpDown, ChevronDown, TrashIcon, PlusIcon } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown, TrashIcon, PlusIcon, Asterisk } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -49,8 +49,8 @@ import { addSubCategory, editSubCategory } from "../../../../services/sub-catego
 import { getAllCategory } from "../../../../services/category";
 
 const userInfoSchema = z.object({
-  name: z.string(),
-  price: z.string(),
+  name: z.string().min(1, "Option Name cannot be empty"),
+  price: z.string().min(1, "Option Price cannot be empty"),
   isFree: z.boolean()
 });
 
@@ -64,14 +64,29 @@ const FormSubCategory = () => {
 
   const formSchema = z.object({
     nameSubCategory: z.string().min(4, {
-      message: "Name Sub Category Store must be at least 4 characters."
+      message: "Enter Name Sub Category Minimum Character 4 & Max 30 Character."
     }),
-    parentCategory: z.string().min(4, {
-      message: "Name Product Store must be at least 4 characters."
+    parentCategory: z.number().min(1, {
+      message: "Name Product Store Cannot Empty"
     }),
     option: z.boolean(),
     isMultiple: z.boolean(),
-    typeSubCategory: z.array(userInfoSchema)
+    typeSubCategory: z
+      .array(userInfoSchema)
+      .refine(
+        (val, ctx) => {
+          if (ctx?.parent?.option && val.length === 0) {
+            return false;
+          }
+          return true;
+        },
+        {
+          message: "At least one option must be added if 'Adding Option' is enabled."
+        }
+      )
+      .refine((val) => val.every((item) => item.name.trim() !== "" && item.price.trim() !== ""), {
+        message: "Both Option Name and Price must not be empty."
+      })
   });
 
   const form = useForm({
@@ -79,10 +94,16 @@ const FormSubCategory = () => {
     mode: "onChange",
     defaultValues: {
       nameSubCategory: state?.data?.nameSubCategory || "",
-      parentCategory: state?.data?.parentCategory || "",
+      parentCategory: state?.data?.parentCategory || null,
       isMultiple: state?.data?.isMultiple ?? false,
-      option: state?.data?.option ?? false,
-      typeSubCategory: state?.data?.typeSubCategory || []
+      option: state?.data?.option ?? true,
+      typeSubCategory: state?.data?.typeSubCategory || [
+        {
+          name: "",
+          price: "",
+          isFree: false
+        }
+      ]
     }
   });
 
@@ -155,31 +176,39 @@ const FormSubCategory = () => {
   };
 
   const onSubmit = (values) => {
-    if (state?.data?.id) {
-      const body = {
-        id: state?.data?.id,
-        parentCategory: values?.parentCategory,
-        nameSubCategory: values?.nameSubCategory,
-        typeSubCategory:
-          values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
-        isMultiple: values?.isMultiple,
-        store: cookie?.user?.location,
-        createdBy: state?.data?.userName,
-        modifiedBy: cookie.user.userName
-      };
-      mutateEditSubCategory.mutate(body);
+    if (values.option && values.typeSubCategory.length === 0) {
+      toast.error("failed", {
+        description: "You must add at least one option if 'Adding Option' is enabled."
+      });
+      return;
     } else {
-      const body = {
-        parentCategory: values?.parentCategory,
-        nameSubCategory: values?.nameSubCategory,
-        typeSubCategory:
-          values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
-        isMultiple: values?.isMultiple,
-        store: cookie?.user?.location,
-        createdBy: cookie?.user?.userName
-      };
+      if (state?.data?.id) {
+        const body = {
+          id: state?.data?.id,
+          parentCategory: values?.parentCategory,
+          nameSubCategory: values?.nameSubCategory,
+          typeSubCategory:
+            values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
+          isMultiple: values?.isMultiple,
+          store: cookie?.user?.location,
+          createdBy: state?.data?.userName,
+          modifiedBy: cookie.user.userName
+        };
+        mutateEditSubCategory.mutate(body);
+      } else {
+        const body = {
+          parentCategory: values?.parentCategory,
+          nameSubCategory: values?.nameSubCategory,
+          typeSubCategory:
+            values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
+          isMultiple: values?.isMultiple,
+          store: cookie?.user?.location,
+          createdBy: cookie?.user?.userName
+        };
+        console.log("BODY =>", body);
 
-      mutateAddSubCategory.mutate(body);
+        mutateAddSubCategory.mutate(body);
+      }
     }
   };
 
@@ -225,14 +254,34 @@ const FormSubCategory = () => {
                       </div>
                       <Input
                         type="text"
-                        {...form.register(`typeSubCategory.${index}.name`)}
+                        {...form.register(`typeSubCategory.${index}.name`, {
+                          onChange: (e) => {
+                            const value = e.target.value;
+
+                            // Set the value in the form
+                            form.setValue(`typeSubCategory.${index}.name`, value);
+
+                            // If the name length is greater than 1, clear errors for this field
+                            if (value.length > 1) {
+                              form.clearErrors(`typeSubCategory.${index}.name`);
+                            } else {
+                              form.trigger(`typeSubCategory.${index}.name`);
+                            }
+                          },
+                          validate: (value) => {
+                            if (value === "") {
+                              return "Option Name cannot be empty";
+                            }
+                            return true;
+                          }
+                        })}
                         defaultValue={items.titleOption}
                         placeholder="Enter Name Option"
                       />
-                      {items?.titleOption?.length < 1 ? (
-                        <FormMessage>Name Option Must Be Filled</FormMessage>
-                      ) : (
-                        <Hint>Enter Name Option Minimum 2 Character</Hint>
+                      {form.formState.errors?.typeSubCategory?.[index]?.name && (
+                        <FormMessage>
+                          {form.formState.errors?.typeSubCategory?.[index]?.name.message}
+                        </FormMessage>
                       )}
                     </FormItem>
                   </div>
@@ -254,13 +303,37 @@ const FormSubCategory = () => {
                       ) : (
                         <Input
                           type="text"
-                          {...form.register(`typeSubCategory.${index}.price`)}
+                          {...form.register(`typeSubCategory.${index}.price`, {
+                            onChange: (e) => {
+                              const value = e.target.value;
+
+                              // Set the value in the form
+                              form.setValue(`typeSubCategory.${index}.price`, value);
+
+                              // If the price length is greater than 1, clear errors for this field
+                              if (value.length > 1) {
+                                form.clearErrors(`typeSubCategory.${index}.price`);
+                              } else {
+                                form.trigger(`typeSubCategory.${index}.price`);
+                              }
+                            },
+                            validate: (value) => {
+                              if (value === "") {
+                                return "Option price cannot be empty";
+                              }
+                              return true;
+                            }
+                          })}
                           defaultValue={items.price}
                           placeholder="Enter Price Option"
                           onInput={handleInput}
                         />
                       )}
-                      <Hint>If Free switch position on yes, Input Price automated in Rp. 0</Hint>
+                      {form.formState.errors?.typeSubCategory?.[index]?.price && (
+                        <FormMessage>
+                          {form.formState.errors?.typeSubCategory?.[index]?.price.message}
+                        </FormMessage>
+                      )}
                     </FormItem>
                     <div className="flex justify-between mt-6">
                       <div className="flex-col">
@@ -280,7 +353,7 @@ const FormSubCategory = () => {
                   </div>
                   {/* Delete on Resolution Table - Desktop */}
                   <div
-                    className="justify-end self-center -mt-14 hidden md:flex"
+                    className={`justify-end self-center ${form.formState.errors?.typeSubCategory?.[index]?.name || form.formState.errors?.typeSubCategory?.[index]?.price ? "-mt-[52px]" : "-mt-6"}  hidden md:flex`}
                     onClick={() => {
                       if (fields?.length === 1) {
                         form.setValue("option", false);
@@ -324,7 +397,18 @@ const FormSubCategory = () => {
     } else {
       return null;
     }
-  }, [form.getValues("option"), form, fields, remove, update]);
+  }, [
+    form.getValues("option"),
+    form,
+    fields,
+    remove,
+    update,
+    form.formState.errors,
+    form.register,
+    form.trigger,
+    form.clearErrors,
+    handlePrimaryFloorChange
+  ]);
 
   return (
     <TemplateContainer>
@@ -386,14 +470,13 @@ const FormSubCategory = () => {
                 name="nameSubCategory"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Name Sub Category</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input type="text" {...field} placeholder="Enter Name Product" maxLength={30} />
-                    {form.formState.errors.nameSubCategory ? (
+                    {form.formState.errors.nameSubCategory && (
                       <FormMessage>{form.formState.errors.nameSubCategory}</FormMessage>
-                    ) : (
-                      <Hint>Enter Name Product Minimum 4 Character and max character 30</Hint>
                     )}
                   </FormItem>
                 )}
@@ -404,10 +487,13 @@ const FormSubCategory = () => {
                 control={form.control}
                 name="parentCategory"
                 render={({ field }) => {
+                  console.log("FIELD =>", field);
+
                   return (
                     <FormItem>
-                      <div className="mb-4">
+                      <div className="mb-4 flex items-center gap-2">
                         <FormLabel className="text-base">Parent Category</FormLabel>
+                        <Asterisk className="w-4 h-4 text-destructive" />
                       </div>
                       <div>
                         <Popover open={open} onOpenChange={setOpen}>
@@ -420,7 +506,7 @@ const FormSubCategory = () => {
                               className="w-full justify-between">
                               {field.value
                                 ? allCategory?.data?.data?.find(
-                                    (location) => location.name === field.value
+                                    (location) => location.id === field.value
                                   )?.name
                                 : "Select Category"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -432,32 +518,36 @@ const FormSubCategory = () => {
                               <CommandList>
                                 <CommandEmpty>No Category found.</CommandEmpty>
                                 <CommandGroup>
-                                  {allCategory?.data?.data?.map((location) => (
-                                    <CommandItem
-                                      key={location.name}
-                                      value={location.name}
-                                      onSelect={(currentValue) => field.onChange(currentValue)}>
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === location.name
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {location.name}
-                                    </CommandItem>
-                                  ))}
+                                  {allCategory?.data?.data?.map((location) => {
+                                    console.log("LOCTIO =>", location);
+
+                                    return (
+                                      <CommandItem
+                                        key={location.name}
+                                        value={location.id}
+                                        onSelect={() => {
+                                          field.onChange(location.id);
+                                        }}>
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === location.id
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {location.name}
+                                      </CommandItem>
+                                    );
+                                  })}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
                           </PopoverContent>
                         </Popover>
                       </div>
-                      {form.formState.errors.parentCategory ? (
+                      {form.formState.errors.parentCategory && (
                         <FormMessage>{form.formState.errors.parentCategory}</FormMessage>
-                      ) : (
-                        <Hint>Select Sub Category From Category Product</Hint>
                       )}
                     </FormItem>
                   );
@@ -470,32 +560,30 @@ const FormSubCategory = () => {
                 name="option"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Adding Option</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>No</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={(e) => {
-                            field.onChange(e);
-                            if (e) {
-                              append({
-                                name: "",
-                                price: "",
-                                isFree: false
-                              });
-                            } else {
-                              form.setValue("typeSubCategory", []);
-                            }
-                          }}
-                        />
-                        <p>Yes</p>
-                      </div>
-                      <Hint>Select yes if you want to adding option</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>No</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={(e) => {
+                          field.onChange(e);
+                          if (e) {
+                            append({
+                              name: "",
+                              price: "",
+                              isFree: false
+                            });
+                          } else {
+                            form.setValue("typeSubCategory", []);
+                          }
+                        }}
+                      />
+                      <p>Yes</p>
                     </div>
                   </FormItem>
                 )}
@@ -510,18 +598,15 @@ const FormSubCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Is Multiple</FormLabel>
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>No</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Yes</p>
-                      </div>
-                      <Hint>Select yes if customer can choose more than one option</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>No</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Yes</p>
                     </div>
                   </FormItem>
                 )}

@@ -86,7 +86,7 @@ const StepFlow = ({ categoryList, subCategoryList, productList }) => {
             if (disabled) {
               return {};
             } else {
-              navigate("/category-list");
+              navigate("/sub-category-list");
             }
           }}
         />

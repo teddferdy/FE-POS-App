@@ -1,15 +1,13 @@
-/* eslint-disable no-unused-vars */
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
-import { ClipboardPlus, ChevronDown } from "lucide-react";
+import { ChevronDown, Asterisk } from "lucide-react";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
 import { Switch } from "../../../../components/ui/switch";
 import { useLocation } from "react-router-dom";
@@ -28,7 +26,6 @@ import {
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
 import { Input } from "../../../../components/ui/input";
-import Hint from "../../../../components/organism/label/hint";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -43,7 +40,7 @@ const FormCategory = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     name: z.string().min(4, {
-      message: "Username must be at least 4 characters."
+      message: "Enter Category Minimum Character 4 & Max 30 Character."
     }),
     status: z.boolean()
   });
@@ -59,7 +56,7 @@ const FormCategory = () => {
   // Query
   const mutateAddLocation = useMutation(addCategory, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -86,7 +83,7 @@ const FormCategory = () => {
 
   const mutateEditCategory = useMutation(editCategory, {
     onMutate: () => setActive(true, null),
-    onSuccess: (success) => {
+    onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -192,16 +189,13 @@ const FormCategory = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Name Category</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input type="text" {...field} placeholder="Name Category" maxLength={30} />
-                    {form.formState.errors.name ? (
+                    {form.formState.errors.name && (
                       <FormMessage>{form.formState.errors.name}</FormMessage>
-                    ) : (
-                      <Hint>
-                        Enter Description Category Minimum Character 4 and max character 30
-                      </Hint>
                     )}
                   </FormItem>
                 )}
@@ -214,18 +208,15 @@ const FormCategory = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                      <Hint>Select yes if percentage want to active</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
                     </div>
                   </FormItem>
                 )}

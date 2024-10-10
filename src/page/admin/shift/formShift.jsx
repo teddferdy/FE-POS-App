@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import moment from "moment";
 import { useCookies } from "react-cookie";
+import { Asterisk } from "lucide-react";
 // import { useTranslation } from "react-i18next";
 
 // Component
@@ -39,10 +40,10 @@ const FormShift = () => {
   const { setActive } = useLoading();
   const formSchema = z.object({
     nameShift: z.string().min(2, {
-      message: "Name Shift must be at least 2 characters."
+      message: "Name Shift must be at least 2 Characters & Max 30 Character."
     }),
     description: z.string().min(4, {
-      message: "Description must be at least 4 characters."
+      message: "Enter Description Minimum Character 4 & Max 255 Character."
     }),
     startHour: z.date(),
     endHour: z.date(),
@@ -183,10 +184,11 @@ const FormShift = () => {
                 name="nameShift"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Name Shift</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
-                    <Input type="text" {...field} maxLength={30} />
+                    <Input type="text" {...field} placeholder="Enter Shift Name" maxLength={30} />
                   </FormItem>
                 )}
               />
@@ -198,8 +200,9 @@ const FormShift = () => {
                 render={({ field }) => {
                   return (
                     <FormItem>
-                      <div className="mb-4">
+                      <div className="mb-4 flex items-center gap-2">
                         <FormLabel className="text-base">Description</FormLabel>
+                        <Asterisk className="w-4 h-4 text-destructive" />
                       </div>
                       <Textarea {...field} maxLength={255} />
                     </FormItem>
@@ -216,10 +219,11 @@ const FormShift = () => {
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <div className="mb-4">
+                        <div className="mb-4 flex items-center gap-2">
                           <FormLabel className="text-base">Start Hour</FormLabel>
+                          <Asterisk className="w-4 h-4 text-destructive" />
                         </div>
-                        <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
+                        <TimePicker setDate={field.onChange} date={field.value} />
                       </FormItem>
                     );
                   }}
@@ -232,10 +236,11 @@ const FormShift = () => {
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <div className="mb-4">
+                        <div className="mb-4 flex items-center gap-2">
                           <FormLabel className="text-base">End Hour</FormLabel>
+                          <Asterisk className="w-4 h-4 text-destructive" />
                         </div>
-                        <TimePicker setDate={field.onChange} date={field.value} withSecondInput />
+                        <TimePicker setDate={field.onChange} date={field.value} />
                       </FormItem>
                     );
                   }}
