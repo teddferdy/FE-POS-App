@@ -19,7 +19,7 @@ const DialogChangeRole = ({
   onChangeRole,
   ...user
 }) => {
-  const [selectedRole, setSelectedRole] = useState(user.userType);
+  const [selectedRole, setSelectedRole] = useState(user.role);
   const [open, setOpen] = useState(false);
   const handleRoleChange = (e) => {
     setSelectedRole(e.target.value);
