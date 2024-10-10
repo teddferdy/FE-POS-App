@@ -27,11 +27,10 @@ const ProductListByLocation = () => {
 
   // QUERY
   const productList = useQuery(
-    ["get-all-location-table"],
+    ["get-all-product-location-table"],
     () => getProductByOutlet({ location: state.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -49,7 +48,9 @@ const ProductListByLocation = () => {
     }
 
     if (productList?.data && productList?.isSuccess && !productList?.isError) {
-      return productList?.data?.data.length > 0 ? (
+      console.log("productList?.data?.data?.length =>", productList?.data?.data?.length);
+
+      return productList?.data?.data?.length > 0 ? (
         <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
           {productList?.data?.data?.map((items, index) => (
             <div
