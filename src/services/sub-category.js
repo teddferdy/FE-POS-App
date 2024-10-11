@@ -1,7 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getAllSubCategory = async () => {
-  const { data, status } = await axiosInstance.get("/sub-category/get-all-sub-category");
+export const getAllSubCategory = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/sub-category/get-all-sub-category?store=${payload.store}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

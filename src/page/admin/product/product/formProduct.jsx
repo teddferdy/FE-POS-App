@@ -7,6 +7,7 @@ import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Asterisk } from "lucide-react";
 import { useMutation, useQuery } from "react-query";
 
 // Component
@@ -45,19 +46,11 @@ import {
   CommandList
 } from "../../../../components/ui/command";
 import DrawerSelectSubCategory from "../../../../components/organism/drawer/drawer-select-sub-category";
-import Hint from "../../../../components/organism/label/hint";
 
 // Services
 import { addProduct } from "../../../../services/product";
 import { getAllCategory } from "../../../../services/category";
 import { getSubCategoryByCategory } from "../../../../services/sub-category";
-
-const userInfoSchema = z.object({
-  nameSubCategory: z.string(),
-  parentCategory: z.string(),
-  typeSubCategory: z.string(),
-  isMultiple: z.boolean()
-});
 
 const FormProduct = () => {
   const { state } = useLocation();
@@ -74,23 +67,25 @@ const FormProduct = () => {
 
   const formSchema = z.object({
     image: z.string().min(4, {
-      message: "Image Store must be at least 4 characters."
+      message: "Invoice Logo Field Required."
     }),
     nameProduct: z.string().min(4, {
-      message: "Name Product Store must be at least 4 characters."
-    }),
-    category: z.string().min(4, {
-      message: "Category Must Be Selected."
+      message: "Enter Name Product Minimum Character 4 and max character 30."
     }),
     description: z.string().min(4, {
-      message: "Description Store must be at least 4 characters."
+      message: "Enter Description Minimum 4 Character & Max 255 Character."
+    }),
+    category: z.number().min(1, {
+      message: "Name Product Store Cannot Empty"
     }),
     price: z.string().min(2, {
-      message: "Price Product Must Number And Not Alphabet"
+      message: "Enter Price Minimum 2 Character Price Product Must Number And Not Alphabet"
     }),
     status: z.boolean(),
     store: z.string(),
-    subCategory: z.array(userInfoSchema)
+    subCategory: z.array(z.number()).min(1, {
+      message: "At least one sub-category is required."
+    })
   });
 
   const form = useForm({
@@ -99,7 +94,7 @@ const FormProduct = () => {
     defaultValues: {
       image: "",
       nameProduct: "",
-      category: "",
+      category: null,
       status: true,
       description: "",
       store: "",
@@ -168,11 +163,10 @@ const FormProduct = () => {
         description: values?.description,
         status: values?.status,
         price: values?.price,
-        option: JSON.stringify(values?.subCategory),
+        option: values?.subCategory,
         store: cookie?.user?.location,
         createdBy: cookie?.user?.userName
       };
-
       mutateAddProduct.mutate(body);
     }
   };
@@ -239,8 +233,9 @@ const FormProduct = () => {
                   const linkName = generateLinkImageFromGoogleDrive(field.value);
                   return (
                     <FormItem>
-                      <div className="mb-4">
+                      <div className="mb-4 flex items-center gap-2">
                         <FormLabel className="text-base">Image Product</FormLabel>
+                        <Asterisk className="w-4 h-4 text-destructive" />
                       </div>
                       <div className="flex-col md:flex justify-between gap-10">
                         <div className="flex flex-col gap-4">
@@ -249,16 +244,14 @@ const FormProduct = () => {
                               type="text"
                               {...field}
                               className="flex-1"
-                              placeholder="Enter Image URL"
+                              placeholder="Enter Image URL From Google Drive"
                             />
                             <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
                               <DialogCarouselImage />
                             </div>
                           </div>
-                          {form.formState.errors.image ? (
+                          {form.formState.errors.image && (
                             <FormMessage>{form.formState.errors.image}</FormMessage>
-                          ) : (
-                            <Hint>Image URL in Google Drive</Hint>
                           )}
                         </div>
                         {linkName && (
@@ -285,14 +278,13 @@ const FormProduct = () => {
                 name="nameProduct"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Name Product</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input type="text" {...field} placeholder="Enter Name Product" maxLength={30} />
-                    {form.formState.errors.nameProduct ? (
+                    {form.formState.errors.nameProduct && (
                       <FormMessage>{form.formState.errors.nameProduct}</FormMessage>
-                    ) : (
-                      <Hint>Enter Name Product Minimum Character 4 and max character 30</Hint>
                     )}
                   </FormItem>
                 )}
@@ -304,14 +296,13 @@ const FormProduct = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Description</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Textarea {...field} placeholder="Enter Description Product" maxLength={255} />
-                    {form.formState.errors.description ? (
+                    {form.formState.errors.description && (
                       <FormMessage>{form.formState.errors.description}</FormMessage>
-                    ) : (
-                      <Hint>Enter Minimum 4 Character & Max 255 Character</Hint>
                     )}
                   </FormItem>
                 )}
@@ -323,8 +314,9 @@ const FormProduct = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-2">
                       <FormLabel className="text-base">Price Product</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input
                       type="text"
@@ -332,10 +324,8 @@ const FormProduct = () => {
                       placeholder="Enter Price Product"
                       onInput={handleInput}
                     />
-                    {form.formState.errors.price ? (
+                    {form.formState.errors.price && (
                       <FormMessage>{form.formState.errors.price}</FormMessage>
-                    ) : (
-                      <Hint>Price Product Must Number And Not Alphabet</Hint>
                     )}
                   </FormItem>
                 )}
@@ -350,18 +340,15 @@ const FormProduct = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Status</FormLabel>
                     </div>
-                    <div className="flex-col">
-                      <div className="flex items-center gap-6 mb-4">
-                        <p>Not Active</p>
-                        <Switch
-                          name={field.name}
-                          id={field.name}
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                        <p>Active</p>
-                      </div>
-                      <Hint>Select yes if percentage want to active</Hint>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>Not Active</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Active</p>
                     </div>
                   </FormItem>
                 )}
@@ -374,8 +361,9 @@ const FormProduct = () => {
                 render={({ field }) => {
                   return (
                     <FormItem>
-                      <div className="mb-4">
+                      <div className="mb-4 flex items-center gap-2">
                         <FormLabel className="text-base">Category</FormLabel>
+                        <Asterisk className="w-4 h-4 text-destructive" />
                       </div>
                       <div>
                         <Popover open={open} onOpenChange={setOpen}>
@@ -388,7 +376,7 @@ const FormProduct = () => {
                               className="w-full justify-between">
                               {field.value
                                 ? allCategory?.data?.data?.find(
-                                    (location) => location.name === field.value
+                                    (location) => location.id === field.value
                                   )?.name
                                 : "Select Category"}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -400,36 +388,36 @@ const FormProduct = () => {
                               <CommandList>
                                 <CommandEmpty>No Category found.</CommandEmpty>
                                 <CommandGroup>
-                                  {allCategory?.data?.data?.map((location) => (
-                                    <CommandItem
-                                      key={location.name}
-                                      value={location.name}
-                                      onSelect={(currentValue) => {
-                                        field.onChange(currentValue);
-                                        form.setValue("subCategory", []);
-                                        setOpen(false);
-                                      }}>
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === location.name
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {location.name}
-                                    </CommandItem>
-                                  ))}
+                                  {allCategory?.data?.data?.map((location) => {
+                                    console.log("LOCTIO =>", location);
+
+                                    return (
+                                      <CommandItem
+                                        key={location.name}
+                                        value={location.id}
+                                        onSelect={() => {
+                                          field.onChange(location.id);
+                                        }}>
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === location.id
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {location.name}
+                                      </CommandItem>
+                                    );
+                                  })}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
                           </PopoverContent>
                         </Popover>
                       </div>
-                      {form.formState.errors.category ? (
-                        <FormMessage>{form.formState.errors.category}</FormMessage>
-                      ) : (
-                        <Hint>Select Category Product</Hint>
+                      {form.formState.errors.parentCategory && (
+                        <FormMessage>{form.formState.errors.parentCategory}</FormMessage>
                       )}
                     </FormItem>
                   );
@@ -444,14 +432,15 @@ const FormProduct = () => {
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <div className="mb-2">
+                        <div className="mb-4 flex items-center gap-2">
                           <FormLabel className="text-base">Sub Category</FormLabel>
+                          <Asterisk className="w-4 h-4 text-destructive" />
                         </div>
-                        <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
-                        {form.formState.errors.subCategory ? (
+                        <div>
+                          <DrawerSelectSubCategory allSubCategory={allSubCategory} field={field} />
+                        </div>
+                        {form.formState.errors.subCategory && (
                           <FormMessage>{form.formState.errors.subCategory}</FormMessage>
-                        ) : (
-                          <Hint>Select Sub Category Product</Hint>
                         )}
                       </FormItem>
                     );

@@ -20,25 +20,29 @@ const DrawerSelectSubCategory = ({ allSubCategory, field }) => {
           <DrawerTitle>Daftar Orderan</DrawerTitle>
         </DrawerHeader>
         <div className="overflow-scroll no-scrollbar flex-1 flex flex-col gap-4 px-8">
-          {allSubCategory?.data?.data?.map((items, index) => (
-            <FormItem key={index} className="flex items-center gap-4 h-fit">
-              <Checkbox
-                className="h-6 w-6"
-                checked={field?.value?.some((val) => val.nameSubCategory === items.nameSubCategory)}
-                onCheckedChange={(checked) => {
-                  return checked
-                    ? field?.onChange([...field.value, items])
-                    : field?.onChange(
-                        field?.value?.filter(
-                          (value) => value.nameSubCategory !== items.nameSubCategory
-                        )
-                      );
-                }}
-              />
+          {allSubCategory?.data?.data?.map((items, index) => {
+            console.log("ITEMS BREEE =>", items);
 
-              <p className="-mt-8">{items.nameSubCategory}</p>
-            </FormItem>
-          ))}
+            return (
+              <FormItem key={index} className="flex items-center gap-4 h-fit">
+                <Checkbox
+                  className="h-6 w-6"
+                  checked={field?.value?.includes(items.id)} // Check if the id is in the array
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      // Add only the id to the value array
+                      field?.onChange([...field.value, items.id]);
+                    } else {
+                      // Remove the id from the value array
+                      field?.onChange(field.value.filter((value) => value !== items.id));
+                    }
+                  }}
+                />
+
+                <p className="-mt-8">{items.nameSubCategory}</p>
+              </FormItem>
+            );
+          })}
         </div>
       </DrawerContent>
     </Drawer>

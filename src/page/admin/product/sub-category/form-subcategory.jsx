@@ -94,7 +94,7 @@ const FormSubCategory = () => {
     mode: "onChange",
     defaultValues: {
       nameSubCategory: state?.data?.nameSubCategory || "",
-      parentCategory: state?.data?.parentCategory || null,
+      parentCategory: state?.data?.idParentCategory || null,
       isMultiple: state?.data?.isMultiple ?? false,
       option: state?.data?.option ?? true,
       typeSubCategory: state?.data?.typeSubCategory || [
@@ -487,8 +487,6 @@ const FormSubCategory = () => {
                 control={form.control}
                 name="parentCategory"
                 render={({ field }) => {
-                  console.log("FIELD =>", field);
-
                   return (
                     <FormItem>
                       <div className="mb-4 flex items-center gap-2">

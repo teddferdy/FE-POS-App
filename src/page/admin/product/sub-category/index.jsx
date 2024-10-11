@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import React, { useMemo } from "react";
 import { ClipboardType, ChevronDown } from "lucide-react";
-
+import { useCookies } from "react-cookie";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
 
@@ -33,12 +33,17 @@ import TableSubCategoryList from "../../../../components/organism/table/table-su
 const SubCategoryList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
 
   // QUERY
-  const allSubCategory = useQuery(["get-all-sub-caytegory"], () => getAllSubCategory(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const allSubCategory = useQuery(
+    ["get-all-sub-caytegory"],
+    () => getAllSubCategory({ store: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteSubCategory = useMutation(deleteSubCategory, {
     onMutate: () => setActive(true, null),
