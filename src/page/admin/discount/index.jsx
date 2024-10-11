@@ -18,16 +18,22 @@ import { useMutation, useQuery } from "react-query";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../components/organism/abort-controller";
 import TableDiscountList from "../../../components/organism/table/table-discount-list";
+import { useCookies } from "react-cookie";
 
 const DiscountList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
 
   // QUERY
-  const allDiscount = useQuery(["get-all-discount"], () => getAllDiscount(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const allDiscount = useQuery(
+    ["get-all-discount"],
+    () => getAllDiscount({ location: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteDiscount = useMutation(deleteDiscount, {
     onMutate: () => setActive(true, null),

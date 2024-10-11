@@ -73,6 +73,14 @@ const LocationCardList = () => {
                     }
                   });
                 }
+
+                if (pathname === "/discount-by-outlet") {
+                  navigate("/discount-list-by-outlet", {
+                    state: {
+                      location: location.nameStore
+                    }
+                  });
+                }
               }}
             />
           ))}
@@ -128,7 +136,28 @@ const LocationCardList = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Product By Outlet</BreadcrumbPage>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Transaction
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/invoice-by-outlet">Invoice By Outlet</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/discount-by-outlet">
+                          Discount By Outlet
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Invoice By Outlet</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -172,6 +201,48 @@ const LocationCardList = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>User</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      );
+    }
+
+    if (pathname === "/discount-by-outlet") {
+      return (
+        <div className="flex flex-col gap-4 p-4">
+          <h1 className="text-[#6853F0] text-lg font-bold">Discount By Outlet</h1>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      Transaction
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/invoice-by-outlet">Invoice By Outlet</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/discount-by-outlet">
+                          Discount By Outlet
+                        </BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Discount By Outlet</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
