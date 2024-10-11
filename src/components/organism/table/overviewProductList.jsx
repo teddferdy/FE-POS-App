@@ -34,11 +34,13 @@ const OverviewProductList = ({ data }) => {
           </TableHeader>
           <TableBody>
             {datas.data?.map((items, index) => {
-              let optionProduct = "";
-              const listData = JSON.parse(items.option);
-              listData.map((items, index) => {
-                optionProduct += `${items.nameSubCategory} ${index > 0 ? ", " : ""}`;
-              });
+              console.log("items =>", items);
+
+              // let optionProduct = "";
+              // const listData = JSON?.parse(items.option);
+              // listData?.map((items, index) => {
+              //   optionProduct += `${items.nameSubCategory} ${index > 0 ? ", " : ""}`;
+              // });
 
               const linkImage = generateLinkImageFromGoogleDrive(items?.image);
               return (
@@ -48,7 +50,7 @@ const OverviewProductList = ({ data }) => {
                   </TableCell>
                   <TableCell className="text-center">{items.nameProduct || "-"}</TableCell>
                   <TableCell className="text-center">{items.category || "-"}</TableCell>
-                  <TableCell className="text-center">{optionProduct}</TableCell>
+                  {/* <TableCell className="text-center">{optionProduct}</TableCell> */}
                   <TableCell className="text-center">{items.price || "-"}</TableCell>
                   <TableCell className="text-center">
                     {items.status ? <Badge isActive /> : <Badge isActive={false} />}
