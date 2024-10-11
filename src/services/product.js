@@ -27,3 +27,17 @@ export const addProduct = async (payload) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+export const editProduct = async (payload) => {
+  const { data, status } = await axiosInstance.put(`/product/edit-product/${payload.id}`, payload);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const deleteProduct = async (payload) => {
+  const { data, status } = await axiosInstance.delete(`/product/delete-product/${payload.id}`, {
+    data: payload
+  });
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};

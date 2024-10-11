@@ -49,7 +49,7 @@ const FILTER_BY = [
   }
 ];
 
-const TableProductList = ({ allProduct }) => {
+const TableProductList = ({ allProduct, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -240,18 +240,19 @@ const TableProductList = ({ allProduct }) => {
             <ThreeDotsMenu
               content={["edit", "delete"]}
               handleEdit={() => {
-                navigate(`/edit-location/${row?.original?.id}`, {
+                navigate(`/edit-product/${row?.original?.id}`, {
                   state: {
                     data: row.original
                   }
                 });
               }}
               handleDelete={() => {
-                // const body = {
-                //   id: row?.original?.id,
-                //   nameStore: row.getValue("nameStore")
-                // };
-                // handleDelete(body);
+                const body = {
+                  id: row?.original?.id,
+                  nameProduct: row?.original?.nameProduct,
+                  store: row?.original?.store
+                };
+                handleDelete(body);
               }}
             />
           </div>

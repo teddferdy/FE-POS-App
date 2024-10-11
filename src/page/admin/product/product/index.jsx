@@ -2,11 +2,8 @@
 import React, { useMemo } from "react";
 import { Utensils, ChevronDown } from "lucide-react";
 import { useCookies } from "react-cookie";
-
-import {
-  // useMutation,
-  useQuery
-} from "react-query";
+import { toast } from "sonner";
+import { useMutation, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 
 // Component
@@ -25,16 +22,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
+import { useLoading } from "../../../../components/organism/loading";
 import TemplateContainer from "../../../../components/organism/template-container";
 import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../../components/organism/abort-controller";
 import TableProductList from "../../../../components/organism/table/table-product-list";
 // Service
-import { getAllProductTable } from "../../../../services/product";
+import { getAllProductTable, deleteProduct } from "../../../../services/product";
 
 const ProductList = () => {
   const navigate = useNavigate();
-
+  const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
 
   // QUERY
@@ -47,32 +45,32 @@ const ProductList = () => {
     }
   );
 
-  // const mutateDeleteLocation = useMutation(deleteLocation, {
-  //   onMutate: () => setActive(true, null),
-  //   onSuccess: () => {
-  //     setActive(false, "success");
-  //     setTimeout(() => {
-  //       toast.success("Success", {
-  //         description: "Successfull, Delete Location"
-  //       });
-  //     }, 1000);
-  //     setTimeout(() => {
-  //       allLocation.refetch();
-  //       setActive(null, null);
-  //     }, 2000);
-  //   },
-  //   onError: (err) => {
-  //     setActive(false, "error");
-  //     setTimeout(() => {
-  //       toast.error("Failed", {
-  //         description: err.message
-  //       });
-  //     }, 1500);
-  //     setTimeout(() => {
-  //       setActive(null, null);
-  //     }, 2000);
-  //   }
-  // });
+  const mutateDeleteProduct = useMutation(deleteProduct, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Delete Product"
+        });
+      }, 1000);
+      setTimeout(() => {
+        allProduct.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
 
   const TABLE_SHOW = useMemo(() => {
     if (allProduct?.isLoading && allProduct?.isFetching && !allProduct.isError) {
@@ -90,11 +88,14 @@ const ProductList = () => {
     if (allProduct?.data && allProduct?.isSuccess && !allProduct?.isError) {
       return (
         <div className="w-full p-4">
-          <TableProductList allProduct={allProduct} />
+          <TableProductList
+            allProduct={allProduct}
+            handleDelete={(body) => mutateDeleteProduct.mutate(body)}
+          />
         </div>
       );
     }
-  }, [allProduct]);
+  }, [allProduct, mutateDeleteProduct]);
 
   return (
     <TemplateContainer>
