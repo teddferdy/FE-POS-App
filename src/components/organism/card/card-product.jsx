@@ -26,7 +26,7 @@ const ProductCard = ({ items, withActionButton = true }) => {
   const increment = () => setCount((prevState) => ++prevState);
 
   const handleAddingProduct = (items) => {
-    const options = JSON.parse(items.option).map((items) => {
+    const options = items.option.map((items) => {
       return {
         option: [],
         isMultiple: items.isMultiple,

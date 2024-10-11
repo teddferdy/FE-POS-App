@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { toast } from "sonner";
 import TemplateContainer from "../../components/organism/template-container";
+import { useCookies } from "react-cookie";
 
 // Component
 import DialogCheckout from "../../components/organism/dialog/dialogCheckout";
@@ -34,6 +35,7 @@ import {
 
 const Home = () => {
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
   const { category, updateCategory } = categorySelect();
   const { updateCheckout, cancelCheckout, data } = checkout();
   const { data: dataInvoice, resetInvoice, updateInvoiceNumber, updateInvoice } = invoice();
@@ -70,7 +72,7 @@ const Home = () => {
 
   const getInvoiceLogo = useQuery(
     ["get-invoice-logo", category],
-    () => getAllInvoiceLogoByActive(),
+    () => getAllInvoiceLogoByActive({ location: cookie?.user?.location }),
     {
       keepPreviousData: true
     }
@@ -78,7 +80,7 @@ const Home = () => {
 
   const getInvoiceFooter = useQuery(
     ["get-invoice-footer", category],
-    () => getAllInvoiceFooterByActive(),
+    () => getAllInvoiceFooterByActive({ location: cookie?.user?.location }),
     {
       keepPreviousData: true
     }
@@ -86,7 +88,7 @@ const Home = () => {
 
   const getInvoiceSocialMedia = useQuery(
     ["get-invoice-social-medi", category],
-    () => getAllInvoiceSocialMediaByActive(),
+    () => getAllInvoiceSocialMediaByActive({ location: cookie?.user?.location }),
     {
       keepPreviousData: true
     }
@@ -97,7 +99,8 @@ const Home = () => {
     () =>
       getAllProduct({
         category: category === "All" ? "" : category.toLowerCase(),
-        nameProduct: ""
+        nameProduct: "",
+        location: cookie?.user?.location
       }),
     {
       keepPreviousData: false,
@@ -105,9 +108,13 @@ const Home = () => {
     }
   );
 
-  const categoryList = useQuery(["get-category"], () => getAllCategory(), {
-    keepPreviousData: true
-  });
+  const categoryList = useQuery(
+    ["get-category"],
+    () => getAllCategory({ location: cookie?.user?.location }),
+    {
+      keepPreviousData: true
+    }
+  );
 
   const mutateNewMember = useMutation(addMember, {
     onMutate: () => setActive(true, null),
