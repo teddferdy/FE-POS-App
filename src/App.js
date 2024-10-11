@@ -27,7 +27,7 @@ import ProductList from "./page/admin/product/product";
 import DiscountList from "./page/admin/discount";
 import ShiftList from "./page/admin/shift";
 import TypePaymentList from "./page/admin/type-payment";
-import SocialMediaList from "./page/super-admin/social-media";
+import SocialMediaList from "./page/admin/social-media";
 import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
@@ -46,7 +46,7 @@ import FormSubCategory from "./page/admin/product/sub-category/form-subcategory"
 import FormDiscount from "./page/admin/discount/formDiscount";
 import FormShift from "./page/admin/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
-import FormSocialMedia from "./page/super-admin/social-media/formSocialMedia";
+import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
 import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
 import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/formInvoiceSocialMedia";
 import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
@@ -141,6 +141,11 @@ function App() {
 
         <Route
           path="/my-teams-location-available"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/discount-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
 

@@ -27,7 +27,7 @@ import Hint from "../../../components/organism/label/hint";
 
 const FormDiscount = () => {
   const { state } = useLocation();
-  const [cookie] = useCookies();
+  const [cookie] = useCookies(["user"]);
   const navigate = useNavigate();
   const { setActive } = useLoading();
   const formSchema = z.object({
@@ -118,6 +118,7 @@ const FormDiscount = () => {
         id: state?.data?.id,
         description: values?.description,
         percentage: values?.percentage,
+        store: cookie?.user?.location,
         isActive: values?.isActive,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
@@ -128,6 +129,7 @@ const FormDiscount = () => {
         description: values?.description,
         percentage: values?.percentage,
         isActive: values?.isActive,
+        store: cookie?.user?.location,
         createdBy: cookie.user.userName
       };
 

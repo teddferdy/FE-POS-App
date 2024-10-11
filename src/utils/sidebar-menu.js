@@ -2,7 +2,6 @@ import {
   Crown,
   Calculator,
   UtensilsCrossed,
-  Clipboard,
   // Map,
   // TicketPercent,
   Users,
@@ -64,8 +63,11 @@ export const sidebarMenuSuperAdmin = [
     children: [
       {
         title: "Invoice By Outlet",
-        href: "/invoice-by-outlet",
-        icon: Clipboard
+        href: "/invoice-by-outlet"
+      },
+      {
+        title: "Discount By Outlet",
+        href: "/discount-by-outlet"
       }
     ]
   },

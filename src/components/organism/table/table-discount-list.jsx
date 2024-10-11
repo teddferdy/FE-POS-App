@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
 import ThreeDotsMenu from "../popover/three-dots-menu";
+import { useCookies } from "react-cookie";
 
 const FILTER_BY = [
   {
@@ -36,6 +37,7 @@ const FILTER_BY = [
 const TableDiscountList = ({ allDiscount, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
+  const [cookie] = useCookies(["user"]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
@@ -168,7 +170,8 @@ const TableDiscountList = ({ allDiscount, handleDelete }) => {
               handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
-                  description: row.getValue("description")
+                  description: row.getValue("description"),
+                  store: cookie?.user?.location
                 };
                 handleDelete(body);
               }}

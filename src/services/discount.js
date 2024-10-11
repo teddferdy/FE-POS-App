@@ -1,7 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getAllDiscount = async () => {
-  const { data, status } = await axiosInstance.get("/discount/get-discount");
+export const getAllDiscount = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/discount/get-discount?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
