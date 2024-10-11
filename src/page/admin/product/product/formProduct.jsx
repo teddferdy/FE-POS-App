@@ -65,28 +65,32 @@ const FormProduct = () => {
     e.target.value = value;
   };
 
-  const formSchema = z.object({
-    image: z.string().min(4, {
-      message: "Invoice Logo Field Required."
-    }),
-    nameProduct: z.string().min(4, {
-      message: "Enter Name Product Minimum Character 4 and max character 30."
-    }),
-    description: z.string().min(4, {
-      message: "Enter Description Minimum 4 Character & Max 255 Character."
-    }),
-    category: z.number().min(1, {
-      message: "Name Product Store Cannot Empty"
-    }),
-    price: z.string().min(2, {
-      message: "Enter Price Minimum 2 Character Price Product Must Number And Not Alphabet"
-    }),
-    status: z.boolean(),
-    store: z.string(),
-    subCategory: z.array(z.number()).min(1, {
-      message: "At least one sub-category is required."
+  const formSchema = z
+    .object({
+      image: z.string().min(4, {
+        message: "Invoice Logo Field Required."
+      }),
+      nameProduct: z.string().min(4, {
+        message: "Enter Name Product Minimum Character 4 and max character 30."
+      }),
+      description: z.string().min(4, {
+        message: "Enter Description Minimum 4 Character & Max 255 Character."
+      }),
+      category: z.number().min(1, {
+        message: "Name Product Store Cannot Empty"
+      }),
+      price: z.string().min(2, {
+        message: "Enter Price Minimum 2 Character Price Product Must Number And Not Alphabet"
+      }),
+      status: z.boolean(),
+      store: z.string(),
+      isOption: z.boolean(),
+      subCategory: z.array(z.number()).optional() // Make optional initially
     })
-  });
+    .refine((data) => !data.isOption || data.subCategory?.length > 0, {
+      message: "At least one sub-category is required if options are enabled.",
+      path: ["subCategory"] // This will apply the error message to the `subCategory` field
+    });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -98,6 +102,7 @@ const FormProduct = () => {
       status: true,
       description: "",
       store: "",
+      isOption: false,
       subCategory: []
     }
   });
@@ -109,9 +114,13 @@ const FormProduct = () => {
 
   const allSubCategory = useQuery(
     ["get-all-sub-category", form.getValues("category")],
-    () => getSubCategoryByCategory(form.getValues("category")),
+    () =>
+      getSubCategoryByCategory({
+        idParentCategory: form.getValues("category"),
+        store: cookie?.user?.location
+      }),
     {
-      enabled: !!form.getValues("category"),
+      enabled: !!form.getValues("isOption") && !!form.getValues("category"),
       keepPreviousData: false
     }
   );
@@ -163,7 +172,8 @@ const FormProduct = () => {
         description: values?.description,
         status: values?.status,
         price: values?.price,
-        option: values?.subCategory,
+        isOption: values.isOption,
+        option: values.isOption ? values.subCategory : [],
         store: cookie?.user?.location,
         createdBy: cookie?.user?.userName
       };
@@ -290,7 +300,7 @@ const FormProduct = () => {
                 )}
               />
             </div>
-            <div className="col-span-3 lg:col-span-2">
+            <div className="col-span-3 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="description"
@@ -327,6 +337,29 @@ const FormProduct = () => {
                     {form.formState.errors.price && (
                       <FormMessage>{form.formState.errors.price}</FormMessage>
                     )}
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="isOption"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Adding Option</FormLabel>
+                    </div>
+                    <div className="flex items-center gap-6 mb-4">
+                      <p>No</p>
+                      <Switch
+                        name={field.name}
+                        id={field.name}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p>Yes</p>
+                    </div>
                   </FormItem>
                 )}
               />
@@ -424,7 +457,7 @@ const FormProduct = () => {
                 }}
               />
             </div>
-            {form?.getValues("category") && (
+            {form?.getValues("isOption") && (
               <div className="col-span-3 lg:col-span-1">
                 <FormField
                   control={form.control}

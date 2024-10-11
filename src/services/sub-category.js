@@ -10,7 +10,7 @@ export const getAllSubCategory = async (payload) => {
 
 export const getSubCategoryByCategory = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/sub-category/get-subcategory-by-category?parentCategory=${payload}`
+    `/sub-category/get-subcategory-by-category?idParentCategory=${payload.idParentCategory}&store=${payload.store}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

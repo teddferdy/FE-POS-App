@@ -79,7 +79,7 @@ const StepFlow = ({ categoryList, subCategoryList, productList }) => {
         <StepCard
           disabled={disabled}
           stepNumber={2}
-          title="Create Sub Category"
+          title="Create Sub Category (Optional)"
           description="Sign up by providing your details. It only takes a few minutes to get started!"
           icon={<span>🍴</span>}
           onClick={() => {
@@ -108,8 +108,7 @@ const StepFlow = ({ categoryList, subCategoryList, productList }) => {
     }
 
     if (productList.data && productList.isSuccess) {
-      const disabled =
-        subCategoryList?.data?.data?.length < 1 && productList?.data?.data?.length < 1;
+      const disabled = categoryList?.data?.data?.length < 1;
 
       return (
         <StepCard

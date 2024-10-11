@@ -98,13 +98,12 @@ const Home = () => {
     ["get-product", category],
     () =>
       getAllProduct({
-        category: category === "All" ? "" : category.toLowerCase(),
+        category: category || "",
         nameProduct: "",
         location: cookie?.user?.location
       }),
     {
-      keepPreviousData: false,
-      enabled: !!category
+      keepPreviousData: false
     }
   );
 
@@ -244,7 +243,9 @@ const Home = () => {
           <CategoryList
             categoryList={categoryList}
             valueFilterCategory={category}
-            setValueFilterCategory={(val) => updateCategory(val)}
+            setValueFilterCategory={(val) => {
+              updateCategory(val);
+            }}
           />
 
           {/* Total Checkout Table / Mobile */}

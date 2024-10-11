@@ -1,6 +1,8 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { useQuery } from "react-query";
+import { useCookies } from "react-cookie";
+
 import TemplateContainer from "../../../components/organism/template-container";
 import StepFlow from "../../../components/organism/step/product";
 import {
@@ -23,21 +25,37 @@ import { getAllSubCategory } from "../../../services/sub-category";
 import { getAllProduct } from "../../../services/product";
 
 const index = () => {
-  // QUERY
+  const [cookie] = useCookies(["user"]);
 
-  const categoryList = useQuery(["get-category"], () => getAllCategory(), {
-    keepPreviousData: true
-  });
-  const subCategoryList = useQuery(["get-all-subcategory"], () => getAllSubCategory(), {
-    keepPreviousData: true
-  });
+  // QUERY
+  const categoryList = useQuery(
+    ["get-category"],
+    () =>
+      getAllCategory({
+        location: cookie?.user?.location
+      }),
+    {
+      keepPreviousData: true
+    }
+  );
+  const subCategoryList = useQuery(
+    ["get-all-subcategory"],
+    () =>
+      getAllSubCategory({
+        location: cookie?.user?.location
+      }),
+    {
+      keepPreviousData: true
+    }
+  );
 
   const productList = useQuery(
     ["get-product"],
     () =>
       getAllProduct({
         category: "",
-        nameProduct: ""
+        nameProduct: "",
+        location: cookie?.user?.location
       }),
     {
       keepPreviousData: false
