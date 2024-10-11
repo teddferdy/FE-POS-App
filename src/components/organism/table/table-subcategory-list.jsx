@@ -33,22 +33,6 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
 
   const columns = [
     {
-      accessorKey: "parentCategory",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Name Product
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("parentCategory")}</div>
-    },
-    {
       accessorKey: "nameSubCategory",
       header: ({ column }) => {
         return (
@@ -62,7 +46,23 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
           </div>
         );
       },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("nameSubCategory")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("nameSubCategory")}</div>
+    },
+    {
+      accessorKey: "nameCategory",
+      header: ({ column }) => {
+        return (
+          <div className="justify-center flex">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+              Category
+              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => <div className="text-center">{row.getValue("nameCategory")}</div>
     },
     {
       accessorKey: "typeSubCategory",

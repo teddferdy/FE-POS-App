@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-no-undef */
 import React, { useMemo } from "react";
 import { Utensils, ChevronDown } from "lucide-react";
+import { useCookies } from "react-cookie";
 
 import {
   // useMutation,
@@ -34,10 +35,12 @@ import { getAllProductTable } from "../../../../services/product";
 const ProductList = () => {
   const navigate = useNavigate();
 
+  const [cookie] = useCookies(["user"]);
+
   // QUERY
   const allProduct = useQuery(
     ["get-all-product-table"],
-    () => getAllProductTable({ location: "" }),
+    () => getAllProductTable({ location: cookie?.user?.location }),
     {
       retry: 0,
       keepPreviousData: true

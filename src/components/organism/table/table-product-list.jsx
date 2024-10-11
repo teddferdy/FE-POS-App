@@ -23,6 +23,7 @@ import {
 } from "../../ui/dropdown-menu";
 import ThreeDotsMenu from "../popover/three-dots-menu";
 import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+import DialogShowOptionProduct from "../dialog/dialog-show-option-product";
 
 const FILTER_BY = [
   {
@@ -97,7 +98,7 @@ const TableProductList = ({ allProduct }) => {
       cell: ({ row }) => <div className="text-center capitalize">{row.getValue("nameProduct")}</div>
     },
     {
-      accessorKey: "category",
+      accessorKey: "nameCategory",
       header: ({ column }) => {
         return (
           <div className="justify-center flex">
@@ -110,7 +111,7 @@ const TableProductList = ({ allProduct }) => {
           </div>
         );
       },
-      cell: ({ row }) => <div className="lowercase text-center">{row.getValue("category")}</div>
+      cell: ({ row }) => <div className="lowercase text-center">{row.getValue("nameCategory")}</div>
     },
     {
       accessorKey: "description",
@@ -126,7 +127,18 @@ const TableProductList = ({ allProduct }) => {
         return <div className="text-center font-medium">{row.getValue("price")}</div>;
       }
     },
-
+    {
+      accessorKey: "option",
+      header: () => <div className="text-center">Option Product</div>,
+      cell: ({ row }) => {
+        const data = row.original.option;
+        return (
+          <div className="justify-center flex">
+            <DialogShowOptionProduct data={data} />
+          </div>
+        );
+      }
+    },
     {
       accessorKey: "status",
       header: ({ column }) => {
