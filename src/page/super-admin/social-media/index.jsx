@@ -18,15 +18,22 @@ import { useMutation, useQuery } from "react-query";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../components/organism/abort-controller";
 import TableSocialMediaList from "../../../components/organism/table/table-social-media-list";
+import { useCookies } from "react-cookie";
 const SocialMediaList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
 
+  const [cookie] = useCookies();
+
   // QUERY
-  const allSocialMedia = useQuery(["get-all-social-media"], () => getAllSocialMedia(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const allSocialMedia = useQuery(
+    ["get-all-social-media"],
+    () => getAllSocialMedia({ location: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteSocialMedia = useMutation(deleteSocialMedia, {
     onMutate: () => setActive(true, null),

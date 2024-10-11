@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,11 +34,17 @@ const InvoiceFooterList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
 
+  const [cookie] = useCookies(["user"]);
+
   // QUERY
-  const invoiceFooter = useQuery(["get-all-invoice-footer"], () => getAllInvoiceFooter(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const invoiceFooter = useQuery(
+    ["get-all-invoice-footer"],
+    () => getAllInvoiceFooter({ location: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteInvoiceFooter = useMutation(deleteInvoiceFooter, {
     onMutate: () => setActive(true, null),

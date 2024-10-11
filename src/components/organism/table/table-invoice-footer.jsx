@@ -22,6 +22,7 @@ import {
 import DialogFooterInvoice from "../dialog/dialog-footer-invoice";
 import { Badge } from "../../ui/badge";
 import ThreeDotsMenu from "../popover/three-dots-menu";
+import { useCookies } from "react-cookie";
 
 const FILTER_BY = [
   {
@@ -36,10 +37,12 @@ const FILTER_BY = [
 
 const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete }) => {
   const navigate = useNavigate();
+  const [cookie] = useCookies(["user"]);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+
   const [filterBy, setFilterBy] = useState({
     value: "name",
     name: "Name"
@@ -185,6 +188,7 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
               handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
+                  store: cookie?.user?.location,
                   name: row?.original?.name
                 };
                 handleDelete(body);
@@ -193,7 +197,8 @@ const TableInvoiceFooterList = ({ invoiceFooter, handleActivate, handleDelete })
                 const body = {
                   id: row.original.id,
                   name: row.original.name,
-                  isActive: true
+                  store: cookie?.user?.location,
+                  isActive: !row.original.isActive
                 };
                 handleActivate(body);
               }}

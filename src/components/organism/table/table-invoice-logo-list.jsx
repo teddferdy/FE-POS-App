@@ -9,6 +9,8 @@ import {
   useReactTable
 } from "@tanstack/react-table";
 import moment from "moment";
+import { useCookies } from "react-cookie";
+
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
@@ -33,6 +35,8 @@ const FILTER_BY = [
 const TableInvoiceLogoList = ({ invoiceLogo, handleActivate, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
+  const [cookie] = useCookies(["user"]);
+
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
@@ -166,6 +170,7 @@ const TableInvoiceLogoList = ({ invoiceLogo, handleActivate, handleDelete }) => 
               handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
+                  store: cookie?.user?.location,
                   image: row?.original?.image
                 };
                 handleDelete(body);
@@ -174,7 +179,8 @@ const TableInvoiceLogoList = ({ invoiceLogo, handleActivate, handleDelete }) => 
                 const body = {
                   id: row.original.id,
                   image: row.original.image,
-                  isActive: true
+                  store: cookie?.user?.location,
+                  isActive: !row.original.isActive
                 };
                 handleActivate(body);
               }}

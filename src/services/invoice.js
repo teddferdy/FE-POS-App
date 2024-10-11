@@ -1,14 +1,18 @@
 import { axiosInstance } from ".";
 
 // Logo Invoice
-export const getAllInvoiceLogoByActive = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-logo-by-active");
+export const getAllInvoiceLogoByActive = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-logo-by-active?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllInvoiceLogo = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-logo");
+export const getAllInvoiceLogo = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-logo?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -49,14 +53,18 @@ export const activateOrNotActiveInvoiceLogo = async (payload) => {
 };
 
 // Social Media Invoice List
-export const getAllInvoiceSocialMediaByActive = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-social-media-by-active");
+export const getAllInvoiceSocialMediaByActive = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-social-media-by-active?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllInvoiceSocialMedia = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-social-media");
+export const getAllInvoiceSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-social-media?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -100,14 +108,18 @@ export const activateOrNotActiveInvoiceSocialMedia = async (payload) => {
 };
 
 // Invoice Footer
-export const getAllInvoiceFooterByActive = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-footer-by-active");
+export const getAllInvoiceFooterByActive = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-footer-by-active?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllInvoiceFooter = async () => {
-  const { data, status } = await axiosInstance.get("/invoice/get-invoice-footer");
+export const getAllInvoiceFooter = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/invoice/get-invoice-footer?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

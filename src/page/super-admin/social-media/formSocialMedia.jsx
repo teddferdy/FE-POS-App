@@ -106,6 +106,7 @@ const FormSocialMedia = () => {
       const body = {
         id: state?.data?.id,
         name: values?.name,
+        store: cookie?.user?.location,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
@@ -113,6 +114,7 @@ const FormSocialMedia = () => {
     } else {
       const body = {
         name: values?.name,
+        store: cookie?.user?.location,
         createdBy: cookie.user.userName
       };
       mutateAddSocialMedia.mutate(body);

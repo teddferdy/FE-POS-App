@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-table";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+
 import { Input } from "../../ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 import { Button } from "../../ui/button";
@@ -37,6 +39,8 @@ const FILTER_BY = [
 const TableInvoiceSocialMediaList = ({ invoiceSocialMedia, handleActivate, handleDelete }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
+  const [cookie] = useCookies(["user"]);
+
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
@@ -185,7 +189,8 @@ const TableInvoiceSocialMediaList = ({ invoiceSocialMedia, handleActivate, handl
               handleDelete={() => {
                 const body = {
                   id: `${row?.original?.id}`,
-                  name: row?.original?.name
+                  name: row?.original?.name,
+                  store: cookie?.user?.location
                 };
                 handleDelete(body);
               }}
@@ -193,7 +198,8 @@ const TableInvoiceSocialMediaList = ({ invoiceSocialMedia, handleActivate, handl
                 const body = {
                   id: row.original.id,
                   name: row.original.name,
-                  isActive: true
+                  store: cookie?.user?.location,
+                  isActive: !row.original.isActive
                 };
                 handleActivate(body);
               }}

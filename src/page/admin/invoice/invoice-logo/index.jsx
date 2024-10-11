@@ -3,6 +3,8 @@ import { ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
 
+import { useCookies } from "react-cookie";
+
 import {
   getAllInvoiceLogo,
   deleteInvoiceLogo,
@@ -33,12 +35,17 @@ import TableInvoiceLogoList from "../../../../components/organism/table/table-in
 const InvoiceLogoList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
 
   // QUERY
-  const invoiceLogo = useQuery(["get-all-invoice-logo"], () => getAllInvoiceLogo(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const invoiceLogo = useQuery(
+    ["get-all-invoice-logo"],
+    () => getAllInvoiceLogo({ location: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteInvoiceLogo = useMutation(deleteInvoiceLogo, {
     onMutate: () => setActive(true, null),

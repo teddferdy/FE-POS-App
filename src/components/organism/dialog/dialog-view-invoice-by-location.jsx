@@ -24,6 +24,8 @@ import {
 } from "../../../services/invoice";
 
 const DialogViewInvoiceByLocation = ({ nameStore }) => {
+  console.log("NAMESTORE =>", nameStore);
+
   const [open, setOpen] = useState(false);
 
   //   Query

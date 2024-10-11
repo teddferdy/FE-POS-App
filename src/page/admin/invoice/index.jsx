@@ -2,6 +2,8 @@ import React from "react";
 import { ChevronDown } from "lucide-react";
 import TemplateContainer from "../../../components/organism/template-container";
 import { useQuery } from "react-query";
+import { useCookies } from "react-cookie";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,9 +27,15 @@ import { getAllSocialMedia } from "../../../services/social-media";
 const index = () => {
   const navigate = useNavigate();
 
-  const allSocialMedia = useQuery(["get-all-social-media"], () => getAllSocialMedia(), {
-    retry: 0
-  });
+  const [cookie] = useCookies(["user"]);
+
+  const allSocialMedia = useQuery(
+    ["get-all-social-media"],
+    () => getAllSocialMedia({ location: cookie?.user?.location }),
+    {
+      retry: 0
+    }
+  );
 
   return (
     <TemplateContainer>
