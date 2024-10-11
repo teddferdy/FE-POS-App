@@ -1,7 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getAllSocialMedia = async () => {
-  const { data, status } = await axiosInstance.get("/social-media/get-social-media");
+export const getAllSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/social-media/get-social-media?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -3,6 +3,8 @@ import { ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
 
+import { useCookies } from "react-cookie";
+
 import {
   getAllInvoiceSocialMedia,
   deleteInvoiceSocialMedia,
@@ -33,11 +35,12 @@ import TableInvoiceSocialMediaList from "../../../../components/organism/table/t
 const InvoiceSocialMediaList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
 
   // QUERY
   const invoiceSocialMedia = useQuery(
     ["get-all-invoice-social-media"],
-    () => getAllInvoiceSocialMedia(),
+    () => getAllInvoiceSocialMedia({ location: cookie?.user?.location }),
     {
       retry: 0,
       keepPreviousData: true

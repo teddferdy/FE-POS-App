@@ -19,8 +19,8 @@ const DialogBySwitch = ({ checked, onChange }) => {
     <Dialog>
       <DialogTrigger asChild>
         <button className="flex items-center gap-1 hover:bg-gray-100 w-full">
-          <Badge isActive={checked} />
-          {checked ? "Active" : "No Active"}
+          <Badge isActive={!checked} />
+          {!checked ? "Active" : "No Active"}
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
