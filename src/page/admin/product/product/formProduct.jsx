@@ -48,13 +48,15 @@ import {
 import DrawerSelectSubCategory from "../../../../components/organism/drawer/drawer-select-sub-category";
 
 // Services
-import { addProduct } from "../../../../services/product";
+import { addProduct, editProduct } from "../../../../services/product";
 import { getAllCategory } from "../../../../services/category";
 import { getSubCategoryByCategory } from "../../../../services/sub-category";
 
 const FormProduct = () => {
   const { state } = useLocation();
   const [cookie] = useCookies(["user"]);
+
+  console.log("state =>", state);
 
   const { setActive } = useLoading();
   const navigate = useNavigate();
@@ -96,14 +98,15 @@ const FormProduct = () => {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      image: "",
-      nameProduct: "",
-      category: null,
-      status: true,
-      description: "",
-      store: "",
-      isOption: false,
-      subCategory: []
+      image: state.data.image ?? "",
+      nameProduct: state.data.nameProduct ?? "",
+      category: state.data.category ?? null,
+      status: state.data.status ?? true,
+      price: state.data.price ?? "",
+      description: state.data.description ?? "",
+      store: state.data.store ?? "",
+      isOption: state.data.isOption ?? false,
+      subCategory: state.data.option.map((items) => items.id) ?? []
     }
   });
 
@@ -151,19 +154,52 @@ const FormProduct = () => {
       }, 2000);
     }
   });
+
+  const mutateEditProduct = useMutation(editProduct, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Added New Product"
+        });
+      }, 1000);
+      setTimeout(() => {
+        navigate("/product-list");
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed Add New Product", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
   const onSubmit = (values) => {
+    console.log("values =>", values);
+
     if (state?.data?.id) {
-      //   const body = {
-      //     id: state?.data?.id,
-      //     nameStore: values?.nameStore,
-      //     address: values?.address,
-      //     detailLocation: values?.detailLocation,
-      //     phoneNumber: values?.phoneNumber,
-      //     status: true,
-      //     createdBy: state?.data?.createdBy,
-      //     modifiedBy: cookie.user.userName
-      //   };
-      //   mutateEditLocation.mutate(body);
+      const body = {
+        id: state?.data?.id,
+        nameProduct: values?.nameProduct,
+        image: values?.image,
+        category: values?.category,
+        description: values?.description,
+        status: values?.status,
+        price: values?.price,
+        isOption: values.isOption,
+        option: values.isOption ? values.subCategory : [],
+        store: cookie?.user?.location,
+        modifiedBy: cookie.user.userName
+      };
+      mutateEditProduct.mutate(body);
     } else {
       const body = {
         nameProduct: values?.nameProduct,
@@ -356,7 +392,12 @@ const FormProduct = () => {
                         name={field.name}
                         id={field.name}
                         checked={field.value}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(val) => {
+                          if (!val) {
+                            form.setValue("subCategory", []);
+                          }
+                          field.onChange(val);
+                        }}
                       />
                       <p>Yes</p>
                     </div>
