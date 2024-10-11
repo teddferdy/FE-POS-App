@@ -24,9 +24,12 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
     }
 
     if (categoryList.data && categoryList.isSuccess) {
+      console.log("categoryList =>", categoryList);
+
       const getData = [
         {
-          name: "All"
+          name: "All",
+          id: 0
         },
         ...categoryList?.data?.data
       ];
@@ -49,15 +52,19 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
               slidesPerView: 5 // On larger screens, show 5 categories
             }
           }}>
-          {getData.map((category, index) => (
-            <SwiperSlide key={index}>
-              <div
-                className={`rounded-full flex items-center justify-center ${category.value === valueFilterCategory ? "bg-[#6853F0] text-white" : "text-[#CECECE] bg-white"} font-bold text-base cursor-pointer hover:bg-[#1ACB0A] duration-200 hover:text-white px-10 py-4`}
-                onClick={() => setValueFilterCategory(category.value)}>
-                {category.name}
-              </div>
-            </SwiperSlide>
-          ))}
+          {getData.map((category, index) => {
+            console.log("category =>", category);
+
+            return (
+              <SwiperSlide key={index}>
+                <div
+                  className={`rounded-full flex items-center justify-center ${category.id === valueFilterCategory ? "bg-[#6853F0] text-white" : "text-[#CECECE] bg-white"} font-bold text-base cursor-pointer hover:bg-[#1ACB0A] duration-200 hover:text-white px-10 py-4`}
+                  onClick={() => setValueFilterCategory(category.id)}>
+                  {category.name}
+                </div>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
       );
     }

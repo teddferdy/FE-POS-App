@@ -132,9 +132,11 @@ const TableProductList = ({ allProduct }) => {
       header: () => <div className="text-center">Option Product</div>,
       cell: ({ row }) => {
         const data = row.original.option;
+        console.log("data =>", data);
+
         return (
           <div className="justify-center flex">
-            <DialogShowOptionProduct data={data} />
+            {data.length > 0 ? <DialogShowOptionProduct data={data} /> : "-"}
           </div>
         );
       }
