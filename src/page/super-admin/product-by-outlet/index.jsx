@@ -51,14 +51,18 @@ const ProductListByLocation = () => {
       console.log("productList?.data?.data?.length =>", productList?.data?.data?.length);
 
       return productList?.data?.data?.length > 0 ? (
-        <div className="grid grid-cols-2  md:grid-cols-3 overflow-scroll flex-wrap gap-4 h-screen no-scrollbar pb-20">
-          {productList?.data?.data?.map((items, index) => (
-            <div
-              className={`${productList?.data?.data?.length === index + 1 ? "mb-72 lg:mb-36" : ""}`}
-              key={index}>
-              <ProductCard items={items} withActionButton={false} />
-            </div>
-          ))}
+        <div className="grid grid-cols-2  md:grid-cols-4 overflow-scroll flex-wrap gap-4 no-scrollbar pb-20">
+          {productList?.data?.data?.map((items, index) => {
+            console.log("ITEMS =>", items);
+
+            return (
+              <div
+                className={`${productList?.data?.data?.length === index + 1 ? "mb-72 lg:mb-36" : ""}`}
+                key={index}>
+                <ProductCard items={items} withActionButton={false} />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="h-[65vh] flex justify-center flex-col items-center bg-gray-500 w-full rounded-lg gap-6 mt-4">
@@ -95,7 +99,7 @@ const ProductListByLocation = () => {
         </div>
 
         {/* List Member */}
-        {TABLE_SHOW}
+        <div className="bg-gray-200 p-4 mt-4">{TABLE_SHOW}</div>
       </div>
     </TemplateContainer>
   );
