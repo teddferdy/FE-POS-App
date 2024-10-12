@@ -1,13 +1,17 @@
 import { axiosInstance } from ".";
 
-export const getAllCategory = async () => {
-  const { data, status } = await axiosInstance.get("/category/get-category");
+export const getAllCategory = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/category/get-category?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllCategoryTable = async () => {
-  const { data, status } = await axiosInstance.get("/category/get-category-all");
+export const getAllCategoryTable = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/category/get-category-all?store=${payload.location}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

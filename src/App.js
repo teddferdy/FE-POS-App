@@ -37,6 +37,7 @@ import UserListByLocation from "./page/super-admin/my-teams/user";
 import PositionList from "./page/super-admin/my-teams/position";
 import RoleList from "./page/super-admin/my-teams/role";
 import ProductListByLocation from "./page/super-admin/product-by-outlet";
+import DiscountListByOutlet from "./page/super-admin/discount-list-by-outlet";
 
 // Form
 import FormCategory from "./page/admin/product/category/formCategory";
@@ -126,10 +127,6 @@ function App() {
         />
 
         {/* Location Available */}
-        {/* <Route
-          path="/location-available"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        /> */}
         <Route
           path="/invoice-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
@@ -138,12 +135,10 @@ function App() {
           path="/product-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
-
         <Route
           path="/my-teams-location-available"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
-
         <Route
           path="/discount-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
@@ -167,6 +162,10 @@ function App() {
         <Route path="/role-list" element={cookie.token ? <RoleList /> : <Navigate to="/" />} />
         <Route path="/product-page" element={cookie.token ? <Product /> : <Navigate to="/" />} />
         <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
+        <Route
+          path="/discount-list-by-outlet"
+          element={cookie.token ? <DiscountListByOutlet /> : <Navigate to="/" />}
+        />
 
         {/* Add Routes */}
         <Route

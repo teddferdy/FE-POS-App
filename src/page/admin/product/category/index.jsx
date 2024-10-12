@@ -4,7 +4,7 @@ import { ClipboardPlus, ChevronDown } from "lucide-react";
 
 import { deleteCategory } from "../../../../services/category";
 import { Button } from "../../../../components/ui/button";
-
+import { useCookies } from "react-cookie";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,11 +33,16 @@ import AbortController from "../../../../components/organism/abort-controller";
 const CategoryList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies(["user"]);
 
   // QUERY
-  const allCategory = useQuery(["get-all-category-table"], () => getAllCategoryTable(), {
-    keepPreviousData: false
-  });
+  const allCategory = useQuery(
+    ["get-all-category-table"],
+    () => getAllCategoryTable({ location: cookie?.user?.location }),
+    {
+      keepPreviousData: false
+    }
+  );
 
   const mutateDeleteCategory = useMutation(deleteCategory, {
     onMutate: () => setActive(true, null),

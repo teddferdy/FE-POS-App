@@ -113,9 +113,13 @@ const FormSubCategory = () => {
   });
 
   // QUERY
-  const allCategory = useQuery(["get-all-category"], () => getAllCategory(), {
-    keepPreviousData: false
-  });
+  const allCategory = useQuery(
+    ["get-all-category"],
+    () => getAllCategory({ location: cookie?.user?.location }),
+    {
+      keepPreviousData: false
+    }
+  );
 
   const mutateAddSubCategory = useMutation(addSubCategory, {
     onMutate: () => setActive(true, null),
