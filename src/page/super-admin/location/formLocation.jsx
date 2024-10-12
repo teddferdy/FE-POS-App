@@ -132,7 +132,7 @@ const FormLocation = () => {
         address: values?.address,
         detailLocation: values?.detailLocation,
         phoneNumber: values?.phoneNumber,
-        status: true,
+        status: values.status,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
@@ -144,7 +144,7 @@ const FormLocation = () => {
         address: values?.address,
         detailLocation: values?.detailLocation,
         phoneNumber: values?.phoneNumber,
-        status: true,
+        status: values.status,
         createdBy: cookie.user.userName
       };
 
