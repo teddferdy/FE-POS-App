@@ -132,8 +132,6 @@ const TableProductList = ({ allProduct, handleDelete }) => {
       header: () => <div className="text-center">Option Product</div>,
       cell: ({ row }) => {
         const data = row.original.option;
-        console.log("data =>", data);
-
         return (
           <div className="justify-center flex">
             {data.length > 0 ? <DialogShowOptionProduct data={data} /> : "-"}

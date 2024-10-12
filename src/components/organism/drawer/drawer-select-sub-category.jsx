@@ -21,8 +21,6 @@ const DrawerSelectSubCategory = ({ allSubCategory, field }) => {
         </DrawerHeader>
         <div className="overflow-scroll no-scrollbar flex-1 flex flex-col gap-4 px-8">
           {allSubCategory?.data?.data?.map((items, index) => {
-            console.log("ITEMS BREEE =>", items);
-
             return (
               <FormItem key={index} className="flex items-center gap-4 h-fit">
                 <Checkbox

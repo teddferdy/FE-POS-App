@@ -24,30 +24,36 @@ import {
 } from "../../../services/invoice";
 
 const DialogViewInvoiceByLocation = ({ nameStore }) => {
-  console.log("NAMESTORE =>", nameStore);
-
   const [open, setOpen] = useState(false);
+
+  const [nameLocation, setNameLocation] = useState("");
 
   //   Query
   const invoiceLogoByLocation = useQuery(
-    ["get-invoice-logo-by-location"],
-    () => getInvoiceLogoByLocation({ store: nameStore }),
+    ["get-invoice-logo-by-location", nameLocation],
+    () => getInvoiceLogoByLocation({ store: nameLocation }),
     {
-      retry: 0
+      keepPreviousData: false,
+      retry: 0,
+      enabled: !!nameLocation && open
     }
   );
   const invoiceSocialMediaByLocation = useQuery(
-    ["get-invoice-social-media-by-location"],
-    () => getInvoiceSocialMediaByLocation({ store: nameStore }),
+    ["get-invoice-social-media-by-location", nameLocation],
+    () => getInvoiceSocialMediaByLocation({ store: nameLocation }),
     {
-      retry: 0
+      keepPreviousData: false,
+      retry: 0,
+      enabled: !!nameLocation && open
     }
   );
   const invoiceFooterByLocation = useQuery(
-    ["get-invoice-footer-by-location"],
-    () => getInvoiceFooterByLocation({ store: nameStore }),
+    ["get-invoice-footer-by-location", nameLocation],
+    () => getInvoiceFooterByLocation({ store: nameLocation }),
     {
-      retry: 0
+      keepPreviousData: false,
+      retry: 0,
+      enabled: !!nameLocation && open
     }
   );
 
@@ -83,14 +89,20 @@ const DialogViewInvoiceByLocation = ({ nameStore }) => {
       invoiceFooterByLocation.data &&
       invoiceFooterByLocation.isSuccess
     ) {
-      const invoiceLogo = invoiceLogoByLocation.data.data;
-      const invoiceSocialMedia = invoiceSocialMediaByLocation.data.data;
-      const invoiceFooter = invoiceFooterByLocation.data.data;
+      const invoiceLogo = invoiceLogoByLocation?.data?.data
+        ? invoiceLogoByLocation?.data?.data?.[0]
+        : [];
+      const invoiceSocialMedia = invoiceSocialMediaByLocation?.data?.data
+        ? invoiceSocialMediaByLocation?.data?.data?.[0]
+        : [];
+      const invoiceFooter = invoiceFooterByLocation?.data?.data
+        ? invoiceFooterByLocation?.data?.data?.[0]
+        : [];
 
       return (
         <Card>
           {/* Header Section: Logo, Invoice Number, Date */}
-          {invoiceLogo.length > 0 && (
+          {invoiceLogo?.length > 0 && (
             <img
               src={generateLinkImageFromGoogleDrive(invoiceLogo)}
               className={`mx-auto h-16 ${invoiceLogo ? "" : "hidden"}`}
@@ -139,7 +151,7 @@ const DialogViewInvoiceByLocation = ({ nameStore }) => {
             {/* Social Media */}
 
             <div className="flex-col gap-4">
-              {invoiceSocialMedia.map((items, index) => {
+              {invoiceSocialMedia?.socialMediaList?.map((items, index) => {
                 if (items.socialMedia === "instagram" || items.socialMedia === "Instagram") {
                   return (
                     <div className="flex items-center gap-4 mt-4" key={index}>
@@ -191,8 +203,8 @@ const DialogViewInvoiceByLocation = ({ nameStore }) => {
           {/* View Invoice Footer */}
 
           <CardFooter className="justify-center flex-col">
-            {invoiceFooter?.length > 0 ? (
-              invoiceFooter?.map((items, index) => {
+            {invoiceFooter?.footerList.length > 0 ? (
+              invoiceFooter?.footerList?.map((items, index) => {
                 return (
                   <p className="text-xs mt-4" key={index}>
                     {items.content}
@@ -206,14 +218,24 @@ const DialogViewInvoiceByLocation = ({ nameStore }) => {
         </Card>
       );
     }
-  }, [invoiceLogoByLocation, invoiceSocialMediaByLocation, invoiceFooterByLocation]);
+  }, [invoiceLogoByLocation, invoiceSocialMediaByLocation, invoiceFooterByLocation, nameLocation]);
 
   return (
-    <Dialog open={open} onOpenChange={(val) => setOpen(val)}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        setOpen(val);
+        if (!val) {
+          setNameLocation("");
+        }
+      }}>
       <DialogTrigger>
         <button
           className="flex gap-2 p-2 w-fit rounded overflow-hidden bg-white text-gray-700 hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:text-white"
-          onClick={() => setOpen(true)}>
+          onClick={() => {
+            setOpen(true);
+            setNameLocation(nameStore);
+          }}>
           <Eye className="w-6 h-6 mr-2 text-gray-500" />
           View Invoice
         </button>

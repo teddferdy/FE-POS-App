@@ -24,8 +24,6 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
     }
 
     if (categoryList.data && categoryList.isSuccess) {
-      console.log("categoryList =>", categoryList);
-
       const getData = [
         {
           name: "All",
@@ -53,8 +51,6 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
             }
           }}>
           {getData.map((category, index) => {
-            console.log("category =>", category);
-
             return (
               <SwiperSlide key={index}>
                 <div
