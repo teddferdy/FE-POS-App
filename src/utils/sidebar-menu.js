@@ -130,8 +130,8 @@ export const sidebarMenuAdmin = [
         href: "/shift-list"
       },
       {
-        title: "User (Coming Soon)",
-        href: "#"
+        title: "User",
+        href: "/user-list"
       }
     ]
   },

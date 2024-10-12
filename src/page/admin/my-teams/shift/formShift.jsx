@@ -11,8 +11,15 @@ import { Asterisk } from "lucide-react";
 // import { useTranslation } from "react-i18next";
 
 // Component
-import { useLoading } from "../../../components/organism/loading";
-import { Button } from "../../../components/ui/button";
+import { useLoading } from "../../../../components/organism/loading";
+import { Button } from "../../../../components/ui/button";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,17 +27,17 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator
-} from "../../../components/ui/breadcrumb";
-import DialogCancelForm from "../../../components/organism/dialog/dialogCancelForm";
-import { Input } from "../../../components/ui/input";
-import { Textarea } from "../../../components/ui/textarea";
-import { Switch } from "../../../components/ui/switch";
-import TimePicker from "../../../components/organism/picker/time-picker";
-import { Form, FormField, FormItem, FormLabel } from "../../../components/ui/form";
-import TemplateContainer from "../../../components/organism/template-container";
+} from "../../../../components/ui/breadcrumb";
+import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
+import { Input } from "../../../../components/ui/input";
+import { Textarea } from "../../../../components/ui/textarea";
+import { Switch } from "../../../../components/ui/switch";
+import TimePicker from "../../../../components/organism/picker/time-picker";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
+import TemplateContainer from "../../../../components/organism/template-container";
 
 // Services / Utils
-import { addShift, editShift } from "../../../services/shift";
+import { addShift, editShift } from "../../../../services/shift";
 
 const FormShift = () => {
   const dateNow = new Date();
@@ -159,9 +166,26 @@ const FormShift = () => {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/shift-list">Shift List</BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      My Teams
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/shift-list">Shift</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/user-list">User</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </BreadcrumbLink>
               </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbLink>
+                <BreadcrumbLink href="/shift-list">Shift List</BreadcrumbLink>
+              </BreadcrumbLink>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>
@@ -189,6 +213,9 @@ const FormShift = () => {
                       <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
                     <Input type="text" {...field} placeholder="Enter Shift Name" maxLength={30} />
+                    {form.formState.errors.nameShift && (
+                      <FormMessage>{form.formState.errors.nameShift}</FormMessage>
+                    )}
                   </FormItem>
                 )}
               />
@@ -204,7 +231,10 @@ const FormShift = () => {
                         <FormLabel className="text-base">Description</FormLabel>
                         <Asterisk className="w-4 h-4 text-destructive" />
                       </div>
-                      <Textarea {...field} maxLength={255} />
+                      <Textarea {...field} placeholder="Enter Description Shift" maxLength={255} />
+                      {form.formState.errors.description && (
+                        <FormMessage>{form.formState.errors.description}</FormMessage>
+                      )}
                     </FormItem>
                   );
                 }}

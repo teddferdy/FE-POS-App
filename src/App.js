@@ -25,7 +25,7 @@ import LocationList from "./page/super-admin/location";
 import MemberList from "./page/admin/member";
 import ProductList from "./page/admin/product/product";
 import DiscountList from "./page/admin/discount";
-import ShiftList from "./page/admin/shift";
+import ShiftList from "./page/admin/my-teams/shift";
 import TypePaymentList from "./page/admin/type-payment";
 import SocialMediaList from "./page/admin/social-media";
 import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
@@ -46,7 +46,7 @@ import FormLocation from "./page/super-admin/location/formLocation";
 import FormProduct from "./page/admin/product/product/formProduct";
 import FormSubCategory from "./page/admin/product/sub-category/form-subcategory";
 import FormDiscount from "./page/admin/discount/formDiscount";
-import FormShift from "./page/admin/shift/formShift";
+import FormShift from "./page/admin/my-teams/shift/formShift";
 import FormTypePayment from "./page/admin/type-payment/formTypePayment";
 import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
 import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
@@ -54,6 +54,7 @@ import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/fo
 import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
 import FormPosition from "./page/super-admin/my-teams/position/formPosition";
 import FormRole from "./page/super-admin/my-teams/role/formRole";
+import UserList from "./page/admin/my-teams/user";
 
 function App() {
   const { i18n } = useTranslation();
@@ -159,6 +160,8 @@ function App() {
           path="/product-list-by-outlet"
           element={cookie.token ? <ProductListByLocation /> : <Navigate to="/" />}
         />
+
+        <Route path="/user-list" element={cookie.token ? <UserList /> : <Navigate to="/" />} />
 
         <Route
           path="/position-list"
