@@ -1,7 +1,14 @@
 import React, { useMemo } from "react";
 import { AlarmClockPlus } from "lucide-react";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "../../../../components/ui/dropdown-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,15 +16,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator
-} from "../../../components/ui/breadcrumb";
-import { getAllShift, deleteShift } from "../../../services/shift";
-import TableShiftList from "../../../components/organism/table/table-shift-list";
-import TemplateContainer from "../../../components/organism/template-container";
+} from "../../../../components/ui/breadcrumb";
+import { getAllShift, deleteShift } from "../../../../services/shift";
+import TableShiftList from "../../../../components/organism/table/table-shift-list";
+import TemplateContainer from "../../../../components/organism/template-container";
 import { useNavigate } from "react-router-dom";
-import { useLoading } from "../../../components/organism/loading";
+import { useLoading } from "../../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
-import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
-import AbortController from "../../../components/organism/abort-controller";
+import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
+import AbortController from "../../../../components/organism/abort-controller";
 
 const ShiftList = () => {
   const navigate = useNavigate();
@@ -90,6 +97,25 @@ const ShiftList = () => {
               <BreadcrumbItem>
                 <BreadcrumbLink>
                   <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1">
+                      My Teams
+                      <ChevronDown className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/shift-list">Shift</BreadcrumbLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <BreadcrumbLink href="/user-list">User</BreadcrumbLink>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
