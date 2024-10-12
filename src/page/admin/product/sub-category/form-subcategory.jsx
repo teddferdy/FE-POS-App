@@ -209,7 +209,6 @@ const FormSubCategory = () => {
           store: cookie?.user?.location,
           createdBy: cookie?.user?.userName
         };
-        console.log("BODY =>", body);
 
         mutateAddSubCategory.mutate(body);
       }
@@ -521,8 +520,6 @@ const FormSubCategory = () => {
                                 <CommandEmpty>No Category found.</CommandEmpty>
                                 <CommandGroup>
                                   {allCategory?.data?.data?.map((location) => {
-                                    console.log("LOCTIO =>", location);
-
                                     return (
                                       <CommandItem
                                         key={location.name}

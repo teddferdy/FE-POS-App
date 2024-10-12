@@ -56,8 +56,6 @@ const FormProduct = () => {
   const { state } = useLocation();
   const [cookie] = useCookies(["user"]);
 
-  console.log("state =>", state);
-
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -187,8 +185,6 @@ const FormProduct = () => {
   });
 
   const onSubmit = (values) => {
-    console.log("values =>", values);
-
     if (state?.data?.id) {
       const body = {
         id: state?.data?.id,
@@ -467,8 +463,6 @@ const FormProduct = () => {
                                 <CommandEmpty>No Category found.</CommandEmpty>
                                 <CommandGroup>
                                   {allCategory?.data?.data?.map((location) => {
-                                    console.log("LOCTIO =>", location);
-
                                     return (
                                       <CommandItem
                                         key={location.name}

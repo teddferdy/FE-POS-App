@@ -79,8 +79,6 @@ const UserList = () => {
     }
 
     if (allLocation?.data && allLocation?.isSuccess && !allLocation?.isError) {
-      console.log("allLocation?.data?.data.length =>", allLocation?.data?.data.length);
-
       return allLocation?.data?.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {allLocation?.data?.data?.map((user, index) => {

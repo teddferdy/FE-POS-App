@@ -17,7 +17,6 @@ import TableTypePaymentList from "../../../components/organism/table/table-type-
 
 const TypePaymentListByLocation = () => {
   const { state } = useLocation();
-  console.log("STATE =>", state);
 
   // QUERY
   const typePayment = useQuery(
@@ -42,8 +41,6 @@ const TypePaymentListByLocation = () => {
     }
 
     if (typePayment?.data && typePayment?.isSuccess && !typePayment?.isError) {
-      console.log("typePayment?.data?.data?.length =>", typePayment?.data?.data?.length);
-
       return (
         <div className="w-full p-4">
           <TableTypePaymentList allTypePayment={typePayment} withActionButton={false} />
