@@ -38,6 +38,7 @@ import PositionList from "./page/super-admin/my-teams/position";
 import RoleList from "./page/super-admin/my-teams/role";
 import ProductListByLocation from "./page/super-admin/product-by-outlet";
 import DiscountListByOutlet from "./page/super-admin/discount-list-by-outlet";
+import TypePaymentListByLocation from "./page/super-admin/type-payment-by-outlet";
 
 // Form
 import FormCategory from "./page/admin/product/category/formCategory";
@@ -143,6 +144,10 @@ function App() {
           path="/discount-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/type-payment-by-outlet"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
 
         {/* End Location Available */}
         <Route
@@ -165,6 +170,10 @@ function App() {
         <Route
           path="/discount-list-by-outlet"
           element={cookie.token ? <DiscountListByOutlet /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/type-payment-list-by-outlet"
+          element={cookie.token ? <TypePaymentListByLocation /> : <Navigate to="/" />}
         />
 
         {/* Add Routes */}

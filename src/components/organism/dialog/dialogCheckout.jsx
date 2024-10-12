@@ -2,6 +2,7 @@
 import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Info } from "lucide-react";
 import { useQuery } from "react-query";
+import { useCookies } from "react-cookie";
 
 // Components
 import {
@@ -56,6 +57,7 @@ const DialogCheckout = ({
 }) => {
   // State Show Member Using Switch
   const [open, setOpen] = useState(false);
+  const [cookie] = useCookies(["user"]);
   const [paymentList, setPaymentList] = useState([
     {
       name: "Cash",
@@ -63,11 +65,15 @@ const DialogCheckout = ({
     }
   ]);
 
-  const allTypePayment = useQuery(["get-all-type-checkout-payment"], () => getAllTypePayment(), {
-    retry: 0,
-    keepPreviousData: true,
-    enabled: showDialog
-  });
+  const allTypePayment = useQuery(
+    ["get-all-type-checkout-payment"],
+    () => getAllTypePayment({ store: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true,
+      enabled: showDialog
+    }
+  );
 
   useEffect(() => {
     if (allTypePayment?.data?.data) {

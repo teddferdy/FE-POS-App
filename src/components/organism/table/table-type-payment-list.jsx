@@ -16,147 +16,259 @@ import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import ThreeDotsMenu from "../popover/three-dots-menu";
 
-const TableTypePaymentList = ({ allTypePayment, handleDelete }) => {
+const TableTypePaymentList = ({ allTypePayment, handleDelete, withActionButton = true }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns = [
-    {
-      accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Name Type Payment
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>
-    },
-    {
-      accessorKey: "description",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Description
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("description")}</div>
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Status
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="lowercase text-center">
-            {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Created At
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className="text-center font-medium">
-            {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "modifiedBy",
-      header: ({ column }) => {
-        return (
-          <div className="justify-center flex">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Modified By
-              {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>;
-      }
-    },
-    {
-      accessorKey: "updatedAt",
-      header: () => <div className="text-center">Updated At</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-center font-medium">
-            {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "action",
-      header: () => <div className="text-center">Action</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="flex justify-center">
-            <ThreeDotsMenu
-              content={["edit", "delete"]}
-              handleEdit={() => {
-                navigate(`/edit-type-payment/${row?.original?.id}`, {
-                  state: {
-                    data: row.original
-                  }
-                });
-              }}
-              handleDelete={() => {
-                const body = {
-                  id: row?.original?.id,
-                  nameStore: row.getValue("nameStore")
-                };
-                handleDelete(body);
-              }}
-            />
-          </div>
-        );
-      }
-    }
-  ];
+  const columns = withActionButton
+    ? [
+        {
+          accessorKey: "name",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Name Type Payment
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>
+        },
+        {
+          accessorKey: "description",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Description
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => <div className="lowercase">{row.getValue("description")}</div>
+        },
+        {
+          accessorKey: "status",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Status
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="lowercase text-center">
+                {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "createdAt",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Created At
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">
+                {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "modifiedBy",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Modified By
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>
+            );
+          }
+        },
+        {
+          accessorKey: "updatedAt",
+          header: () => <div className="text-center">Updated At</div>,
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">
+                {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "action",
+          header: () => <div className="text-center">Action</div>,
+          cell: ({ row }) => {
+            return (
+              <div className="flex justify-center">
+                <ThreeDotsMenu
+                  content={["edit", "delete"]}
+                  handleEdit={() => {
+                    navigate(`/edit-type-payment/${row?.original?.id}`, {
+                      state: {
+                        data: row.original
+                      }
+                    });
+                  }}
+                  handleDelete={() => {
+                    const body = {
+                      id: row?.original?.id,
+                      nameStore: row.getValue("nameStore")
+                    };
+                    handleDelete(body);
+                  }}
+                />
+              </div>
+            );
+          }
+        }
+      ]
+    : [
+        {
+          accessorKey: "name",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Name Type Payment
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>
+        },
+        {
+          accessorKey: "description",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Description
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => <div className="lowercase">{row.getValue("description")}</div>
+        },
+        {
+          accessorKey: "status",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Status
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="lowercase text-center">
+                {row.getValue("status") ? <Badge isActive /> : <Badge isActive={false} />}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "createdAt",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Created At
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">
+                {moment(row.getValue("createdAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+              </div>
+            );
+          }
+        },
+        {
+          accessorKey: "modifiedBy",
+          header: ({ column }) => {
+            return (
+              <div className="justify-center flex">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                  Modified By
+                  {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
+                </Button>
+              </div>
+            );
+          },
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">{row.getValue("modifiedBy") || "-"}</div>
+            );
+          }
+        },
+        {
+          accessorKey: "updatedAt",
+          header: () => <div className="text-center">Updated At</div>,
+          cell: ({ row }) => {
+            return (
+              <div className="text-center font-medium">
+                {moment(row.getValue("updatedAt")).format("DD/MM/YYYY hh:mm:ss") || "-"}
+              </div>
+            );
+          }
+        }
+      ];
 
   const table = useReactTable({
     data: allTypePayment?.data?.data || [],

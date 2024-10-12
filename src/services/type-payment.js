@@ -1,7 +1,17 @@
 import { axiosInstance } from ".";
 
-export const getAllTypePayment = async () => {
-  const { data, status } = await axiosInstance.get("/type-payment/get-type-payment");
+export const getAllTypePaymentListActive = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/type-payment/get-type-payment?store=${payload.store}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getAllTypePayment = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/type-payment/get-list-type-payment?store=${payload.store}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

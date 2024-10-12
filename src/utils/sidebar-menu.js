@@ -68,6 +68,10 @@ export const sidebarMenuSuperAdmin = [
       {
         title: "Discount By Outlet",
         href: "/discount-by-outlet"
+      },
+      {
+        title: "Type Payment By Outlet",
+        href: "/type-payment-by-outlet"
       }
     ]
   },

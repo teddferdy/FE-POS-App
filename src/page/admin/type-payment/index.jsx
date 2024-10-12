@@ -18,17 +18,21 @@ import SkeletonTable from "../../../components/organism/skeleton/skeleton-table"
 import AbortController from "../../../components/organism/abort-controller";
 import TableTypePaymentList from "../../../components/organism/table/table-type-payment-list";
 import { getAllTypePayment, deleteTypePayment } from "../../../services/type-payment";
-
+import { useCookies } from "react-cookie";
 const TypePaymentList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [cookie] = useCookies();
 
   // QUERY
-
-  const allTypePayment = useQuery(["get-all-type-checkout-payment"], () => getAllTypePayment(), {
-    retry: 0,
-    keepPreviousData: true
-  });
+  const allTypePayment = useQuery(
+    ["get-all-type-checkout-payment"],
+    () => getAllTypePayment({ store: cookie?.user?.location }),
+    {
+      retry: 0,
+      keepPreviousData: true
+    }
+  );
 
   const mutateDeleteTypePayment = useMutation(deleteTypePayment, {
     onMutate: () => setActive(true, null),
