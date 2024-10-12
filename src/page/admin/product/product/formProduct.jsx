@@ -111,9 +111,13 @@ const FormProduct = () => {
   });
 
   // QUERY
-  const allCategory = useQuery(["get-all-category"], () => getAllCategory(), {
-    keepPreviousData: false
-  });
+  const allCategory = useQuery(
+    ["get-all-category"],
+    () => getAllCategory({ location: cookie?.user?.location }),
+    {
+      keepPreviousData: false
+    }
+  );
 
   const allSubCategory = useQuery(
     ["get-all-sub-category", form.getValues("category")],

@@ -49,8 +49,8 @@ const TableMembershipList = ({ allMember }) => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [filterBy, setFilterBy] = useState({
-    value: "nameStore",
-    name: "Name Store"
+    value: "nameMember",
+    name: "Name Member"
   });
 
   const columns = [
