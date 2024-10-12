@@ -119,9 +119,7 @@ const ProductList = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                       <DropdownMenuItem>
-                        <BreadcrumbLink href="/product-page">
-                          Step By Step Adding Product
-                        </BreadcrumbLink>
+                        <BreadcrumbLink href="/product-page">Product</BreadcrumbLink>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <BreadcrumbLink href="/category-list">Category</BreadcrumbLink>

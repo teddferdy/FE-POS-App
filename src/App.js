@@ -15,7 +15,7 @@ import ListProduct from "./page/cashier/list-product"; // List Product Cashier
 // import MemberCashier from "./page/cashier/member-cashier";
 
 // Admin
-import Product from "./page/admin/product";
+import StepProduct from "./page/admin/product/step-product";
 import LocationCardList from "./page/super-admin/location/location-card-list";
 import Invoice from "./page/admin/invoice";
 import SubCategoryList from "./page/admin/product/sub-category";
@@ -31,6 +31,7 @@ import SocialMediaList from "./page/admin/social-media";
 import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
+import ListProductByLocation from "./page/admin/product";
 
 // Super Admin
 import UserListByLocation from "./page/super-admin/my-teams/user";
@@ -168,7 +169,15 @@ function App() {
           element={cookie.token ? <PositionList /> : <Navigate to="/" />}
         />
         <Route path="/role-list" element={cookie.token ? <RoleList /> : <Navigate to="/" />} />
-        <Route path="/product-page" element={cookie.token ? <Product /> : <Navigate to="/" />} />
+        {/* Product */}
+        <Route
+          path="/product-page"
+          element={cookie.token ? <ListProductByLocation /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/step-flow-product"
+          element={cookie.token ? <StepProduct /> : <Navigate to="/" />}
+        />
         <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
         <Route
           path="/discount-list-by-outlet"
