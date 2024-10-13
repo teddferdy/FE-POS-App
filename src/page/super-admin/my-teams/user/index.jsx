@@ -104,8 +104,7 @@ const UserListByLocation = () => {
         </div>
       ) : (
         <div className="h-[65vh] flex justify-center flex-col items-center bg-gray-500 w-full rounded-lg gap-6 mt-4">
-          <h1>Location Still Empty</h1>
-          <p>Please Add New Location</p>
+          <h1>User Still Empty</h1>
         </div>
       );
     }

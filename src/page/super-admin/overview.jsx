@@ -27,8 +27,6 @@ import {
 } from "../../services/chart";
 import {
   getTotalEarning,
-  getOverviewProduct,
-  getOverviewCategory,
   getOverviewLocation,
   getOverviewMember,
   getListTableLocationList,
@@ -59,16 +57,6 @@ const OverviewSuperAdmin = () => {
   });
 
   const geChartByYear = useQuery(["get-current-year"], () => getDataCurrentYear({ year: "2024" }), {
-    retry: 0,
-    keepPreviousData: true
-  });
-
-  const overviewProduct = useQuery(["get-overview-product"], () => getOverviewProduct(), {
-    retry: 0,
-    keepPreviousData: true
-  });
-
-  const overviewCategory = useQuery(["get-overview-category"], () => getOverviewCategory(), {
     retry: 0,
     keepPreviousData: true
   });
@@ -135,54 +123,6 @@ const OverviewSuperAdmin = () => {
         <GreetingCard />
         {/* Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-green-400 rounded-lg flex flex-col gap-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <h2>Product :</h2>
-              <p
-                onClick={() => navigate("/product-list")}
-                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
-                See All
-              </p>
-            </div>
-            <div className="flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <p>Total All Product</p>
-                <p>{overviewProduct?.data?.data?.total}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p>Product Active</p>
-                <p>{overviewProduct?.data?.data?.active}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p>Product Not Active</p>
-                <p>{overviewProduct?.data?.data?.notActive}</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-4 bg-yellow-400 rounded-lg flex flex-col gap-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <h2>Category :</h2>
-              <p
-                onClick={() => navigate("/category-list")}
-                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
-                See All
-              </p>
-            </div>
-            <div className="flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <p>Total All Category</p>
-                <p>{overviewCategory?.data?.data?.total}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p>Category Active</p>
-                <p>{overviewCategory?.data?.data?.active}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p>Category Not Active</p>
-                <p>{overviewCategory?.data?.data?.notActive}</p>
-              </div>
-            </div>
-          </div>
           <div className="p-4 bg-blue-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Outlet / Location :</h2>
@@ -210,11 +150,11 @@ const OverviewSuperAdmin = () => {
           <div className="p-4 bg-orange-400 rounded-lg flex flex-col gap-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2>Member :</h2>
-              <p
+              {/* <p
                 onClick={() => navigate("/member-list")}
                 className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
-              </p>
+              </p> */}
             </div>
             <div className="flex-col gap-4">
               <div className="flex justify-between items-center">
