@@ -154,8 +154,8 @@ const Home = () => {
       setTimeout(() => {
         updateCheckout(data);
         updateInvoiceNumber({
-          noInvoice: data.invoice,
-          cashierName: data.cashierName
+          noInvoice: data?.invoice,
+          cashierName: data?.cashierName
         });
         setActive(null, null);
       }, 2000);
@@ -291,7 +291,13 @@ const Home = () => {
         typeOrder={typeOrder}
         setTypeOrder={(val) => setTypeOrder(val)}
         memberState={memberState}
-        handleCloseDialog={() => mutateCancelItem.mutate(data)}
+        handleCloseDialog={() => {
+          const body = {
+            ...data,
+            store: cookie?.user?.location
+          };
+          mutateCancelItem.mutate(body);
+        }}
         submitNewMember={(value) => mutateNewMember.mutate(value)}
         hasMember={hasMember}
         handleSearchDialog={() => setDialogMember(true)}
@@ -299,17 +305,18 @@ const Home = () => {
         handleCheckout={() => {
           const body = {
             order: order,
-            id: data.id,
-            invoice: data.invoice,
-            dateOrder: data.dateOrder,
+            id: data?.id,
+            invoice: data?.invoice,
+            dateOrder: data?.dateOrder,
             dateCheckout: new Date(),
-            totalPrice: data.totalPrice,
-            cashierName: data.cashierName,
-            totalQuantity: data.totalItems,
+            totalPrice: data?.totalPrice,
+            cashierName: data?.cashierName,
+            totalQuantity: data?.totalItems,
             customerName: hasMember ? "" : "",
             customerPhoneNumber: hasMember ? "" : "",
             typePayment: "QRIS",
-            modifiedBy: data.cashierName
+            modifiedBy: data?.cashierName,
+            store: cookie?.user?.location
           };
           mutateCheckoutItem.mutate(body);
         }}

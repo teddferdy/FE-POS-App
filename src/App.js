@@ -81,10 +81,6 @@ function App() {
           element={cookie.token ? <EditProfile /> : <Navigate to="/" />}
         />
         <Route path="/home" element={cookie.token ? <ListProduct /> : <Navigate to="/" />} />
-        {/* <Route
-          path="/membership"
-          element={cookie.token ? <MemberCashier /> : <Navigate to="/" />}
-        /> */}
         <Route path="/admin-page" element={cookie.token ? <OverviewPage /> : <Navigate to="/" />} />
         <Route
           path="/category-list"
