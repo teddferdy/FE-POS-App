@@ -32,7 +32,7 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
         ...categoryList?.data?.data
       ];
 
-      return (
+      return categoryList?.data?.data.length > 0 ? (
         <Swiper
           modules={[Pagination, FreeMode]}
           spaceBetween={10}
@@ -62,7 +62,7 @@ const CategoryList = ({ categoryList, valueFilterCategory, setValueFilterCategor
             );
           })}
         </Swiper>
-      );
+      ) : null;
     }
   }, [categoryList]);
 

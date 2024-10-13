@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 // import { useTranslation } from "react-i18next";
+
+import { Dialog, DialogContent, DialogFooter } from "../../../components/ui/dialog";
 import { Asterisk } from "lucide-react";
 import { useLoading } from "../../../components/organism/loading";
 import { Button } from "../../../components/ui/button";
@@ -29,6 +31,8 @@ import DialogCarouselImage from "../../../components/organism/dialog/dialog-caro
 import { useCookies } from "react-cookie";
 
 const FormLocation = () => {
+  // State for controlling the dialog visibility
+  const [showDialog, setShowDialog] = useState(false);
   const { state } = useLocation();
   const [cookie] = useCookies();
   const navigate = useNavigate();
@@ -98,17 +102,21 @@ const FormLocation = () => {
 
   const mutateEditLocation = useMutation(editLocation, {
     onMutate: () => setActive(true, null),
-    onSuccess: () => {
-      setActive(false, "success");
-      setTimeout(() => {
-        toast.success("Success", {
-          description: "Successfull, Edit Location"
-        });
-      }, 1000);
-      setTimeout(() => {
-        navigate("/location-list");
-        setActive(null, null);
-      }, 2000);
+    onSuccess: (data) => {
+      if (data?.showUserUpdateDialog) {
+        setShowDialog(true); // Show dialog if users are associated
+      } else {
+        setActive(false, "success");
+        setTimeout(() => {
+          toast.success("Success", {
+            description: "Successfully edited location"
+          });
+        }, 1000);
+        setTimeout(() => {
+          navigate("/location-list");
+          setActive(null, null);
+        }, 2000);
+      }
     },
     onError: (err) => {
       setActive(false, "error");
@@ -150,6 +158,25 @@ const FormLocation = () => {
 
       mutateAddLocation.mutate(body);
     }
+  };
+
+  // Function to handle user confirmation to update all users
+  const handleUserUpdateConfirm = () => {
+    const body = {
+      id: state?.data?.id,
+      image: form.getValues("image"),
+      nameStore: form.getValues("nameStore"),
+      address: form.getValues("address"),
+      detailLocation: form.getValues("detailLocation"),
+      phoneNumber: form.getValues("phoneNumber"),
+      status: form.getValues("status"),
+      createdBy: state?.data?.createdBy,
+      modifiedBy: cookie.user.userName,
+      confirmUserUpdate: true // Add this flag to indicate user confirmation
+    };
+
+    mutateEditLocation.mutate(body); // Use the constructed body here
+    setShowDialog(false);
   };
 
   return (
@@ -349,6 +376,16 @@ const FormLocation = () => {
           </form>
         </Form>
       </div>
+
+      <Dialog open={showDialog}>
+        <DialogContent>
+          <p>Users are associated with this location. Do you want to update all users?</p>
+          <DialogFooter>
+            <button onClick={() => setShowDialog(false)}>Cancel</button>
+            <button onClick={handleUserUpdateConfirm}>Yes, Update Users</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TemplateContainer>
   );
 };
