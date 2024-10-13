@@ -34,6 +34,7 @@ import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 import ListProductByLocation from "./page/admin/product";
 
 // Super Admin
+import OverviewSuperAdmin from "./page/super-admin/overview";
 import UserListByLocation from "./page/super-admin/my-teams/user";
 import PositionList from "./page/super-admin/my-teams/position";
 import RoleList from "./page/super-admin/my-teams/role";
@@ -81,7 +82,14 @@ function App() {
           element={cookie.token ? <EditProfile /> : <Navigate to="/" />}
         />
         <Route path="/home" element={cookie.token ? <ListProduct /> : <Navigate to="/" />} />
-        <Route path="/admin-page" element={cookie.token ? <OverviewPage /> : <Navigate to="/" />} />
+        <Route
+          path="/dashboard-admin"
+          element={cookie.token ? <OverviewPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/dashboard-super-admin"
+          element={cookie.token ? <OverviewSuperAdmin /> : <Navigate to="/" />}
+        />
         <Route
           path="/category-list"
           element={cookie.token ? <CategoryList /> : <Navigate to="/" />}

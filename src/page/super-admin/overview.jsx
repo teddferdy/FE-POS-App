@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
-import { useCookies } from "react-cookie";
-
 import TemplateContainer from "../../components/organism/template-container";
 import ChartCurrentAndSevenDaysBefore from "../../components/organism/chart/ChartCurrentAndSevenDaysBefore";
-import OverviewProductList from "../../components/organism/table/overviewProductList";
-import OverviewMembertList from "../../components/organism/table/overviewMemberList";
-import OverviewCategoryList from "../../components/organism/table/overviewCategoryList";
+import OverviewLocationList from "../../components/organism/table/overviewLocationList";
 import OverviewBestSellingList from "../../components/organism/table/overviewBestSelling";
 import GreetingCard from "../../components/organism/greeting";
 import ChartLineMonth from "../../components/organism/chart/ChartLineMonth";
@@ -33,10 +29,9 @@ import {
   getTotalEarning,
   getOverviewProduct,
   getOverviewCategory,
+  getOverviewLocation,
   getOverviewMember,
-  getListTableMemberList,
-  getListTableCategoryList,
-  getListTableProductList,
+  getListTableLocationList,
   getListTableBestSellingList
 } from "../../services/overview";
 
@@ -44,13 +39,11 @@ import {
 import { formatCurrencyRupiah } from "../../utils/formatter-currency";
 import { useNavigate } from "react-router-dom";
 
-const OverviewPage = () => {
+const OverviewSuperAdmin = () => {
   const navigate = useNavigate();
   const dates = new Date();
   const firtDate = new Date(dates.getFullYear(), dates.getMonth(), 1);
   const lastDate = new Date(dates.getFullYear(), dates.getMonth() + 1, 0);
-
-  const [cookie] = useCookies(["user"]);
 
   // State
   const [yearNow, setYearNow] = useState(dates.getFullYear());
@@ -60,63 +53,44 @@ const OverviewPage = () => {
   });
 
   // QUERY
-  const getEarning = useQuery(
-    ["get-earning"],
-    () => getTotalEarning({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const getEarning = useQuery(["get-earning"], () => getTotalEarning(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
-  const geChartByYear = useQuery(
-    ["get-current-year"],
-    () => getDataCurrentYear({ year: "2024", location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const geChartByYear = useQuery(["get-current-year"], () => getDataCurrentYear({ year: "2024" }), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
-  const overviewProduct = useQuery(
-    ["get-overview-product"],
-    () => getOverviewProduct({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const overviewProduct = useQuery(["get-overview-product"], () => getOverviewProduct(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
-  const overviewCategory = useQuery(
-    ["get-overview-category"],
-    () => getOverviewCategory({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const overviewCategory = useQuery(["get-overview-category"], () => getOverviewCategory(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
-  const overviewMember = useQuery(
-    ["get-overview-member"],
-    () => getOverviewMember({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const overviewLocation = useQuery(["get-overview-location"], () => getOverviewLocation(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
-  const getChartByMonth = useQuery(
-    ["get-chart-by-month"],
-    () => getDataChartByMonth({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
+  const overviewMember = useQuery(["get-overview-member"], () => getOverviewMember(), {
+    retry: 0,
+    keepPreviousData: true
+  });
+
+  const getChartByMonth = useQuery(["get-chart-by-month"], () => getDataChartByMonth(), {
+    retry: 0,
+    keepPreviousData: true
+  });
 
   const getDataCurrentNowAndWeekBefore = useQuery(
     ["get-current-now-and-seven-day-before"],
-    () => getDataCurrentNowAndSevenDayBefore({ location: cookie?.user?.location }),
+    () => getDataCurrentNowAndSevenDayBefore(),
     {
       retry: 0,
       keepPreviousData: true
@@ -125,7 +99,7 @@ const OverviewPage = () => {
 
   const getDataCurrentNowAndTwoDaysBefore = useQuery(
     ["get-current-now-and-two-day-before"],
-    () => getDataCurrentNowAndTwoDayBefore({ location: cookie?.user?.location }),
+    () => getDataCurrentNowAndTwoDayBefore(),
     {
       retry: 0,
       keepPreviousData: true
@@ -134,34 +108,16 @@ const OverviewPage = () => {
 
   const getDataTableBestSelling = useQuery(
     ["get-list-table-best-seliing"],
-    () => getListTableBestSellingList({ location: cookie?.user?.location }),
+    () => getListTableBestSellingList(),
     {
       retry: 0,
       keepPreviousData: true
     }
   );
 
-  const tableMemberList = useQuery(
-    ["get-list-table-member-list"],
-    () => getListTableMemberList({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  const tableCategoryList = useQuery(
-    ["get-list-table-category-list"],
-    () => getListTableCategoryList({ location: cookie?.user?.location }),
-    {
-      retry: 0,
-      keepPreviousData: true
-    }
-  );
-
-  const tableProductList = useQuery(
-    ["get-list-table-product-list"],
-    () => getListTableProductList({ location: cookie?.user?.location }),
+  const tableLocationList = useQuery(
+    ["get-list-table-location-list"],
+    () => getListTableLocationList(),
     {
       retry: 0,
       keepPreviousData: true
@@ -224,6 +180,30 @@ const OverviewPage = () => {
               <div className="flex justify-between items-center">
                 <p>Category Not Active</p>
                 <p>{overviewCategory?.data?.data?.notActive}</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 bg-blue-400 rounded-lg flex flex-col gap-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <h2>Outlet / Location :</h2>
+              <p
+                onClick={() => navigate("/location-list")}
+                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
+                See All
+              </p>
+            </div>
+            <div className="flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <p>Total All Location</p>
+                <p>{overviewLocation?.data?.data?.total}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p>Location Active</p>
+                <p>{overviewLocation?.data?.data?.active}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p>Location Not Active</p>
+                <p>{overviewLocation?.data?.data?.notActive}</p>
               </div>
             </div>
           </div>
@@ -326,44 +306,19 @@ const OverviewPage = () => {
           </div>
           <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2>Category List :</h2>
+              <h2>Location List :</h2>
               <p
-                onClick={() => navigate("/category-list")}
+                onClick={() => navigate("/location-list")}
                 className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
                 See All
               </p>
             </div>
-            <OverviewCategoryList data={tableCategoryList} />
+            <OverviewLocationList data={tableLocationList} />
           </div>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <div className="p-4 shadow-lg w-full flex-1 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2>Member List :</h2>
-              <p
-                onClick={() => navigate("/member-list")}
-                className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
-                See All
-              </p>
-            </div>
-            <OverviewMembertList data={tableMemberList} />
-          </div>
-        </div>
-        <div className="p-4 shadow-lg w-full h-96 rounded-lg flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2>Product List :</h2>
-            <p
-              onClick={() => navigate("/product-list")}
-              className="cursor-pointer hover:text-white hover:hover:bg-[#1ACB0A] duration-200 p-2 rounded-md">
-              See All
-            </p>
-          </div>
-          <OverviewProductList data={tableProductList} />
         </div>
       </div>
     </TemplateContainer>
   );
 };
 
-export default OverviewPage;
+export default OverviewSuperAdmin;

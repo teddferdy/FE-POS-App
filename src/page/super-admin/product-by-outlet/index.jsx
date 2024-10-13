@@ -77,7 +77,7 @@ const ProductListByLocation = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

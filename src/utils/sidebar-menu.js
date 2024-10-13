@@ -16,7 +16,7 @@ export const sidebarMenuSuperAdmin = [
   // Overview Page
   {
     title: "Dashboard",
-    href: "/admin-page",
+    href: "/dashboard-super-admin",
     icon: Crown
   },
   // Product List
@@ -98,7 +98,7 @@ export const sidebarMenuSuperAdmin = [
 export const sidebarMenuAdmin = [
   {
     title: "Dashboard",
-    href: "/admin-page",
+    href: "/dashboard-admin",
     icon: Crown
   },
   {
@@ -188,7 +188,12 @@ export const urlWithArrowBack = [
   {
     url: 0,
     title: "Dashboard",
-    pathName: "/admin-page"
+    pathName: "/dashboard-admin"
+  },
+  {
+    url: 0,
+    title: "Dashboard",
+    pathName: "/dashboard-super-admin"
   },
 
   // List Page

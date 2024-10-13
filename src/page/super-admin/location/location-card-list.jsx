@@ -43,7 +43,7 @@ const LocationCardList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Transaction</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Transaction</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -63,7 +63,7 @@ const LocationCardList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -110,7 +110,7 @@ const LocationCardList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -153,7 +153,7 @@ const LocationCardList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -199,7 +199,7 @@ const LocationCardList = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink>
-                  <BreadcrumbLink href="/admin-page">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
