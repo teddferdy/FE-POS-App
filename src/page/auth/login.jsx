@@ -101,8 +101,10 @@ const Login = () => {
         });
       }, 1000);
       setTimeout(() => {
-        if (success.user.userType !== "user") {
-          navigate("/admin-page");
+        if (success.user.userType === "admin") {
+          navigate("/dashboard-admin");
+        } else if (success.user.userType === "super-admin") {
+          navigate("/dashboard-super-admin");
         } else {
           navigate("/home");
         }

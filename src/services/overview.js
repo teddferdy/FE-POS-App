@@ -1,19 +1,25 @@
 import { axiosInstance } from ".";
 
-export const getTotalEarning = async () => {
-  const { data, status } = await axiosInstance.get("/best-selling/get-earning-today");
+export const getTotalEarning = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/best-selling/get-earning-today?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getOverviewProduct = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-product");
+export const getOverviewProduct = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-product?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getOverviewCategory = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-category");
+export const getOverviewCategory = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-category?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -24,8 +30,10 @@ export const getOverviewLocation = async () => {
   return data;
 };
 
-export const getOverviewMember = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-member");
+export const getOverviewMember = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-member?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -36,20 +44,26 @@ export const getOverviewUser = async () => {
   return data;
 };
 
-export const getListTableBestSellingList = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-best-selling");
+export const getListTableBestSellingList = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-best-selling?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getListTableMemberList = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-member-latest");
+export const getListTableMemberList = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-member-latest?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getListTableCategoryList = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-category-latest");
+export const getListTableCategoryList = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-category-latest?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -60,8 +74,10 @@ export const getListTableLocationList = async () => {
   return data;
 };
 
-export const getListTableProductList = async () => {
-  const { data, status } = await axiosInstance.get("/overview/get-product-latest");
+export const getListTableProductList = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/overview/get-product-latest?store=${payload?.location ? payload?.location : ""}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
