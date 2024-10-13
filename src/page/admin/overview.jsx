@@ -64,8 +64,7 @@ const OverviewPage = () => {
     ["get-earning"],
     () => getTotalEarning({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -73,8 +72,7 @@ const OverviewPage = () => {
     ["get-current-year"],
     () => getDataCurrentYear({ year: "2024", location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -82,8 +80,7 @@ const OverviewPage = () => {
     ["get-overview-product"],
     () => getOverviewProduct({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -91,8 +88,7 @@ const OverviewPage = () => {
     ["get-overview-category"],
     () => getOverviewCategory({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -100,8 +96,7 @@ const OverviewPage = () => {
     ["get-overview-member"],
     () => getOverviewMember({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -109,8 +104,7 @@ const OverviewPage = () => {
     ["get-chart-by-month"],
     () => getDataChartByMonth({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -118,8 +112,7 @@ const OverviewPage = () => {
     ["get-current-now-and-seven-day-before"],
     () => getDataCurrentNowAndSevenDayBefore({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -127,8 +120,7 @@ const OverviewPage = () => {
     ["get-current-now-and-two-day-before"],
     () => getDataCurrentNowAndTwoDayBefore({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -136,8 +128,7 @@ const OverviewPage = () => {
     ["get-list-table-best-seliing"],
     () => getListTableBestSellingList({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -145,8 +136,7 @@ const OverviewPage = () => {
     ["get-list-table-member-list"],
     () => getListTableMemberList({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -154,8 +144,7 @@ const OverviewPage = () => {
     ["get-list-table-category-list"],
     () => getListTableCategoryList({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
@@ -163,14 +152,12 @@ const OverviewPage = () => {
     ["get-list-table-product-list"],
     () => getListTableProductList({ location: cookie?.user?.location }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 0
     }
   );
 
   const getYears = useQuery(["get-year-list"], () => getYearList(), {
-    retry: 0,
-    keepPreviousData: true
+    retry: 0
   });
 
   return (
