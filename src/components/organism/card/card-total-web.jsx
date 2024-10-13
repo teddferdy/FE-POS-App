@@ -65,12 +65,13 @@ const CardTotalWeb = ({ order, handleCheckout }) => {
           onClick={() =>
             handleCheckout({
               totalPrice: price + extraPrice,
-              cashierName: cookie.user.userName,
+              cashierName: cookie?.user?.userName,
               customerName: "",
               customerPhoneNumber: "",
               totalQuantity: totalItems,
               typePayment: "",
-              createdBy: cookie.user.userName
+              createdBy: cookie?.user?.userName,
+              store: cookie?.user?.location
             })
           }>
           {/* Icon */}

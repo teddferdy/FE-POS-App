@@ -18,7 +18,8 @@ export const checkoutItem = async (payload) => {
 export const cancelCheckoutItem = async (payload) => {
   const body = {
     id: payload.id,
-    invoice: payload.invoice
+    invoice: payload.invoice,
+    store: payload.store
   };
   const { data, status } = await axiosInstance.delete(
     `/checkout/delete-checkout-item/${body?.id}`,
