@@ -3,10 +3,10 @@ import { ENDPOINT } from "../utils/endpoints";
 
 const axiosInstance = axios.create({
   // .. where we make our configurations
-  baseURL: ENDPOINT.BASE_URL,
-  headers: {
-    "Content-Type": "application/json"
-  }
+  baseURL: ENDPOINT.BASE_URL
+  // headers: {
+  //   "Content-Type": "application/json"
+  // }
 });
 
 axiosInstance.interceptors.request.use(

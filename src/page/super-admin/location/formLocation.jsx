@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -26,21 +27,18 @@ import {
 } from "../../../components/ui/breadcrumb";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
 import TemplateContainer from "../../../components/organism/template-container";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
-import DialogCarouselImage from "../../../components/organism/dialog/dialog-carousel-image";
 import { useCookies } from "react-cookie";
 
 const FormLocation = () => {
-  // State for controlling the dialog visibility
   const [showDialog, setShowDialog] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const { state } = useLocation();
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const { setActive } = useLoading();
+
   const formSchema = z.object({
-    image: z.string().min(4, {
-      message: "Invoice Logo Field Required."
-    }),
+    image: z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
     nameStore: z.string().min(4, {
       message: "Name Store must be at least 4 characters & Max Long Character 30."
     }),
@@ -48,7 +46,7 @@ const FormLocation = () => {
       message: "Address must be at least 4 characters & Max Long Character 255."
     }),
     detailLocation: z.string().min(4, {
-      message: "Detail Location must be at least 4 characters & Max Long Character 255.."
+      message: "Detail Location must be at least 4 characters & Max Long Character 255."
     }),
     phoneNumber: z.string().min(4, {
       message: "Phone Number Field Required."
@@ -58,6 +56,21 @@ const FormLocation = () => {
 
   const handleInput = (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  };
+
+  // Preview the uploaded image
+  const handleFileChange = (event) => {
+    console.log("EVENT =>", event);
+
+    const file = event.target.files[0];
+    if (file) {
+      console.log("FILE =>", file);
+
+      form.setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const form = useForm({
@@ -72,14 +85,14 @@ const FormLocation = () => {
     }
   });
 
-  // QUERY
+  // Mutations for adding and editing location
   const mutateAddLocation = useMutation(addLocation, {
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
-          description: "Successfull, Added New Location"
+          description: "Successfully added a new location"
         });
       }, 1000);
       setTimeout(() => {
@@ -90,7 +103,7 @@ const FormLocation = () => {
     onError: (err) => {
       setActive(false, "error");
       setTimeout(() => {
-        toast.error("Failed Login", {
+        toast.error("Failed", {
           description: err.message
         });
       }, 1500);
@@ -135,31 +148,29 @@ const FormLocation = () => {
   });
 
   const onSubmit = (values) => {
-    if (state?.data?.id) {
-      const body = {
-        id: state?.data?.id,
-        image: values?.image,
-        nameStore: values?.nameStore,
-        address: values?.address,
-        detailLocation: values?.detailLocation,
-        phoneNumber: values?.phoneNumber,
-        status: values.status,
-        createdBy: state?.data?.createdBy,
-        modifiedBy: cookie.user.userName
-      };
-      mutateEditLocation.mutate(body);
-    } else {
-      const body = {
-        image: values?.image,
-        nameStore: values?.nameStore,
-        address: values?.address,
-        detailLocation: values?.detailLocation,
-        phoneNumber: values?.phoneNumber,
-        status: values.status,
-        createdBy: cookie.user.userName
-      };
+    const formData = new FormData();
 
-      mutateAddLocation.mutate(body);
+    // Append the image file
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
+    }
+
+    // Append other fields
+    formData.append("nameStore", values.nameStore);
+    formData.append("address", values.address);
+    formData.append("detailLocation", values.detailLocation);
+    formData.append("phoneNumber", values.phoneNumber);
+    formData.append("status", values.status);
+    formData.append("createdBy", cookie.user.userName); // Assuming you need this as well
+
+    // Use mutate function to send the formData
+    if (state?.data?.id) {
+      formData.append("id", state.data.id);
+      mutateEditLocation.mutate(formData);
+    } else {
+      console.log("HELLO =>", formData.get("image"));
+
+      mutateAddLocation.mutate(formData);
     }
   };
 
@@ -217,43 +228,20 @@ const FormLocation = () => {
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => {
-                const linkName = generateLinkImageFromGoogleDrive(field.value);
-                return (
-                  <FormItem>
-                    <div className="mb-4 flex items-center gap-2">
-                      <FormLabel className="text-base">Image Product</FormLabel>
-                      <Asterisk className="w-4 h-4 text-destructive" />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image Product</FormLabel>
+                  <Input type="file" accept="image/*" onChange={handleFileChange} />
+                  {form.formState.errors.image && (
+                    <FormMessage>{form.formState.errors.image.message}</FormMessage>
+                  )}
+                  {imagePreview && (
+                    <div className="mt-4">
+                      <img src={imagePreview} alt="Preview" className="w-32 h-auto" />
                     </div>
-                    <div className="flex-col md:flex justify-between gap-10">
-                      <div className="flex flex-col gap-4">
-                        <div className="relative w-full">
-                          <Input
-                            type="text"
-                            {...field}
-                            className="flex-1"
-                            placeholder="Enter Image URL From Google Drive"
-                          />
-                          <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
-                            <DialogCarouselImage />
-                          </div>
-                        </div>
-                        {form.formState.errors.image && (
-                          <FormMessage>{form.formState.errors.image}</FormMessage>
-                        )}
-                      </div>
-                      {linkName && (
-                        <div className="flex flex-col gap-4">
-                          <p>Result Image</p>
-                          <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
-                            <img src={linkName} alt={linkName} className="w-full object-cover" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </FormItem>
-                );
-              }}
+                  )}
+                </FormItem>
+              )}
             />
             <FormField
               control={form.control}

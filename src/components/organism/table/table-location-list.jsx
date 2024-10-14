@@ -66,14 +66,12 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
             Image
-            {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
           </Button>
         );
       },
       cell: ({ row }) => {
         const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
-
-        return <img src={linkImage} alt={linkImage} />;
+        return <img src={linkImage} alt="Location image" width={50} height={50} />;
       }
     },
     {

@@ -1,9 +1,12 @@
 export const generateLinkImageFromGoogleDrive = (string) => {
   if (string) {
-    const RAW_URL1 = string?.split("/d/") || "";
-    const RAW_URL2 = RAW_URL1?.[1]?.split("/view");
-    const IMAGE_ID = RAW_URL2?.[0];
-    return `https://lh3.googleusercontent.com/d/${IMAGE_ID}=s500?authuser=0`;
+    const fileId = string.match(/id=([a-zA-Z0-9_-]+)/)?.[1];
+    if (fileId) {
+      const link = `https://drive.google.com/uc?id=${fileId}`;
+      console.log("Generated Image Link: ", link);
+      return link;
+    }
   }
-  return;
+  console.error("Invalid Google Drive URL: ", string);
+  return "";
 };
