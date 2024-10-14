@@ -72,7 +72,7 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              typeSubCategory
+              Type Sub Category List
               {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
@@ -89,7 +89,7 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
     },
     {
       accessorKey: "isMultiple",
-      header: () => <div className="text-center">isMultiple</div>,
+      header: () => <div className="text-center">Multiple Choose</div>,
       cell: ({ row }) => {
         return (
           <div className="lowercase text-center">
@@ -100,7 +100,7 @@ const TableSubCategoryList = ({ allSubCategory, handleDelete }) => {
     },
     {
       accessorKey: "createdBy",
-      header: () => <div className="text-center">createdBy</div>,
+      header: () => <div className="text-center">created By</div>,
       cell: ({ row }) => {
         return <div className="text-center font-medium">{row.getValue("createdBy")}</div>;
       }

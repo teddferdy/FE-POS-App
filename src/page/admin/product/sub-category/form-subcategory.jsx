@@ -340,7 +340,7 @@ const FormSubCategory = () => {
                     </FormItem>
                     <div className="flex justify-between mt-6">
                       <div className="flex-col">
-                        <FormLabel className="text-base">Is Free</FormLabel>
+                        <FormLabel className="text-base">Free</FormLabel>
                         <Hint>Select yes if option price 0 / free</Hint>
                       </div>
                       <div className="flex items-center gap-6 mb-4">
@@ -595,7 +595,7 @@ const FormSubCategory = () => {
                 render={({ field }) => (
                   <FormItem>
                     <div className="mb-4">
-                      <FormLabel className="text-base">Is Multiple</FormLabel>
+                      <FormLabel className="text-base">Multiple Choose</FormLabel>
                     </div>
                     <div className="flex items-center gap-6 mb-4">
                       <p>No</p>
