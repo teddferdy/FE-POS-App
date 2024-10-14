@@ -242,7 +242,7 @@ const DialogCheckout = ({
                           <p>{index + 1}.</p>
                           <div className="w-full lg:w-5/6 col-start-2 md:col-start-2">
                             <img
-                              src={`${linkName}`}
+                              src={linkName}
                               alt={items?.orderName}
                               className="object-cover w-full h-full rounded-lg"
                             />

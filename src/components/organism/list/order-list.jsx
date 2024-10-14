@@ -52,7 +52,7 @@ const OrderList = ({
                 <div className="flex gap-4 flex-1 items-center">
                   <div className="w-20 h-20">
                     <img
-                      src={`${linkName}`}
+                      src={linkName}
                       alt={items?.orderName}
                       className="object-cover w-full h-full rounded-lg"
                     />

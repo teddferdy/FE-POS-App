@@ -51,7 +51,7 @@ const EditProfile = () => {
             {form.getValues("image") ? (
               <Avatar>
                 <AvatarImage
-                  src={`${generateLinkImageFromGoogleDrive(form.getValues("image"))}`}
+                  src={generateLinkImageFromGoogleDrive(form.getValues("image"))}
                   alt="Selected"
                 />
               </Avatar>
@@ -94,11 +94,7 @@ const EditProfile = () => {
                           <div className="flex flex-col gap-4">
                             <p>Result Image</p>
                             <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
-                              <img
-                                src={`${linkName}`}
-                                alt={linkName}
-                                className="w-full object-cover"
-                              />
+                              <img src={linkName} alt={linkName} className="w-full object-cover" />
                             </div>
                           </div>
                         )}
