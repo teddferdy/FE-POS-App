@@ -13,6 +13,8 @@ export const getAllLocationTable = async () => {
 };
 
 export const addLocation = async (payload) => {
+  console.log("payload", payload);
+
   const { data, status } = await axiosInstance.post("/location/add-new-location", payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
