@@ -104,7 +104,10 @@ const FormLocation = () => {
     onMutate: () => setActive(true, null),
     onSuccess: (data) => {
       if (data?.showUserUpdateDialog) {
-        setShowDialog(true); // Show dialog if users are associated
+        setTimeout(() => {
+          setActive(null, null);
+          setShowDialog(true);
+        }, 2000);
       } else {
         setActive(false, "success");
         setTimeout(() => {

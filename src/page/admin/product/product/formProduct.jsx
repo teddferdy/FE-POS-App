@@ -96,15 +96,15 @@ const FormProduct = () => {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      image: state.data.image ?? "",
-      nameProduct: state.data.nameProduct ?? "",
-      category: state.data.category ?? null,
-      status: state.data.status ?? true,
-      price: state.data.price ?? "",
-      description: state.data.description ?? "",
-      store: state.data.store ?? "",
-      isOption: state.data.isOption ?? false,
-      subCategory: state.data.option.map((items) => items.id) ?? []
+      image: state?.data?.image ?? "",
+      nameProduct: state?.data?.nameProduct ?? "",
+      category: state?.data?.category ?? null,
+      status: state?.data?.status ?? true,
+      price: state?.data?.price ?? "",
+      description: state?.data?.description ?? "",
+      store: state?.data?.store ?? "",
+      isOption: state?.data?.isOption ?? false,
+      subCategory: state?.data?.option?.map((items) => items.id) ?? []
     }
   });
 
