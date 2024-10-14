@@ -1,18 +1,17 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+// import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { ArrowRight } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 import DialogViewInvoiceByLocation from "../dialog/dialog-view-invoice-by-location";
 
 const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }) => {
-  const linkImage = generateLinkImageFromGoogleDrive(image);
+  // const linkImage = generateLinkImageFromGoogleDrive(image);
   const location = useLocation();
-
   return (
     <div className="shadow-lg p-4">
-      <img className="w-full h-48 object-cover" src={linkImage} alt={nameStore} />
+      <img className="w-full h-48 object-cover" src={image} alt={nameStore} />
       <div className="py-4">
         <div className="font-bold text-xl mb-2">{nameStore}</div>
         <p className="text-base">

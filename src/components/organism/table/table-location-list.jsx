@@ -22,7 +22,6 @@ import {
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
 import ThreeDotsMenu from "../popover/three-dots-menu";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 
 const FILTER_BY = [
   {
@@ -54,8 +53,8 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [filterBy, setFilterBy] = useState({
-    value: "name",
-    name: "Name Category"
+    value: "nameStore",
+    name: "Name Store"
   });
   const columns = [
     {
@@ -70,8 +69,19 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
         );
       },
       cell: ({ row }) => {
-        const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
-        return <img src={linkImage} alt="Location image" width={50} height={50} />;
+        const linkImage = row?.original?.image; // dynamically get the image link
+        return (
+          <img
+            src={linkImage}
+            alt="Google Drive Image"
+            style={{ maxWidth: "100%", height: "auto" }}
+            onError={(e) => {
+              console.log("Image failed to load", e);
+              e.target.onerror = null; // prevents infinite loop
+              e.target.src = "https://via.placeholder.com/150"; // fallback image
+            }}
+          />
+        );
       }
     },
     {
