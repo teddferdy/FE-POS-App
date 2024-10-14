@@ -50,7 +50,7 @@ const ProductCard = ({ items, withActionButton = true }) => {
   return (
     <div className="p-2 rounded-lg flex flex-col gap-4 bg-white h-fit">
       {linkImage && (
-        <img src={`${linkImage}`} alt="img" className="object-cover w-full h-48 rounded-lg" />
+        <img src={linkImage} alt="img" className="object-cover w-full h-48 rounded-lg" />
       )}
       <div className="flex flex-col gap-1">
         <p className="text-[#737373] font-bold text-base">{items?.nameProduct || "-"}</p>

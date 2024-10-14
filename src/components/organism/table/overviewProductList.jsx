@@ -44,7 +44,7 @@ const OverviewProductList = ({ data }) => {
               return (
                 <TableRow key={index}>
                   <TableCell className="text-center">
-                    <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />
+                    <img src={linkImage} alt={linkImage} className="w-full object-cover" />
                   </TableCell>
                   <TableCell className="text-center">{items.nameProduct || "-"}</TableCell>
                   <TableCell className="text-center">{items.category || "-"}</TableCell>

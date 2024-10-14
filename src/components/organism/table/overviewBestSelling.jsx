@@ -31,7 +31,7 @@ const OverviewBestSellingList = ({ data }) => {
               return (
                 <TableRow key={index}>
                   <TableCell className="flex justify-center">
-                    <img src={`${linkImage}`} alt={linkImage} className="w-2/4 object-cover" />
+                    <img src={linkImage} alt={linkImage} className="w-2/4 object-cover" />
                   </TableCell>
                   <TableCell className="text-center">{items.nameProduct || "-"}</TableCell>
                   <TableCell className="text-center">{items.totalSelling || "-"}</TableCell>

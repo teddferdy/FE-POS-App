@@ -78,7 +78,7 @@ const TableProductList = ({ allProduct, handleDelete }) => {
       cell: ({ row }) => {
         const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
 
-        return <img src={`${linkImage}`} alt={linkImage} className="w-full object-cover" />;
+        return <img src={linkImage} alt={linkImage} className="w-full object-cover" />;
       }
     },
     {
