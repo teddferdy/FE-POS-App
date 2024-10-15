@@ -8,10 +8,12 @@ import DialogViewInvoiceByLocation from "../dialog/dialog-view-invoice-by-locati
 
 const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }) => {
   // const linkImage = generateLinkImageFromGoogleDrive(image);
+  const linkImage = image?.replace("https://drive.google.com/uc?id=", "");
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
   const location = useLocation();
   return (
     <div className="shadow-lg p-4">
-      <img className="w-full h-48 object-cover" src={image} alt={nameStore} />
+      <img className="w-full h-48 object-cover" src={thumbnailUrl} alt={nameStore} />
       <div className="py-4">
         <div className="font-bold text-xl mb-2">{nameStore}</div>
         <p className="text-base">
