@@ -10,7 +10,6 @@ import {
 } from "@tanstack/react-table";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-
 import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
@@ -22,6 +21,7 @@ import {
   DropdownMenuTrigger
 } from "../../ui/dropdown-menu";
 import ThreeDotsMenu from "../popover/three-dots-menu";
+// import { convertToBase64 } from "../../../utils/base64";
 
 const FILTER_BY = [
   {
@@ -69,17 +69,19 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
         );
       },
       cell: ({ row }) => {
-        const linkImage = row?.original?.image; // dynamically get the image link
+        console.log("ROW =>", row);
+        console.log("row?.original?.image =>", row?.original?.image);
+
         return (
           <img
-            src={linkImage}
+            src={row?.original?.image}
             alt="Google Drive Image"
             style={{ maxWidth: "100%", height: "auto" }}
-            onError={(e) => {
-              console.log("Image failed to load", e);
-              e.target.onerror = null; // prevents infinite loop
-              e.target.src = "https://via.placeholder.com/150"; // fallback image
-            }}
+            // onError={(e) => {
+            //   console.log("Image failed to load", e);
+            //   e.target.onerror = null; // Prevents infinite loop
+            //   e.target.src = "https://via.placeholder.com/150"; // Fallback image
+            // }}
           />
         );
       }
