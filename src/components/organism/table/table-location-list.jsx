@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
 import React, { Fragment, useState } from "react";
 import {
@@ -69,19 +70,19 @@ const TableLocationList = ({ allLocation, handleDelete }) => {
         );
       },
       cell: ({ row }) => {
-        console.log("ROW =>", row);
-        console.log("row?.original?.image =>", row?.original?.image);
-
+        const linkImage = row?.original?.image.replace("https://drive.google.com/uc?id=", "");
+        const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
         return (
           <img
-            src={row?.original?.image}
+            // src={row?.original?.image}
+            src={thumbnailUrl}
             alt="Google Drive Image"
             style={{ maxWidth: "100%", height: "auto" }}
-            // onError={(e) => {
-            //   console.log("Image failed to load", e);
-            //   e.target.onerror = null; // Prevents infinite loop
-            //   e.target.src = "https://via.placeholder.com/150"; // Fallback image
-            // }}
+            onError={(e) => {
+              console.log("Image failed to load", e);
+              e.target.onerror = null; // Prevents infinite loop
+              e.target.src = "https://via.placeholder.com/150"; // Fallback image
+            }}
           />
         );
       }
