@@ -21,7 +21,7 @@ const DiscountListByOutlet = () => {
   // QUERY
   const allDiscount = useQuery(
     ["get-all-discount"],
-    () => getAllDiscountByLocationAndActive({ location: cookie?.user?.location }),
+    () => getAllDiscountByLocationAndActive({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

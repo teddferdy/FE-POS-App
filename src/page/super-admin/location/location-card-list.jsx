@@ -258,6 +258,7 @@ const LocationCardList = () => {
           {allLocation?.data?.data?.map((location) => (
             <LocationCard
               key={location.id}
+              idLocation={location.id}
               image={location.image}
               nameStore={location.nameStore}
               address={location.address}
@@ -266,7 +267,7 @@ const LocationCardList = () => {
                 if (pathname === "/my-teams-location-available") {
                   navigate("/my-teams-user", {
                     state: {
-                      location: location.nameStore
+                      location: location.id
                     }
                   });
                 }
@@ -274,7 +275,7 @@ const LocationCardList = () => {
                 if (pathname === "/product-by-outlet") {
                   navigate("/product-list-by-outlet", {
                     state: {
-                      location: location.nameStore
+                      location: location.id
                     }
                   });
                 }
@@ -282,7 +283,7 @@ const LocationCardList = () => {
                 if (pathname === "/discount-by-outlet") {
                   navigate("/discount-list-by-outlet", {
                     state: {
-                      location: location.nameStore
+                      location: location.id
                     }
                   });
                 }
@@ -290,7 +291,7 @@ const LocationCardList = () => {
                 if (pathname === "/type-payment-by-outlet") {
                   navigate("/type-payment-list-by-outlet", {
                     state: {
-                      location: location.nameStore
+                      location: location.id
                     }
                   });
                 }

@@ -13,18 +13,22 @@ export const getAllLocationTable = async () => {
 };
 
 export const addLocation = async (payload) => {
-  console.log("payload", payload);
-
   const { data, status } = await axiosInstance.post("/location/add-new-location", payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
 export const editLocation = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/location/edit-location/${payload.id}`,
-    payload
-  );
+  console.log("PAYLOAD =>", payload);
+
+  const { data, status } = await axiosInstance({
+    method: "put", // or 'post' if you change to POST
+    url: `/location/edit-location`,
+    data: payload,
+    headers: {
+      "Content-Type": "application/json" // Explicitly set headers for PUT requests
+    }
+  });
   if (status !== 200) throw Error(`${data.message || data?.error}`);
   return data;
 };

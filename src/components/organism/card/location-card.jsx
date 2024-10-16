@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 
 import DialogViewInvoiceByLocation from "../dialog/dialog-view-invoice-by-location";
 
-const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }) => {
+const LocationCard = ({ idLocation, image, nameStore, address, phoneNumber, handleLocation }) => {
   // const linkImage = generateLinkImageFromGoogleDrive(image);
   const linkImage = image?.replace("https://drive.google.com/uc?id=", "");
   const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
@@ -26,7 +26,7 @@ const LocationCard = ({ image, nameStore, address, phoneNumber, handleLocation }
 
       <div className="flex justify-end">
         {location.pathname === "/invoice-by-outlet" ? (
-          <DialogViewInvoiceByLocation nameStore={nameStore} />
+          <DialogViewInvoiceByLocation nameStore={idLocation} />
         ) : (
           <button
             className="flex gap-4 p-2 w-fit rounded overflow-hidden bg-white text-gray-700 hover:bg-[#1ACB0A] duration-200 cursor-pointer hover:text-white"
