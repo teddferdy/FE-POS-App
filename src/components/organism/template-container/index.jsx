@@ -103,7 +103,11 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
         <SideBarProfile
           navigate={navigate}
           mutateLogout={() => {
-            mutateLogout.mutate({ id: cookie?.user?.id });
+            mutateLogout.mutate({
+              userName: cookie.user.userName,
+              email: cookie.user.email,
+              store: cookie.user.store
+            });
             setOpenLogout(false);
           }}
         />

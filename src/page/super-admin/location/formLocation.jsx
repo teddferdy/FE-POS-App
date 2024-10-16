@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,14 +31,24 @@ import { useCookies } from "react-cookie";
 
 const FormLocation = () => {
   const [showDialog, setShowDialog] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
   const { state } = useLocation();
+  console.log("state =>", state);
+
+  const linkImage = state?.data?.image?.replace("https://drive.google.com/uc?id=", "");
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
+  const [imagePreview, setImagePreview] = useState(state?.data?.image ? thumbnailUrl : null);
+
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const { setActive } = useLoading();
 
   const formSchema = z.object({
-    image: z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
+    image:
+      state?.data?.image && state?.data.id && state?.data.imageName
+        ? z.string().min(4, {
+            message: "Image Required."
+          })
+        : z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
     nameStore: z.string().min(4, {
       message: "Name Store must be at least 4 characters & Max Long Character 30."
     }),
@@ -53,25 +63,6 @@ const FormLocation = () => {
     }),
     status: z.boolean()
   });
-
-  const handleInput = (e) => {
-    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-  };
-
-  // Preview the uploaded image
-  const handleFileChange = (event) => {
-    console.log("EVENT =>", event);
-
-    const file = event.target.files[0];
-    if (file) {
-      console.log("FILE =>", file);
-
-      form.setValue("image", file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -151,9 +142,6 @@ const FormLocation = () => {
     const formData = new FormData();
 
     // Append the image file
-    if (values.image instanceof File) {
-      formData.append("image", values.image);
-    }
 
     // Append other fields
     formData.append("nameStore", values.nameStore);
@@ -165,9 +153,17 @@ const FormLocation = () => {
 
     // Use mutate function to send the formData
     if (state?.data?.id) {
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      } else {
+        formData.append("image", values.image);
+      }
       formData.append("id", state.data.id);
       mutateEditLocation.mutate(formData);
     } else {
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      }
       console.log("HELLO =>", formData.get("image"));
 
       mutateAddLocation.mutate(formData);
@@ -191,6 +187,29 @@ const FormLocation = () => {
 
     mutateEditLocation.mutate(body); // Use the constructed body here
     setShowDialog(false);
+  };
+
+  const handleResetImage = () => {
+    setImagePreview(null);
+    form.setValue("image", null);
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      form.setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleInput = (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
   };
 
   return (
@@ -230,14 +249,36 @@ const FormLocation = () => {
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image Product</FormLabel>
-                  <Input type="file" accept="image/*" onChange={handleFileChange} />
+                  <div className="mb-4 flex items-center gap-2">
+                    <FormLabel className="text-base">Image Store</FormLabel>
+                    <Asterisk className="w-4 h-4 text-destructive" />
+                  </div>
+
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
+                    placeholder="imageName"
+                  />
+
                   {form.formState.errors.image && (
                     <FormMessage>{form.formState.errors.image.message}</FormMessage>
                   )}
+
                   {imagePreview && (
-                    <div className="mt-4">
-                      <img src={imagePreview} alt="Preview" className="w-32 h-auto" />
+                    <div className="mt-4 relative flex justify-center items-center w-full lg:w-1/2">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-w-full h-auto border-2 border-gray-300 rounded-md object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleResetImage}
+                        className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1">
+                        X
+                      </button>
                     </div>
                   )}
                 </FormItem>
