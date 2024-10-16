@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import { useCookies } from "react-cookie";
 import { CreditCard } from "lucide-react";
 
 // Component
@@ -12,6 +11,7 @@ import DrawerDetailOrderMobile from "../drawer/drawer-detail-order-mobile";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
 const CardTotalMobile = ({
+  cookie,
   order,
   option,
   handleUpdateOptionProduct,
@@ -20,7 +20,6 @@ const CardTotalMobile = ({
   handleCheckout,
   setOpenModalDelete
 }) => {
-  const [cookie] = useCookies(["user"]);
   const totalItems = order.length;
   let extraPrice = 0;
   let price = 0;
@@ -80,7 +79,7 @@ const CardTotalMobile = ({
               totalQuantity: totalItems,
               typePayment: "",
               createdBy: cookie?.user?.userName,
-              store: cookie?.user?.location
+              store: cookie?.user?.store
             })
           }>
           <CreditCard className="text-xl" />

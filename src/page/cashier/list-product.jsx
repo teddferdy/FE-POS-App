@@ -76,7 +76,8 @@ const Home = () => {
     ["get-invoice-logo", category],
     () => getAllInvoiceLogoByActive({ location: cookie?.user?.store }),
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      enabled: dataInvoice?.open
     }
   );
 
@@ -84,7 +85,8 @@ const Home = () => {
     ["get-invoice-footer", category],
     () => getAllInvoiceFooterByActive({ location: cookie?.user?.store }),
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      enabled: dataInvoice?.open
     }
   );
 
@@ -92,7 +94,8 @@ const Home = () => {
     ["get-invoice-social-medi", category],
     () => getAllInvoiceSocialMediaByActive({ location: cookie?.user?.store }),
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      enabled: dataInvoice?.open
     }
   );
 
@@ -105,7 +108,8 @@ const Home = () => {
         location: cookie?.user?.store
       }),
     {
-      keepPreviousData: false
+      keepPreviousData: false,
+      enabled: !dataInvoice?.open
     }
   );
 
@@ -113,7 +117,8 @@ const Home = () => {
     ["get-category"],
     () => getAllCategory({ location: cookie?.user?.store }),
     {
-      keepPreviousData: true
+      keepPreviousData: true,
+      enabled: !dataInvoice?.open
     }
   );
 
@@ -252,6 +257,7 @@ const Home = () => {
 
           {/* Total Checkout Table / Mobile */}
           <CardTotalMobile
+            cookie={cookie}
             order={order}
             option={option}
             handleUpdateOptionProduct={handleUpdateOptionProduct}
@@ -279,6 +285,7 @@ const Home = () => {
           />
 
           <CardTotalWeb
+            cookie={cookie}
             order={order}
             handleCheckout={(payload) => mutateAddCartCheckoutItem.mutate(payload)}
           />

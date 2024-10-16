@@ -1,18 +1,14 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import { useCookies } from "react-cookie";
 import { ShoppingCart } from "lucide-react";
 
 // Component
-// import DialogCustomInvoice from "../dialog/dialogCustomInvoice";
 import { Button } from "../../ui/button";
-// import DialogCheckout from "../dialog/dialogCheckout";
 
 // Utils
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 
-const CardTotalWeb = ({ order, handleCheckout }) => {
-  const [cookie] = useCookies(["user"]);
+const CardTotalWeb = ({ order, handleCheckout, cookie }) => {
   const totalItems = order.length;
   let extraPrice = 0;
   let price = 0;
