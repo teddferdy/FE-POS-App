@@ -46,7 +46,7 @@ const TablePositionList = ({ allPosition, handleDelete }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [filterBy, setFilterBy] = useState({
     value: "name",
-    name: "Name Role"
+    name: "Name Position"
   });
   const columns = [
     {
@@ -57,13 +57,13 @@ const TablePositionList = ({ allPosition, handleDelete }) => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Name Role
+              Position Name
               {/* <CaretSortIcon className="ml-2 h-4 w-4" /> */}
             </Button>
           </div>
         );
       },
-      cell: ({ row }) => <div className="text-center">{row.getValue("nameStore")}</div>
+      cell: ({ row }) => <div className="text-center">{row.getValue("name")}</div>
     },
     {
       accessorKey: "description",

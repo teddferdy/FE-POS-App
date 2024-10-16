@@ -206,7 +206,7 @@ const TemplateContainer = ({ children, rootContainer, childrenContainer }) => {
               </p>
               {cookie?.user?.userType !== "super-admin" && (
                 <p className="text-xs font-medium text-[#737373]">
-                  Cashier on {cookie?.user?.storeName}
+                  {cookie?.user?.positionName} on {cookie?.user?.storeName}
                 </p>
               )}
             </div>

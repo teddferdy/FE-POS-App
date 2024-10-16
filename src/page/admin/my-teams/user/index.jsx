@@ -89,6 +89,8 @@ const UserList = () => {
                 name={user.userName}
                 address={user.address}
                 location={user.location}
+                position={user.positionName}
+                positionId={user.position}
                 phoneNumber={user.phoneNumber}
                 role={allLocation?.data?.data[index].userType}
                 onChangeRole={(val) => {

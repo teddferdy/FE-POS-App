@@ -12,6 +12,8 @@ const UserCard = ({
   role,
   phoneNumber,
   location,
+  position,
+  positionId,
   onChangeRole
 }) => {
   return (
@@ -23,8 +25,9 @@ const UserCard = ({
       <div className="mt-4">
         <div className="font-bold text-xl">Name: {name}</div>
         <p className="text-gray-700 text-sm">Store: {location}</p>
-        <p className="text-gray-700 text-sm">Phone: {phoneNumber}</p>
+        <p className="text-gray-700 text-sm">Phone: {phoneNumber ? phoneNumber : "-"}</p>
         <p className="text-gray-700 text-sm">Role: {role}</p>
+        <p className="text-gray-700 text-sm">Position: {position}</p>
       </div>
       <Separator className="my-4" />
       <div className="flex justify-between items-center space-x-4">
@@ -32,6 +35,7 @@ const UserCard = ({
           classNameBtn="flex items-center p-2 hover:bg-gray-100 w-full"
           name={name}
           role={role}
+          position={positionId}
           phoneNumber={phoneNumber}
           location={location}
           onChangeRole={onChangeRole}
