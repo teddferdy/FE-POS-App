@@ -55,14 +55,15 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-  const [addressState, setAddressState] = useState("");
+  const [value, setValue] = useState(null);
   const { updateTranslation, translation } = translationSelect();
-
   const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
     retry: 0,
     keepPreviousData: true
   });
+  const selectedLocation = value
+    ? allLocation?.data?.data?.find((location) => location.id === value)
+    : null;
 
   // Translation
   const translationMemo = useMemo(() => {
@@ -107,10 +108,9 @@ const Register = () => {
       userName: z.string().min(4, {
         message: translationMemo.errorMessageUserName
       }),
-      location: z.string().min(1, {
+      store: z.number().min(1, {
         message: translationMemo.errorMessageLocation
       }),
-      address: z.string(),
       password: z.string().min(4, {
         message: translationMemo.errorMessagePassword
       }),
@@ -133,8 +133,7 @@ const Register = () => {
       userName: "",
       password: "",
       email: "",
-      location: "",
-      address: "",
+      store: null,
       confirmPassword: ""
     }
   });
@@ -142,15 +141,11 @@ const Register = () => {
   // useEffect
   useEffect(() => {
     if (value) {
-      form.setValue("location", value);
+      console.log("VALUE =>", value);
+
+      form.setValue("store", value);
     }
   }, [value]);
-
-  useEffect(() => {
-    if (addressState) {
-      form.setValue("address", addressState);
-    }
-  }, [addressState]);
 
   // QUERY
   const mutateRegister = useMutation(register, {
@@ -180,7 +175,11 @@ const Register = () => {
     }
   });
 
-  const onSubmit = (values) => mutateRegister.mutate({ ...values, userType: "user" });
+  const onSubmit = (values) => {
+    console.log(values);
+
+    mutateRegister.mutate({ ...values, userType: "user" });
+  };
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -261,30 +260,31 @@ const Register = () => {
               <div className="col-span-2 md:col-span-1">
                 <FormField
                   control={form.control}
-                  name="location"
+                  name="store"
                   render={() => {
                     return (
                       <FormItem>
                         <div className="mb-2">
                           <FormLabel className="text-base">{translationMemo.location}</FormLabel>
                         </div>
-                        <Popover open={open} onOpenChange={setOpen} className="mt-10">
+                        <Popover open={open} onOpenChange={setOpen} className="relative">
                           <PopoverTrigger asChild>
                             <Button
                               disabled={allLocation.isLoading}
                               variant="outline"
                               role="combobox"
                               aria-expanded={open}
-                              className={`w-full justify-between ${!value ? "text-muted-foreground font-normal" : ""}`}>
-                              {value
-                                ? allLocation?.data?.data?.find(
-                                    (location) => location.nameStore === value
-                                  )?.nameStore
-                                : `${translationMemo.placeholderInputLocation}`}
+                              className={`w-full justify-between ${!selectedLocation ? "text-muted-foreground font-normal" : ""}`}>
+                              {/* If value exists, show the corresponding nameStore; else, show the placeholder */}
+                              {selectedLocation
+                                ? selectedLocation.nameStore
+                                : translationMemo.placeholderInputLocation}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-full p-0">
+
+                          {/* Ensure the PopoverContent takes up the full width of the button */}
+                          <PopoverContent PopoverContent className="popover-content-width-full p-0">
                             <Command>
                               <CommandInput placeholder="Search location..." />
                               <CommandList>
@@ -292,17 +292,16 @@ const Register = () => {
                                 <CommandGroup>
                                   {allLocation?.data?.data?.map((location) => (
                                     <CommandItem
-                                      key={location.nameStore}
-                                      value={location.nameStore}
-                                      onSelect={(currentValue) => {
-                                        setValue(currentValue === value ? "" : currentValue);
-                                        setAddressState(location.address);
+                                      key={location.id}
+                                      value={location.id}
+                                      onSelect={() => {
+                                        setValue(value === location.id ? null : location.id); // Clear if the same value is selected
                                         setOpen(false);
                                       }}>
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          value === location.nameStore ? "opacity-100" : "opacity-0"
+                                          value === location.id ? "opacity-100" : "opacity-0"
                                         )}
                                       />
                                       {location.nameStore}

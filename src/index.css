@@ -36,6 +36,10 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+
+  .popover-content-width-full {
+    @apply w-[var(--radix-popover-trigger-width)];
+  }
 }
 
 @layer base {

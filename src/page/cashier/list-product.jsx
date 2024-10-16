@@ -36,6 +36,8 @@ import {
 const Home = () => {
   const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
+  console.log("cookie =>", cookie);
+
   const { category, updateCategory } = categorySelect();
   const { updateCheckout, cancelCheckout, data } = checkout();
   const { data: dataInvoice, resetInvoice, updateInvoiceNumber, updateInvoice } = invoice();
@@ -72,7 +74,7 @@ const Home = () => {
 
   const getInvoiceLogo = useQuery(
     ["get-invoice-logo", category],
-    () => getAllInvoiceLogoByActive({ location: cookie?.user?.location }),
+    () => getAllInvoiceLogoByActive({ location: cookie?.user?.store }),
     {
       keepPreviousData: true
     }
@@ -80,7 +82,7 @@ const Home = () => {
 
   const getInvoiceFooter = useQuery(
     ["get-invoice-footer", category],
-    () => getAllInvoiceFooterByActive({ location: cookie?.user?.location }),
+    () => getAllInvoiceFooterByActive({ location: cookie?.user?.store }),
     {
       keepPreviousData: true
     }
@@ -88,7 +90,7 @@ const Home = () => {
 
   const getInvoiceSocialMedia = useQuery(
     ["get-invoice-social-medi", category],
-    () => getAllInvoiceSocialMediaByActive({ location: cookie?.user?.location }),
+    () => getAllInvoiceSocialMediaByActive({ location: cookie?.user?.store }),
     {
       keepPreviousData: true
     }
@@ -100,7 +102,7 @@ const Home = () => {
       getAllProduct({
         category: category || "",
         nameProduct: "",
-        location: cookie?.user?.location
+        location: cookie?.user?.store
       }),
     {
       keepPreviousData: false
@@ -109,7 +111,7 @@ const Home = () => {
 
   const categoryList = useQuery(
     ["get-category"],
-    () => getAllCategory({ location: cookie?.user?.location }),
+    () => getAllCategory({ location: cookie?.user?.store }),
     {
       keepPreviousData: true
     }
