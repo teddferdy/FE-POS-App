@@ -11,7 +11,7 @@ export const getUserByLocation = async (payload) => {
 };
 
 export const changeRoleUser = async (payload) => {
-  const { data, status } = await axiosInstance.put("/auth/change-role-user", payload);
+  const { data, status } = await axiosInstance.put("/auth/change-profile-user", payload);
   if (status !== 200) throw Error(`${data.message || data?.error}`);
   return data;
 };

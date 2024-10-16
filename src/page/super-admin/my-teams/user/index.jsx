@@ -87,14 +87,17 @@ const UserListByLocation = () => {
                 image={user.image}
                 name={user.userName}
                 address={user.address}
-                location={user.location}
+                location={user.storeName}
+                position={user.positionName}
+                positionId={user.position}
                 phoneNumber={user.phoneNumber}
                 role={allLocation?.data?.data[index].userType}
                 onChangeRole={(val) => {
                   const body = {
-                    location: user.location,
+                    store: user.store,
                     id: user.id,
-                    userType: val
+                    userType: val.role,
+                    position: val.position
                   };
                   mutateChangeRole.mutate(body);
                 }}

@@ -1,6 +1,10 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pencil } from "lucide-react";
+import { useQuery } from "react-query";
+import SkeletonTable from "../skeleton/skeleton-table";
+import AbortController from "../abort-controller";
+
 import AvatarUser from "../avatar-user";
 
 // Components
@@ -14,21 +18,67 @@ import {
   DialogTrigger
 } from "../../ui/dialog";
 
+// Service
+import { getAllPosition } from "../../../services/position";
+
 const DialogChangeRole = ({
   classNameBtn = "flex items-center gap-4 p-2 hover:bg-gray-100 w-full",
   onChangeRole,
   ...user
 }) => {
   const [selectedRole, setSelectedRole] = useState(user.role);
+  const [selectedPosition, setSelectedPosition] = useState(user.position ? user.position : null);
   const [open, setOpen] = useState(false);
-  const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value);
-  };
+
+  const handleRoleChange = (e) => setSelectedRole(e.target.value);
+
+  const handlePositionChange = (e) => setSelectedPosition(Number(e.target.value));
 
   const handleSave = () => {
     setOpen(false);
-    onChangeRole(selectedRole);
+    const body = {
+      role: selectedRole,
+      position: selectedPosition
+    };
+    onChangeRole(body);
   };
+
+  const allPosition = useQuery(["get-all-position"], () => getAllPosition(), {
+    keepPreviousData: true,
+    retry: 0
+  });
+
+  const INPUT_POSITION = useMemo(() => {
+    if (allPosition.isLoading && allPosition.isFetching) {
+      return <SkeletonTable />;
+    }
+
+    if (allPosition.isError) {
+      return (
+        <div className="p-4">
+          <AbortController refetch={() => allPosition.refetch()} />
+        </div>
+      );
+    }
+
+    if (allPosition.data && allPosition.isSuccess) {
+      const datasPosition = allPosition?.data?.data;
+      return (
+        <select
+          id="position"
+          value={selectedPosition}
+          onChange={handlePositionChange}
+          className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline">
+          {datasPosition.map((position) => (
+            <option key={position.id} value={position.id}>
+              {position.name}
+            </option>
+          ))}
+        </select>
+      );
+    }
+  }, [allPosition]);
+
   return (
     <Dialog open={open} onOpenChange={() => setOpen(true)}>
       <DialogTrigger>
@@ -39,7 +89,7 @@ const DialogChangeRole = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" withX={false}>
         <DialogHeader>
-          <DialogTitle>Update Role User {user.name}</DialogTitle>
+          <DialogTitle>Update Profile User {user.name}</DialogTitle>
         </DialogHeader>
         <div className="mt-4 grid grid-cols-2 gap-4 h-fit overflow-scroll">
           <div className="flex justify-center col-span-2">
@@ -63,6 +113,12 @@ const DialogChangeRole = ({
               <option value="admin">Admin</option>
               <option value="user">User</option>
             </select>
+          </div>
+          <div className="mt-4">
+            <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">
+              Position
+            </label>
+            {INPUT_POSITION}
           </div>
         </div>
         <DialogFooter>
