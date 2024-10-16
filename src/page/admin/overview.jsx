@@ -62,7 +62,7 @@ const OverviewPage = () => {
   // QUERY
   const getEarning = useQuery(
     ["get-earning"],
-    () => getTotalEarning({ location: cookie?.user?.location }),
+    () => getTotalEarning({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -70,7 +70,7 @@ const OverviewPage = () => {
 
   const geChartByYear = useQuery(
     ["get-current-year"],
-    () => getDataCurrentYear({ year: "2024", location: cookie?.user?.location }),
+    () => getDataCurrentYear({ year: "2024", location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -78,7 +78,7 @@ const OverviewPage = () => {
 
   const overviewProduct = useQuery(
     ["get-overview-product"],
-    () => getOverviewProduct({ location: cookie?.user?.location }),
+    () => getOverviewProduct({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -86,7 +86,7 @@ const OverviewPage = () => {
 
   const overviewCategory = useQuery(
     ["get-overview-category"],
-    () => getOverviewCategory({ location: cookie?.user?.location }),
+    () => getOverviewCategory({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -94,7 +94,7 @@ const OverviewPage = () => {
 
   const overviewMember = useQuery(
     ["get-overview-member"],
-    () => getOverviewMember({ location: cookie?.user?.location }),
+    () => getOverviewMember({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -102,7 +102,7 @@ const OverviewPage = () => {
 
   const getChartByMonth = useQuery(
     ["get-chart-by-month"],
-    () => getDataChartByMonth({ location: cookie?.user?.location }),
+    () => getDataChartByMonth({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -110,7 +110,7 @@ const OverviewPage = () => {
 
   const getDataCurrentNowAndWeekBefore = useQuery(
     ["get-current-now-and-seven-day-before"],
-    () => getDataCurrentNowAndSevenDayBefore({ location: cookie?.user?.location }),
+    () => getDataCurrentNowAndSevenDayBefore({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -118,7 +118,7 @@ const OverviewPage = () => {
 
   const getDataCurrentNowAndTwoDaysBefore = useQuery(
     ["get-current-now-and-two-day-before"],
-    () => getDataCurrentNowAndTwoDayBefore({ location: cookie?.user?.location }),
+    () => getDataCurrentNowAndTwoDayBefore({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -126,7 +126,7 @@ const OverviewPage = () => {
 
   const getDataTableBestSelling = useQuery(
     ["get-list-table-best-seliing"],
-    () => getListTableBestSellingList({ location: cookie?.user?.location }),
+    () => getListTableBestSellingList({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -134,7 +134,7 @@ const OverviewPage = () => {
 
   const tableMemberList = useQuery(
     ["get-list-table-member-list"],
-    () => getListTableMemberList({ location: cookie?.user?.location }),
+    () => getListTableMemberList({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -142,7 +142,7 @@ const OverviewPage = () => {
 
   const tableCategoryList = useQuery(
     ["get-list-table-category-list"],
-    () => getListTableCategoryList({ location: cookie?.user?.location }),
+    () => getListTableCategoryList({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -150,7 +150,7 @@ const OverviewPage = () => {
 
   const tableProductList = useQuery(
     ["get-list-table-product-list"],
-    () => getListTableProductList({ location: cookie?.user?.location }),
+    () => getListTableProductList({ location: cookie?.user?.store }),
     {
       retry: 0
     }

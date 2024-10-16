@@ -27,7 +27,7 @@ const UserCard = ({
         <p className="text-gray-700 text-sm">Store: {location}</p>
         <p className="text-gray-700 text-sm">Phone: {phoneNumber ? phoneNumber : "-"}</p>
         <p className="text-gray-700 text-sm">Role: {role}</p>
-        <p className="text-gray-700 text-sm">Position: {position}</p>
+        <p className="text-gray-700 text-sm">Position: {position ? position : "-"}</p>
       </div>
       <Separator className="my-4" />
       <div className="flex justify-between items-center space-x-4">
