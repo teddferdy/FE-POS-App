@@ -78,6 +78,7 @@ const FormLocation = () => {
 
   // Mutations for adding and editing location
   const mutateAddLocation = useMutation(addLocation, {
+    retry: 1,
     onMutate: () => setActive(true, null),
     onSuccess: () => {
       setActive(false, "success");
@@ -105,6 +106,7 @@ const FormLocation = () => {
   });
 
   const mutateEditLocation = useMutation(editLocation, {
+    retry: 1,
     onMutate: () => setActive(true, null),
     onSuccess: (data) => {
       if (data?.showUserUpdateDialog) {
@@ -243,106 +245,116 @@ const FormLocation = () => {
 
       <div className="w-full lg:w-3/4 mx-auto">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-4">
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="mb-4 flex items-center gap-2">
-                    <FormLabel className="text-base">Image Store</FormLabel>
-                    <Asterisk className="w-4 h-4 text-destructive" />
-                  </div>
-
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
-                    placeholder="imageName"
-                  />
-
-                  {form.formState.errors.image && (
-                    <FormMessage>{form.formState.errors.image.message}</FormMessage>
-                  )}
-
-                  {imagePreview && (
-                    <div className="mt-4 relative flex justify-center items-center w-full lg:w-1/2">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="max-w-full h-auto border-2 border-gray-300 rounded-md object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleResetImage}
-                        className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1">
-                        X
-                      </button>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-2 lg:grid-cols-3 gap-4 space-y-8 p-4">
+            <div className="col-span-3">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Image Store</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
-                  )}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="nameStore"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="mb-4 flex items-center gap-2">
-                    <FormLabel className="text-base">Name Store</FormLabel>
-                    <Asterisk className="w-4 h-4 text-destructive" />
-                  </div>
-                  <Input type="text" {...field} placeholder="Enter Name Store" maxLength={30} />
-                  {form.formState.errors.nameStore && (
-                    <FormMessage>{form.formState.errors.nameStore}</FormMessage>
-                  )}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="mb-4 flex items-center gap-2">
-                    <FormLabel className="text-base">Address</FormLabel>
-                    <Asterisk className="w-4 h-4 text-destructive" />
-                  </div>
-                  <Textarea
-                    type="text"
-                    {...field}
-                    placeholder="Enter Address Store"
-                    maxLength={255}
-                  />
-                  {form.formState.errors.address && (
-                    <FormMessage>{form.formState.errors.address}</FormMessage>
-                  )}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="detailLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="mb-4 flex items-center gap-2">
-                    <FormLabel className="text-base">Detail Location</FormLabel>
-                    <Asterisk className="w-4 h-4 text-destructive" />
-                  </div>
-                  <Textarea
-                    type="text"
-                    {...field}
-                    placeholder="Example: go to west 700m from Near Gas Station Manahan, left distro store"
-                    maxLength={255}
-                  />
-                  {form.formState.errors.detailLocation && (
-                    <FormMessage>{form.formState.errors.detailLocation}</FormMessage>
-                  )}
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-between items-center gap-4">
+
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
+                      placeholder="imageName"
+                    />
+
+                    {form.formState.errors.image && (
+                      <FormMessage>{form.formState.errors.image.message}</FormMessage>
+                    )}
+
+                    {imagePreview && (
+                      <div className="mt-4 relative flex justify-center items-center w-full lg:w-1/2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-full h-auto border-2 border-gray-300 rounded-md object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleResetImage}
+                          className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1">
+                          X
+                        </button>
+                      </div>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="nameStore"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Name Store</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
+                    </div>
+                    <Input type="text" {...field} placeholder="Enter Name Store" maxLength={30} />
+                    {form.formState.errors.nameStore && (
+                      <FormMessage>{form.formState.errors.nameStore}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-2 lg:col-span-2">
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Address</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
+                    </div>
+                    <Textarea
+                      type="text"
+                      {...field}
+                      placeholder="Enter Address Store"
+                      maxLength={255}
+                    />
+                    {form.formState.errors.address && (
+                      <FormMessage>{form.formState.errors.address}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-3 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="detailLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Detail Location</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
+                    </div>
+                    <Textarea
+                      type="text"
+                      {...field}
+                      placeholder="Example: go to west 700m from Near Gas Station Manahan, left distro store"
+                      maxLength={255}
+                    />
+                    {form.formState.errors.detailLocation && (
+                      <FormMessage>{form.formState.errors.detailLocation}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-1 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="phoneNumber"
@@ -365,6 +377,8 @@ const FormLocation = () => {
                   </FormItem>
                 )}
               />
+            </div>
+            <div className="col-span-1 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="status"
@@ -387,19 +401,20 @@ const FormLocation = () => {
                 )}
               />
             </div>
-
-            <div className="flex justify-between items-center">
-              <DialogCancelForm
-                handleBack={() => navigate("/location-list")}
-                classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                titleButtonTrigger="Cancel"
-              />
-              <Button
-                className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                type="submit">
-                {state?.data?.id ? "Edit" : "Save"}
-              </Button>
+            <div className="col-span-3">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  handleBack={() => navigate("/location-list")}
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
+                />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  {state?.data?.id ? "Edit" : "Save"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
