@@ -43,12 +43,10 @@ const FormLocation = () => {
   const { setActive } = useLoading();
 
   const formSchema = z.object({
-    image:
-      state?.data?.image && state?.data.id && state?.data.imageName
-        ? z.string().min(4, {
-            message: "Image Required."
-          })
-        : z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
+    image: z.union([
+      z.instanceof(File).refine((file) => file.size > 0, "Image is required"),
+      z.string().min(1, "Image URL is required").optional()
+    ]),
     nameStore: z.string().min(4, {
       message: "Name Store must be at least 4 characters & Max Long Character 30."
     }),
@@ -159,7 +157,7 @@ const FormLocation = () => {
         formData.append("image", values.image);
         formData.append("modifiedBy", cookie.user.userName);
       } else {
-        formData.append("image", values.image);
+        formData.append("image", state.data.image);
       }
       formData.append("id", state.data.id);
       mutateEditLocation.mutate(formData);

@@ -26,8 +26,7 @@ const LocationList = () => {
 
   // QUERY
   const allLocation = useQuery(["get-all-location-table"], () => getAllLocationTable(), {
-    retry: 0,
-    keepPreviousData: true
+    retry: 0
   });
 
   const mutateDeleteLocation = useMutation(deleteLocation, {

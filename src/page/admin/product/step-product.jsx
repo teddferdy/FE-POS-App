@@ -37,7 +37,7 @@ const StepProduct = () => {
         location: cookie?.user?.store
       }),
     {
-      keepPreviousData: true
+      retry: 1
     }
   );
   const subCategoryList = useQuery(
@@ -47,7 +47,7 @@ const StepProduct = () => {
         location: cookie?.user?.store
       }),
     {
-      keepPreviousData: true
+      retry: 1
     }
   );
 
@@ -60,7 +60,7 @@ const StepProduct = () => {
         location: cookie?.user?.store
       }),
     {
-      keepPreviousData: false
+      retry: 1
     }
   );
 

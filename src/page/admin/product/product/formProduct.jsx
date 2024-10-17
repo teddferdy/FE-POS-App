@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Check, ChevronsUpDown, ChevronDown } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown, Asterisk } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Asterisk } from "lucide-react";
 import { useMutation, useQuery } from "react-query";
 
 // Component

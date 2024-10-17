@@ -24,10 +24,7 @@ export const addInvoiceLogo = async (payload) => {
 };
 
 export const editInvoiceLogo = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/invoice/edit-invoice-logo/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.put("/invoice/edit-invoice-logo", payload);
   if (status !== 200) throw Error(`${data.message || data?.error}`);
   return data;
 };

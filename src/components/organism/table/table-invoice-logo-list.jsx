@@ -23,7 +23,7 @@ import {
 } from "../../ui/dropdown-menu";
 import { Badge } from "../../ui/badge";
 import ThreeDotsMenu from "../popover/three-dots-menu";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
+import Spinner from "../loading/loading-load-image";
 
 const FILTER_BY = [
   {
@@ -59,9 +59,27 @@ const TableInvoiceLogoList = ({ invoiceLogo, handleActivate, handleDelete }) => 
         );
       },
       cell: ({ row }) => {
-        const linkImage = generateLinkImageFromGoogleDrive(row?.original?.image);
-
-        return <img src={linkImage} alt={linkImage} className="w-full object-cover" />;
+        const [loading, setLoading] = useState(true);
+        const linkImage = row?.original?.image.replace("https://drive.google.com/uc?id=", "");
+        const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
+        return (
+          <>
+            {loading && <Spinner />}
+            {/* You can replace this with a spinner or a placeholder */}
+            <img
+              src={thumbnailUrl}
+              alt="Google Drive Image"
+              style={{ maxWidth: "100%", height: "auto", display: loading ? "none" : "block" }}
+              onLoad={() => setLoading(false)} // Image loaded successfully
+              onError={(e) => {
+                console.log("Image failed to load", e);
+                e.target.onerror = null; // Prevents infinite loop
+                e.target.src = "https://via.placeholder.com/150"; // Fallback image
+                setLoading(false); // Even if it fails, stop loading
+              }}
+            />
+          </>
+        );
       }
     },
     {

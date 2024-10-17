@@ -40,8 +40,7 @@ const ProductList = () => {
     ["get-all-product-table"],
     () => getAllProductTable({ location: cookie?.user?.store }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 1
     }
   );
 

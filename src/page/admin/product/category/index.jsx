@@ -40,7 +40,7 @@ const CategoryList = () => {
     ["get-all-category-table"],
     () => getAllCategoryTable({ location: cookie?.user?.store }),
     {
-      keepPreviousData: false
+      retry: 1
     }
   );
 
