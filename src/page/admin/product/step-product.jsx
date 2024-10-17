@@ -44,7 +44,7 @@ const StepProduct = () => {
     ["get-all-subcategory"],
     () =>
       getAllSubCategory({
-        location: cookie?.user?.store
+        store: cookie?.user?.store
       }),
     {
       retry: 1

@@ -2,17 +2,18 @@
 import React, { useState } from "react";
 import { PlusIcon, MinusIcon } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { generateLinkImageFromGoogleDrive } from "../../../utils/generateLinkImageFromGoogleDrive";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 import LineClampText from "../label/lineclamp";
+import Spinner from "../loading/loading-load-image";
 // State
 import { orderList } from "../../../state/order-list";
 
 const ProductCard = ({ items, withActionButton = true }) => {
   const { addingProduct } = orderList();
   const [count, setCount] = useState(0);
-
-  const linkImage = generateLinkImageFromGoogleDrive(items?.image);
+  const [loading, setLoading] = useState(true);
+  const linkImage = items?.image?.replace("https://drive.google.com/uc?id=", "");
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
 
   const decrement = () =>
     setCount((prevState) => {
@@ -49,9 +50,19 @@ const ProductCard = ({ items, withActionButton = true }) => {
 
   return (
     <div className="p-2 rounded-lg flex flex-col gap-4 bg-white h-fit">
-      {linkImage && (
-        <img src={linkImage} alt="img" className="object-cover w-full h-48 rounded-lg" />
-      )}
+      {loading && <Spinner />}
+      <img
+        src={thumbnailUrl}
+        alt="Google Drive Image"
+        style={{ maxWidth: "100%", height: "auto", display: loading ? "none" : "block" }}
+        onLoad={() => setLoading(false)} // Image loaded successfully
+        onError={(e) => {
+          console.log("Image failed to load", e);
+          e.target.onerror = null; // Prevents infinite loop
+          e.target.src = "https://via.placeholder.com/150"; // Fallback image
+          setLoading(false); // Even if it fails, stop loading
+        }}
+      />
       <div className="flex flex-col gap-1">
         <p className="text-[#737373] font-bold text-base">{items?.nameProduct || "-"}</p>
         <LineClampText text={items?.description || "-"} />
