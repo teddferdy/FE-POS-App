@@ -68,12 +68,10 @@ const FormProduct = () => {
 
   const formSchema = z
     .object({
-      image:
-        state?.data?.image && state?.data.id && state?.data.imageName
-          ? z.string().min(4, {
-              message: "Image Required."
-            })
-          : z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
+      image: z.union([
+        z.instanceof(File).refine((file) => file.size > 0, "Image is required"),
+        z.string().min(1, "Image URL is required").optional()
+      ]),
       nameProduct: z.string().min(4, {
         message: "Enter Name Product Minimum Character 4 and max character 30."
       }),
@@ -197,7 +195,7 @@ const FormProduct = () => {
     formData.append("status", values.status);
     formData.append("price", values.price);
     formData.append("isOption", values.isOption);
-    formData.append("option", values.option);
+    formData.append("option", values.subCategory);
     formData.append("store", cookie?.user?.store);
     formData.append("createdBy", cookie.user.userName); // Assuming you need this as well
 
