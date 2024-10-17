@@ -128,7 +128,7 @@ const FormInvoiceFooter = () => {
         name: values.name,
         footerList: values?.footerList?.length > 0 ? JSON.stringify(values?.footerList) : "",
         status: values?.status,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         isActive: false,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
@@ -139,7 +139,7 @@ const FormInvoiceFooter = () => {
         name: values.name,
         isActive: false,
         footerList: values?.footerList?.length > 0 ? JSON.stringify(values?.footerList) : "",
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         status: values.status,
         createdBy: cookie.user.userName
       };

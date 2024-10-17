@@ -118,7 +118,7 @@ const FormDiscount = () => {
         id: state?.data?.id,
         description: values?.description,
         percentage: values?.percentage,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         isActive: values?.isActive,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
@@ -129,7 +129,7 @@ const FormDiscount = () => {
         description: values?.description,
         percentage: values?.percentage,
         isActive: values?.isActive,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         createdBy: cookie.user.userName
       };
 

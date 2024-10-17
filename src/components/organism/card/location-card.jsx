@@ -12,9 +12,9 @@ const LocationCard = ({ idLocation, image, nameStore, address, phoneNumber, hand
   const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
   const location = useLocation();
   return (
-    <div className="shadow-lg p-4">
+    <div className="shadow-lg p-4 flex flex-col">
       <img className="w-full h-48 object-cover" src={thumbnailUrl} alt={nameStore} />
-      <div className="py-4">
+      <div className="py-4 flex-grow">
         <div className="font-bold text-xl mb-2">{nameStore}</div>
         <p className="text-base">
           <strong>Address:</strong> {address}
@@ -24,7 +24,7 @@ const LocationCard = ({ idLocation, image, nameStore, address, phoneNumber, hand
         </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex w-full justify-end self-end">
         {location.pathname === "/invoice-by-outlet" ? (
           <DialogViewInvoiceByLocation nameStore={idLocation} />
         ) : (

@@ -38,7 +38,7 @@ const CategoryList = () => {
   // QUERY
   const allCategory = useQuery(
     ["get-all-category-table"],
-    () => getAllCategoryTable({ location: cookie?.user?.location }),
+    () => getAllCategoryTable({ location: cookie?.user?.store }),
     {
       keepPreviousData: false
     }

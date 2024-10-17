@@ -32,7 +32,7 @@ const index = () => {
 
   const allSocialMedia = useQuery(
     ["get-all-social-media"],
-    () => getAllSocialMedia({ location: cookie?.user?.location }),
+    () => getAllSocialMedia({ location: cookie?.user?.store }),
     {
       retry: 0
     }
@@ -86,7 +86,7 @@ const index = () => {
             </Breadcrumb>
           </div>
 
-          <DialogViewInvoiceByLocation nameStore={cookie?.user?.location} />
+          <DialogViewInvoiceByLocation nameStore={cookie?.user?.store} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">

@@ -28,7 +28,7 @@ const SocialMediaList = () => {
   // QUERY
   const allSocialMedia = useQuery(
     ["get-all-social-media"],
-    () => getAllSocialMedia({ location: cookie?.user?.location }),
+    () => getAllSocialMedia({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

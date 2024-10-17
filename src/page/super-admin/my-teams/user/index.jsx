@@ -31,7 +31,7 @@ const UserListByLocation = () => {
   // QUERY
   const allLocation = useQuery(
     ["get-all-user-location-table"],
-    () => getUserByLocation({ location: state.location }),
+    () => getUserByLocation({ location: state.store }),
     {
       retry: 0
     }
@@ -86,6 +86,7 @@ const UserListByLocation = () => {
                 key={user.id}
                 image={user.image}
                 name={user.userName}
+                store={user.store}
                 address={user.address}
                 location={user.storeName}
                 position={user.positionName}
@@ -94,7 +95,7 @@ const UserListByLocation = () => {
                 role={allLocation?.data?.data[index].userType}
                 onChangeRole={(val) => {
                   const body = {
-                    store: user.store,
+                    store: val.store,
                     id: user.id,
                     userType: val.role,
                     position: val.position

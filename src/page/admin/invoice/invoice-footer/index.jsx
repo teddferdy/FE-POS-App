@@ -39,7 +39,7 @@ const InvoiceFooterList = () => {
   // QUERY
   const invoiceFooter = useQuery(
     ["get-all-invoice-footer"],
-    () => getAllInvoiceFooter({ location: cookie?.user?.location }),
+    () => getAllInvoiceFooter({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

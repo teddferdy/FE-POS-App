@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getAllProduct = async ({ location, nameProduct, category }) => {
   const { data, status } = await axiosInstance.get(
-    `product/get-product?store=${location}&nameProduct=${nameProduct}&category=${category}`
+    `/product/get-product?store=${location}&nameProduct=${nameProduct}&category=${category}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
@@ -10,14 +10,14 @@ export const getAllProduct = async ({ location, nameProduct, category }) => {
 
 export const getProductByOutlet = async ({ location }) => {
   const { data, status } = await axiosInstance.get(
-    `product/get-product-by-super-admin?store=${location}`
+    `/product/get-product-by-super-admin?store=${location}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
 export const getAllProductTable = async ({ location }) => {
-  const { data, status } = await axiosInstance.get(`product/get-product-all?store=${location}`);
+  const { data, status } = await axiosInstance.get(`/product/get-product-all?store=${location}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

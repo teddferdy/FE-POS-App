@@ -32,7 +32,7 @@ const UserList = () => {
   // QUERY
   const allLocation = useQuery(
     ["get-all-user-location-table"],
-    () => getUserByLocation({ location: cookie?.user?.location }),
+    () => getUserByLocation({ location: cookie?.user?.store }),
     {
       retry: 0
     }

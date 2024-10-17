@@ -38,7 +38,7 @@ const SubCategoryList = () => {
   // QUERY
   const allSubCategory = useQuery(
     ["get-all-sub-caytegory"],
-    () => getAllSubCategory({ store: cookie?.user?.location }),
+    () => getAllSubCategory({ store: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true
