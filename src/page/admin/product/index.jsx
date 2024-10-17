@@ -27,7 +27,7 @@ const ListProductByLocation = () => {
     ["get-all-product-location-table"],
     () => getAllProductTable({ location: cookie?.user?.store }),
     {
-      retry: 0
+      retry: 1
     }
   );
 

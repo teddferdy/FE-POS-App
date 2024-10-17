@@ -1,14 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-// import { useTranslation } from "react-i18next";
 import { useLoading } from "../../../../components/organism/loading";
 import { Button } from "../../../../components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Asterisk } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,9 +26,7 @@ import DialogCancelForm from "../../../../components/organism/dialog/dialogCance
 import { Input } from "../../../../components/ui/input";
 import { Switch } from "../../../../components/ui/switch";
 import { addInvoiceLogo, editInvoiceLogo } from "../../../../services/invoice";
-import DialogCarouselImage from "../../../../components/organism/dialog/dialog-carousel-image";
 import Hint from "../../../../components/organism/label/hint";
-import { generateLinkImageFromGoogleDrive } from "../../../../utils/generateLinkImageFromGoogleDrive";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { useCookies } from "react-cookie";
@@ -39,10 +36,15 @@ const FormInvoiceLogo = () => {
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const linkImage = state?.data?.image?.replace("https://drive.google.com/uc?id=", "");
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
+  const [imagePreview, setImagePreview] = useState(state?.data?.image ? thumbnailUrl : null);
+
   const formSchema = z.object({
-    image: z.string().min(4, {
-      message: "Invoice Logo must be at least 4 characters."
-    }),
+    image: z.union([
+      z.instanceof(File).refine((file) => file.size > 0, "Image is required"),
+      z.string().min(1, "Image URL is required").optional()
+    ]),
     status: z.boolean()
   });
 
@@ -110,27 +112,48 @@ const FormInvoiceLogo = () => {
   });
 
   const onSubmit = (values) => {
-    if (state?.data?.id) {
-      const body = {
-        id: state?.data?.id,
-        image: values.image,
-        status: values?.status,
-        isActive: false,
-        store: cookie?.user?.store,
-        createdBy: state?.data?.createdBy,
-        modifiedBy: cookie.user.userName
-      };
-      mutateEditInvoiceLogo.mutate(body);
-    } else {
-      const body = {
-        image: values.image,
-        isActive: false,
-        status: values.status,
-        store: cookie?.user?.store,
-        createdBy: cookie.user.userName
-      };
+    const formData = new FormData();
+    // Append other fields
+    formData.append("status", values.status);
+    formData.append("isActive", false);
+    formData.append("store", cookie?.user?.store);
+    formData.append("createdBy", cookie.user.userName); // Assuming you need this as well
 
-      mutateAddInvoiceLogo.mutate(body);
+    // Use mutate function to send the formData
+    if (state?.data?.id) {
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+        formData.append("modifiedBy", cookie.user.userName);
+      } else {
+        formData.append("image", state.data.image);
+      }
+      formData.append("id", state.data.id);
+      mutateEditInvoiceLogo.mutate(formData);
+    } else {
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      }
+
+      mutateAddInvoiceLogo.mutate(formData);
+    }
+  };
+
+  const handleResetImage = () => {
+    setImagePreview(null);
+    form.setValue("image", null);
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      form.setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -187,51 +210,53 @@ const FormInvoiceLogo = () => {
 
       <div className="w-full lg:w-3/4 mx-auto  p-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => {
-                const linkName = generateLinkImageFromGoogleDrive(field.value);
-                return (
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+            <div className="col-span-2 lg:col-span-1">
+              <FormField
+                control={form.control}
+                name="image"
+                render={() => (
                   <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-base">Image Product</FormLabel>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Image Store</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
                     </div>
-                    <div className="flex-col md:flex justify-between gap-10">
-                      <div className="flex flex-col gap-4">
-                        <div className="relative w-full">
-                          <Input
-                            type="text"
-                            {...field}
-                            className="flex-1"
-                            placeholder="Enter Image URL"
-                          />
-                          <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
-                            <DialogCarouselImage />
-                          </div>
-                        </div>
-                        {form.formState.errors.image ? (
-                          <FormMessage>{form.formState.errors.image}</FormMessage>
-                        ) : (
-                          <Hint>Image URL in Google Drive</Hint>
-                        )}
-                      </div>
-                      {linkName && (
-                        <div className="flex flex-col gap-4">
-                          <p>Result Image</p>
-                          <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
-                            <img src={linkName} alt={linkName} className="w-full object-cover" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </FormItem>
-                );
-              }}
-            />
 
-            <div className="flex justify-between items-center gap-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
+                      placeholder="imageName"
+                    />
+
+                    {form.formState.errors.image && (
+                      <FormMessage>{form.formState.errors.image.message}</FormMessage>
+                    )}
+
+                    {imagePreview && (
+                      <div className="mt-4 relative flex justify-center items-center w-full">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-full h-auto border-2 border-gray-300 rounded-md object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleResetImage}
+                          className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1">
+                          X
+                        </button>
+                      </div>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-2 lg:col-span-1">
               <FormField
                 control={form.control}
                 name="status"
@@ -257,18 +282,20 @@ const FormInvoiceLogo = () => {
                 )}
               />
             </div>
-            <div className="flex justify-between items-center">
-              <DialogCancelForm
-                handleBack={() => navigate("/logo-invoice-list")}
-                classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                titleButtonTrigger="Cancel"
-              />
-              <Button
-                className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-                type="submit">
-                {state?.data?.id ? "Edit" : "Save"}
-              </Button>
+            <div className="col-span-2">
+              <div className="flex justify-between items-center">
+                <DialogCancelForm
+                  handleBack={() => navigate("/logo-invoice-list")}
+                  classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
+                  titleDialog="Apakah Anda Ingin Membatalkan Ini"
+                  titleButtonTrigger="Cancel"
+                />
+                <Button
+                  className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+                  type="submit">
+                  {state?.data?.id ? "Edit" : "Save"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

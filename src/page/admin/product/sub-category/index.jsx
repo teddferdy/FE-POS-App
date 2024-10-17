@@ -40,8 +40,7 @@ const SubCategoryList = () => {
     ["get-all-sub-caytegory"],
     () => getAllSubCategory({ store: cookie?.user?.store }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 1
     }
   );
 

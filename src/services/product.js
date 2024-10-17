@@ -29,7 +29,7 @@ export const addProduct = async (payload) => {
 };
 
 export const editProduct = async (payload) => {
-  const { data, status } = await axiosInstance.put(`/product/edit-product/${payload.id}`, payload);
+  const { data, status } = await axiosInstance.put("/product/edit-product", payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
