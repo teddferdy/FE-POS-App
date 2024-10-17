@@ -157,6 +157,7 @@ const FormLocation = () => {
     if (state?.data?.id) {
       if (values.image instanceof File) {
         formData.append("image", values.image);
+        formData.append("modifiedBy", cookie.user.userName);
       } else {
         formData.append("image", values.image);
       }

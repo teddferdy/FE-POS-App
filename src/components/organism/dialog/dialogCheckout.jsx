@@ -67,7 +67,7 @@ const DialogCheckout = ({
 
   const allTypePayment = useQuery(
     ["get-all-type-checkout-payment"],
-    () => getAllTypePayment({ store: cookie?.user?.location }),
+    () => getAllTypePayment({ store: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true,

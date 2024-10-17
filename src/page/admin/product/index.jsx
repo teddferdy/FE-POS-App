@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import SkeletonTable from "../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../components/organism/abort-controller";
-import { getProductByOutlet } from "../../../services/product";
+import { getAllProductTable } from "../../../services/product";
 import ProductCard from "../../../components/organism/card/card-product";
 
 const ListProductByLocation = () => {
@@ -25,7 +25,7 @@ const ListProductByLocation = () => {
   // QUERY
   const productList = useQuery(
     ["get-all-product-location-table"],
-    () => getProductByOutlet({ location: cookie?.user?.location }),
+    () => getAllProductTable({ location: cookie?.user?.store }),
     {
       retry: 0
     }

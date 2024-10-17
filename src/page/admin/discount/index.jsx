@@ -28,7 +28,7 @@ const DiscountList = () => {
   // QUERY
   const allDiscount = useQuery(
     ["get-all-discount"],
-    () => getAllDiscount({ location: cookie?.user?.location }),
+    () => getAllDiscount({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

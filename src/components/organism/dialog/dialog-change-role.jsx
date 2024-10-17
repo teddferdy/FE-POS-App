@@ -20,6 +20,7 @@ import {
 
 // Service
 import { getAllPosition } from "../../../services/position";
+import { getAllLocation } from "../../../services/location";
 
 const DialogChangeRole = ({
   classNameBtn = "flex items-center gap-4 p-2 hover:bg-gray-100 w-full",
@@ -28,22 +29,31 @@ const DialogChangeRole = ({
 }) => {
   const [selectedRole, setSelectedRole] = useState(user.role);
   const [selectedPosition, setSelectedPosition] = useState(user.position ? user.position : null);
+  const [selectedLocation, setSelectedLocation] = useState(user.store ? user.store : null);
   const [open, setOpen] = useState(false);
 
   const handleRoleChange = (e) => setSelectedRole(e.target.value);
 
   const handlePositionChange = (e) => setSelectedPosition(Number(e.target.value));
 
+  const handleLocationChange = (e) => setSelectedLocation(Number(e.target.value));
+
   const handleSave = () => {
     setOpen(false);
     const body = {
       role: selectedRole,
-      position: selectedPosition ? selectedPosition : 0
+      position: selectedPosition ? selectedPosition : 0,
+      store: selectedLocation
     };
     onChangeRole(body);
   };
 
   const allPosition = useQuery(["get-all-position"], () => getAllPosition(), {
+    keepPreviousData: true,
+    retry: 0
+  });
+
+  const allLocation = useQuery(["get-all-location"], () => getAllLocation(), {
     keepPreviousData: true,
     retry: 0
   });
@@ -80,6 +90,37 @@ const DialogChangeRole = ({
       );
     }
   }, [allPosition]);
+
+  const INPUT_LOCATION = useMemo(() => {
+    if (allLocation.isLoading && allLocation.isFetching) {
+      return <SkeletonTable />;
+    }
+
+    if (allLocation.isError) {
+      return (
+        <div className="p-4">
+          <AbortController refetch={() => allLocation.refetch()} />
+        </div>
+      );
+    }
+
+    if (allLocation.data && allLocation.isSuccess) {
+      const datasLocation = allLocation?.data?.data;
+      return (
+        <select
+          id="location"
+          value={selectedLocation}
+          onChange={handleLocationChange}
+          className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline">
+          {datasLocation.map((position) => (
+            <option key={position.id} value={position.id}>
+              {position.nameStore}
+            </option>
+          ))}
+        </select>
+      );
+    }
+  }, [allLocation]);
 
   return (
     <Dialog open={open} onOpenChange={() => setOpen(true)}>
@@ -121,6 +162,12 @@ const DialogChangeRole = ({
               Position
             </label>
             {INPUT_POSITION}
+          </div>
+          <div className="mt-4">
+            <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">
+              Location
+            </label>
+            {INPUT_LOCATION}
           </div>
         </div>
         <DialogFooter>

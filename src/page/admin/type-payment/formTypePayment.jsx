@@ -34,8 +34,8 @@ const FormTypePayment = () => {
     name: z.string().min(2, {
       message: "Enter Name Type Payment Minimum Character 2 & Max 30 Character."
     }),
-    description: z.string().min(4, {
-      message: "Enter Description Minimum Character 4 & Max 255 Character."
+    description: z.string().min(2, {
+      message: "Enter Description Minimum Character 2 & Max 255 Character."
     }),
     status: z.boolean()
   });
@@ -110,7 +110,7 @@ const FormTypePayment = () => {
         id: state?.data?.id,
         name: values?.name,
         description: values?.description,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         status: values.status,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
@@ -121,7 +121,7 @@ const FormTypePayment = () => {
         name: values?.name,
         description: values?.description,
         status: values.status,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         createdBy: cookie.user.userName
       };
 

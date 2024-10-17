@@ -115,7 +115,7 @@ const FormSubCategory = () => {
   // QUERY
   const allCategory = useQuery(
     ["get-all-category"],
-    () => getAllCategory({ location: cookie?.user?.location }),
+    () => getAllCategory({ location: cookie?.user?.store }),
     {
       keepPreviousData: false
     }
@@ -194,7 +194,7 @@ const FormSubCategory = () => {
           typeSubCategory:
             values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
           isMultiple: values?.isMultiple,
-          store: cookie?.user?.location,
+          store: cookie?.user?.store,
           createdBy: state?.data?.userName,
           modifiedBy: cookie.user.userName
         };
@@ -206,7 +206,7 @@ const FormSubCategory = () => {
           typeSubCategory:
             values?.typeSubCategory?.length > 0 ? JSON.stringify(values?.typeSubCategory) : "",
           isMultiple: values?.isMultiple,
-          store: cookie?.user?.location,
+          store: cookie?.user?.store,
           createdBy: cookie?.user?.userName
         };
 

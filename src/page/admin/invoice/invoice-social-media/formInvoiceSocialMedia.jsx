@@ -139,7 +139,7 @@ const FormInvoiceSocialMedia = () => {
           values?.socialMediaList?.length > 0 ? JSON.stringify(values?.socialMediaList) : "",
         status: values?.status,
         isActive: false,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
@@ -150,7 +150,7 @@ const FormInvoiceSocialMedia = () => {
         isActive: false,
         socialMediaList:
           values?.socialMediaList?.length > 0 ? JSON.stringify(values?.socialMediaList) : "",
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         status: values.status,
         createdBy: cookie.user.userName
       };

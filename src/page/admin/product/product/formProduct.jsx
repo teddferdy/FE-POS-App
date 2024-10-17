@@ -27,7 +27,6 @@ import {
 } from "../../../../components/ui/breadcrumb";
 import { Switch } from "../../../../components/ui/switch";
 import { Textarea } from "../../../../components/ui/textarea";
-import DialogCarouselImage from "../../../../components/organism/dialog/dialog-carousel-image";
 import { cn } from "../../../../lib/utils";
 import { useLoading } from "../../../../components/organism/loading";
 import DialogCancelForm from "../../../../components/organism/dialog/dialogCancelForm";
@@ -35,7 +34,6 @@ import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";
 import TemplateContainer from "../../../../components/organism/template-container";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/ui/form";
-import { generateLinkImageFromGoogleDrive } from "../../../../utils/generateLinkImageFromGoogleDrive";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import {
   Command,
@@ -56,6 +54,10 @@ const FormProduct = () => {
   const { state } = useLocation();
   const [cookie] = useCookies(["user"]);
 
+  const linkImage = state?.data?.image?.replace("https://drive.google.com/uc?id=", "");
+  const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
+  const [imagePreview, setImagePreview] = useState(state?.data?.image ? thumbnailUrl : null);
+
   const { setActive } = useLoading();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -67,9 +69,12 @@ const FormProduct = () => {
 
   const formSchema = z
     .object({
-      image: z.string().min(4, {
-        message: "Invoice Logo Field Required."
-      }),
+      image:
+        state?.data?.image && state?.data.id && state?.data.imageName
+          ? z.string().min(4, {
+              message: "Image Required."
+            })
+          : z.instanceof(File).refine((file) => file && file.size > 0, "Image is required"),
       nameProduct: z.string().min(4, {
         message: "Enter Name Product Minimum Character 4 and max character 30."
       }),
@@ -77,13 +82,12 @@ const FormProduct = () => {
         message: "Enter Description Minimum 4 Character & Max 255 Character."
       }),
       category: z.number().min(1, {
-        message: "Name Product Store Cannot Empty"
+        message: "Category Cannot Empty"
       }),
       price: z.string().min(2, {
         message: "Enter Price Minimum 2 Character Price Product Must Number And Not Alphabet"
       }),
       status: z.boolean(),
-      store: z.string(),
       isOption: z.boolean(),
       subCategory: z.array(z.number()).optional() // Make optional initially
     })
@@ -102,7 +106,6 @@ const FormProduct = () => {
       status: state?.data?.status ?? true,
       price: state?.data?.price ?? "",
       description: state?.data?.description ?? "",
-      store: state?.data?.store ?? "",
       isOption: state?.data?.isOption ?? false,
       subCategory: state?.data?.option?.map((items) => items.id) ?? []
     }
@@ -111,7 +114,7 @@ const FormProduct = () => {
   // QUERY
   const allCategory = useQuery(
     ["get-all-category"],
-    () => getAllCategory({ location: cookie?.user?.location }),
+    () => getAllCategory({ location: cookie?.user?.store }),
     {
       keepPreviousData: false
     }
@@ -122,7 +125,7 @@ const FormProduct = () => {
     () =>
       getSubCategoryByCategory({
         idParentCategory: form.getValues("category"),
-        store: cookie?.user?.location
+        store: cookie?.user?.store
       }),
     {
       enabled: !!form.getValues("isOption") && !!form.getValues("category"),
@@ -185,35 +188,55 @@ const FormProduct = () => {
   });
 
   const onSubmit = (values) => {
+    console.log("values =>", values);
+
+    const formData = new FormData();
+    // Append other fields
+    formData.append("nameProduct", values.nameProduct);
+    formData.append("category", values.category);
+    formData.append("description", values.description);
+    formData.append("status", values.status);
+    formData.append("price", values.price);
+    formData.append("isOption", values.isOption);
+    formData.append("option", values.option);
+    formData.append("store", cookie?.user?.store);
+    formData.append("createdBy", cookie.user.userName); // Assuming you need this as well
+
+    // Use mutate function to send the formData
     if (state?.data?.id) {
-      const body = {
-        id: state?.data?.id,
-        nameProduct: values?.nameProduct,
-        image: values?.image,
-        category: values?.category,
-        description: values?.description,
-        status: values?.status,
-        price: values?.price,
-        isOption: values.isOption,
-        option: values.isOption ? values.subCategory : [],
-        store: cookie?.user?.location,
-        modifiedBy: cookie.user.userName
-      };
-      mutateEditProduct.mutate(body);
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+        formData.append("modifiedBy", cookie.user.userName);
+      } else {
+        formData.append("image", values.image);
+      }
+      formData.append("id", state.data.id);
+      mutateEditProduct.mutate(formData);
     } else {
-      const body = {
-        nameProduct: values?.nameProduct,
-        image: values?.image,
-        category: values?.category,
-        description: values?.description,
-        status: values?.status,
-        price: values?.price,
-        isOption: values.isOption,
-        option: values.isOption ? values.subCategory : [],
-        store: cookie?.user?.location,
-        createdBy: cookie?.user?.userName
-      };
-      mutateAddProduct.mutate(body);
+      if (values.image instanceof File) {
+        formData.append("image", values.image);
+      }
+      console.log("HELLO =>", formData.get("image"));
+      mutateAddProduct.mutate(formData);
+    }
+  };
+
+  const handleResetImage = () => {
+    setImagePreview(null);
+    form.setValue("image", null);
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      form.setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -275,43 +298,42 @@ const FormProduct = () => {
               <FormField
                 control={form.control}
                 name="image"
-                render={({ field }) => {
-                  const linkName = generateLinkImageFromGoogleDrive(field.value);
-                  return (
-                    <FormItem>
-                      <div className="mb-4 flex items-center gap-2">
-                        <FormLabel className="text-base">Image Product</FormLabel>
-                        <Asterisk className="w-4 h-4 text-destructive" />
+                render={() => (
+                  <FormItem>
+                    <div className="mb-4 flex items-center gap-2">
+                      <FormLabel className="text-base">Image Store</FormLabel>
+                      <Asterisk className="w-4 h-4 text-destructive" />
+                    </div>
+
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
+                      placeholder="imageName"
+                    />
+
+                    {form.formState.errors.image && (
+                      <FormMessage>{form.formState.errors.image.message}</FormMessage>
+                    )}
+
+                    {imagePreview && (
+                      <div className="mt-4 relative flex justify-center items-center w-full lg:w-1/2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-full h-auto border-2 border-gray-300 rounded-md object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleResetImage}
+                          className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white rounded-full p-1">
+                          X
+                        </button>
                       </div>
-                      <div className="flex-col md:flex justify-between gap-10">
-                        <div className="flex flex-col gap-4">
-                          <div className="relative w-full">
-                            <Input
-                              type="text"
-                              {...field}
-                              className="flex-1"
-                              placeholder="Enter Image URL From Google Drive"
-                            />
-                            <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
-                              <DialogCarouselImage />
-                            </div>
-                          </div>
-                          {form.formState.errors.image && (
-                            <FormMessage>{form.formState.errors.image}</FormMessage>
-                          )}
-                        </div>
-                        {linkName && (
-                          <div className="flex flex-col gap-4">
-                            <p>Result Image</p>
-                            <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
-                              <img src={linkName} alt={linkName} className="w-full object-cover" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </FormItem>
-                  );
-                }}
+                    )}
+                  </FormItem>
+                )}
               />
             </div>
             <div className="col-span-3">

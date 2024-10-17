@@ -10,6 +10,7 @@ const UserCard = ({
   // image,
   name,
   role,
+  store,
   phoneNumber,
   location,
   position,
@@ -35,6 +36,7 @@ const UserCard = ({
           classNameBtn="flex items-center p-2 hover:bg-gray-100 w-full"
           name={name}
           role={role}
+          store={store}
           position={positionId}
           phoneNumber={phoneNumber}
           location={location}

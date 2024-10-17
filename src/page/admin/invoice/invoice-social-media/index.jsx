@@ -40,7 +40,7 @@ const InvoiceSocialMediaList = () => {
   // QUERY
   const invoiceSocialMedia = useQuery(
     ["get-all-invoice-social-media"],
-    () => getAllInvoiceSocialMedia({ location: cookie?.user?.location }),
+    () => getAllInvoiceSocialMedia({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

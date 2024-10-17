@@ -38,7 +38,7 @@ const ProductList = () => {
   // QUERY
   const allProduct = useQuery(
     ["get-all-product-table"],
-    () => getAllProductTable({ location: cookie?.user?.location }),
+    () => getAllProductTable({ location: cookie?.user?.store }),
     {
       retry: 0,
       keepPreviousData: true

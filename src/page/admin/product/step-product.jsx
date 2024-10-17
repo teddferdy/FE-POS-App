@@ -27,12 +27,14 @@ import { getAllProduct } from "../../../services/product";
 const StepProduct = () => {
   const [cookie] = useCookies(["user"]);
 
+  console.log(cookie);
+
   // QUERY
   const categoryList = useQuery(
     ["get-category"],
     () =>
       getAllCategory({
-        location: cookie?.user?.location
+        location: cookie?.user?.store
       }),
     {
       keepPreviousData: true
@@ -42,7 +44,7 @@ const StepProduct = () => {
     ["get-all-subcategory"],
     () =>
       getAllSubCategory({
-        location: cookie?.user?.location
+        location: cookie?.user?.store
       }),
     {
       keepPreviousData: true
@@ -55,7 +57,7 @@ const StepProduct = () => {
       getAllProduct({
         category: "",
         nameProduct: "",
-        location: cookie?.user?.location
+        location: cookie?.user?.store
       }),
     {
       keepPreviousData: false

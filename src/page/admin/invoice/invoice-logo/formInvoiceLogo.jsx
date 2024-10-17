@@ -116,7 +116,7 @@ const FormInvoiceLogo = () => {
         image: values.image,
         status: values?.status,
         isActive: false,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         createdBy: state?.data?.createdBy,
         modifiedBy: cookie.user.userName
       };
@@ -126,7 +126,7 @@ const FormInvoiceLogo = () => {
         image: values.image,
         isActive: false,
         status: values.status,
-        store: cookie?.user?.location,
+        store: cookie?.user?.store,
         createdBy: cookie.user.userName
       };
 
