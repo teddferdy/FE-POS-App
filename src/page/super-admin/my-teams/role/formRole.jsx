@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React from "react"; // useState
+import React, { useState } from "react"; // useState
 // import { useMutation } from "react-query";
 import { ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -48,10 +48,15 @@ const FormRole = () => {
   // const { setActive } = useLoading();
 
   // State Super Admin
-  // const [OverviewSuperAdmin, setSuperAdmin] = useState({
-  //   title: "Super Admin",
-  //   children: []
-  // });
+  const [superAdmin, setSuperAdmin] = useState(null);
+  const [admin, setAdmin] = useState(null);
+  const [user, setUser] = useState(null);
+
+  console.log("superAdmin =>", superAdmin);
+
+  console.log("admin =>", admin);
+
+  console.log("user =>", user);
 
   const formSchema = z.object({
     name: z.string().min(1, {
@@ -301,18 +306,17 @@ const FormRole = () => {
                   <h3>Super Admin Menu</h3>
                   <AccordionRole
                     menu={sidebarMenuSuperAdmin}
-                    checkedValue={(val) => {
-                      console.log("VAL =>", val);
-                    }}
+                    checkedValue={(val) => setSuperAdmin(val)}
                   />
                 </div>
                 <div className="border-r p-4 flex-1">
                   <h3>Admin Menu</h3>
-                  <AccordionRole menu={sidebarMenuAdmin} titleMenu="Admin" />
+
+                  <AccordionRole menu={sidebarMenuAdmin} checkedValue={(val) => setAdmin(val)} />
                 </div>
                 <div className="border-r p-4 flex-1">
                   <h3>User Menu</h3>
-                  <AccordionRole menu={sidebarMenuUser} titleMenu="Admin" />
+                  <AccordionRole menu={sidebarMenuUser} checkedValue={(val) => setUser(val)} />
                 </div>
               </div>
               {form.formState.errors.menu && (

@@ -8,11 +8,11 @@ const AccordionRole = ({ menu, checkedValue }) => {
 
   const updateParentCheckedState = (parentTitle) => {
     const parentState = { ...checkedState[parentTitle] };
-    const allChildrenChecked = parentState.children?.every((child) => child.checked) || false;
-    const anyActionChecked = parentState.actions.some((action) => action.length > 0) || false; // Check if any action has values
+    const anyChildChecked = parentState.children?.some((child) => child.checked) || false;
+    const anyActionChecked = parentState.actions.length > 0;
 
-    // Set parent checked based on children and actions
-    parentState.checked = allChildrenChecked || anyActionChecked;
+    // Set parent checked based on whether any child or any action is checked
+    parentState.checked = anyChildChecked || anyActionChecked;
 
     setCheckedState((prevState) => ({
       ...prevState,
@@ -30,14 +30,14 @@ const AccordionRole = ({ menu, checkedValue }) => {
       parentItem.children?.map((child) => ({
         title: child.title,
         checked: isChecked,
-        actions: isChecked ? [...child.actions] : [] // Set actions to their names if parent is checked, otherwise empty
+        actions: isChecked ? ["edit", "view", "add", "delete"] : [] // Set actions if parent is checked
       })) || [];
 
     const updatedState = {
       ...checkedState,
       [parentTitle]: {
         checked: isChecked,
-        actions: isChecked ? [...parentItem.actions] : [], // Reset parent actions based on parent's checked state
+        actions: isChecked ? [...parentItem.actions] : [],
         children: updatedChildren
       }
     };
@@ -57,20 +57,16 @@ const AccordionRole = ({ menu, checkedValue }) => {
     if (childIndex > -1) {
       updatedState[parentTitle].children[childIndex].checked = isChecked;
 
-      // If the child is checked, add all actions to the child's actions
+      // If child is checked, set actions to checked
       if (isChecked) {
-        updatedState[parentTitle].children[childIndex].actions = ["edit", "view", "add", "delete"]; // Add actions
+        updatedState[parentTitle].children[childIndex].actions = ["edit", "view", "add", "delete"];
       } else {
-        // If the child is unchecked, reset actions and check if the parent needs to be unchecked
         updatedState[parentTitle].children[childIndex].actions = [];
       }
 
-      // If all children are checked, check the parent
-      const allChildrenChecked = updatedState[parentTitle].children.every((child) => child.checked);
-      updatedState[parentTitle].checked = allChildrenChecked; // Update parent checked state
-
-      setCheckedState(updatedState);
+      // Update parent's checked state based on children
       updateParentCheckedState(parentTitle);
+      setCheckedState(updatedState);
     }
   };
 
@@ -78,48 +74,38 @@ const AccordionRole = ({ menu, checkedValue }) => {
     const updatedState = { ...checkedState };
     const parent = updatedState[parentTitle];
 
-    // Check if parent exists in the state
     if (!parent) return;
 
-    // If childTitle is specified, we are handling a child's action
     if (childTitle) {
       const child = parent.children.find((c) => c.title === childTitle);
-
       if (child) {
         const updatedActions = isChecked
-          ? [...child.actions, action] // Add action name when checked
-          : child.actions.filter((a) => a !== action); // Remove action name when unchecked
+          ? [...child.actions, action]
+          : child.actions.filter((a) => a !== action);
 
-        child.actions = updatedActions; // Update child's actions
-        child.checked = updatedActions.length > 0; // Set checked state based on actions
+        child.actions = updatedActions;
+        child.checked = updatedActions.length > 0; // Child checked if any action is checked
 
-        // Uncheck child and parent if actions are empty
-        if (updatedActions.length === 0) {
-          child.checked = false;
-          updatedState[parentTitle].checked = false;
-        }
-
-        setCheckedState(updatedState);
+        // Update parent state after changing child's actions
         updateParentCheckedState(parentTitle);
+        setCheckedState(updatedState);
       }
     } else {
-      // If childTitle is not specified, we are handling a parent's action
-      const parentActions = parent.actions || []; // Ensure parent actions exist
       const updatedActions = isChecked
-        ? [...parentActions, action] // Add action name
-        : parentActions.filter((a) => a !== action); // Remove action name
+        ? [...parent.actions, action]
+        : parent.actions.filter((a) => a !== action);
 
       parent.actions = updatedActions;
 
-      // Uncheck all children if no parent actions are left
+      // If no actions are left, uncheck all children
       if (updatedActions.length === 0) {
         parent.children.forEach((child) => {
           child.checked = false;
-          child.actions = []; // Reset actions of children
+          child.actions = [];
         });
       }
 
-      setCheckedState(updatedState);
+      // Update parent's checked state
       updateParentCheckedState(parentTitle);
     }
   };
@@ -129,20 +115,17 @@ const AccordionRole = ({ menu, checkedValue }) => {
     menu.forEach((parent) => {
       initialState[parent.title] = {
         checked: false,
-        actions: [], // Initialize parent actions
+        actions: [],
         children:
           parent.children?.map((child) => ({
             title: child.title,
             checked: false,
-            actions: [] // Initialize actions for child as empty arrays
+            actions: []
           })) || []
       };
     });
     setCheckedState(initialState);
-    if (typeof checkedValue === "function") {
-      checkedValue(Object.values(initialState));
-    }
-  }, [menu, checkedValue]);
+  }, [menu]);
 
   return (
     <Accordion type="multiple" className="w-full">
@@ -184,7 +167,7 @@ const AccordionRole = ({ menu, checkedValue }) => {
                             checked={
                               checkedState[parent.title]?.children
                                 .find((c) => c.title === child.title)
-                                ?.actions.includes(action) || false // Check based on the inclusion of action names
+                                ?.actions.includes(action) || false
                             }
                             onCheckedChange={(isChecked) =>
                               handleActionChange(parent.title, child.title, action, isChecked)
@@ -200,22 +183,20 @@ const AccordionRole = ({ menu, checkedValue }) => {
                 </div>
               ))}
             {parent.actions &&
-              parent.actions.map((action, actionIdx) => {
-                return (
-                  <div key={actionIdx} className="ml-8 flex gap-2">
-                    <Checkbox
-                      id={action}
-                      checked={checkedState[parent.title]?.actions.includes(action) || false}
-                      onCheckedChange={(isChecked) =>
-                        handleActionChange(parent.title, null, action, isChecked)
-                      } // Pass `null` for childTitle
-                    />
-                    <label htmlFor={action} className="ml-1">
-                      {action}
-                    </label>
-                  </div>
-                );
-              })}
+              parent.actions.map((action, actionIdx) => (
+                <div key={actionIdx} className="ml-8 flex gap-2">
+                  <Checkbox
+                    id={action}
+                    checked={checkedState[parent.title]?.actions.includes(action) || false}
+                    onCheckedChange={(isChecked) =>
+                      handleActionChange(parent.title, null, action, isChecked)
+                    }
+                  />
+                  <label htmlFor={action} className="ml-1">
+                    {action}
+                  </label>
+                </div>
+              ))}
           </AccordionContent>
         </AccordionItem>
       ))}
