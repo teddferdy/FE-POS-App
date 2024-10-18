@@ -40,7 +40,12 @@ const SubCategoryList = () => {
     ["get-all-sub-caytegory"],
     () => getAllSubCategory({ store: cookie?.user?.store }),
     {
-      retry: 1
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 

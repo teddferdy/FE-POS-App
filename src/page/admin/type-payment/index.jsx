@@ -29,8 +29,12 @@ const TypePaymentList = () => {
     ["get-all-type-checkout-payment"],
     () => getAllTypePayment({ store: cookie?.user?.store }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 

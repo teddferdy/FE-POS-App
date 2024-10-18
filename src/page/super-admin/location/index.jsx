@@ -26,7 +26,12 @@ const LocationList = () => {
 
   // QUERY
   const allLocation = useQuery(["get-all-location-table"], () => getAllLocationTable(), {
-    retry: 0
+    retry: 1,
+    cacheTime: 0,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 
   const mutateDeleteLocation = useMutation(deleteLocation, {
@@ -53,11 +58,12 @@ const LocationList = () => {
       setTimeout(() => {
         setActive(null, null);
       }, 2000);
-    }
+    },
+    onSettled: () => setActive(null)
   });
 
   const TABLE_SHOW = useMemo(() => {
-    if (allLocation.isLoading && allLocation.isFetching && !allLocation.isError) {
+    if (allLocation.isLoading && allLocation.isFetching) {
       return <SkeletonTable />;
     }
 
@@ -69,7 +75,7 @@ const LocationList = () => {
       );
     }
 
-    if (allLocation.data && allLocation.isSuccess && !allLocation.isError) {
+    if (allLocation.data && allLocation.isSuccess) {
       return (
         <div className="w-full p-4">
           <TableLocationList

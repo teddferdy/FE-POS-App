@@ -31,8 +31,12 @@ const ShiftList = () => {
   const { setActive } = useLoading();
   // QUERY
   const allShift = useQuery(["get-all-shift"], () => getAllShift(), {
-    retry: 0,
-    keepPreviousData: true
+    retry: 1,
+    cacheTime: 0,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 
   const mutateDeleteShift = useMutation(deleteShift, {

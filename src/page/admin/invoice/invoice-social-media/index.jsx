@@ -42,8 +42,12 @@ const InvoiceSocialMediaList = () => {
     ["get-all-invoice-social-media"],
     () => getAllInvoiceSocialMedia({ location: cookie?.user?.store }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 
