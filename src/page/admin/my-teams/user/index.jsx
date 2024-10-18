@@ -34,7 +34,12 @@ const UserList = () => {
     ["get-all-user-location-table"],
     () => getUserByLocation({ location: cookie?.user?.store }),
     {
-      retry: 0
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 

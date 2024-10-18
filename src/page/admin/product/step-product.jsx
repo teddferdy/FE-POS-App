@@ -37,7 +37,12 @@ const StepProduct = () => {
         location: cookie?.user?.store
       }),
     {
-      retry: 1
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
   const subCategoryList = useQuery(
@@ -47,7 +52,12 @@ const StepProduct = () => {
         store: cookie?.user?.store
       }),
     {
-      retry: 1
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 
@@ -60,7 +70,12 @@ const StepProduct = () => {
         location: cookie?.user?.store
       }),
     {
-      retry: 1
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 

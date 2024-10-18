@@ -41,8 +41,12 @@ const InvoiceFooterList = () => {
     ["get-all-invoice-footer"],
     () => getAllInvoiceFooter({ location: cookie?.user?.store }),
     {
-      retry: 0,
-      keepPreviousData: true
+      retry: 1,
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true
     }
   );
 
