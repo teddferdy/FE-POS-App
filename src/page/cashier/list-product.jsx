@@ -236,7 +236,7 @@ const Home = () => {
       }, 1000);
       setTimeout(() => {
         setActive(null, null);
-      }, 15000);
+      }, 1500);
     }
   });
 

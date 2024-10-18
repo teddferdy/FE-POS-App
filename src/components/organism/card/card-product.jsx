@@ -5,6 +5,8 @@ import { Button } from "../../../components/ui/button";
 import { formatCurrencyRupiah } from "../../../utils/formatter-currency";
 import LineClampText from "../label/lineclamp";
 import Spinner from "../loading/loading-load-image";
+import { useCookies } from "react-cookie";
+
 // State
 import { orderList } from "../../../state/order-list";
 
@@ -12,6 +14,7 @@ const ProductCard = ({ items, withActionButton = true }) => {
   const { addingProduct } = orderList();
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [cookie] = useCookies(["user"]);
   const linkImage = items?.image?.replace("https://drive.google.com/uc?id=", "");
   const thumbnailUrl = `https://drive.google.com/thumbnail?id=${linkImage}&sz=w1000`;
 
@@ -37,6 +40,7 @@ const ProductCard = ({ items, withActionButton = true }) => {
     });
 
     addingProduct({
+      store: cookie.user.store,
       id: Math.random().toString(),
       idProduct: items?.id,
       orderName: items?.nameProduct,
