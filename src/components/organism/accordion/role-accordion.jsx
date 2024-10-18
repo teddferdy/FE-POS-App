@@ -11,7 +11,7 @@ const AccordionRole = ({ menu, checkedValue }) => {
     const anyChildChecked = parentState.children?.some((child) => child.checked) || false;
     const anyActionChecked = parentState.actions.length > 0;
 
-    // Set parent checked based on whether any child or any action is checked
+    // Update parent's checked state based on children or actions being checked
     parentState.checked = anyChildChecked || anyActionChecked;
 
     setCheckedState((prevState) => ({
@@ -28,45 +28,35 @@ const AccordionRole = ({ menu, checkedValue }) => {
     const parentItem = menu.find((item) => item.title === parentTitle);
     const updatedChildren =
       parentItem.children?.map((child) => ({
-        title: child.title,
+        ...child,
         checked: isChecked,
-        actions: isChecked ? ["edit", "view", "add", "delete"] : [] // Set actions if parent is checked
+        actions: isChecked ? ["edit", "view", "add", "delete"] : []
       })) || [];
 
-    const updatedState = {
-      ...checkedState,
+    setCheckedState((prevState) => ({
+      ...prevState,
       [parentTitle]: {
         checked: isChecked,
-        actions: isChecked ? [...parentItem.actions] : [],
+        actions: isChecked ? ["edit", "view", "add", "delete"] : [],
         children: updatedChildren
       }
-    };
+    }));
 
-    setCheckedState(updatedState);
     if (typeof checkedValue === "function") {
-      checkedValue(Object.values(updatedState));
+      checkedValue(Object.values(checkedState));
     }
   };
 
   const handleChildChange = (parentTitle, childTitle, isChecked) => {
     const updatedState = { ...checkedState };
-    const childIndex = updatedState[parentTitle]?.children.findIndex(
-      (child) => child.title === childTitle
-    );
+    const parent = updatedState[parentTitle];
+    const childIndex = parent?.children.findIndex((child) => child.title === childTitle);
 
     if (childIndex > -1) {
-      updatedState[parentTitle].children[childIndex].checked = isChecked;
+      parent.children[childIndex].checked = isChecked;
+      parent.children[childIndex].actions = isChecked ? ["edit", "view", "add", "delete"] : [];
 
-      // If child is checked, set actions to checked
-      if (isChecked) {
-        updatedState[parentTitle].children[childIndex].actions = ["edit", "view", "add", "delete"];
-      } else {
-        updatedState[parentTitle].children[childIndex].actions = [];
-      }
-
-      // Update parent's checked state based on children
       updateParentCheckedState(parentTitle);
-      setCheckedState(updatedState);
     }
   };
 
@@ -74,40 +64,19 @@ const AccordionRole = ({ menu, checkedValue }) => {
     const updatedState = { ...checkedState };
     const parent = updatedState[parentTitle];
 
-    if (!parent) return;
-
     if (childTitle) {
       const child = parent.children.find((c) => c.title === childTitle);
-      if (child) {
-        const updatedActions = isChecked
-          ? [...child.actions, action]
-          : child.actions.filter((a) => a !== action);
-
-        child.actions = updatedActions;
-        child.checked = updatedActions.length > 0; // Child checked if any action is checked
-
-        // Update parent state after changing child's actions
-        updateParentCheckedState(parentTitle);
-        setCheckedState(updatedState);
-      }
+      child.actions = isChecked
+        ? [...child.actions, action]
+        : child.actions.filter((a) => a !== action);
+      child.checked = child.actions.length > 0;
     } else {
-      const updatedActions = isChecked
+      parent.actions = isChecked
         ? [...parent.actions, action]
         : parent.actions.filter((a) => a !== action);
-
-      parent.actions = updatedActions;
-
-      // If no actions are left, uncheck all children
-      if (updatedActions.length === 0) {
-        parent.children.forEach((child) => {
-          child.checked = false;
-          child.actions = [];
-        });
-      }
-
-      // Update parent's checked state
-      updateParentCheckedState(parentTitle);
     }
+
+    updateParentCheckedState(parentTitle);
   };
 
   useEffect(() => {
@@ -118,7 +87,7 @@ const AccordionRole = ({ menu, checkedValue }) => {
         actions: [],
         children:
           parent.children?.map((child) => ({
-            title: child.title,
+            ...child,
             checked: false,
             actions: []
           })) || []
@@ -142,61 +111,58 @@ const AccordionRole = ({ menu, checkedValue }) => {
           </AccordionTrigger>
 
           <AccordionContent>
-            {parent.children &&
-              Array.isArray(parent.children) &&
-              parent.children.map((child, idx) => (
-                <div key={idx} className="flex justify-between">
-                  <div className="ml-4 flex flex-col justify-between mb-4">
-                    <div className="flex gap-2">
-                      <Checkbox
-                        checked={
-                          checkedState[parent.title]?.children.find((c) => c.title === child.title)
-                            ?.checked || false
-                        }
-                        onCheckedChange={(isChecked) =>
-                          handleChildChange(parent.title, child.title, isChecked)
-                        }
-                      />
-                      <span>{child.title}</span>
-                    </div>
-                    <div className="ml-8 flex flex-col gap-2 mt-4">
-                      {["edit", "view", "add", "delete"].map((action, actionIdx) => (
-                        <div key={actionIdx}>
-                          <Checkbox
-                            id={action}
-                            checked={
-                              checkedState[parent.title]?.children
-                                .find((c) => c.title === child.title)
-                                ?.actions.includes(action) || false
-                            }
-                            onCheckedChange={(isChecked) =>
-                              handleActionChange(parent.title, child.title, action, isChecked)
-                            }
-                          />
-                          <label htmlFor={action} className="ml-1">
-                            {action}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+            {parent.children?.map((child, idx) => (
+              <div key={idx} className="flex justify-between">
+                <div className="ml-4 flex flex-col mb-4">
+                  <div className="flex gap-2">
+                    <Checkbox
+                      checked={
+                        checkedState[parent.title]?.children.find((c) => c.title === child.title)
+                          ?.checked || false
+                      }
+                      onCheckedChange={(isChecked) =>
+                        handleChildChange(parent.title, child.title, isChecked)
+                      }
+                    />
+                    <span>{child.title}</span>
+                  </div>
+                  <div className="ml-8 flex flex-col gap-2 mt-4">
+                    {["edit", "view", "add", "delete"].map((action, actionIdx) => (
+                      <div key={actionIdx}>
+                        <Checkbox
+                          id={action}
+                          checked={
+                            checkedState[parent.title]?.children
+                              .find((c) => c.title === child.title)
+                              ?.actions.includes(action) || false
+                          }
+                          onCheckedChange={(isChecked) =>
+                            handleActionChange(parent.title, child.title, action, isChecked)
+                          }
+                        />
+                        <label htmlFor={action} className="ml-1">
+                          {action}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            {parent.actions &&
-              parent.actions.map((action, actionIdx) => (
-                <div key={actionIdx} className="ml-8 flex gap-2">
-                  <Checkbox
-                    id={action}
-                    checked={checkedState[parent.title]?.actions.includes(action) || false}
-                    onCheckedChange={(isChecked) =>
-                      handleActionChange(parent.title, null, action, isChecked)
-                    }
-                  />
-                  <label htmlFor={action} className="ml-1">
-                    {action}
-                  </label>
-                </div>
-              ))}
+              </div>
+            ))}
+            {parent.actions?.map((action, actionIdx) => (
+              <div key={actionIdx} className="ml-8 flex gap-2">
+                <Checkbox
+                  id={action}
+                  checked={checkedState[parent.title]?.actions.includes(action) || false}
+                  onCheckedChange={(isChecked) =>
+                    handleActionChange(parent.title, null, action, isChecked)
+                  }
+                />
+                <label htmlFor={action} className="ml-1">
+                  {action}
+                </label>
+              </div>
+            ))}
           </AccordionContent>
         </AccordionItem>
       ))}
