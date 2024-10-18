@@ -17,7 +17,9 @@ export const sidebarMenuSuperAdmin = [
   {
     title: "Dashboard",
     href: "/dashboard-super-admin",
-    icon: Crown
+    icon: Crown,
+    children: [],
+    actions: ["view"] // Only view available for dashboard
   },
   // Product List
   {
@@ -28,31 +30,32 @@ export const sidebarMenuSuperAdmin = [
       {
         title: "Products By Outlet",
         href: "/product-by-outlet",
-        icon: UtensilsCrossed
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete"] // Actions for product management
       }
-      // {
-      //   title: "Social Media",
-      //   href: "/social-media-list",
-      //   icon: Globe
-      // }
-    ]
+    ],
+    actions: []
   },
   {
     title: "My Teams",
     href: "",
     icon: Users,
+    actions: [],
     children: [
       {
         title: "User",
-        href: "/my-teams-location-available"
+        href: "/my-teams-location-available",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Position",
-        href: "/position-list"
+        href: "/position-list",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Role",
-        href: "/role-list"
+        href: "/role-list",
+        actions: ["add", "edit", "view", "delete"]
       }
     ]
   },
@@ -63,17 +66,21 @@ export const sidebarMenuSuperAdmin = [
     children: [
       {
         title: "Invoice By Outlet",
-        href: "/invoice-by-outlet"
+        href: "/invoice-by-outlet",
+        actions: ["view"] // Typically, invoices are viewed, not edited
       },
       {
         title: "Discount By Outlet",
-        href: "/discount-by-outlet"
+        href: "/discount-by-outlet",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Type Payment By Outlet",
-        href: "/type-payment-by-outlet"
+        href: "/type-payment-by-outlet",
+        actions: ["add", "edit", "view", "delete"]
       }
-    ]
+    ],
+    actions: []
   },
   {
     title: "Outlet",
@@ -82,24 +89,20 @@ export const sidebarMenuSuperAdmin = [
     children: [
       {
         title: "Location",
-        href: "/location-list"
+        href: "/location-list",
+        actions: ["add", "edit", "view", "delete"]
       }
-    ]
+    ],
+    actions: []
   }
-
-  // Location
-  // {
-  //   title: "Member List",
-  //   href: "/member-list",
-  //   icon: BookUser
-  // }
 ];
 
 export const sidebarMenuAdmin = [
   {
     title: "Dashboard",
     href: "/dashboard-admin",
-    icon: Crown
+    icon: Crown,
+    actions: ["view"]
   },
   {
     title: "Master Data",
@@ -108,17 +111,21 @@ export const sidebarMenuAdmin = [
     children: [
       {
         title: "Product",
-        href: "/product-page"
+        href: "/product-page",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Type Payment",
-        href: "/type-payment-list"
+        href: "/type-payment-list",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Discount",
-        href: "/discount-list"
+        href: "/discount-list",
+        actions: ["add", "edit", "view", "delete"]
       }
-    ]
+    ],
+    actions: []
   },
   {
     title: "My Teams",
@@ -127,13 +134,16 @@ export const sidebarMenuAdmin = [
     children: [
       {
         title: "Shift",
-        href: "/shift-list"
+        href: "/shift-list",
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "User",
-        href: "/user-list"
+        href: "/user-list",
+        actions: ["add", "edit", "view", "delete"]
       }
-    ]
+    ],
+    actions: []
   },
   {
     title: "Outlet",
@@ -142,9 +152,11 @@ export const sidebarMenuAdmin = [
     children: [
       {
         title: "Membership",
-        href: "/member-list"
+        href: "/member-list",
+        actions: ["add", "edit", "view", "delete"]
       }
-    ]
+    ],
+    actions: []
   },
   {
     title: "Transaction",
@@ -153,33 +165,32 @@ export const sidebarMenuAdmin = [
     children: [
       {
         title: "Invoice",
-        href: "/invoice-page"
+        href: "/invoice-page",
+        actions: ["view"]
       }
-    ]
+    ],
+    actions: []
   }
-
-  // {
-  //   title: "Social Media",
-  //   href: "/social-media-list",
-  //   icon: Globe
-  // }
 ];
 
 export const sidebarMenuUser = [
   {
     title: "Cashier",
     href: "/home",
-    icon: Calculator
+    icon: Calculator,
+    actions: ["add", "view"]
   },
   {
     title: "Membership",
     href: "/member-list",
-    icon: BookUser
+    icon: BookUser,
+    actions: ["view"]
   },
   {
     title: "My Shift (Coming Soon)",
     href: "#",
-    icon: CalendarDays
+    icon: CalendarDays,
+    actions: ["view"] // Future action; no actions yet since it’s coming soon
   }
 ];
 

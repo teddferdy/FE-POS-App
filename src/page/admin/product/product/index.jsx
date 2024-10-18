@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
 import React, { useMemo } from "react";
 import { Utensils, ChevronDown } from "lucide-react";
 import { useCookies } from "react-cookie";
