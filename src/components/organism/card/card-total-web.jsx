@@ -67,7 +67,7 @@ const CardTotalWeb = ({ order, handleCheckout, cookie }) => {
               totalQuantity: totalItems,
               typePayment: "",
               createdBy: cookie?.user?.userName,
-              store: cookie?.user?.location
+              store: cookie?.user?.store
             })
           }>
           {/* Icon */}
