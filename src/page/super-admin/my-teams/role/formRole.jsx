@@ -48,15 +48,9 @@ const FormRole = () => {
   // const { setActive } = useLoading();
 
   // State Super Admin
-  const [superAdmin, setSuperAdmin] = useState(null);
-  const [admin, setAdmin] = useState(null);
-  const [user, setUser] = useState(null);
+  const [role, setRole] = useState([]);
 
-  console.log("superAdmin =>", superAdmin);
-
-  console.log("admin =>", admin);
-
-  console.log("user =>", user);
+  console.log("role =>", role);
 
   const formSchema = z.object({
     name: z.string().min(1, {
@@ -306,17 +300,35 @@ const FormRole = () => {
                   <h3>Super Admin Menu</h3>
                   <AccordionRole
                     menu={sidebarMenuSuperAdmin}
-                    checkedValue={(val) => setSuperAdmin(val)}
+                    checkedValue={(val) => {
+                      setRole((prevState) => {
+                        return [...prevState, val];
+                      });
+                    }}
                   />
                 </div>
                 <div className="border-r p-4 flex-1">
                   <h3>Admin Menu</h3>
 
-                  <AccordionRole menu={sidebarMenuAdmin} checkedValue={(val) => setAdmin(val)} />
+                  <AccordionRole
+                    menu={sidebarMenuAdmin}
+                    checkedValue={(val) => {
+                      setRole((prevState) => {
+                        return [...prevState, val];
+                      });
+                    }}
+                  />
                 </div>
                 <div className="border-r p-4 flex-1">
                   <h3>User Menu</h3>
-                  <AccordionRole menu={sidebarMenuUser} checkedValue={(val) => setUser(val)} />
+                  <AccordionRole
+                    menu={sidebarMenuUser}
+                    checkedValue={(val) => {
+                      setRole((prevState) => {
+                        return [...prevState, val];
+                      });
+                    }}
+                  />
                 </div>
               </div>
               {form.formState.errors.menu && (
