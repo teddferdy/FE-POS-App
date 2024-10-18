@@ -26,12 +26,13 @@ import { toast } from "sonner";
 
 const UserListByLocation = () => {
   const { state } = useLocation();
+
   const { setActive } = useLoading();
 
   // QUERY
   const allLocation = useQuery(
     ["get-all-user-location-table"],
-    () => getUserByLocation({ location: state.store }),
+    () => getUserByLocation({ location: state.location }),
     {
       retry: 0
     }

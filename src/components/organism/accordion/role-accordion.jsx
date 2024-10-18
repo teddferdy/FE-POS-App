@@ -20,7 +20,11 @@ const AccordionRole = ({ menu, checkedValue }) => {
     }));
 
     if (typeof checkedValue === "function") {
-      checkedValue(Object.values(checkedState));
+      // Filter and return only checked parents with title and checked status
+      const checkedParents = Object.values(checkedState)
+        .filter((item) => item.checked)
+        .map((parent) => ({ title: parent.title, checked: parent.checked }));
+      checkedValue(checkedParents);
     }
   };
 
@@ -36,6 +40,7 @@ const AccordionRole = ({ menu, checkedValue }) => {
     setCheckedState((prevState) => ({
       ...prevState,
       [parentTitle]: {
+        title: parentTitle,
         checked: isChecked,
         actions: isChecked ? ["edit", "view", "add", "delete"] : [],
         children: updatedChildren
@@ -43,7 +48,10 @@ const AccordionRole = ({ menu, checkedValue }) => {
     }));
 
     if (typeof checkedValue === "function") {
-      checkedValue(Object.values(checkedState));
+      const checkedParents = Object.values(checkedState)
+        .filter((item) => item.checked)
+        .map((parent) => ({ title: parent.title, checked: parent.checked }));
+      checkedValue(checkedParents);
     }
   };
 
@@ -83,6 +91,7 @@ const AccordionRole = ({ menu, checkedValue }) => {
     const initialState = {};
     menu.forEach((parent) => {
       initialState[parent.title] = {
+        title: parent.title,
         checked: false,
         actions: [],
         children:
