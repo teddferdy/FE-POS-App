@@ -7,10 +7,7 @@ export const postCheckoutItem = async (payload) => {
 };
 
 export const checkoutItem = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/checkout/edit-checkout-item/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.put("/checkout/edit-checkout-item", payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -325,7 +325,7 @@ const Home = () => {
             customerPhoneNumber: hasMember ? "" : "",
             typePayment: "QRIS",
             modifiedBy: data?.cashierName,
-            store: cookie?.user?.location
+            store: cookie?.user?.store
           };
           mutateCheckoutItem.mutate(body);
         }}
