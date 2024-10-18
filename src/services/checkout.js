@@ -18,12 +18,9 @@ export const cancelCheckoutItem = async (payload) => {
     invoice: payload.invoice,
     store: payload.store
   };
-  const { data, status } = await axiosInstance.delete(
-    `/checkout/delete-checkout-item/${body?.id}`,
-    {
-      data: body
-    }
-  );
+  const { data, status } = await axiosInstance.delete("/checkout/delete-checkout-item", {
+    data: body
+  });
 
   if (status !== 200) throw Error(`${data.message}`);
   return data;

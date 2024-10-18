@@ -303,7 +303,7 @@ const Home = () => {
         handleCloseDialog={() => {
           const body = {
             ...data,
-            store: cookie?.user?.location
+            store: cookie?.user?.store
           };
           mutateCancelItem.mutate(body);
         }}
