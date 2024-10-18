@@ -1,7 +1,5 @@
 import React, { useMemo } from "react";
-
 import { ClipboardPlus, ChevronDown } from "lucide-react";
-
 import { deleteCategory } from "../../../../services/category";
 import { Button } from "../../../../components/ui/button";
 import { useCookies } from "react-cookie";
@@ -19,7 +17,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator
 } from "../../../../components/ui/breadcrumb";
-
 import { toast } from "sonner";
 import { useLoading } from "../../../../components/organism/loading";
 import TemplateContainer from "../../../../components/organism/template-container";

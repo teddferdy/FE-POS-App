@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-// import { useTranslation } from "react-i18next";
 
 // Component
 import { useLoading } from "../../../components/organism/loading";
