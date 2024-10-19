@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -23,7 +24,7 @@ const SideBarMenu = ({ classNameContainer, user, handleNavigate }) => {
           {sidebarMenuSuperAdmin?.length ? (
             <nav className="flex flex-col gap-6">
               {sidebarMenuSuperAdmin?.map((item, index) =>
-                item.children ? (
+                item.children.length > 0 ? (
                   <Accordion type="single" collapsible key={index}>
                     <AccordionItem value={item.title} className="border-b-0">
                       {item.href ? (
