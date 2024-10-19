@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 
 import { ClipboardPlus, ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
@@ -31,11 +31,26 @@ import AbortController from "../../../../components/organism/abort-controller";
 const RoleList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusRole: "all"
+  });
 
   // QUERY
-  const allRole = useQuery(["get-all-role-table"], () => getAllRoleTable(), {
-    keepPreviousData: false
-  });
+  const allRole = useQuery(
+    ["get-all-role-table", pagination],
+    () =>
+      getAllRoleTable({
+        limit: pagination.limit,
+        page: pagination.page,
+        statusRole: pagination.statusRole
+      }),
+    {
+      keepPreviousData: false,
+      cacheTime: 0
+    }
+  );
 
   const mutateDeleteRole = useMutation(deleteRole, {
     onMutate: () => setActive(true, null),
@@ -80,11 +95,16 @@ const RoleList = () => {
     if (allRole.data && allRole.isSuccess && !allRole.isError) {
       return (
         <div className="w-full p-4">
-          <TableRoleList allRole={allRole} handleDelete={(body) => mutateDeleteRole.mutate(body)} />
+          <TableRoleList
+            allRole={allRole}
+            handleDelete={(body) => mutateDeleteRole.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
+          />
         </div>
       );
     }
-  }, [allRole, mutateDeleteRole]);
+  }, [allRole, mutateDeleteRole, pagination, setPagination]);
 
   return (
     <TemplateContainer>

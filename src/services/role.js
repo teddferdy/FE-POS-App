@@ -6,8 +6,10 @@ export const getAllRole = async () => {
   return data;
 };
 
-export const getAllRoleTable = async () => {
-  const { data, status } = await axiosInstance.get("/role/get-role-all");
+export const getAllRoleTable = async ({ page = 1, limit = 10, statusRole = "all" }) => {
+  const { data, status } = await axiosInstance.get(
+    `/role/get-role-all?page=${page}&limit=${limit}&status=${statusRole}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

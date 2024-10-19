@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { ClipboardPlus, ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import {
@@ -29,11 +29,26 @@ import AbortController from "../../../../components/organism/abort-controller";
 const PositionList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusRole: "all"
+  });
 
   // QUERY
-  const allPosition = useQuery(["get-all-position-table"], () => getAllPositionTable(), {
-    keepPreviousData: false
-  });
+  const allPosition = useQuery(
+    ["get-all-position-table", pagination],
+    () =>
+      getAllPositionTable({
+        limit: pagination.limit,
+        page: pagination.page,
+        statusRole: pagination.statusRole
+      }),
+    {
+      keepPreviousData: false,
+      cacheTime: 0
+    }
+  );
 
   const mutateDeletePosition = useMutation(deletePosition, {
     onMutate: () => setActive(true, null),
@@ -81,11 +96,13 @@ const PositionList = () => {
           <TablePositionList
             allPosition={allPosition}
             handleDelete={(body) => mutateDeletePosition.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allPosition, mutateDeletePosition]);
+  }, [allPosition, mutateDeletePosition, pagination, setPagination]);
 
   return (
     <TemplateContainer>
