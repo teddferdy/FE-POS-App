@@ -1,8 +1,13 @@
 import { axiosInstance } from ".";
 
-export const getAllTypePaymentListActive = async (payload) => {
+export const getAllTypePaymentListActive = async ({
+  store,
+  page = 1,
+  limit = 10,
+  statusPayment = "all"
+}) => {
   const { data, status } = await axiosInstance.get(
-    `/type-payment/get-type-payment?store=${payload.store}`
+    `/type-payment/get-type-payment?store=${store}&page=${page}&limit=${limit}&status=${statusPayment}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

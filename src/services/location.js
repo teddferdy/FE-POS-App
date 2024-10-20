@@ -6,8 +6,10 @@ export const getAllLocation = async () => {
   return data;
 };
 
-export const getAllLocationTable = async () => {
-  const { data, status } = await axiosInstance.get("/location/get-location-all");
+export const getAllLocationTable = async ({ page = 1, limit = 10, statusLocation = "all" }) => {
+  const { data, status } = await axiosInstance.get(
+    `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
