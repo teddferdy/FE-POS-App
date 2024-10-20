@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 
 import { MapPinPlus } from "lucide-react";
 import { Button } from "../../../components/ui/button";
@@ -23,16 +23,26 @@ import TableLocationList from "../../../components/organism/table/table-location
 const LocationList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusLocation: "all"
+  });
 
   // QUERY
-  const allLocation = useQuery(["get-all-location-table"], () => getAllLocationTable(), {
-    retry: 1,
-    cacheTime: 0,
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true
-  });
+  const allLocation = useQuery(
+    ["get-all-location-table", pagination],
+    () =>
+      getAllLocationTable({
+        limit: pagination.limit,
+        page: pagination.page,
+        statusLocation: pagination.statusLocation
+      }),
+    {
+      keepPreviousData: false,
+      cacheTime: 0
+    }
+  );
 
   const mutateDeleteLocation = useMutation(deleteLocation, {
     onMutate: () => setActive(true, null),
@@ -81,11 +91,14 @@ const LocationList = () => {
           <TableLocationList
             allLocation={allLocation}
             handleDelete={(body) => mutateDeleteLocation.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
+          ,
         </div>
       );
     }
-  }, [allLocation, mutateDeleteLocation]);
+  }, [allLocation, mutateDeleteLocation, pagination, setPagination]);
 
   return (
     <TemplateContainer>

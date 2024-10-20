@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Wallet } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
@@ -24,17 +24,25 @@ const TypePaymentList = () => {
   const { setActive } = useLoading();
   const [cookie] = useCookies();
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusPayment: "all"
+  });
+
   // QUERY
   const allTypePayment = useQuery(
     ["get-all-type-checkout-payment"],
-    () => getAllTypePayment({ store: cookie?.user?.store }),
+    () =>
+      getAllTypePayment({
+        store: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusPayment: true
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -84,11 +92,13 @@ const TypePaymentList = () => {
           <TableTypePaymentList
             allTypePayment={allTypePayment}
             handleDelete={(body) => mutateDeleteTypePayment.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allTypePayment, mutateDeleteTypePayment]);
+  }, [allTypePayment, mutateDeleteTypePayment, pagination, setPagination]);
 
   return (
     <TemplateContainer>

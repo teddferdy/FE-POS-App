@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,10 +18,21 @@ import TableTypePaymentList from "../../../components/organism/table/table-type-
 const TypePaymentListByLocation = () => {
   const { state } = useLocation();
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10
+  });
+
   // QUERY
   const typePayment = useQuery(
-    ["get-all-type-payment-location-table"],
-    () => getAllTypePaymentListActive({ store: state.location }),
+    ["get-all-type-payment-location-table", pagination],
+    () =>
+      getAllTypePaymentListActive({
+        store: state.location,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusPayment: true
+      }),
     {
       retry: 0
     }
@@ -43,11 +54,16 @@ const TypePaymentListByLocation = () => {
     if (typePayment?.data && typePayment?.isSuccess && !typePayment?.isError) {
       return (
         <div className="w-full p-4">
-          <TableTypePaymentList allTypePayment={typePayment} withActionButton={false} />
+          <TableTypePaymentList
+            allTypePayment={typePayment}
+            withActionButton={false}
+            pagination={pagination}
+            setPagination={setPagination}
+          />
         </div>
       );
     }
-  }, [typePayment]);
+  }, [typePayment, pagination, setPagination]);
 
   return (
     <TemplateContainer>
