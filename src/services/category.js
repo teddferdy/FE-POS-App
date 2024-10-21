@@ -8,9 +8,9 @@ export const getAllCategory = async (payload) => {
   return data;
 };
 
-export const getAllCategoryTable = async (payload) => {
+export const getAllCategoryTable = async ({ location, limit, page, statusCategory }) => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?store=${payload.location}`
+    `/category/get-category-all?store=${location}&page=${page}&limit=${limit}&status=${statusCategory}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

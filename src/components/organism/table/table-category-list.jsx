@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-
+import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
@@ -34,7 +34,9 @@ const FILTER_BY = [
   }
 ];
 
-const TableCategoryList = ({ allCategory, handleDelete }) => {
+const limitsOptions = [10, 20, 50];
+
+const TableCategoryList = ({ allCategory, handleDelete, pagination, setPagination }) => {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -204,76 +206,99 @@ const TableCategoryList = ({ allCategory, handleDelete }) => {
   });
   return (
     <Fragment>
-      <div className="flex flex-col md:flex-row gap-10 py-4">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-10 py-4">
+        {/* Search input */}
         <Input
           placeholder="Search..."
-          value={table.getColumn(filterBy?.value)?.getFilterValue() ?? ""}
-          onChange={(event) =>
-            table.getColumn(filterBy?.value)?.setFilterValue(event?.target?.value)
-          }
-          className="max-w-sm"
+          value={table.getColumn(filterBy.value)?.getFilterValue() ?? ""}
+          onChange={(event) => table.getColumn(filterBy.value)?.setFilterValue(event.target.value)}
+          className="w-full md:max-w-sm"
         />
-        <div className="flex gap-10">
+
+        {/* Status tabs */}
+        <Tabs
+          defaultValue={pagination.statusCategory}
+          className="w-full md:w-auto flex justify-center"
+          onValueChange={(val) =>
+            setPagination((prev) => ({ ...prev, statusCategory: val, page: 1 }))
+          }>
+          <TabsList className="w-full md:w-auto justify-between md:justify-start">
+            <TabsTrigger value="all" className="w-full md:w-auto">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="true" className="w-full md:w-auto">
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="false" className="w-full md:w-auto">
+              Not Active
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Dropdown for filtering and column visibility */}
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          {/* Filter By Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">{filterBy?.name}</Button>
+              <Button variant="outline" className="w-full md:w-auto">
+                {filterBy.name}
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {FILTER_BY.map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.value === filterBy?.value}
-                    onCheckedChange={() => setFilterBy(column)}>
-                    {column?.name}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+            <DropdownMenuContent align="end" className="w-full md:w-auto">
+              {FILTER_BY.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.value === filterBy.value}
+                  onCheckedChange={() => setFilterBy(column)}>
+                  {column.name}
+                </DropdownMenuCheckboxItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Show / Hide Columns Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Show / Hide Columns</Button>
+              <Button variant="outline" className="w-full md:w-auto">
+                Show / Hide Columns
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-full md:w-auto">
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}>
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}>
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border">
-        <Table>
+
+      {/* Table Section */}
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {!header.isPlaceholder &&
+                      flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
@@ -293,24 +318,46 @@ const TableCategoryList = ({ allCategory, handleDelete }) => {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+
+      {/* Pagination Section */}
+      <div className="flex flex-row flex-wrap items-center justify-center gap-4 py-4">
+        {/* Limit Selector */}
+        <div className="flex items-center gap-2 flex-1">
+          <label htmlFor="limit" className="whitespace-nowrap">
+            Rows per page:
+          </label>
+          <select
+            id="limit"
+            value={pagination.limit}
+            onChange={(e) =>
+              setPagination((prev) => ({ ...prev, limit: parseInt(e.target.value), page: 1 }))
+            }
+            className="border rounded-md p-1">
+            {limitsOptions.map((limitOption) => (
+              <option key={limitOption} value={limitOption}>
+                {limitOption}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="space-x-2">
+
+        {/* Page Navigation */}
+        <div className="flex items-center gap-2 flex-1 justify-end">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
+            onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
+            disabled={pagination.page === 1}>
             Previous
           </Button>
+          <span>
+            Page {pagination.page} of {allCategory?.pagination?.totalPages}
+          </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}>
+            onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
+            disabled={pagination.page === pagination.totalPages}>
             Next
           </Button>
         </div>

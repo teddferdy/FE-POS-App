@@ -184,32 +184,23 @@ const Register = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-8 md:p-[61px] h-screen overflow-scroll no-scrollbar"
+        className="w-full flex flex-col sm:items-center sm:justify-center rounded p-4 md:p-[61px] min-h-screen overflow-x-auto"
         defaultSize={55}
         maxSize={55}
         minSize={55}
-        style={{
-          overflow: "scroll"
-        }}>
-        <div className="flex items-center justify-between">
-          <img src={Logo} className="w-1/4" alt="logo" />
+        style={{ overflow: "scroll" }}>
+        {/* Logo and Language Selector */}
+        <div className="flex items-center justify-between w-full max-w-md md:mb-6">
+          <img src={Logo} className="w-1/3 md:w-1/4" alt="logo" />
           <Select
             onValueChange={(e) => updateTranslation(e)}
             value={localStorage.getItem("translation")}>
-            <SelectTrigger
-              classNameIcon="w-5 h-5"
-              className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200 flex items-center gap-2 text-white ring-0 focus:ring-0">
+            <SelectTrigger className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200 flex items-center gap-2 text-white ring-0 focus:ring-0">
               {TRANSLATION?.filter((items) => items.value === translation)?.map((items, index) => (
                 <img src={items.img} alt={items.name} className="max-w-6 max-h-6" key={index} />
               ))}
             </SelectTrigger>
-            <SelectContent
-              className="min-w-2 z-50"
-              defaultValue={
-                TRANSLATION?.filter((items) => items.value === translation)?.map(
-                  (items) => items.value
-                )?.[0]
-              }>
+            <SelectContent className="min-w-2 z-50">
               <SelectGroup>
                 <SelectLabel>{translationMemo.selectLanguage}</SelectLabel>
                 {TRANSLATION.map((items, index) => (
@@ -227,28 +218,31 @@ const Register = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex mt-6 xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
+
+        {/* Form Section */}
+        <div className="flex xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-6 md:gap-11 max-w-md justify-center flex-1">
+          <p className="text-[#636363] text-lg md:text-2xl xl:text-[32px] font-semibold leading-tight text-center md:text-left">
             {translationMemo.title}
           </p>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-2 items-center gap-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-2 w-full">
+              {/* Username Field */}
               <div className="col-span-2 md:col-span-1">
                 <FormField
                   control={form.control}
                   name="userName"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
+                      <div className="mb-2 md:mb-4">
+                        <FormLabel className="text-sm md:text-base">
+                          {translationMemo.userName}
+                        </FormLabel>
                       </div>
-
                       <Input
                         type="text"
                         {...field}
                         placeholder={translationMemo.placeholderInputUser}
+                        className="w-full"
                       />
                       {form.formState.errors.userName && (
                         <FormMessage>{form.formState.errors.userName}</FormMessage>
@@ -257,16 +251,20 @@ const Register = () => {
                   )}
                 />
               </div>
+
+              {/* Location (Store) Selector */}
               <div className="col-span-2 md:col-span-1">
                 <FormField
                   control={form.control}
                   name="store"
-                  render={() => {
-                    return (
-                      <FormItem>
-                        <div className="mb-2">
-                          <FormLabel className="text-base">{translationMemo.location}</FormLabel>
-                        </div>
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-2 md:mb-4">
+                        <FormLabel className="text-sm md:text-base">
+                          {translationMemo.location}
+                        </FormLabel>
+                      </div>
+                      <div>
                         <Popover open={open} onOpenChange={setOpen} className="relative">
                           <PopoverTrigger asChild>
                             <Button
@@ -275,16 +273,13 @@ const Register = () => {
                               role="combobox"
                               aria-expanded={open}
                               className={`w-full justify-between ${!selectedLocation ? "text-muted-foreground font-normal" : ""}`}>
-                              {/* If value exists, show the corresponding nameStore; else, show the placeholder */}
                               {selectedLocation
                                 ? selectedLocation.nameStore
                                 : translationMemo.placeholderInputLocation}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-
-                          {/* Ensure the PopoverContent takes up the full width of the button */}
-                          <PopoverContent PopoverContent className="popover-content-width-full p-0">
+                          <PopoverContent className="popover-content-width-full p-0">
                             <Command>
                               <CommandInput placeholder="Search location..." />
                               <CommandList>
@@ -295,7 +290,7 @@ const Register = () => {
                                       key={location.id}
                                       value={location.id}
                                       onSelect={() => {
-                                        setValue(value === location.id ? null : location.id); // Clear if the same value is selected
+                                        setValue(value === location.id ? null : location.id);
                                         setOpen(false);
                                       }}>
                                       <Check
@@ -312,14 +307,16 @@ const Register = () => {
                             </Command>
                           </PopoverContent>
                         </Popover>
-                        {form.formState.errors.location && (
-                          <FormMessage>{form.formState.errors.location}</FormMessage>
-                        )}
-                      </FormItem>
-                    );
-                  }}
+                      </div>
+                      {form.formState.errors.location && (
+                        <FormMessage>{form.formState.errors.location}</FormMessage>
+                      )}
+                    </FormItem>
+                  )}
                 />
               </div>
+
+              {/* Email Field */}
               <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
@@ -327,12 +324,15 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">{translationMemo.email}</FormLabel>
+                        <FormLabel className="text-sm md:text-base">
+                          {translationMemo.email}
+                        </FormLabel>
                       </div>
                       <Input
                         type="email"
                         {...field}
                         placeholder={translationMemo.placeholderInputEmail}
+                        className="w-full"
                       />
                       {form.formState.errors.email && (
                         <FormMessage>{form.formState.errors.email}</FormMessage>
@@ -341,6 +341,8 @@ const Register = () => {
                   )}
                 />
               </div>
+
+              {/* Password Field */}
               <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
@@ -348,13 +350,16 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">{translationMemo.password}</FormLabel>
+                        <FormLabel className="text-sm md:text-base">
+                          {translationMemo.password}
+                        </FormLabel>
                       </div>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           {...field}
                           placeholder={translationMemo.placeholderInputPassword}
+                          className="w-full"
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showPassword ? (
@@ -378,6 +383,8 @@ const Register = () => {
                   )}
                 />
               </div>
+
+              {/* Confirm Password Field */}
               <div className="col-span-2 mt-4">
                 <FormField
                   control={form.control}
@@ -385,7 +392,7 @@ const Register = () => {
                   render={({ field }) => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">
+                        <FormLabel className="text-sm md:text-base">
                           {translationMemo.confirmationPassword}
                         </FormLabel>
                       </div>
@@ -394,6 +401,7 @@ const Register = () => {
                           type={showConfirmPassword ? "text" : "password"}
                           {...field}
                           placeholder={translationMemo.placeholderInputConfirmationPassword}
+                          className="w-full"
                         />
                         <div className="absolute top-[24%] right-[4%]">
                           {showConfirmPassword ? (
@@ -417,6 +425,8 @@ const Register = () => {
                   )}
                 />
               </div>
+
+              {/* Submit Button */}
               <div className="col-span-2 mt-8">
                 <Button
                   type="submit"
@@ -426,16 +436,19 @@ const Register = () => {
               </div>
             </form>
           </Form>
-          <p className="text-[#CECECE] font-semibold text-lg text-center">
+
+          {/* Register Link */}
+          <p className="text-[#CECECE] font-semibold text-base md:text-lg text-center">
             {translationMemo.descRegister}{" "}
             <Button
-              className="font-semibold text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
+              className="font-semibold text-base md:text-lg text-[#6853F0] hover:text-[#1ACB0A] duration-200 w-fit bg-transparent hover:bg-transparent p-0"
               onClick={() => navigate("/")}>
               {translationMemo.login}
             </Button>
           </p>
         </div>
       </ResizablePanel>
+
       <ResizablePanel
         className="hidden lg:block w-full bg-indigo-700 p-[71px]"
         defaultSize={45}

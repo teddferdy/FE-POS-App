@@ -36,17 +36,13 @@ const LoadingProvider = ({ children }) => {
         preserveAspectRatio: "xMidYMid slice"
       }
     };
+
     if (active !== null) {
       return (
-        <div className="fixed z-50 overflow-y-auto top-0 w-full left-0">
-          <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity">
-              <div className="absolute inset-0 bg-gray-900 opacity-75" />
-              <div className="h-full">
-                <div className="justify-center items-center flex flex-col h-screen">
-                  <Lottie options={options} height={200} width={200} />
-                </div>
-              </div>
+        <div className="fixed z-50 top-0 left-0 w-full h-full overflow-y-auto bg-gray-900 bg-opacity-75">
+          <div className="flex justify-center items-center h-full">
+            <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+              <Lottie options={options} height={200} width={200} />
             </div>
           </div>
         </div>
@@ -65,14 +61,14 @@ const LoadingProvider = ({ children }) => {
 const useLoading = () => {
   const ctx = useContext(LoadingContext);
   if (!ctx) {
-    throw new Error("useCIMBLoading must be used within the LoadingProvider");
+    throw new Error("useLoading must be used within the LoadingProvider");
   }
   const { active, setActive } = ctx;
   return { active, setActive };
 };
 
 LoadingProvider.propTypes = {
-  children: PropTypes.element
+  children: PropTypes.element.isRequired
 };
 
 export { LoadingProvider, useLoading };

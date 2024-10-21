@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { ClipboardPlus, ChevronDown } from "lucide-react";
 import { deleteCategory } from "../../../../services/category";
 import { Button } from "../../../../components/ui/button";
@@ -32,17 +32,25 @@ const CategoryList = () => {
   const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusCategory: "all"
+  });
+
   // QUERY
   const allCategory = useQuery(
-    ["get-all-category-table"],
-    () => getAllCategoryTable({ location: cookie?.user?.store }),
+    ["get-all-category-table", pagination],
+    () =>
+      getAllCategoryTable({
+        location: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusCategory: pagination.statusCategory
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -92,11 +100,13 @@ const CategoryList = () => {
           <TableCategoryList
             allCategory={allCategory}
             handleDelete={(body) => mutateDeleteCategory.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allCategory, mutateDeleteCategory]);
+  }, [allCategory, mutateDeleteCategory, pagination, setPagination]);
 
   return (
     <TemplateContainer>
