@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
@@ -36,18 +36,27 @@ const InvoiceSocialMediaList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    status: "all",
+    isActive: "all"
+  });
 
   // QUERY
   const invoiceSocialMedia = useQuery(
-    ["get-all-invoice-social-media"],
-    () => getAllInvoiceSocialMedia({ location: cookie?.user?.store }),
+    ["get-all-invoice-social-media", pagination],
+    () =>
+      getAllInvoiceSocialMedia({
+        location: cookie?.user?.store,
+        page: pagination.page,
+        limit: pagination.limit,
+        status: pagination.status,
+        isActive: pagination.isActive
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -132,11 +141,19 @@ const InvoiceSocialMediaList = () => {
             invoiceSocialMedia={invoiceSocialMedia}
             handleActivate={(body) => mutateChangeIsActiveInvoiceSocialMedia.mutate(body)}
             handleDelete={(body) => mutateDeleteInvoiceSocialMedia.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [invoiceSocialMedia, mutateChangeIsActiveInvoiceSocialMedia, mutateDeleteInvoiceSocialMedia]);
+  }, [
+    invoiceSocialMedia,
+    mutateChangeIsActiveInvoiceSocialMedia,
+    mutateDeleteInvoiceSocialMedia,
+    pagination,
+    setPagination
+  ]);
 
   return (
     <TemplateContainer>

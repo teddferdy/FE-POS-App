@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { ClipboardType } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
@@ -19,23 +19,30 @@ import SkeletonTable from "../../../components/organism/skeleton/skeleton-table"
 import AbortController from "../../../components/organism/abort-controller";
 import TableSocialMediaList from "../../../components/organism/table/table-social-media-list";
 import { useCookies } from "react-cookie";
+
 const SocialMediaList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusProduct: "all"
+  });
 
   const [cookie] = useCookies();
 
   // QUERY
   const allSocialMedia = useQuery(
-    ["get-all-social-media"],
-    () => getAllSocialMedia({ location: cookie?.user?.store }),
+    ["get-all-social-media", pagination],
+    () =>
+      getAllSocialMedia({
+        location: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -85,11 +92,13 @@ const SocialMediaList = () => {
           <TableSocialMediaList
             allSocialMedia={allSocialMedia}
             handleDelete={(body) => mutateDeleteSocialMedia.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allSocialMedia, mutateDeleteSocialMedia]);
+  }, [allSocialMedia, mutateDeleteSocialMedia, pagination, setPagination]);
 
   return (
     <TemplateContainer>
