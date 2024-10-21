@@ -365,13 +365,13 @@ const TableRoleList = ({ allRole, handleDelete, pagination, setPagination }) => 
             Previous
           </Button>
           <span>
-            Page {pagination.page} of {allRole?.pagination?.totalPages}
+            Page {pagination.page} of {allRole?.data?.pagination?.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === allRole?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>

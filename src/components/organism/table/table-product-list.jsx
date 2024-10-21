@@ -449,7 +449,7 @@ const TableProductList = ({ allProduct, handleDelete, pagination, setPagination 
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === allProduct?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>

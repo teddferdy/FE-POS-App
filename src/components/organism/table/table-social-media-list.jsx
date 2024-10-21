@@ -277,13 +277,13 @@ const TableSocialMediaList = ({ allSocialMedia, handleDelete, pagination, setPag
             Previous
           </Button>
           <span>
-            Page {pagination.page} of {allSocialMedia?.pagination?.totalPages}
+            Page {pagination.page} of {allSocialMedia?.data?.pagination?.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === allSocialMedia?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>

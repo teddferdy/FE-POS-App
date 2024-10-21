@@ -397,13 +397,13 @@ const TableInvoiceFooterList = ({
             Previous
           </Button>
           <span>
-            Page {pagination.page} of {invoiceFooter?.pagination?.totalPages}
+            Page {pagination.page} of {invoiceFooter?.data?.pagination?.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === invoiceFooter?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>
