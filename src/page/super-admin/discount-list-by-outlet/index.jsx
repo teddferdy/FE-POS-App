@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,14 +17,24 @@ import { useCookies } from "react-cookie";
 
 const DiscountListByOutlet = () => {
   const [cookie] = useCookies(["user"]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10
+  });
 
   // QUERY
   const allDiscount = useQuery(
-    ["get-all-discount"],
-    () => getAllDiscountByLocationAndActive({ location: cookie?.user?.store }),
+    ["get-all-discount", pagination],
+    () =>
+      getAllDiscountByLocationAndActive({
+        location: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusDiscount: true
+      }),
     {
       retry: 0,
-      keepPreviousData: true
+      keepPreviousData: false
     }
   );
 
@@ -44,11 +54,16 @@ const DiscountListByOutlet = () => {
     if (allDiscount.data && allDiscount.isSuccess && !allDiscount.isError) {
       return (
         <div className="w-full p-4">
-          <TableDiscountList allDiscount={allDiscount} withActionButton={false} />
+          <TableDiscountList
+            allDiscount={allDiscount}
+            withActionButton={false}
+            pagination={pagination}
+            setPagination={setPagination}
+          />
         </div>
       );
     }
-  }, [allDiscount]);
+  }, [allDiscount, pagination, setPagination]);
 
   return (
     <TemplateContainer>
