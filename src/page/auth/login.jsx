@@ -15,7 +15,7 @@ import ImageUser from "../../assets/logo-auth.png";
 import MiniLogo from "../../assets/mini-logo.png";
 import Logo from "../../assets/logo.png";
 
-// Component
+// Components
 import {
   Select,
   SelectContent,
@@ -47,8 +47,8 @@ const Login = () => {
   const { updateTranslation, translation } = translationSelect();
 
   // Translation
-  const translationMemo = useMemo(() => {
-    return {
+  const translationMemo = useMemo(
+    () => ({
       title: t("translation:login"),
       userName: t("translation:userNameOrEmail"),
       password: t("translation:password"),
@@ -65,8 +65,9 @@ const Login = () => {
       // Error
       errorMessageUserName: t("translation:formError.input.login.username"),
       errorMessagePassword: t("translation:formError.input.login.password")
-    };
-  }, [t]);
+    }),
+    [t]
+  );
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -77,7 +78,7 @@ const Login = () => {
         message: translationMemo.errorMessagePassword
       })
     });
-  }, [translation, translationMemo]);
+  }, [translationMemo]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -129,32 +130,21 @@ const Login = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel
-        className="w-full flex flex-col rounded p-8 md:p-[61px] h-screen overflow-x-scroll no-scrollbar"
+        className="w-full flex flex-col sm:items-center sm:justify-center rounded p-4 md:p-[61px] min-h-screen overflow-x-auto"
         defaultSize={55}
         maxSize={55}
-        minSize={55}
-        style={{
-          overflow: "scroll"
-        }}>
-        <div className="flex items-center justify-between">
-          <img src={Logo} className="w-1/4" alt="logo" />
+        minSize={55}>
+        <div className="flex items-center justify-between w-full max-w-md">
+          <img src={Logo} className="w-1/3 md:w-1/4" alt="logo" />
           <Select
             onValueChange={(e) => updateTranslation(e)}
             value={localStorage.getItem("translation")}>
-            <SelectTrigger
-              classNameIcon="w-5 h-5"
-              className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200 flex items-center gap-2 text-white ring-0 focus:ring-0">
+            <SelectTrigger className="w-fit border-hidden bg-[#6853F0] hover:bg-[#1ACB0A] duration-200 flex items-center gap-2 text-white ring-0 focus:ring-0">
               {TRANSLATION?.filter((items) => items.value === translation)?.map((items, index) => (
                 <img src={items.img} alt={items.name} className="max-w-6 max-h-6" key={index} />
               ))}
             </SelectTrigger>
-            <SelectContent
-              className="min-w-2 z-50"
-              defaultValue={
-                TRANSLATION?.filter((items) => items.value === translation)?.map(
-                  (items) => items.value
-                )?.[0]
-              }>
+            <SelectContent className="min-w-2 z-50">
               <SelectGroup>
                 <SelectLabel>{translationMemo.selectLanguage}</SelectLabel>
                 {TRANSLATION.map((items, index) => (
@@ -172,24 +162,27 @@ const Login = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex mt-6 xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-11">
-          <p className="text-[#636363] text-[32px] font-semibold leading-[48px]">
+        <div className="flex mt-6 xl:my-auto xl:m-auto flex-col w-full xl:w-3/5 gap-6 md:gap-11 max-w-md justify-center flex-1">
+          <p className="text-[#636363] text-lg md:text-2xl xl:text-[32px] font-semibold leading-tight text-center md:text-left">
             {translationMemo.title}
           </p>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 md:space-y-8 w-full">
               <FormField
                 control={form.control}
                 name="userName"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-base">{translationMemo.userName}</FormLabel>
+                    <div className="mb-2 md:mb-4">
+                      <FormLabel className="text-sm md:text-base">
+                        {translationMemo.userName}
+                      </FormLabel>
                     </div>
                     <Input
                       type="text"
                       {...field}
                       placeholder={translationMemo.placeholderInputUser}
+                      className="w-full"
                     />
                     {form?.formState?.errors?.userName && (
                       <FormMessage>{form?.formState?.errors?.userName}</FormMessage>
@@ -202,16 +195,19 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-base">{translationMemo.password}</FormLabel>
+                    <div className="mb-2 md:mb-4">
+                      <FormLabel className="text-sm md:text-base">
+                        {translationMemo.password}
+                      </FormLabel>
                     </div>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
                         {...field}
                         placeholder={translationMemo.placeholderInputPassword}
+                        className="w-full"
                       />
-                      <div className="absolute top-[24%] right-[4%]">
+                      <div className="absolute top-[24%] right-[4%] z-30 bg-white">
                         {showPassword ? (
                           <Eye
                             color="#6853F0"
@@ -235,18 +231,18 @@ const Login = () => {
               <div className="flex flex-col gap-3 mt-4">
                 <Button
                   type="submit"
-                  className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
+                  className="py-2 px-4 w-full bg-[#6853F0] rounded-full text-white font-bold  hover:bg-[#1ACB0A] duration-200 text-base md:text-lg">
                   {translationMemo.btnLogin}
                 </Button>
                 <div className="flex justify-between items-center">
                   <Button
                     onClick={() => navigate("/register")}
-                    className="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent">
+                    className="text-[#CECECE] text-base md:text-lg bg-transparent font-semibold hover:text-[#1ACB0A] hover:bg-transparent">
                     {translationMemo.btnCreateAcc}
                   </Button>
                   <Button
                     onClick={() => navigate("/reset-password")}
-                    className="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent">
+                    className="text-[#CECECE] text-base md:text-lg bg-transparent font-semibold hover:text-[#1ACB0A] hover:bg-transparent">
                     {translationMemo.btnResetPassword}
                   </Button>
                 </div>

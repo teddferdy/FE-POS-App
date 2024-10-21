@@ -32,7 +32,7 @@ const TypePaymentList = () => {
 
   // QUERY
   const allTypePayment = useQuery(
-    ["get-all-type-checkout-payment"],
+    ["get-all-type-checkout-payment", pagination],
     () =>
       getAllTypePayment({
         store: cookie?.user?.store,

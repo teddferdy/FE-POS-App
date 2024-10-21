@@ -27,22 +27,19 @@ import { getAllProduct } from "../../../services/product";
 const StepProduct = () => {
   const [cookie] = useCookies(["user"]);
 
-  console.log(cookie);
-
   // QUERY
   const categoryList = useQuery(
     ["get-category"],
     () =>
       getAllCategory({
-        location: cookie?.user?.store
+        location: cookie?.user?.store,
+        limit: 99999999,
+        page: 1,
+        statusCategory: true
       }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
   const subCategoryList = useQuery(
@@ -52,12 +49,8 @@ const StepProduct = () => {
         store: cookie?.user?.store
       }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -65,17 +58,14 @@ const StepProduct = () => {
     ["get-product"],
     () =>
       getAllProduct({
-        category: "",
-        nameProduct: "",
-        location: cookie?.user?.store
+        location: cookie?.user?.store,
+        limit: 99999999,
+        page: 1,
+        statusProduct: true
       }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 

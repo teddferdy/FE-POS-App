@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Utensils, ChevronDown } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -33,18 +33,25 @@ const ProductList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusProduct: "all"
+  });
 
   // QUERY
   const allProduct = useQuery(
     ["get-all-product-table"],
-    () => getAllProductTable({ location: cookie?.user?.store }),
+    () =>
+      getAllProductTable({
+        location: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusProduct: pagination.statusProduct
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      keepPreviousData: false,
+      cacheTime: 0
     }
   );
 
@@ -94,11 +101,13 @@ const ProductList = () => {
           <TableProductList
             allProduct={allProduct}
             handleDelete={(body) => mutateDeleteProduct.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allProduct, mutateDeleteProduct]);
+  }, [allProduct, mutateDeleteProduct, pagination, setPagination]);
 
   return (
     <TemplateContainer>

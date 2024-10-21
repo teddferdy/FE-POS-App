@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { AlarmClockPlus } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
@@ -25,19 +25,33 @@ import { useLoading } from "../../../../components/organism/loading";
 import { useMutation, useQuery } from "react-query";
 import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../../components/organism/abort-controller";
+import { useCookies } from "react-cookie";
 
 const ShiftList = () => {
   const navigate = useNavigate();
   const { setActive } = useLoading();
-  // QUERY
-  const allShift = useQuery(["get-all-shift"], () => getAllShift(), {
-    retry: 1,
-    cacheTime: 0,
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true
+  const [cookie] = useCookies();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusShift: "all"
   });
+
+  // QUERY
+  const allShift = useQuery(
+    ["get-all-shift", pagination],
+    () =>
+      getAllShift({
+        store: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusShift: pagination.statusShift
+      }),
+    {
+      keepPreviousData: false,
+      cacheTime: 0
+    }
+  );
 
   const mutateDeleteShift = useMutation(deleteShift, {
     onMutate: () => setActive(true, null),
@@ -85,11 +99,13 @@ const ShiftList = () => {
           <TableShiftList
             allShift={allShift}
             handleDelete={(body) => mutateDeleteShift.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allShift, mutateDeleteShift]);
+  }, [allShift, mutateDeleteShift, pagination, setPagination]);
 
   return (
     <TemplateContainer>
