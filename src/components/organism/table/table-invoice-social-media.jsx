@@ -398,13 +398,13 @@ const TableInvoiceSocialMediaList = ({
             Previous
           </Button>
           <span>
-            Page {pagination.page} of {invoiceSocialMedia?.pagination?.totalPages}
+            Page {pagination.page} of {invoiceSocialMedia?.data?.pagination?.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === invoiceSocialMedia?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>

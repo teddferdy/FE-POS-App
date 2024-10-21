@@ -466,13 +466,13 @@ const TableDiscountList = ({
             Previous
           </Button>
           <span>
-            Page {pagination.page} of {allDiscount?.pagination?.totalPages}
+            Page {pagination.page} of {allDiscount?.data?.pagination?.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-            disabled={pagination.page === pagination.totalPages}>
+            disabled={pagination.page === allDiscount?.data?.pagination?.totalPages}>
             Next
           </Button>
         </div>
