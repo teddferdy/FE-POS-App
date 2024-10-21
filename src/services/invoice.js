@@ -9,9 +9,15 @@ export const getAllInvoiceLogoByActive = async (payload) => {
   return data;
 };
 
-export const getAllInvoiceLogo = async (payload) => {
+export const getAllInvoiceLogo = async ({
+  location,
+  page,
+  limit,
+  status: statusActive,
+  isActive
+}) => {
   const { data, status } = await axiosInstance.get(
-    `/invoice/get-invoice-logo?store=${payload.location}`
+    `/invoice/get-invoice-logo?store=${location}&page=${page}&limit=${limit}&status=${statusActive}&isActive=${isActive}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
@@ -105,9 +111,15 @@ export const activateOrNotActiveInvoiceSocialMedia = async (payload) => {
 };
 
 // Invoice Footer
-export const getAllInvoiceFooterByActive = async (payload) => {
+export const getAllInvoiceFooterByActive = async ({
+  location,
+  page,
+  limit,
+  status: statusActive,
+  isActive
+}) => {
   const { data, status } = await axiosInstance.get(
-    `/invoice/get-invoice-footer-by-active?store=${payload.location}`
+    `/invoice/get-invoice-footer-by-active?store=${location}&page=${page}&limit=${limit}&status=${statusActive}&isActive=${isActive}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
