@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Percent } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
@@ -25,17 +25,25 @@ const DiscountList = () => {
   const { setActive } = useLoading();
   const [cookie] = useCookies(["user"]);
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    statusDiscount: "all"
+  });
+
   // QUERY
   const allDiscount = useQuery(
-    ["get-all-discount"],
-    () => getAllDiscount({ location: cookie?.user?.store }),
+    ["get-all-discount", pagination],
+    () =>
+      getAllDiscount({
+        location: cookie?.user?.store,
+        limit: pagination.limit,
+        page: pagination.page,
+        statusDiscount: pagination.statusDiscount
+      }),
     {
-      retry: 1,
-      cacheTime: 0,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: true
+      retry: 0,
+      keepPreviousData: false
     }
   );
 
@@ -85,11 +93,13 @@ const DiscountList = () => {
           <TableDiscountList
             allDiscount={allDiscount}
             handleDelete={(body) => mutateDeleteDiscount.mutate(body)}
+            pagination={pagination}
+            setPagination={setPagination}
           />
         </div>
       );
     }
-  }, [allDiscount, mutateDeleteDiscount]);
+  }, [allDiscount, mutateDeleteDiscount, pagination, setPagination]);
 
   return (
     <TemplateContainer>

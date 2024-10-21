@@ -1,16 +1,21 @@
 import { axiosInstance } from ".";
 
-export const getAllDiscountByLocationAndActive = async (payload) => {
+export const getAllDiscountByLocationAndActive = async ({
+  location,
+  limit,
+  page,
+  statusDiscount
+}) => {
   const { data, status } = await axiosInstance.get(
-    `/discount/get-discount-by-location?store=${payload.location}`
+    `/discount/get-discount-by-location?store=${location}&page=${page}&limit=${limit}&status=${statusDiscount}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllDiscount = async (payload) => {
+export const getAllDiscount = async ({ location, page, limit, statusDiscount }) => {
   const { data, status } = await axiosInstance.get(
-    `/discount/get-discount?store=${payload.location}`
+    `/discount/get-discount?store=${location}&page=${page}&limit=${limit}&status=${statusDiscount}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
