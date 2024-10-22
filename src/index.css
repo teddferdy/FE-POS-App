@@ -125,3 +125,7 @@
       "calt" 1;
   }
 }
+
+.rdp-vhidden {
+  @apply hidden;
+}
