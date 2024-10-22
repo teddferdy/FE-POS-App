@@ -1,59 +1,69 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { useCookies } from "react-cookie";
-
-// Component
-import DialogCancelForm from "../../components/organism/dialog/dialogCancelForm";
 import { Avatar, AvatarImage } from "../../components/ui/avatar";
 import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
 import { Button } from "../../components/ui/button";
 import TemplateContainer from "../../components/organism/template-container";
 import { Form, FormField, FormItem, FormLabel } from "../../components/ui/form";
 import AvatarUser from "../../components/organism/avatar-user";
-
-import { generateLinkImageFromGoogleDrive } from "../../utils/generateLinkImageFromGoogleDrive";
-import DialogCarouselImage from "../../components/organism/dialog/dialog-carousel-image";
-import Hint from "../../components/organism/label/hint";
+import DatePicker from "../../components/organism/date-picker";
+import { format } from "date-fns";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-
-  // const [cookie] = useCookies(["user"]);
-
+  const [imagePreview, setImagePreview] = useState(null);
   const formSchema = z.object({
-    image: z.string(),
+    image: z.string().optional(),
     userName: z.string(),
-    phoneNumber: z.string()
+    email: z.string().email(),
+    address: z.string(),
+    gender: z.enum(["Male", "Female"]),
+    phoneNumber: z.string().regex(/^\d+$/, "Phone number must be numeric"),
+    employeeID: z.string(),
+    dateOfBirth: z.string()
   });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       image: undefined,
-      userName: "",
-      phoneNumber: ""
+      userName: "John Doe",
+      email: "johndoe@example.com",
+      address: "",
+      gender: "Male",
+      phoneNumber: "",
+      employeeID: "EMP123456",
+      dateOfBirth: ""
     }
   });
 
   const onSubmit = (values) => {
-    console.log("VALUES =>", values);
-    // return mutateLogin.mutate(values);
+    console.log("Form Values =>", values);
+    // Handle form submission logic
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      form.setValue("image", file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
     <TemplateContainer>
       <div className="border-t-2 border-[#ffffff10] flex flex-col gap-8 no-scrollbar">
         <div className="h-52 lg:h-48 w-full bg-[#6853F0] relative">
-          <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 ">
+          <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2">
             {form.getValues("image") ? (
               <Avatar>
-                <AvatarImage
-                  src={generateLinkImageFromGoogleDrive(form.getValues("image"))}
-                  alt="Selected"
-                />
+                <AvatarImage src={imagePreview} alt="Profile" />
               </Avatar>
             ) : (
               <AvatarUser size={36} classNameContainer="w-36 h-36" showIndicatorOnline={false} />
@@ -65,71 +75,67 @@ const EditProfile = () => {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+              {/* Image Upload */}
               <FormField
                 control={form.control}
                 name="image"
-                render={({ field }) => {
-                  const linkName = generateLinkImageFromGoogleDrive(field.value);
+                render={() => {
                   return (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel className="text-base">Image Product</FormLabel>
+                        <FormLabel className="text-base">Profile Image</FormLabel>
                       </div>
                       <div className="flex-col md:flex justify-between gap-10">
                         <div className="flex flex-col gap-4">
                           <div className="relative w-full">
                             <Input
-                              type="text"
-                              {...field}
-                              className="flex-1"
-                              placeholder="Enter Image URL"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="file:cursor-pointer file:px-4 file:rounded-lg file:border-none file:bg-blue-700 file:text-white hover:file:bg-blue-600 file:h-full p-0 h-10"
+                              placeholder="imageName"
                             />
-                            <div className="absolute right-0 top-0 h-full w-10 text-gray-400 cursor-pointer bg-slate-300 flex justify-center items-center rounded-lg">
-                              <DialogCarouselImage />
-                            </div>
                           </div>
-                          <Hint>Image URL in Google Drive</Hint>
                         </div>
-                        {linkName && (
-                          <div className="flex flex-col gap-4">
-                            <p>Result Image</p>
-                            <div className="w-full md:w-72 h-auto mt-10 md:mt-0 border-4 border-dashed border-gray-500 rounded-lg p-2">
-                              <img src={linkName} alt={linkName} className="w-full object-cover" />
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </FormItem>
                   );
                 }}
               />
+
+              {/* User Name - View Only */}
               <FormField
                 control={form.control}
                 name="userName"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className="mb-4">
                       <FormLabel className="text-base">User Name</FormLabel>
                     </div>
-                    <div className="relative">
-                      <Input type="text" {...field} />
-                      <div className="absolute top-[24%] right-[4%]"> </div>
-                    </div>
+                    <p className="border px-3 py-2 rounded bg-gray-100">
+                      {form.getValues("userName")}
+                    </p>
                   </FormItem>
                 )}
               />
+
+              {/* Email - View Only */}
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className="mb-4">
                       <FormLabel className="text-base">Email</FormLabel>
                     </div>
-                    <Input type="email" {...field} />
+                    <p className="border px-3 py-2 rounded bg-gray-100">
+                      {form.getValues("email")}
+                    </p>
                   </FormItem>
                 )}
               />
+
+              {/* Address */}
               <FormField
                 control={form.control}
                 name="address"
@@ -138,10 +144,12 @@ const EditProfile = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Address</FormLabel>
                     </div>
-                    <Input type="address" {...field} />
+                    <Textarea {...field} placeholder="Enter your address" />
                   </FormItem>
                 )}
               />
+
+              {/* Gender */}
               <FormField
                 control={form.control}
                 name="gender"
@@ -150,19 +158,18 @@ const EditProfile = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Gender</FormLabel>
                     </div>
-                    <div className="mt-4">
-                      <select
-                        id="role"
-                        value={field.value}
-                        onChange={field.onChange}
-                        className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="super-admin">Male</option>
-                        <option value="admin">Female</option>
-                      </select>
-                    </div>
+                    <select
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
                   </FormItem>
                 )}
               />
+
+              {/* Phone Number - Numeric Only */}
               <FormField
                 control={form.control}
                 name="phoneNumber"
@@ -171,23 +178,56 @@ const EditProfile = () => {
                     <div className="mb-4">
                       <FormLabel className="text-base">Phone Number</FormLabel>
                     </div>
-                    <Input type="text" {...field} />
+                    <Input type="tel" {...field} placeholder="Enter numeric phone number" />
                   </FormItem>
                 )}
               />
 
+              {/* Employee ID - View Only */}
+              <FormField
+                control={form.control}
+                name="employeeID"
+                render={() => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Employee ID</FormLabel>
+                    </div>
+                    <p className="border px-3 py-2 rounded bg-gray-100">
+                      {form.getValues("employeeID")}
+                    </p>
+                  </FormItem>
+                )}
+              />
+
+              {/* Date of Birth */}
+              <FormField
+                control={form.control}
+                name="dateOfBirth"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Date of Birth</FormLabel>
+                    </div>
+                    <DatePicker
+                      onSelectDate={(date) => field.onChange(format(date, "yyyy-MM-dd"))}
+                    />
+                  </FormItem>
+                )}
+              />
+
+              {/* Submit Button */}
               <div className="col-span-2">
                 <div className="flex justify-between items-center">
-                  <DialogCancelForm
-                    handleBack={() => navigate("/home")}
-                    classNameButtonTrigger="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg hover:bg-transparent"
-                    titleDialog="Apakah Anda Ingin Membatalkan Ini"
-                    titleButtonTrigger="Cancel"
-                  />
+                  <Button
+                    type="button"
+                    onClick={() => navigate("/home")}
+                    className="text-[#CECECE] bg-transparent font-semibold hover:text-[#1ACB0A] text-lg">
+                    Cancel
+                  </Button>
                   <Button
                     type="submit"
-                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200">
-                    Edit Profile
+                    className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A]">
+                    Save Changes
                   </Button>
                 </div>
               </div>
