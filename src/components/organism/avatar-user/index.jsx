@@ -3,11 +3,16 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 
-const AvatarUser = ({ size, classNameContainer, showIndicatorOnline }) => {
+const AvatarUser = ({
+  size,
+  classNameContainer,
+  showIndicatorOnline,
+  src = "https://github.com/shadcn.png"
+}) => {
   return (
     <div className={`w-${size} relative overflow-hidden`}>
       <Avatar className={classNameContainer}>
-        <AvatarImage src="https://github.com/shadcn.png" className="w-full" />
+        <AvatarImage src={src} className="w-full object-cover" />
         <AvatarFallback>CN</AvatarFallback>
       </Avatar>
       {showIndicatorOnline && (

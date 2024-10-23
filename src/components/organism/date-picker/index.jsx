@@ -7,8 +7,8 @@ import { cn } from "../../../lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
-const DatePicker = ({ onSelectDate }) => {
-  const [date, setDate] = useState(null);
+const DatePicker = ({ valueDate, onSelectDate }) => {
+  const [date, setDate] = useState(valueDate || null);
 
   const handleDateSelect = (selectedDate) => {
     setDate(selectedDate);
