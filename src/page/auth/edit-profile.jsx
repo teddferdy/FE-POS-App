@@ -22,7 +22,7 @@ const EditProfile = () => {
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState(null);
   const { setActive } = useLoading();
-  const [cookie] = useCookies(["user"]);
+  const [cookie, setCookie] = useCookies(["user"]);
 
   console.log("cookie =>", cookie);
 
@@ -54,7 +54,11 @@ const EditProfile = () => {
 
   const mutateEditProfile = useMutation(editProfile, {
     onMutate: () => setActive(true, null),
-    onSuccess: () => {
+    onSuccess: (success) => {
+      console.log("HELLO =>", success);
+
+      setCookie("user", success.user);
+
       setActive(false, "success");
       setTimeout(() => {
         toast.success("Success", {
@@ -97,7 +101,7 @@ const EditProfile = () => {
     formData.append("gender", values.gender);
     formData.append("employeeID", values.employeeID);
     formData.append("store", values.store);
-    formData.append("placeDateOfBirth", values.dateOfBirth);
+    formData.append("placeDateOfBirth", values.dateOfBirth ? values.dateOfBirth : null);
 
     if (values.image instanceof File) {
       formData.append("image", values.image);
