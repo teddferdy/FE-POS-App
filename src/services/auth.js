@@ -24,3 +24,9 @@ export const logOut = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const editProfile = async (payload) => {
+  const { data, status } = await axiosInstance.put("/auth/edit-user", payload);
+  if (status !== 200) throw Error(data?.error);
+  return data;
+};
