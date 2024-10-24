@@ -100,10 +100,12 @@ const UserList = () => {
                 role={allLocation?.data?.data[index].userType}
                 onChangeRole={(val) => {
                   const body = {
-                    location: user.location,
+                    store: user.store,
                     id: user.id,
-                    userType: val
+                    userType: val.role,
+                    position: val.position
                   };
+                  console.log("BODY =>", body);
                   mutateChangeRole.mutate(body);
                 }}
               />

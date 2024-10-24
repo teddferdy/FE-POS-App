@@ -9,7 +9,8 @@ import {
   WalletCards,
   // Globe,
   CalendarDays,
-  Store
+  Store,
+  Wallet
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -18,6 +19,14 @@ export const sidebarMenuSuperAdmin = [
     title: "Dashboard",
     href: "/dashboard-super-admin",
     icon: Crown,
+    children: [],
+    actions: ["view"] // Only view available for dashboard
+  },
+  // Dashboard / Overview By Outlet
+  {
+    title: "Performance By Outlet",
+    href: "/dashboard-by-outlet",
+    icon: Store,
     children: [],
     actions: ["view"] // Only view available for dashboard
   },
@@ -161,7 +170,7 @@ export const sidebarMenuAdmin = [
   {
     title: "Transaction",
     href: "",
-    icon: Store,
+    icon: Wallet,
     children: [
       {
         title: "Invoice",
