@@ -32,6 +32,7 @@ import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
 import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
 import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
 import ListProductByLocation from "./page/admin/product";
+import OverviewByOutlet from "./page/super-admin/overview-by-outlet";
 
 // Super Admin
 import OverviewSuperAdmin from "./page/super-admin/overview";
@@ -132,6 +133,10 @@ function App() {
           path="/footer-invoice-list"
           element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
         />
+        <Route
+          path="/dashboard-by-outlet/:nameStore"
+          element={cookie.token ? <OverviewByOutlet /> : <Navigate to="/" />}
+        />
 
         {/* Location Available */}
         <Route
@@ -152,6 +157,10 @@ function App() {
         />
         <Route
           path="/type-payment-by-outlet"
+          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/dashboard-by-outlet"
           element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
         />
 

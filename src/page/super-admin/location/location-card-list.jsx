@@ -198,12 +198,29 @@ const LocationCardList = () => {
             </BreadcrumbItem>
           </div>
         );
+      case "/dashboard-by-outlet":
+        return (
+          <div className="flex flex-col gap-4 p-4">
+            <h1 className="text-[#6853F0] text-lg font-bold">Dashboard By Outlet</h1>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard-super-admin">Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Dashboard By Outlet</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        );
       default:
         return null;
     }
   }, [pathname]);
 
-  const handleLocationClick = (locationId) => {
+  const handleLocationClick = (locationId, nameStore) => {
     switch (pathname) {
       case "/my-teams-location-available":
         navigate("/my-teams-user", { state: { location: locationId } });
@@ -216,6 +233,9 @@ const LocationCardList = () => {
         break;
       case "/type-payment-by-outlet":
         navigate("/type-payment-list-by-outlet", { state: { location: locationId } });
+        break;
+      case "/dashboard-by-outlet":
+        navigate(`/dashboard-by-outlet/${nameStore}`, { state: { location: locationId } });
         break;
       default:
         break;
@@ -246,7 +266,7 @@ const LocationCardList = () => {
               nameStore={location.nameStore}
               address={location.address}
               phoneNumber={location.phoneNumber}
-              handleLocation={() => handleLocationClick(location.id)}
+              handleLocation={() => handleLocationClick(location.id, location.nameStore)}
             />
           ))}
         </div>
