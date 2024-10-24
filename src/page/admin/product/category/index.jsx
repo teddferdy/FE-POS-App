@@ -26,6 +26,7 @@ import { useMutation, useQuery } from "react-query";
 import { getAllCategoryTable } from "../../../../services/category";
 import SkeletonTable from "../../../../components/organism/skeleton/skeleton-table";
 import AbortController from "../../../../components/organism/abort-controller";
+import { downloadExcel } from "../../../../services/category";
 
 const CategoryList = () => {
   const navigate = useNavigate();
@@ -65,6 +66,32 @@ const CategoryList = () => {
       }, 1000);
       setTimeout(() => {
         allCategory.refetch();
+        setActive(null, null);
+      }, 2000);
+    },
+    onError: (err) => {
+      setActive(false, "error");
+      setTimeout(() => {
+        toast.error("Failed", {
+          description: err.message
+        });
+      }, 1500);
+      setTimeout(() => {
+        setActive(null, null);
+      }, 2000);
+    }
+  });
+
+  const mutateDownloadTemplateCategory = useMutation(downloadExcel, {
+    onMutate: () => setActive(true, null),
+    onSuccess: () => {
+      setActive(false, "success");
+      setTimeout(() => {
+        toast.success("Success", {
+          description: "Successfull, Download Template Excel Category"
+        });
+      }, 1000);
+      setTimeout(() => {
         setActive(null, null);
       }, 2000);
     },
@@ -152,6 +179,14 @@ const CategoryList = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
+        <Button
+          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+          onClick={() => mutateDownloadTemplateCategory.mutate()}>
+          <div className="flex items-center gap-4">
+            <ClipboardPlus className="w-6 h-6" />
+            <p>Download Template Excel Category</p>
+          </div>
+        </Button>
         <Button
           className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
           onClick={() => navigate("/add-category")}>
