@@ -25,7 +25,13 @@ const ListProductByLocation = () => {
   // QUERY
   const productList = useQuery(
     ["get-all-product-location-table"],
-    () => getAllProductTable({ location: cookie?.user?.store }),
+    () =>
+      getAllProductTable({
+        location: cookie?.user?.store,
+        page: 1,
+        limit: 10,
+        statusProduct: "true"
+      }),
     {
       retry: 1
     }
