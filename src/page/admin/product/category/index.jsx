@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { ClipboardPlus, ChevronDown } from "lucide-react";
+import { ClipboardPlus, ChevronDown, Download } from "lucide-react";
 import { deleteCategory } from "../../../../services/category";
 import { Button } from "../../../../components/ui/button";
 import { useCookies } from "react-cookie";
@@ -179,22 +179,24 @@ const CategoryList = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <Button
-          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => mutateDownloadTemplateCategory.mutate()}>
-          <div className="flex items-center gap-4">
-            <ClipboardPlus className="w-6 h-6" />
-            <p>Download Template Excel Category</p>
-          </div>
-        </Button>
-        <Button
-          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => navigate("/add-category")}>
-          <div className="flex items-center gap-4">
-            <ClipboardPlus className="w-6 h-6" />
-            <p>Add Category</p>
-          </div>
-        </Button>
+        <div className="flex gap-4 items-center">
+          <Button
+            className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+            onClick={() => mutateDownloadTemplateCategory.mutate()}>
+            <div className="flex items-center gap-4">
+              <Download className="w-6 h-6" />
+              <p>Download Template</p>
+            </div>
+          </Button>
+          <Button
+            className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+            onClick={() => navigate("/add-category")}>
+            <div className="flex items-center gap-4">
+              <ClipboardPlus className="w-6 h-6" />
+              <p>Add Category</p>
+            </div>
+          </Button>
+        </div>
       </div>
 
       {/* List Member */}
