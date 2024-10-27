@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Utensils, ChevronDown } from "lucide-react";
+import { Utensils, ChevronDown, Download } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "react-query";
@@ -153,14 +153,25 @@ const ProductList = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <Button
-          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={() => navigate("/add-product")}>
-          <div className="flex items-center gap-4">
-            <Utensils className="w-6 h-6" />
-            <p>Add Product</p>
-          </div>
-        </Button>
+
+        <div className="flex gap-4 items-center">
+          <Button
+            className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+            onClick={() => {}}>
+            <div className="flex items-center gap-4">
+              <Download className="w-6 h-6" />
+              <p>Download Template</p>
+            </div>
+          </Button>
+          <Button
+            className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
+            onClick={() => navigate("/add-product")}>
+            <div className="flex items-center gap-4">
+              <Utensils className="w-6 h-6" />
+              <p>Add Product</p>
+            </div>
+          </Button>
+        </div>
       </div>
 
       {/* List Member */}
