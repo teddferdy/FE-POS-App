@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { ENDPOINT } from "../utils/endpoints";
+import { ENDPOINT } from "@/utils/endpoints";
 
 const axiosInstance = axios.create({
   // .. where we make our configurations

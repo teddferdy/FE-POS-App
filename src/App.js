@@ -1,69 +1,37 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { translationSelect } from "./state/translation";
-import { useCookies } from "react-cookie";
+import { translationSelect } from "@/state/translation";
 
 // Auth
-import Login from "./page/auth/login";
+import LoginPage from "./page/auth/login";
 import Register from "./page/auth/register";
 import ResetPassword from "./page/auth/reset-password";
-import EditProfile from "./page/auth/edit-profile";
 
-// Cashier
-import ListProduct from "./page/cashier/list-product"; // List Product Cashier
-// import MemberCashier from "./page/cashier/member-cashier";
+// Layout
+import DashboardLayout from "./components/layout/DashboardLayout";
 
-// Admin
-import StepProduct from "./page/admin/product/step-product";
-import LocationCardList from "./page/super-admin/location/location-card-list";
-import Invoice from "./page/admin/invoice";
-import SubCategoryList from "./page/admin/product/sub-category";
-import OverviewPage from "./page/admin/overview";
-import CategoryList from "./page/admin/product/category";
-import LocationList from "./page/super-admin/location";
-import MemberList from "./page/admin/member";
-import ProductList from "./page/admin/product/product";
-import DiscountList from "./page/admin/discount";
-import ShiftList from "./page/admin/my-teams/shift";
-import TypePaymentList from "./page/admin/type-payment";
-import SocialMediaList from "./page/admin/social-media";
-import InvoiceLogoList from "./page/admin/invoice/invoice-logo";
-import InvoiceSocialMediaList from "./page/admin/invoice/invoice-social-media";
-import InvoiceFooterList from "./page/admin/invoice/invoice-footer";
-import ListProductByLocation from "./page/admin/product";
-import OverviewByOutlet from "./page/super-admin/overview-by-outlet";
+// Dashboard
+import Dashboard from "./page/dashboard";
 
-// Super Admin
-import OverviewSuperAdmin from "./page/super-admin/overview";
-import UserListByLocation from "./page/super-admin/my-teams/user";
-import PositionList from "./page/super-admin/my-teams/position";
-import RoleList from "./page/super-admin/my-teams/role";
-import ProductListByLocation from "./page/super-admin/product-by-outlet";
-import DiscountListByOutlet from "./page/super-admin/discount-list-by-outlet";
-import TypePaymentListByLocation from "./page/super-admin/type-payment-by-outlet";
+// Location
+import LocationList from "./page/location/LocationList";
+import AddLocation from "./page/location/AddLocation";
+import LocationDetail from "./page/location/LocationDetail";
 
-// Form
-import FormCategory from "./page/admin/product/category/formCategory";
-import FormLocation from "./page/super-admin/location/formLocation";
-import FormProduct from "./page/admin/product/product/formProduct";
-import FormSubCategory from "./page/admin/product/sub-category/form-subcategory";
-import FormDiscount from "./page/admin/discount/formDiscount";
-import FormShift from "./page/admin/my-teams/shift/formShift";
-import FormTypePayment from "./page/admin/type-payment/formTypePayment";
-import FormSocialMedia from "./page/admin/social-media/formSocialMedia";
-import FormInvoiceLogo from "./page/admin/invoice/invoice-logo/formInvoiceLogo";
-import FormInvoiceSocialMedia from "./page/admin/invoice/invoice-social-media/formInvoiceSocialMedia";
-import FormInvoiceFooter from "./page/admin/invoice/invoice-footer/formInvoiceFooter";
-import FormPosition from "./page/super-admin/my-teams/position/formPosition";
-import FormRole from "./page/super-admin/my-teams/role/formRole";
-import UserList from "./page/admin/my-teams/user";
+// Product
+import ProductList from "./page/product/ProductList";
+
+// User
+import AdminList from "./page/user/AdminList";
+import AddAdmin from "./page/user/AddAdmin";
+import RoleManagement from "./page/user/RoleManagement";
+import AddRole from "./page/user/AddRole";
 
 function App() {
   const { i18n } = useTranslation();
-
   const { translation } = translationSelect();
-  const [cookie] = useCookies();
 
   useEffect(() => {
     if (translation) {
@@ -71,231 +39,196 @@ function App() {
     }
   }, [translation]);
 
+  const withLayout = (element) => <DashboardLayout>{element}</DashboardLayout>;
+
+  const ComingSoon = ({ title }) => (
+    <div className="flex items-center justify-center h-64 text-muted-foreground">
+      {title || "Coming Soon"}
+    </div>
+  );
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* <Route path="*" element={<QuaifiedPolicies policyTypes={false} />} /> */}
-        <Route path="/" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Auth */}
+        <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Dashboard Routes */}
+        <Route path="/dashboard-super-admin" element={withLayout(<Dashboard />)} />
+        <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
+        <Route path="/dashboard-by-outlet" element={withLayout(<Dashboard />)} />
+        <Route path="/home" element={withLayout(<Dashboard />)} />
+
+        {/* Super Admin & Admin Routes */}
+        <Route path="/product-page" element={withLayout(<ComingSoon title="Product Page" />)} />
         <Route
-          path="/edit-profile"
-          element={cookie.token ? <EditProfile /> : <Navigate to="/" />}
+          path="/product-by-outlet"
+          element={withLayout(<ComingSoon title="Products By Outlet" />)}
         />
-        <Route path="/home" element={cookie.token ? <ListProduct /> : <Navigate to="/" />} />
-        <Route
-          path="/dashboard-admin"
-          element={cookie.token ? <OverviewPage /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/dashboard-super-admin"
-          element={cookie.token ? <OverviewSuperAdmin /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/category-list"
-          element={cookie.token ? <CategoryList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/location-list"
-          element={cookie.token ? <LocationList /> : <Navigate to="/" />}
-        />
-        <Route path="/member-list" element={cookie.token ? <MemberList /> : <Navigate to="/" />} />
-        <Route
-          path="/product-list"
-          element={cookie.token ? <ProductList /> : <Navigate to="/" />}
-        />
+        <Route path="/product-list" element={withLayout(<ProductList />)} />
+        <Route path="/add-product" element={withLayout(<ComingSoon title="Add Product" />)} />
+        <Route path="/edit-product" element={withLayout(<ComingSoon title="Edit Product" />)} />
+
+        <Route path="/category-list" element={withLayout(<ComingSoon title="Category List" />)} />
+        <Route path="/add-category" element={withLayout(<ComingSoon title="Add Category" />)} />
+        <Route path="/edit-category" element={withLayout(<ComingSoon title="Edit Category" />)} />
+
         <Route
           path="/sub-category-list"
-          element={cookie.token ? <SubCategoryList /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Sub Category List" />)}
         />
         <Route
-          path="/discount-list"
-          element={cookie.token ? <DiscountList /> : <Navigate to="/" />}
+          path="/add-sub-category"
+          element={withLayout(<ComingSoon title="Add Sub Category" />)}
         />
-        <Route path="/shift-list" element={cookie.token ? <ShiftList /> : <Navigate to="/" />} />
+        <Route
+          path="/edit-sub-category"
+          element={withLayout(<ComingSoon title="Edit Sub Category" />)}
+        />
+
+        <Route path="/member-list" element={withLayout(<ComingSoon title="Member List" />)} />
+        <Route path="/member-tier" element={withLayout(<ComingSoon title="Member Tier" />)} />
+        <Route
+          path="/add-member-tier"
+          element={withLayout(<ComingSoon title="Add Member Tier" />)}
+        />
+        <Route
+          path="/edit-member-tier"
+          element={withLayout(<ComingSoon title="Edit Member Tier" />)}
+        />
+
+        <Route path="/discount-list" element={withLayout(<ComingSoon title="Discount List" />)} />
+        <Route path="/add-discount" element={withLayout(<ComingSoon title="Add Discount" />)} />
+        <Route path="/edit-discount" element={withLayout(<ComingSoon title="Edit Discount" />)} />
+
         <Route
           path="/type-payment-list"
-          element={cookie.token ? <TypePaymentList /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Type Payment List" />)}
         />
         <Route
-          path="/social-media-list"
-          element={cookie.token ? <SocialMediaList /> : <Navigate to="/" />}
+          path="/add-type-payment"
+          element={withLayout(<ComingSoon title="Add Type Payment" />)}
         />
+        <Route
+          path="/edit-type-payment"
+          element={withLayout(<ComingSoon title="Edit Type Payment" />)}
+        />
+
+        <Route path="/shift-list" element={withLayout(<ComingSoon title="Shift List" />)} />
+        <Route path="/add-shift" element={withLayout(<ComingSoon title="Add Shift" />)} />
+        <Route path="/edit-shift" element={withLayout(<ComingSoon title="Edit Shift" />)} />
+
+        <Route path="/user-list" element={withLayout(<AdminList />)} />
+        <Route path="/add-user" element={withLayout(<AddAdmin />)} />
+        <Route path="/role-management" element={withLayout(<RoleManagement />)} />
+        <Route path="/add-role" element={withLayout(<AddRole />)} />
+        <Route path="/employee-list" element={withLayout(<ComingSoon title="Employee List" />)} />
+
+        <Route path="/location-list" element={withLayout(<LocationList />)} />
+        <Route path="/add-location" element={withLayout(<AddLocation />)} />
+        <Route path="/edit-location" element={withLayout(<AddLocation />)} />
+        <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
+
+        <Route path="/invoice-page" element={withLayout(<ComingSoon title="Invoice Page" />)} />
         <Route
           path="/logo-invoice-list"
-          element={cookie.token ? <InvoiceLogoList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/social-media-invoice-list"
-          element={cookie.token ? <InvoiceSocialMediaList /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Logo Invoice" />)}
         />
         <Route
           path="/footer-invoice-list"
-          element={cookie.token ? <InvoiceFooterList /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Footer Invoice" />)}
         />
         <Route
-          path="/dashboard-by-outlet/:nameStore"
-          element={cookie.token ? <OverviewByOutlet /> : <Navigate to="/" />}
-        />
-
-        {/* Location Available */}
-        <Route
-          path="/invoice-by-outlet"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
+          path="/social-media-invoice-list"
+          element={withLayout(<ComingSoon title="Social Media Invoice" />)}
         />
         <Route
-          path="/product-by-outlet"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/my-teams-location-available"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/discount-by-outlet"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/type-payment-by-outlet"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/dashboard-by-outlet"
-          element={cookie.token ? <LocationCardList /> : <Navigate to="/" />}
-        />
-
-        {/* End Location Available */}
-        <Route
-          path="/my-teams-user"
-          element={cookie.token ? <UserListByLocation /> : <Navigate to="/" />}
-        />
-
-        <Route
-          path="/product-list-by-outlet"
-          element={cookie.token ? <ProductListByLocation /> : <Navigate to="/" />}
-        />
-
-        <Route path="/user-list" element={cookie.token ? <UserList /> : <Navigate to="/" />} />
-
-        <Route
-          path="/position-list"
-          element={cookie.token ? <PositionList /> : <Navigate to="/" />}
-        />
-        <Route path="/role-list" element={cookie.token ? <RoleList /> : <Navigate to="/" />} />
-        {/* Product */}
-        <Route
-          path="/product-page"
-          element={cookie.token ? <ListProductByLocation /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/step-flow-product"
-          element={cookie.token ? <StepProduct /> : <Navigate to="/" />}
-        />
-        <Route path="/invoice-page" element={cookie.token ? <Invoice /> : <Navigate to="/" />} />
-        <Route
-          path="/discount-list-by-outlet"
-          element={cookie.token ? <DiscountListByOutlet /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/type-payment-list-by-outlet"
-          element={cookie.token ? <TypePaymentListByLocation /> : <Navigate to="/" />}
-        />
-
-        {/* Add Routes */}
-        <Route
-          path="/add-category"
-          element={cookie.token ? <FormCategory /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/add-location"
-          element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
-        />
-        <Route path="/add-product" element={cookie.token ? <FormProduct /> : <Navigate to="/" />} />
-        <Route
-          path="/add-sub-category"
-          element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/add-discount"
-          element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
-        />
-        <Route path="/add-shift" element={cookie.token ? <FormShift /> : <Navigate to="/" />} />
-        <Route
-          path="/add-type-payment"
-          element={cookie.token ? <FormTypePayment /> : <Navigate to="/" />}
+          path="/social-media-list"
+          element={withLayout(<ComingSoon title="Social Media" />)}
         />
         <Route
           path="/add-social-media"
-          element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Add Social Media" />)}
+        />
+        <Route
+          path="/edit-social-media"
+          element={withLayout(<ComingSoon title="Edit Social Media" />)}
         />
         <Route
           path="/add-invoice-logo"
-          element={cookie.token ? <FormInvoiceLogo /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Add Invoice Logo" />)}
         />
         <Route
-          path="/add-invoice-social-media"
-          element={cookie.token ? <FormInvoiceSocialMedia /> : <Navigate to="/" />}
+          path="/edit-invoice-logo"
+          element={withLayout(<ComingSoon title="Edit Invoice Logo" />)}
         />
         <Route
           path="/add-invoice-footer"
-          element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
+          element={withLayout(<ComingSoon title="Add Invoice Footer" />)}
         />
         <Route
-          path="/add-position"
-          element={cookie.token ? <FormPosition /> : <Navigate to="/" />}
+          path="/edit-invoice-footer"
+          element={withLayout(<ComingSoon title="Edit Invoice Footer" />)}
         />
-        <Route path="/add-role" element={cookie.token ? <FormRole /> : <Navigate to="/" />} />
+        <Route
+          path="/add-invoice-social-media"
+          element={withLayout(<ComingSoon title="Add Invoice Social Media" />)}
+        />
+        <Route
+          path="/edit-invoice-social-media"
+          element={withLayout(<ComingSoon title="Edit Invoice Social Media" />)}
+        />
 
-        {/* Edit */}
+        <Route path="/role-list" element={withLayout(<ComingSoon title="Role List" />)} />
+        <Route path="/position-list" element={withLayout(<ComingSoon title="Position List" />)} />
+
+        {/* New Feature Routes */}
+        <Route path="/table-list" element={withLayout(<ComingSoon title="Table List" />)} />
+        <Route path="/add-table" element={withLayout(<ComingSoon title="Add Table" />)} />
+        <Route path="/edit-table" element={withLayout(<ComingSoon title="Edit Table" />)} />
+
+        <Route path="/supplier" element={withLayout(<ComingSoon title="Supplier" />)} />
+        <Route path="/add-supplier" element={withLayout(<ComingSoon title="Add Supplier" />)} />
+        <Route path="/edit-supplier" element={withLayout(<ComingSoon title="Edit Supplier" />)} />
+
+        <Route path="/purchase-order" element={withLayout(<ComingSoon title="Purchase Order" />)} />
         <Route
-          path="/edit-category/:id"
-          element={cookie.token ? <FormCategory /> : <Navigate to="/" />}
+          path="/add-purchase-order"
+          element={withLayout(<ComingSoon title="Add Purchase Order" />)}
+        />
+
+        <Route path="/stock-opname" element={withLayout(<ComingSoon title="Stock Opname" />)} />
+        <Route
+          path="/add-stock-opname"
+          element={withLayout(<ComingSoon title="Add Stock Opname" />)}
+        />
+
+        <Route path="/stock-history" element={withLayout(<ComingSoon title="Stock History" />)} />
+
+        <Route
+          path="/expense-category"
+          element={withLayout(<ComingSoon title="Expense Category" />)}
         />
         <Route
-          path="/edit-location/:id"
-          element={cookie.token ? <FormLocation /> : <Navigate to="/" />}
+          path="/add-expense-category"
+          element={withLayout(<ComingSoon title="Add Expense Category" />)}
         />
         <Route
-          path="/edit-product/:id"
-          element={cookie.token ? <FormProduct /> : <Navigate to="/" />}
+          path="/edit-expense-category"
+          element={withLayout(<ComingSoon title="Edit Expense Category" />)}
         />
-        <Route
-          path="/edit-sub-category/:id"
-          element={cookie.token ? <FormSubCategory /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-discount/:id"
-          element={cookie.token ? <FormDiscount /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-shift/:id"
-          element={cookie.token ? <FormShift /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-type-payment/:id"
-          element={cookie.token ? <FormTypePayment /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-social-media/:id"
-          element={cookie.token ? <FormSocialMedia /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-invoice-logo/:id"
-          element={cookie.token ? <FormInvoiceLogo /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-invoice-social-media/:id"
-          element={cookie.token ? <FormInvoiceSocialMedia /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-invoice-footer/:id"
-          element={cookie.token ? <FormInvoiceFooter /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/edit-position/:id"
-          element={cookie.token ? <FormPosition /> : <Navigate to="/" />}
-        />
-        <Route path="/edit-role/:id" element={cookie.token ? <FormRole /> : <Navigate to="/" />} />
+
+        <Route path="/expense" element={withLayout(<ComingSoon title="Expense" />)} />
+        <Route path="/add-expense" element={withLayout(<ComingSoon title="Add Expense" />)} />
+        <Route path="/edit-expense" element={withLayout(<ComingSoon title="Edit Expense" />)} />
+
+        <Route path="/report/sales" element={withLayout(<ComingSoon title="Sales Report" />)} />
+        <Route path="/best-selling" element={withLayout(<ComingSoon title="Best Selling" />)} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

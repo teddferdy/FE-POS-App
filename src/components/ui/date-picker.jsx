@@ -5,7 +5,7 @@ import * as React from "react";
 import { ScrollArea } from "./scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import { buttonVariants } from "./button";
 import { DayPicker } from "react-day-picker";
 

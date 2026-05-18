@@ -2,103 +2,161 @@ import {
   Crown,
   Calculator,
   UtensilsCrossed,
-  // Map,
-  // TicketPercent,
   Users,
   BookUser,
-  WalletCards,
-  // Globe,
   CalendarDays,
   Store,
-  Wallet
+  Shield,
+  Package,
+  Tag,
+  BarChart3,
+  Settings,
+  FileText,
+  CreditCard,
+  Percent,
+  Warehouse,
+  Table,
+  Layers,
+  ShoppingCart,
+  TrendingUp,
+  Receipt,
+  LifeBuoy,
+  ClipboardList
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
-  // Overview Page
   {
     title: "Dashboard",
     href: "/dashboard-super-admin",
     icon: Crown,
     children: [],
-    actions: ["view"] // Only view available for dashboard
+    actions: ["view"]
   },
-  // Dashboard / Overview By Outlet
   {
-    title: "Performance By Outlet",
-    href: "/dashboard-by-outlet",
-    icon: Store,
-    children: [],
-    actions: ["view"] // Only view available for dashboard
-  },
-  // Product List
-  {
-    title: "Master Data",
+    title: "Kelola Toko",
     href: "",
-    icon: Crown,
+    icon: Store,
     children: [
       {
-        title: "Products By Outlet",
-        href: "/product-by-outlet",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete"] // Actions for product management
+        title: "Daftar Toko",
+        href: "/location-list",
+        icon: Store,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       }
     ],
     actions: []
   },
   {
-    title: "My Teams",
+    title: "Kelola Admin",
+    href: "",
+    icon: Shield,
+    children: [
+      {
+        title: "Daftar Admin",
+        href: "/user-list",
+        icon: Shield,
+        actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Manajemen Role & Izin",
+        href: "/role-management",
+        icon: Shield,
+        actions: ["view", "edit"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Karyawan",
     href: "",
     icon: Users,
-    actions: [],
     children: [
       {
-        title: "User",
-        href: "/my-teams-location-available",
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Position",
-        href: "/position-list",
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Role",
-        href: "/role-list",
-        actions: ["add", "edit", "view", "delete"]
+        title: "Daftar Karyawan",
+        href: "/employee-list",
+        icon: Users,
+        actions: ["add", "view", "edit-access", "reset-password"]
       }
-    ]
+    ],
+    actions: []
   },
   {
-    title: "Transaction",
+    title: "Kelola Produk",
     href: "",
-    icon: WalletCards,
+    icon: Package,
     children: [
       {
-        title: "Invoice By Outlet",
-        href: "/invoice-by-outlet",
-        actions: ["view"] // Typically, invoices are viewed, not edited
-      },
+        title: "Daftar Produk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Kategori",
+    href: "",
+    icon: Tag,
+    children: [
       {
-        title: "Discount By Outlet",
-        href: "/discount-by-outlet",
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Type Payment By Outlet",
-        href: "/type-payment-by-outlet",
+        title: "Daftar Kategori",
+        href: "/category-list",
+        icon: Tag,
         actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
   },
   {
-    title: "Outlet",
+    title: "Kelola Pelanggan",
     href: "",
-    icon: Store,
+    icon: BookUser,
     children: [
       {
-        title: "Location",
-        href: "/location-list",
+        title: "Daftar Member",
+        href: "/member-list",
+        icon: BookUser,
+        actions: ["add", "edit", "view", "edit-points"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Laporan Global",
+    href: "",
+    icon: BarChart3,
+    children: [
+      {
+        title: "Penjualan",
+        href: "/report/sales",
+        icon: TrendingUp,
+        actions: ["view", "export"]
+      },
+      {
+        title: "Produk Terlaris",
+        href: "/best-selling",
+        icon: BarChart3,
+        actions: ["view", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengaturan Sistem",
+    href: "",
+    icon: Settings,
+    children: [
+      {
+        title: "Logo & Branding",
+        href: "/logo-invoice-list",
+        icon: FileText,
+        actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Kelola Role",
+        href: "/role-list",
+        icon: Shield,
         actions: ["add", "edit", "view", "delete"]
       }
     ],
@@ -108,74 +166,225 @@ export const sidebarMenuSuperAdmin = [
 
 export const sidebarMenuAdmin = [
   {
-    title: "Dashboard",
+    title: "Dashboard Toko",
     href: "/dashboard-admin",
     icon: Crown,
     actions: ["view"]
   },
   {
-    title: "Master Data",
+    title: "Kelola Produk",
     href: "",
-    icon: UtensilsCrossed,
+    icon: Package,
     children: [
       {
-        title: "Product",
-        href: "/product-page",
-        actions: ["add", "edit", "view", "delete"]
-      },
+        title: "Daftar Produk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Kategori",
+    href: "",
+    icon: Tag,
+    children: [
       {
-        title: "Type Payment",
-        href: "/type-payment-list",
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Discount",
-        href: "/discount-list",
+        title: "Daftar Kategori",
+        href: "/category-list",
+        icon: Tag,
         actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
   },
   {
-    title: "My Teams",
+    title: "Kelola Sub-Kategori",
+    href: "",
+    icon: Layers,
+    children: [
+      {
+        title: "Daftar Sub-Kategori",
+        href: "/sub-category-list",
+        icon: Layers,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Meja",
+    href: "",
+    icon: Table,
+    children: [
+      {
+        title: "Daftar Meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Karyawan",
     href: "",
     icon: Users,
     children: [
       {
-        title: "Shift",
+        title: "Daftar Karyawan",
+        href: "/user-list",
+        icon: Users,
+        actions: ["add", "edit", "view", "edit-access"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Pelanggan",
+    href: "",
+    icon: BookUser,
+    children: [
+      {
+        title: "Daftar Member",
+        href: "/member-list",
+        icon: BookUser,
+        actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Tier / Level",
+        href: "/member-tier",
+        icon: TrendingUp,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Kelola Diskon",
+    href: "",
+    icon: Percent,
+    children: [
+      {
+        title: "Daftar Diskon",
+        href: "/discount-list",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Metode Pembayaran",
+    href: "",
+    icon: CreditCard,
+    children: [
+      {
+        title: "Daftar Pembayaran",
+        href: "/type-payment-list",
+        icon: CreditCard,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Shift Management",
+    href: "",
+    icon: CalendarDays,
+    children: [
+      {
+        title: "Daftar Shift",
         href: "/shift-list",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Laporan Toko",
+    href: "",
+    icon: BarChart3,
+    children: [
+      {
+        title: "Penjualan Harian",
+        href: "/report/sales",
+        icon: TrendingUp,
+        actions: ["view", "export"]
+      },
+      {
+        title: "Best Selling",
+        href: "/best-selling",
+        icon: BarChart3,
+        actions: ["view", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Inventory",
+    href: "",
+    icon: Warehouse,
+    children: [
+      {
+        title: "Supplier",
+        href: "/supplier",
+        icon: LifeBuoy,
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "User",
-        href: "/user-list",
-        actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Outlet",
-    href: "",
-    icon: Store,
-    children: [
+        title: "Purchase Order",
+        href: "/purchase-order",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view"]
+      },
       {
-        title: "Membership",
-        href: "/member-list",
-        actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Transaction",
-    href: "",
-    icon: Wallet,
-    children: [
+        title: "Stock Opname",
+        href: "/stock-opname",
+        icon: ClipboardList,
+        actions: ["add", "view"]
+      },
       {
-        title: "Invoice",
-        href: "/invoice-page",
+        title: "History Stok",
+        href: "/stock-history",
+        icon: FileText,
         actions: ["view"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengeluaran",
+    href: "",
+    icon: Receipt,
+    children: [
+      {
+        title: "Kategori Pengeluaran",
+        href: "/expense-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Pengeluaran",
+        href: "/expense",
+        icon: Receipt,
+        actions: ["add", "edit", "view", "approve"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengaturan Toko",
+    href: "",
+    icon: Settings,
+    children: [
+      {
+        title: "Invoice & Struk",
+        href: "/invoice-page",
+        icon: FileText,
+        actions: ["add", "edit", "view"]
       }
     ],
     actions: []
@@ -199,7 +408,7 @@ export const sidebarMenuUser = [
     title: "My Shift (Coming Soon)",
     href: "#",
     icon: CalendarDays,
-    actions: ["view"] // Future action; no actions yet since it’s coming soon
+    actions: ["view"]
   }
 ];
 
@@ -216,7 +425,7 @@ export const urlWithArrowBack = [
     pathName: "/dashboard-super-admin"
   },
 
-  // List Page
+  // List Pages
   {
     url: -1,
     title: "Membership",
@@ -282,8 +491,68 @@ export const urlWithArrowBack = [
     title: "Category",
     pathName: "/category-list"
   },
+  {
+    url: -1,
+    title: "Employee",
+    pathName: "/employee-list"
+  },
+  {
+    url: -1,
+    title: "Table",
+    pathName: "/table-list"
+  },
+  {
+    url: -1,
+    title: "Member Tier",
+    pathName: "/member-tier"
+  },
+  {
+    url: -1,
+    title: "Supplier",
+    pathName: "/supplier"
+  },
+  {
+    url: -1,
+    title: "Purchase Order",
+    pathName: "/purchase-order"
+  },
+  {
+    url: -1,
+    title: "Stock Opname",
+    pathName: "/stock-opname"
+  },
+  {
+    url: -1,
+    title: "Stock History",
+    pathName: "/stock-history"
+  },
+  {
+    url: -1,
+    title: "Expense Category",
+    pathName: "/expense-category"
+  },
+  {
+    url: -1,
+    title: "Expense",
+    pathName: "/expense"
+  },
+  {
+    url: -1,
+    title: "Sales Report",
+    pathName: "/report/sales"
+  },
+  {
+    url: -1,
+    title: "Best Selling",
+    pathName: "/best-selling"
+  },
+  {
+    url: -1,
+    title: "Role",
+    pathName: "/role-list"
+  },
 
-  // Form Page Category
+  // Form Pages - Category
   {
     url: "/category-list",
     title: "Add Category",
@@ -295,7 +564,7 @@ export const urlWithArrowBack = [
     pathName: "/edit-category"
   },
 
-  // Form Page Sub Category
+  // Form Pages - Sub Category
   {
     url: "/sub-category-list",
     title: "Add Sub Category",
@@ -306,7 +575,8 @@ export const urlWithArrowBack = [
     title: "Edit Sub Category",
     pathName: "/edit-sub-category"
   },
-  // Form Page Product
+
+  // Form Pages - Product
   {
     url: "/product-list",
     title: "Add Product",
@@ -317,7 +587,8 @@ export const urlWithArrowBack = [
     title: "Edit Product",
     pathName: "/edit-product"
   },
-  // Form Invoice Logo
+
+  // Form Pages - Invoice Logo
   {
     url: "/logo-invoice-list",
     title: "Add Invoice Logo",
@@ -328,7 +599,8 @@ export const urlWithArrowBack = [
     title: "Edit Invoice Logo",
     pathName: "/edit-invoice-logo"
   },
-  // Form Invoice Footer
+
+  // Form Pages - Invoice Footer
   {
     url: "/footer-invoice-list",
     title: "Add Invoice Footer",
@@ -339,7 +611,8 @@ export const urlWithArrowBack = [
     title: "Edit Invoice Footer",
     pathName: "/edit-invoice-footer"
   },
-  // Form Invoice Social Media
+
+  // Form Pages - Invoice Social Media
   {
     url: "/social-media-invoice-list",
     title: "Add Invoice Social Media",
@@ -350,7 +623,26 @@ export const urlWithArrowBack = [
     title: "Edit Invoice Social Media",
     pathName: "/edit-invoice-social-media"
   },
-  // Form Add Location
+
+  {
+    url: -1,
+    title: "Manajemen Role & Izin",
+    pathName: "/role-management"
+  },
+  {
+    url: "/role-management",
+    title: "Add Role",
+    pathName: "/add-role"
+  },
+
+  // Form Pages - User
+  {
+    url: "/user-list",
+    title: "Add Admin",
+    pathName: "/add-user"
+  },
+
+  // Form Pages - Location
   {
     url: "/location-list",
     title: "Add Location Store",
@@ -361,7 +653,8 @@ export const urlWithArrowBack = [
     title: "Edit Location Store",
     pathName: "/edit-location"
   },
-  // Form Discount
+
+  // Form Pages - Discount
   {
     url: "/discount-list",
     title: "Add Discount",
@@ -372,7 +665,8 @@ export const urlWithArrowBack = [
     title: "Edit Discount",
     pathName: "/edit-discount"
   },
-  // Form Shift
+
+  // Form Pages - Shift
   {
     url: "/shift-list",
     title: "Add Shift",
@@ -383,7 +677,8 @@ export const urlWithArrowBack = [
     title: "Edit Shift",
     pathName: "/edit-shift"
   },
-  // Form Type Payment
+
+  // Form Pages - Type Payment
   {
     url: "/type-payment-list",
     title: "Add Type Payment",
@@ -394,7 +689,8 @@ export const urlWithArrowBack = [
     title: "Edit Type Payment",
     pathName: "/edit-type-payment"
   },
-  // Form Social Media
+
+  // Form Pages - Social Media
   {
     url: "/social-media-list",
     title: "Add Social Media",
@@ -404,5 +700,79 @@ export const urlWithArrowBack = [
     url: "/social-media-list",
     title: "Edit Social Media",
     pathName: "/edit-social-media"
+  },
+
+  // Form Pages - Table
+  {
+    url: "/table-list",
+    title: "Add Table",
+    pathName: "/add-table"
+  },
+  {
+    url: "/table-list",
+    title: "Edit Table",
+    pathName: "/edit-table"
+  },
+
+  // Form Pages - Supplier
+  {
+    url: "/supplier",
+    title: "Add Supplier",
+    pathName: "/add-supplier"
+  },
+  {
+    url: "/supplier",
+    title: "Edit Supplier",
+    pathName: "/edit-supplier"
+  },
+
+  // Form Pages - Purchase Order
+  {
+    url: "/purchase-order",
+    title: "Add Purchase Order",
+    pathName: "/add-purchase-order"
+  },
+
+  // Form Pages - Stock Opname
+  {
+    url: "/stock-opname",
+    title: "Add Stock Opname",
+    pathName: "/add-stock-opname"
+  },
+
+  // Form Pages - Expense Category
+  {
+    url: "/expense-category",
+    title: "Add Expense Category",
+    pathName: "/add-expense-category"
+  },
+  {
+    url: "/expense-category",
+    title: "Edit Expense Category",
+    pathName: "/edit-expense-category"
+  },
+
+  // Form Pages - Expense
+  {
+    url: "/expense",
+    title: "Add Expense",
+    pathName: "/add-expense"
+  },
+  {
+    url: "/expense",
+    title: "Edit Expense",
+    pathName: "/edit-expense"
+  },
+
+  // Form Pages - Member Tier
+  {
+    url: "/member-tier",
+    title: "Add Member Tier",
+    pathName: "/add-member-tier"
+  },
+  {
+    url: "/member-tier",
+    title: "Edit Member Tier",
+    pathName: "/edit-member-tier"
   }
 ];

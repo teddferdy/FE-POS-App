@@ -1,6 +1,6 @@
-import INDONESIA_FLAG from "../assets/nations/indonesia-flag.png";
-// import JAPAN_FLAG from "../assets/nations/japan.png";
-import USA_FLAG from "../assets/nations/united-states-flag.png";
+import INDONESIA_FLAG from "@/assets/nations/indonesia-flag.png";
+// import JAPAN_FLAG from "@/assets/nations/japan.png";
+import USA_FLAG from "@/assets/nations/united-states-flag.png";
 
 export const TRANSLATION = [
   {

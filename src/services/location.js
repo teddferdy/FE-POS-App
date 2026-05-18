@@ -35,6 +35,12 @@ export const editLocation = async (payload) => {
   return data;
 };
 
+export const getLocationById = async ({ id }) => {
+  const { data, status } = await axiosInstance.get(`/location/get-location/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteLocation = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/location/delete-location/${payload.id}`, {
     data: payload
