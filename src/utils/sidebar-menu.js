@@ -21,7 +21,8 @@ import {
   TrendingUp,
   Receipt,
   LifeBuoy,
-  ClipboardList
+  ClipboardList,
+  Award
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -56,12 +57,6 @@ export const sidebarMenuSuperAdmin = [
         href: "/user-list",
         icon: Shield,
         actions: ["add", "edit", "view"]
-      },
-      {
-        title: "Manajemen Role & Izin",
-        href: "/role-management",
-        icon: Shield,
-        actions: ["view", "edit"]
       }
     ],
     actions: []
@@ -118,6 +113,12 @@ export const sidebarMenuSuperAdmin = [
         href: "/member-list",
         icon: BookUser,
         actions: ["add", "edit", "view", "edit-points"]
+      },
+      {
+        title: "Member Tier",
+        href: "/member-tier",
+        icon: Award,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
@@ -148,16 +149,10 @@ export const sidebarMenuSuperAdmin = [
     icon: Settings,
     children: [
       {
-        title: "Logo & Branding",
-        href: "/logo-invoice-list",
-        icon: FileText,
-        actions: ["add", "edit", "view"]
-      },
-      {
-        title: "Kelola Role",
-        href: "/role-list",
-        icon: Shield,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Pengaturan Global",
+        href: "/global-setting",
+        icon: Settings,
+        actions: ["view", "edit"]
       }
     ],
     actions: []

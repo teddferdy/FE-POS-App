@@ -18,8 +18,8 @@ const Header = ({ onMenuToggle }) => {
 
   const languages = [
     { code: "id", label: "ID" },
-    { code: "en", label: "EN" },
-    { code: "jpn", label: "JP" }
+    { code: "en", label: "EN" }
+    // { code: "jpn", label: "JP" }
   ];
 
   return (

@@ -12,7 +12,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
 
   const user = cookie?.user;
-  const role = user?.role || user?.type || "user";
+  const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
 
   let menuItems = sidebarMenuUser;
   if (role === "super_admin") menuItems = sidebarMenuSuperAdmin;
@@ -58,6 +58,30 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const renderNavItem = (item, depth = 0) => {
     if (item.children && item.children.length > 0) {
+      if (item.children.length === 1) {
+        const child = item.children[0];
+        return (
+          <button
+            key={item.title}
+            onClick={() => {
+              if (child.href) navigate(child.href);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+              isActive(child.href)
+                ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}>
+            <span className="shrink-0">{renderIcon(item.icon)}</span>
+            <span
+              className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}>
+              {item.title}
+            </span>
+          </button>
+        );
+      }
+
       const parentActive = isParentActive(item);
       const isOpen = expandedMenus[item.title];
 

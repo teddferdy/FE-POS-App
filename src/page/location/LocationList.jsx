@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
 
 const LocationList = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const LocationList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading } = useQuery(
     ["locations", page, limit, statusFilter],
@@ -52,34 +54,36 @@ const LocationList = () => {
   const stats = [
     {
       label: "Total Toko",
-      value: data?.total || data?.stats?.total || 24,
-      sub: "+2 baru bulan ini",
+      value: data?.stats?.total ?? data?.total ?? 0,
       color: "text-foreground"
     },
     {
       label: "Toko Aktif",
-      value: data?.stats?.active || 22,
-      sub: "91.6% Kapasitas",
+      value: data?.stats?.active ?? 0,
       color: "text-green-600 dark:text-green-400"
     },
     {
-      label: "Wilayah Tercover",
-      value: data?.stats?.cities || 8,
-      sub: "Kota Besar",
-      color: "text-foreground"
+      label: "Tidak Aktif",
+      value: (data?.stats?.total ?? 0) - (data?.stats?.active ?? 0),
+      color: "text-white",
+      danger: true
     },
     {
-      label: "Status Sistem",
-      value: null,
-      sub: null,
-      color: "text-green-600 dark:text-green-400",
-      custom: true
+      label: "Wilayah Tercover",
+      value: data?.stats?.cities ?? 0,
+      sub: "Kota",
+      color: "text-foreground"
     }
   ];
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this location?")) {
-      deleteMutation.mutate({ id });
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget });
+      setDeleteTarget(null);
     }
   };
 
@@ -124,23 +128,17 @@ const LocationList = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+          <Card
+            key={stat.label}
+            className={`p-4 ${stat.danger ? "bg-red-600 border-red-600" : ""}`}>
+            <p
+              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
               {stat.label}
             </p>
-            {stat.custom ? (
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-lg font-semibold text-green-600 dark:text-green-400">
-                  Normal
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold">{stat.value}</span>
-                <span className="text-xs text-muted-foreground">{stat.sub}</span>
-              </div>
-            )}
+            <div className="flex items-baseline gap-2">
+              <span className={`text-3xl font-bold ${stat.color}`}>{stat.value}</span>
+              {stat.sub && <span className="text-xs text-muted-foreground">{stat.sub}</span>}
+            </div>
           </Card>
         ))}
       </div>
@@ -274,7 +272,7 @@ const LocationList = () => {
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
                               loc.isActive || loc.status === "active"
                                 ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-                                : "bg-muted text-muted-foreground border border-border"
+                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
                             }`}>
                             {loc.isActive || loc.status === "active" ? "Active" : "Inactive"}
                           </span>
@@ -377,6 +375,15 @@ const LocationList = () => {
           </a>
         </div>
       </div>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Lokasi?"
+        confirmText="Ya, Hapus"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

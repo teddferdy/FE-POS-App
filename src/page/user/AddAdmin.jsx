@@ -7,6 +7,7 @@ import { getAllLocation } from "@/services/location";
 import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
 
 const AddAdmin = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ const AddAdmin = () => {
     role: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000
@@ -34,9 +37,9 @@ const AddAdmin = () => {
 
   const createMutation = useMutation(createUser, {
     onSuccess: () => {
-      toast.success("Success", { description: "Admin berhasil ditambahkan" });
       queryClient.invalidateQueries(["admins", "users"]);
-      navigate("/user-list");
+      setIsSubmitting(false);
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error("Failed", { description: err?.response?.data?.message || err.message });
@@ -83,7 +86,7 @@ const AddAdmin = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => navigate("/user-list")} className="gap-2">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             Back
           </Button>
@@ -273,6 +276,22 @@ const AddAdmin = () => {
       </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title="Data Berhasil Ditambahkan"
+        onConfirm={() => navigate("/user-list")}
+      />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title="Batalkan Perubahan?"
+        confirmText="Ya, Batalkan"
+        onConfirm={() => navigate("/user-list")}
+      />
     </div>
   );
 };

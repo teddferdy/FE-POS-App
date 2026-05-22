@@ -14,20 +14,36 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 
 // Dashboard
 import Dashboard from "./page/dashboard";
+import GlobalSetting from "./page/global-setting";
 
 // Location
 import LocationList from "./page/location/LocationList";
 import AddLocation from "./page/location/AddLocation";
+import EditLocation from "./page/location/EditLocation";
 import LocationDetail from "./page/location/LocationDetail";
 
 // Product
 import ProductList from "./page/product/ProductList";
 
+// Category
+import CategoryList from "./page/category/CategoryList";
+import AddCategory from "./page/category/AddCategory";
+
 // User
 import AdminList from "./page/user/AdminList";
 import AddAdmin from "./page/user/AddAdmin";
-import RoleManagement from "./page/user/RoleManagement";
+// import AddRole from "./page/user/AddRole";
+
+// Member
+import MemberList from "./page/member/MemberList";
+import AddMember from "./page/member/AddMember";
+import MemberDetail from "./page/member/MemberDetail";
+import MemberTier from "./page/member-tier";
+
+// Report
+import GlobalReport from "./page/report/GlobalReport";
 import AddRole from "./page/user/AddRole";
+import AddMemberTier from "./page/member-tier/AddMemberTier";
 
 function App() {
   const { i18n } = useTranslation();
@@ -71,8 +87,8 @@ function App() {
         <Route path="/add-product" element={withLayout(<ComingSoon title="Add Product" />)} />
         <Route path="/edit-product" element={withLayout(<ComingSoon title="Edit Product" />)} />
 
-        <Route path="/category-list" element={withLayout(<ComingSoon title="Category List" />)} />
-        <Route path="/add-category" element={withLayout(<ComingSoon title="Add Category" />)} />
+        <Route path="/category-list" element={withLayout(<CategoryList />)} />
+        <Route path="/add-category" element={withLayout(<AddCategory />)} />
         <Route path="/edit-category" element={withLayout(<ComingSoon title="Edit Category" />)} />
 
         <Route
@@ -88,11 +104,13 @@ function App() {
           element={withLayout(<ComingSoon title="Edit Sub Category" />)}
         />
 
-        <Route path="/member-list" element={withLayout(<ComingSoon title="Member List" />)} />
-        <Route path="/member-tier" element={withLayout(<ComingSoon title="Member Tier" />)} />
+        <Route path="/member-list" element={withLayout(<MemberList />)} />
+        <Route path="/add-member" element={withLayout(<AddMember />)} />
+        <Route path="/member-detail" element={withLayout(<MemberDetail />)} />
+        <Route path="/member-tier" element={withLayout(<MemberTier />)} />
         <Route
           path="/add-member-tier"
-          element={withLayout(<ComingSoon title="Add Member Tier" />)}
+          element={withLayout(<AddMemberTier title="Add Member Tier" />)}
         />
         <Route
           path="/edit-member-tier"
@@ -122,13 +140,12 @@ function App() {
 
         <Route path="/user-list" element={withLayout(<AdminList />)} />
         <Route path="/add-user" element={withLayout(<AddAdmin />)} />
-        <Route path="/role-management" element={withLayout(<RoleManagement />)} />
         <Route path="/add-role" element={withLayout(<AddRole />)} />
         <Route path="/employee-list" element={withLayout(<ComingSoon title="Employee List" />)} />
 
         <Route path="/location-list" element={withLayout(<LocationList />)} />
         <Route path="/add-location" element={withLayout(<AddLocation />)} />
-        <Route path="/edit-location" element={withLayout(<AddLocation />)} />
+        <Route path="/edit-location" element={withLayout(<EditLocation />)} />
         <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
 
         <Route path="/invoice-page" element={withLayout(<ComingSoon title="Invoice Page" />)} />
@@ -144,6 +161,17 @@ function App() {
           path="/social-media-invoice-list"
           element={withLayout(<ComingSoon title="Social Media Invoice" />)}
         />
+        <Route
+          path="/add-social-media"
+          element={withLayout(<ComingSoon title="Add Social Media" />)}
+        />
+        <Route
+          path="/edit-social-media"
+          element={withLayout(<ComingSoon title="Edit Social Media" />)}
+        />
+
+        {/* Global Setting Routes */}
+        <Route path="/global-setting" element={withLayout(<GlobalSetting />)} />
         <Route
           path="/social-media-list"
           element={withLayout(<ComingSoon title="Social Media" />)}
@@ -224,8 +252,8 @@ function App() {
         <Route path="/add-expense" element={withLayout(<ComingSoon title="Add Expense" />)} />
         <Route path="/edit-expense" element={withLayout(<ComingSoon title="Edit Expense" />)} />
 
-        <Route path="/report/sales" element={withLayout(<ComingSoon title="Sales Report" />)} />
-        <Route path="/best-selling" element={withLayout(<ComingSoon title="Best Selling" />)} />
+        <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
+        <Route path="/best-selling" element={withLayout(<GlobalReport />)} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

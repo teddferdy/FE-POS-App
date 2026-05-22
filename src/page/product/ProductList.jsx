@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const ProductList = () => {
@@ -32,6 +33,7 @@ const ProductList = () => {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortFilter, setSortFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
@@ -63,8 +65,13 @@ const ProductList = () => {
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
   const handleDelete = (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
-      deleteMutation.mutate({ id });
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget });
+      setDeleteTarget(null);
     }
   };
 
@@ -334,6 +341,15 @@ const ProductList = () => {
           </button>
         </div>
       </div>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Produk?"
+        confirmText="Ya, Hapus"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { addRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
 
 const modules = [
   {
@@ -52,12 +53,14 @@ const AddRole = () => {
   const [description, setDescription] = useState("");
   const [permissions, setPermissions] = useState(initialPermissions);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
 
   const createMutation = useMutation(addRole, {
     onSuccess: () => {
-      toast.success("Success", { description: "Role baru berhasil ditambahkan" });
       queryClient.invalidateQueries(["roles-all"]);
-      navigate("/role-management");
+      setIsSubmitting(false);
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error("Failed", { description: err?.response?.data?.message || err.message });
@@ -105,9 +108,9 @@ const AddRole = () => {
         </button>
         <span className="material-symbols-outlined text-base">chevron_right</span>
         <button
-          onClick={() => navigate("/role-management")}
+          onClick={() => navigate("/global-setting")}
           className="hover:text-primary transition-colors">
-          Manajemen Role & Izin
+          Pengaturan Sistem
         </button>
         <span className="material-symbols-outlined text-base">chevron_right</span>
         <span className="text-foreground font-bold">Tambah Role Baru</span>
@@ -121,7 +124,7 @@ const AddRole = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => navigate("/role-management")}>
+          <Button variant="outline" onClick={() => setCancelModal(true)}>
             Batal
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
@@ -260,6 +263,22 @@ const AddRole = () => {
       </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title="Data Berhasil Ditambahkan"
+        onConfirm={() => navigate("/role-management")}
+      />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title="Batalkan Perubahan?"
+        confirmText="Ya, Batalkan"
+        onConfirm={() => navigate("/global-setting")}
+      />
     </div>
   );
 };

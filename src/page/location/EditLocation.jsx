@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,7 +35,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import LocationMapPicker from "@/components/ui/location-map-picker";
 import { Combobox } from "@/components/ui/combobox";
-import { addLocation, editLocation, generateLocationId } from "@/services/location";
+import { editLocation, getLocationById } from "@/services/location";
 import {
   getProvinces,
   getCities,
@@ -44,7 +44,6 @@ import {
   getPostalCode
 } from "@/services/general";
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
-import { useQuery } from "react-query";
 
 const days = [
   { id: "monday", label: "Senin" },
@@ -63,18 +62,48 @@ const categoryOptions = [
   { value: "Office", label: "Office" }
 ];
 
-const AddLocation = () => {
+const EditLocation = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("id");
-  const isEdit = !!editId;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const fileInputRef = useRef(null);
+
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [villages, setVillages] = useState([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [districtsLoading, setDistrictsLoading] = useState(false);
+  const [villagesLoading, setVillagesLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  const provincesRef = useRef(provinces);
+  const citiesRef = useRef(cities);
+  const districtsRef = useRef(districts);
+  const villagesRef = useRef(villages);
+
+  useEffect(() => {
+    provincesRef.current = provinces;
+  }, [provinces]);
+  useEffect(() => {
+    citiesRef.current = cities;
+  }, [cities]);
+  useEffect(() => {
+    districtsRef.current = districts;
+  }, [districts]);
+  useEffect(() => {
+    villagesRef.current = villages;
+  }, [villages]);
+
+  const [showOperasional, setShowOperasional] = useState(false);
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -107,56 +136,6 @@ const AddLocation = () => {
     });
   }, []);
 
-  const [provinces, setProvinces] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [villages, setVillages] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
-  const [districtsLoading, setDistrictsLoading] = useState(false);
-  const [villagesLoading, setVillagesLoading] = useState(false);
-  const [geoLoading, setGeoLoading] = useState(false);
-
-  const provincesRef = useRef(provinces);
-  const citiesRef = useRef(cities);
-  const districtsRef = useRef(districts);
-  const villagesRef = useRef(villages);
-
-  useEffect(() => {
-    provincesRef.current = provinces;
-  }, [provinces]);
-  useEffect(() => {
-    citiesRef.current = cities;
-  }, [cities]);
-  useEffect(() => {
-    districtsRef.current = districts;
-  }, [districts]);
-  useEffect(() => {
-    villagesRef.current = villages;
-  }, [villages]);
-
-  const { data: provincesData } = useQuery(["provinces"], getProvinces, {
-    onSuccess: (data) => {
-      setProvinces(data || []);
-    }
-  });
-
-  useEffect(() => {
-    if (provincesData) {
-      setProvinces(provincesData || []);
-    }
-  }, [provincesData]);
-
-  useEffect(() => {
-    if (!isEdit) {
-      generateLocationId().then((res) => {
-        if (res?.data) {
-          form.setValue("locationId", res.data.locationId);
-          form.setValue("storeId", res.data.storeId);
-        }
-      });
-    }
-  }, []);
-
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -187,48 +166,109 @@ const AddLocation = () => {
     }
   });
 
-  const [showOperasional, setShowOperasional] = useState(false);
+  const { data: locationData, isLoading: locationLoading } = useQuery(
+    ["location-edit", editId],
+    () => getLocationById({ id: editId }),
+    { enabled: !!editId }
+  );
 
-  const updateOpeningHours = (dayId, field, value) => {
-    const currentHours = form.getValues("openingHours") || [];
-    const updatedHours = currentHours.map((h) => (h.day === dayId ? { ...h, [field]: value } : h));
-    form.setValue("openingHours", updatedHours);
-  };
+  const location = locationData?.data || locationData?.location || locationData;
 
-  const toggleDay = (dayId) => {
-    const currentHours = form.getValues("openingHours") || [];
-    const day = currentHours.find((h) => h.day === dayId);
-    if (day) {
-      const newIsOpen = !day.isOpen;
-      const updatedHours = currentHours.map((h) =>
-        h.day === dayId
-          ? {
-              ...h,
-              isOpen: newIsOpen,
-              open: newIsOpen ? "09:00" : null,
-              close: newIsOpen ? "21:00" : null
-            }
-          : h
-      );
-      form.setValue("openingHours", updatedHours);
-    }
-  };
-
-  const addMutation = useMutation(addLocation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      setIsSubmitting(false);
-      setSuccessModal(true);
-    },
-    onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
-      setIsSubmitting(false);
-    }
+  const { data: provincesData } = useQuery(["provinces"], getProvinces, {
+    enabled: true
   });
+
+  useEffect(() => {
+    if (provincesData) {
+      setProvinces(provincesData);
+    }
+  }, [provincesData]);
+
+  useEffect(() => {
+    if (!location) return;
+
+    setExistingImage(location.image || null);
+
+    form.reset({
+      name: location.name || "",
+      storeId: location.storeId || "",
+      locationId: location.id || location.locationId || "",
+      phoneNumber: location.phoneNumber || "",
+      email: location.email || "",
+      address: location.address || "",
+      detailLocation: location.detailLocation || "",
+      location: "",
+      city: location.city || "",
+      province: location.province || "",
+      district: location.district || "",
+      village: location.village || "",
+      postalCode: location.postalCode || "",
+      isActive: location.isActive ?? location.status === "active" ?? true,
+      category: location.category || "Branch",
+      managerName: location.managerName || "",
+      latitude: location.latitude ?? location.coordinates?.lat ?? -6.2088,
+      longitude: location.longitude ?? location.coordinates?.lng ?? 106.8456,
+      openingHours:
+        location.openingHours && location.openingHours.length > 0
+          ? location.openingHours.map((oh) => ({
+              day: oh.day,
+              open: oh.open,
+              close: oh.close,
+              isOpen: !!oh.open
+            }))
+          : days.map((day) => ({
+              day: day.id,
+              open: "09:00",
+              close: "21:00",
+              isOpen: true
+            }))
+    });
+
+    const fetchRegions = async () => {
+      if (location.province) {
+        setCitiesLoading(true);
+        try {
+          const citiesResponse = await getCities(location.province);
+          setCities(citiesResponse || []);
+        } catch (error) {
+          console.error("Error fetching cities:", error);
+        } finally {
+          setCitiesLoading(false);
+        }
+
+        if (location.city) {
+          setDistrictsLoading(true);
+          try {
+            const districtsResponse = await getDistricts(location.city);
+            setDistricts(districtsResponse || []);
+          } catch (error) {
+            console.error("Error fetching districts:", error);
+          } finally {
+            setDistrictsLoading(false);
+          }
+
+          if (location.district) {
+            setVillagesLoading(true);
+            try {
+              const villagesResponse = await getVillages(location.district);
+              setVillages(villagesResponse || []);
+            } catch (error) {
+              console.error("Error fetching villages:", error);
+            } finally {
+              setVillagesLoading(false);
+            }
+          }
+        }
+      }
+    };
+
+    fetchRegions();
+  }, [location]);
 
   const editMutation = useMutation(editLocation, {
     onSuccess: () => {
       queryClient.invalidateQueries(["locations"]);
+      queryClient.invalidateQueries(["location-edit"]);
       setIsSubmitting(false);
       setSuccessModal(true);
     },
@@ -255,28 +295,42 @@ const AddLocation = () => {
         lat: latitude,
         lng: longitude
       },
-      openingHours: openingHoursFormatted
+      openingHours: openingHoursFormatted,
+      id: editId
     };
 
-    if (isEdit) {
-      if (imageFile) {
-        const fd = new FormData();
-        fd.append("image", imageFile);
-        fd.append("data", JSON.stringify(payload));
-        fd.append("id", editId);
-        editMutation.mutate(fd);
-      } else {
-        editMutation.mutate({ ...payload, id: editId });
-      }
+    const fd = new FormData();
+    if (imageFile) {
+      fd.append("image", imageFile);
     } else {
-      if (imageFile) {
-        const fd = new FormData();
-        fd.append("image", imageFile);
-        fd.append("data", JSON.stringify(payload));
-        addMutation.mutate(fd);
-      } else {
-        addMutation.mutate(payload);
-      }
+      fd.append("image", imageRemoved ? null : existingImage);
+    }
+    fd.append("data", JSON.stringify(payload));
+    editMutation.mutate(fd);
+  };
+
+  const updateOpeningHours = (dayId, field, value) => {
+    const currentHours = form.getValues("openingHours") || [];
+    const updatedHours = currentHours.map((h) => (h.day === dayId ? { ...h, [field]: value } : h));
+    form.setValue("openingHours", updatedHours);
+  };
+
+  const toggleDay = (dayId) => {
+    const currentHours = form.getValues("openingHours") || [];
+    const day = currentHours.find((h) => h.day === dayId);
+    if (day) {
+      const newIsOpen = !day.isOpen;
+      const updatedHours = currentHours.map((h) =>
+        h.day === dayId
+          ? {
+              ...h,
+              isOpen: newIsOpen,
+              open: newIsOpen ? "09:00" : null,
+              close: newIsOpen ? "21:00" : null
+            }
+          : h
+      );
+      form.setValue("openingHours", updatedHours);
     }
   };
 
@@ -288,6 +342,7 @@ const AddLocation = () => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setImageRemoved(false);
       const reader = new FileReader();
       reader.onload = (event) => setPreviewImage(event.target.result);
       reader.readAsDataURL(file);
@@ -297,6 +352,7 @@ const AddLocation = () => {
   const clearImage = () => {
     setPreviewImage(null);
     setImageFile(null);
+    setImageRemoved(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -334,6 +390,38 @@ const AddLocation = () => {
     }
   };
 
+  if (!editId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
+        <MapPin size={40} />
+        <p>ID toko tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/location-list")}>
+          Kembali
+        </Button>
+      </div>
+    );
+  }
+
+  if (locationLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (!location) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
+        <Building2 size={40} />
+        <p>Toko tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/location-list")}>
+          Kembali
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -344,7 +432,7 @@ const AddLocation = () => {
           Kelola Toko
         </button>
         <span className="text-xs">/</span>
-        <span className="font-semibold text-foreground">Tambah Toko</span>
+        <span className="font-semibold text-foreground">Edit Toko</span>
       </nav>
 
       {/* Form Card */}
@@ -363,10 +451,8 @@ const AddLocation = () => {
               <Map size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Tambah Lokasi Toko Baru</h2>
-              <p className="text-sm text-muted-foreground">
-                Silakan lengkapi informasi detail untuk pendaftaran unit toko baru.
-              </p>
+              <h2 className="text-lg font-semibold text-foreground">Edit Lokasi Toko</h2>
+              <p className="text-sm text-muted-foreground">Perbarui informasi detail unit toko.</p>
             </div>
           </div>
         </div>
@@ -548,6 +634,7 @@ const AddLocation = () => {
                               const namaKab = c.nama_kabupaten.toLowerCase();
                               return (
                                 namaKab === rawCityLower ||
+                                displayName.includes(namaKab) ||
                                 rawCityLower.includes(namaKab) ||
                                 namaKab.includes(rawCityLower) ||
                                 rawCityLower.includes(namaKab.split(" ").pop())
@@ -575,9 +662,9 @@ const AddLocation = () => {
                                 const namaKec = d.nama_kecamatan.toLowerCase();
                                 return (
                                   namaKec === rawDistrictClean ||
+                                  displayName.includes(namaKec) ||
                                   rawDistrictClean.includes(namaKec) ||
-                                  namaKec.includes(rawDistrictClean) ||
-                                  displayName.includes(namaKec)
+                                  namaKec.includes(rawDistrictClean)
                                 );
                               });
 
@@ -604,9 +691,9 @@ const AddLocation = () => {
                                   const namaDesa = v.nama_desa.toLowerCase();
                                   return (
                                     namaDesa === rawVillageClean ||
+                                    displayName.includes(namaDesa) ||
                                     rawVillageClean.includes(namaDesa) ||
-                                    namaDesa.includes(rawVillageClean) ||
-                                    displayName.includes(namaDesa)
+                                    namaDesa.includes(rawVillageClean)
                                   );
                                 });
 
@@ -687,6 +774,7 @@ const AddLocation = () => {
                                 setCitiesLoading(false);
                               }
                             }
+                            handleAreaSelect();
                           }}
                           placeholder="Pilih Provinsi"
                         />
@@ -727,6 +815,7 @@ const AddLocation = () => {
                                 setDistrictsLoading(false);
                               }
                             }
+                            handleAreaSelect();
                           }}
                           placeholder="Pilih Kota/Kabupaten"
                           disabled={!cities.length}
@@ -763,16 +852,13 @@ const AddLocation = () => {
                               try {
                                 const villagesResponse = await getVillages(val);
                                 setVillages(villagesResponse || []);
-                                // Update area after villages data is loaded
                               } catch (error) {
                                 console.error("Error fetching villages:", error);
                               } finally {
                                 setVillagesLoading(false);
                               }
-                            } else {
-                              // Clear postal code and update area
-                              form.setValue("postalCode", "");
                             }
+                            handleAreaSelect();
                           }}
                           placeholder="Pilih Kecamatan"
                           disabled={!districts.length}
@@ -805,13 +891,12 @@ const AddLocation = () => {
                                 const postalData = await getPostalCode(val);
                                 if (postalData && postalData.length > 0) {
                                   form.setValue("postalCode", postalData[0].kode_pos);
-                                  // Update area only after postal code is set
-                                  handleAreaSelect();
                                 }
                               } catch (error) {
                                 console.error("Error fetching postal code:", error);
                               }
                             }
+                            handleAreaSelect();
                           }}
                           placeholder="Pilih Kelurahan/Desa"
                           disabled={!villages.length}
@@ -1049,11 +1134,11 @@ const AddLocation = () => {
                   <div
                     onClick={handleImageClick}
                     className="relative rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
-                    {previewImage ? (
+                    {!imageRemoved && (previewImage || location?.image) ? (
                       <>
                         <img
-                          src={previewImage}
-                          alt="Preview"
+                          src={previewImage || location?.image}
+                          alt={location?.name || "Preview"}
                           className="w-full h-auto max-h-[500px] object-contain"
                         />
                         <button
@@ -1126,7 +1211,7 @@ const AddLocation = () => {
               </Button>
               <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
                 <Save size={18} />
-                {isEdit ? "Simpan Perubahan" : "Simpan Lokasi"}
+                Simpan Perubahan
               </Button>
             </div>
           </form>
@@ -1139,7 +1224,7 @@ const AddLocation = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title={isEdit ? "Data Berhasil Diubah" : "Data Berhasil Ditambahkan"}
+        title="Data Berhasil Diubah"
         onConfirm={() => navigate("/location-list")}
       />
       <Modal
@@ -1154,4 +1239,4 @@ const AddLocation = () => {
   );
 };
 
-export default AddLocation;
+export default EditLocation;
