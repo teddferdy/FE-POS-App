@@ -21,6 +21,7 @@ import LocationList from "./page/location/LocationList";
 import AddLocation from "./page/location/AddLocation";
 import EditLocation from "./page/location/EditLocation";
 import LocationDetail from "./page/location/LocationDetail";
+import StoreGeospatial from "./page/location/StoreGeospatial";
 
 // Product
 import ProductList from "./page/product/ProductList";
@@ -147,6 +148,7 @@ function App() {
         <Route path="/add-location" element={withLayout(<AddLocation />)} />
         <Route path="/edit-location" element={withLayout(<EditLocation />)} />
         <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
+        <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
 
         <Route path="/invoice-page" element={withLayout(<ComingSoon title="Invoice Page" />)} />
         <Route

@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-binary-expression */
 /* eslint-disable no-unused-vars */
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -110,7 +111,11 @@ const EditLocation = () => {
       name: z.string().min(2, "Nama toko minimal 2 karakter"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
-      phoneNumber: z.string().min(8, "Nomor telepon minimal 8 karakter"),
+      phoneNumber: z
+        .string()
+        .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
+        .min(8, "Nomor telepon minimal 8 digit")
+        .max(14, "Nomor telepon maksimal 14 digit"),
       email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
       address: z.string().min(5, "Alamat minimal 5 karakter"),
       detailLocation: z.string().optional(),
@@ -520,8 +525,20 @@ const EditLocation = () => {
                             size={16}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           />
-                          <Input {...field} placeholder="+62 821 0000 0000" className="pl-9" />
+                          <Input
+                            {...field}
+                            placeholder="62821000000"
+                            className="pl-9"
+                            inputMode="numeric"
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                              field.onChange(value);
+                            }}
+                          />
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Maksimal 14 nomor, hanya angka
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -580,155 +597,6 @@ const EditLocation = () => {
                         onChange={async (lat, lng) => {
                           form.setValue("latitude", lat);
                           form.setValue("longitude", lng);
-                          setGeoLoading(true);
-                          try {
-                            const result = await reverseGeocode(lat, lng);
-                            const address = result?.address;
-                            const displayName = (result?.display_name || "").toLowerCase();
-
-                            if (!address?.state) {
-                              console.warn("Reverse geocode: no state found", result);
-                              return;
-                            }
-
-                            const curProvinces = provincesRef.current;
-                            if (curProvinces.length === 0) {
-                              console.warn("Reverse geocode: provinces data not loaded yet");
-                              return;
-                            }
-
-                            form.setValue("city", "");
-                            form.setValue("district", "");
-                            form.setValue("village", "");
-                            form.setValue("postalCode", "");
-                            setCities([]);
-                            setDistricts([]);
-                            setVillages([]);
-
-                            const stateLower = address.state.toLowerCase();
-                            const matchProvince = curProvinces.find(
-                              (p) =>
-                                p.nama_provinsi.toLowerCase() === stateLower ||
-                                stateLower.includes(p.nama_provinsi.toLowerCase()) ||
-                                p.nama_provinsi.toLowerCase().includes(stateLower)
-                            );
-                            if (!matchProvince) {
-                              console.warn(
-                                "Reverse geocode: province not matched",
-                                address.state,
-                                curProvinces.map((p) => p.nama_provinsi)
-                              );
-                              return;
-                            }
-
-                            form.setValue("province", matchProvince.kode_prov);
-
-                            const citiesData = await getCities(matchProvince.kode_prov);
-                            const curCities = citiesData || [];
-                            setCities(curCities);
-
-                            const rawCity =
-                              address.county || address.city || address.municipality || "";
-                            const rawCityLower = rawCity.toLowerCase();
-                            const matchCity = curCities.find((c) => {
-                              const namaKab = c.nama_kabupaten.toLowerCase();
-                              return (
-                                namaKab === rawCityLower ||
-                                displayName.includes(namaKab) ||
-                                rawCityLower.includes(namaKab) ||
-                                namaKab.includes(rawCityLower) ||
-                                rawCityLower.includes(namaKab.split(" ").pop())
-                              );
-                            });
-
-                            if (matchCity) {
-                              form.setValue("city", matchCity.kode_kab);
-
-                              const districtsData = await getDistricts(matchCity.kode_kab);
-                              const curDistricts = districtsData || [];
-                              setDistricts(curDistricts);
-
-                              const rawDistrict =
-                                address.city_district ||
-                                address.municipality ||
-                                address.county ||
-                                "";
-                              const rawDistrictClean = rawDistrict
-                                .toLowerCase()
-                                .replace(/^kecamatan\s+/i, "")
-                                .replace(/^kec\.?\s+/i, "")
-                                .trim();
-                              const matchDistrict = curDistricts.find((d) => {
-                                const namaKec = d.nama_kecamatan.toLowerCase();
-                                return (
-                                  namaKec === rawDistrictClean ||
-                                  displayName.includes(namaKec) ||
-                                  rawDistrictClean.includes(namaKec) ||
-                                  namaKec.includes(rawDistrictClean)
-                                );
-                              });
-
-                              if (matchDistrict) {
-                                form.setValue("district", matchDistrict.kode_kec);
-
-                                const villagesData = await getVillages(matchDistrict.kode_kec);
-                                const curVillages = villagesData || [];
-                                setVillages(curVillages);
-
-                                const rawVillage =
-                                  address.village ||
-                                  address.neighbourhood ||
-                                  address.suburb ||
-                                  address.hamlet ||
-                                  "";
-                                const rawVillageClean = rawVillage
-                                  .toLowerCase()
-                                  .replace(/^kelurahan\s+/i, "")
-                                  .replace(/^desa\s+/i, "")
-                                  .replace(/^kel\.?\s+/i, "")
-                                  .trim();
-                                const matchVillage = curVillages.find((v) => {
-                                  const namaDesa = v.nama_desa.toLowerCase();
-                                  return (
-                                    namaDesa === rawVillageClean ||
-                                    displayName.includes(namaDesa) ||
-                                    rawVillageClean.includes(namaDesa) ||
-                                    namaDesa.includes(rawVillageClean)
-                                  );
-                                });
-
-                                if (matchVillage) {
-                                  form.setValue("village", matchVillage.kode_desa);
-                                  const postalData = await getPostalCode(matchVillage.kode_desa);
-                                  if (postalData?.length > 0) {
-                                    form.setValue("postalCode", postalData[0].kode_pos);
-                                  }
-                                } else {
-                                  console.warn(
-                                    "Reverse geocode: village not matched, skipping",
-                                    rawVillage,
-                                    curVillages.map((v) => v.nama_desa)
-                                  );
-                                }
-                              } else {
-                                console.warn(
-                                  "Reverse geocode: district not matched, skipping",
-                                  rawDistrict,
-                                  curDistricts.map((d) => d.nama_kecamatan)
-                                );
-                              }
-                            } else {
-                              console.warn(
-                                "Reverse geocode: city not matched, skipping",
-                                rawCity,
-                                curCities.map((c) => c.nama_kabupaten)
-                              );
-                            }
-                          } catch (error) {
-                            console.error("Reverse geocoding error:", error);
-                          } finally {
-                            setGeoLoading(false);
-                          }
                         }}
                         height="500px"
                       />

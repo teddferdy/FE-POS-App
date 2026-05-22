@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-binary-expression */
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useQuery } from "react-query";

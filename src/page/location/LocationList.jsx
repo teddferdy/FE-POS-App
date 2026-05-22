@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Edit,
@@ -28,12 +27,19 @@ const LocationList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
-  const [statusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading } = useQuery(
-    ["locations", page, limit, statusFilter],
-    () => getAllLocationTable({ page, limit, statusLocation: statusFilter }),
+    ["locations", page, limit, statusFilter, categoryFilter],
+    () =>
+      getAllLocationTable({
+        page,
+        limit,
+        statusLocation: statusFilter,
+        category: categoryFilter
+      }),
     { keepPreviousData: true }
   );
 
@@ -146,9 +152,9 @@ const LocationList = () => {
       {/* Table Container */}
       <Card className="overflow-hidden">
         {/* Filters Toolbar */}
-        <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-72">
+        <div className="p-4 border-b border-border flex flex-col gap-3 bg-muted/30">
+          <div className="flex items-center gap-2 w-full">
+            <div className="relative flex-1">
               <Search
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -160,12 +166,48 @@ const LocationList = () => {
                 className="pl-9 h-9 text-sm"
               />
             </div>
-            <Button variant="outline" size="sm" className="h-9 gap-1.5">
-              <Filter size={14} />
-              Filter
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="all">Semua</option>
+                <option value="active">Aktif</option>
+                <option value="inactive">Tidak Aktif</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Kategori:</span>
+              <select
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="all">Semua</option>
+                <option value="Main Branch">Main Branch</option>
+                <option value="Branch">Branch</option>
+                <option value="Warehouse">Warehouse</option>
+                <option value="Office">Office</option>
+              </select>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-1.5"
+              onClick={() => navigate("/store-geospatial")}>
+              <Map size={14} />
+              Lihat Peta
             </Button>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               Menampilkan 1-{Math.min(limit, filteredLocations.length)} dari {total} toko
             </p>
@@ -346,33 +388,50 @@ const LocationList = () => {
 
       {/* Map Preview & Tips */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 bg-card rounded-xl border border-border p-6 h-48 relative overflow-hidden flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10" />
+        <div
+          className="md:col-span-2 bg-card rounded-xl border border-border p-6 h-48 relative overflow-hidden flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors group"
+          onClick={() => navigate("/store-geospatial")}>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 group-hover:from-primary/10 group-hover:to-primary/20 transition-all" />
           <div className="relative z-10 text-center">
             <Map size={32} className="text-primary mx-auto mb-2" />
             <p className="text-sm font-medium text-foreground">Store Geospatial View</p>
             <p className="text-xs text-muted-foreground mt-1">
               Interact with store locations on a global map
             </p>
-            <Button variant="outline" size="sm" className="mt-3">
+            <Button variant="outline" size="sm" className="mt-3 pointer-events-none">
               Buka Peta Interaktif
             </Button>
           </div>
         </div>
-        <div className="bg-primary rounded-xl p-5 flex flex-col justify-between text-primary-foreground">
-          <div>
-            <Lightbulb size={28} className="mb-3 opacity-80" />
-            <h4 className="text-base font-semibold mb-1">Tips Manajemen</h4>
-            <p className="text-sm opacity-80 leading-relaxed">
-              Pastikan informasi kontak selalu terbaru untuk memudahkan operasional antar cabang dan
-              koordinasi logistik.
-            </p>
+        <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+          <div className="flex items-center gap-2 mb-3">
+            <Lightbulb size={20} className="opacity-80" />
+            <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
           </div>
-          <a
-            href="#"
-            className="text-xs underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity mt-3">
-            Pelajari selengkapnya
-          </a>
+          <div className="flex-1">
+            <ul className="space-y-2">
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Pastikan data koordinat akurat untuk navigasi</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Update jam operasional secara berkala</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Verifikasi nomor telepon toko aktif</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Foto toko membantu customer menemukan lokasi</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Main branch harus punya koordinat yang tepat</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 

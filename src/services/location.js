@@ -6,10 +6,17 @@ export const getAllLocation = async () => {
   return data;
 };
 
-export const getAllLocationTable = async ({ page = 1, limit = 10, statusLocation = "all" }) => {
-  const { data, status } = await axiosInstance.get(
-    `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`
-  );
+export const getAllLocationTable = async ({
+  page = 1,
+  limit = 10,
+  statusLocation = "all",
+  category = "all"
+}) => {
+  let url = `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`;
+  if (category !== "all") {
+    url += `&category=${encodeURIComponent(category)}`;
+  }
+  const { data, status } = await axiosInstance.get(url);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
