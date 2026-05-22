@@ -39,5 +39,27 @@
   "formError.input.register.location": "Location Store required not empty.",
   "formError.input.register.password": "Password must be at least 4 characters.",
   "formError.input.register.confirmationPassword": "This field has to be filled.",
-  "formError.input.register.validationConfirmationPassword": "Passwords don't match"
+  "formError.input.register.validationConfirmationPassword": "Passwords don't match",
+
+  "resetPasswordDesc": "Please complete the information below to update your account password.",
+  "backToLogin": "Back to Login",
+  "secureSSL": "Secure SSL",
+  "secureSSLDesc": "Encrypted Data",
+  "faReady": "2FA Ready",
+  "faReadyDesc": "Double Security",
+
+  "registerTitle": "Start Your Business",
+  "registerSubtitle": "Join thousands of business owners using Kinetic Ledger",
+  "alreadyHaveAccount": "Already have an account?",
+  "enterpriseSecure": "Enterprise Secure",
+  "selectLocation": "Select Store Location",
+
+  "rememberMe": "Remember Me",
+  "forgotPassword": "Forgot Password?",
+  "noAccount": "Don't have an account?",
+  "registerNow": "Register Now",
+  "help": "Help",
+  "privacyPolicy": "Privacy Policy",
+  "termsConditions": "Terms & Conditions",
+  "understand": "I Understand"
 }

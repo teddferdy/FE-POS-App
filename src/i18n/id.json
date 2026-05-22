@@ -39,5 +39,27 @@
   "formError.input.register.location": "Lokasi Toko Tidak Boleh Kosong.",
   "formError.input.register.password": "Kata Sandi Harus Lebih dari 4 Karakter.",
   "formError.input.register.confirmationPassword": "Bidang Ini Tidak Boleh Kosong",
-  "formError.input.register.validationConfirmationPassword": "Passwords Tidak Cocok"
+  "formError.input.register.validationConfirmationPassword": "Passwords Tidak Cocok",
+
+  "resetPasswordDesc": "Silakan lengkapi informasi di bawah ini untuk memperbarui kata sandi akun Anda.",
+  "backToLogin": "Kembali ke Login",
+  "secureSSL": "Secure SSL",
+  "secureSSLDesc": "Data Terenkripsi",
+  "faReady": "2FA Ready",
+  "faReadyDesc": "Keamanan Ganda",
+
+  "registerTitle": "Mulai Bisnis Anda",
+  "registerSubtitle": "Bergabung dengan ribuan pemilik bisnis yang menggunakan Kinetic Ledger",
+  "alreadyHaveAccount": "Sudah memiliki akun?",
+  "enterpriseSecure": "Enterprise Secure",
+  "selectLocation": "Pilih Lokasi Toko",
+
+  "rememberMe": "Ingat Saya",
+  "forgotPassword": "Lupa Kata Sandi?",
+  "noAccount": "Belum punya akun?",
+  "registerNow": "Daftar Sekarang",
+  "help": "Bantuan",
+  "privacyPolicy": "Kebijakan Privasi",
+  "termsConditions": "Syarat & Ketentuan",
+  "understand": "Saya Mengerti"
 }

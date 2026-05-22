@@ -6,10 +6,17 @@ export const getAllLocation = async () => {
   return data;
 };
 
-export const getAllLocationTable = async ({ page = 1, limit = 10, statusLocation = "all" }) => {
-  const { data, status } = await axiosInstance.get(
-    `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`
-  );
+export const getAllLocationTable = async ({
+  page = 1,
+  limit = 10,
+  statusLocation = "all",
+  category = "all"
+}) => {
+  let url = `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`;
+  if (category !== "all") {
+    url += `&category=${encodeURIComponent(category)}`;
+  }
+  const { data, status } = await axiosInstance.get(url);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -24,21 +31,36 @@ export const editLocation = async (payload) => {
   console.log("PAYLOAD =>", payload);
 
   const { data, status } = await axiosInstance({
-    method: "put", // or 'post' if you change to POST
+    method: "put",
     url: `/location/edit-location`,
-    data: payload,
-    headers: {
-      "Content-Type": "application/json" // Explicitly set headers for PUT requests
-    }
+    data: payload
   });
   if (status !== 200) throw Error(`${data.message || data?.error}`);
   return data;
 };
 
+export const getLocationById = async ({ id }) => {
+  const { data, status } = await axiosInstance.get(`/location/get-location-detail/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getLocationDetail = async ({ id }) => {
+  const { data, status } = await axiosInstance.get(`/location/get-location-detail/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteLocation = async (payload) => {
-  const { data, status } = await axiosInstance.delete(`/location/delete-location/${payload.id}`, {
+  const { data, status } = await axiosInstance.delete(`/location/delete-location`, {
     data: payload
   });
   if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const generateLocationId = async () => {
+  const { data, status } = await axiosInstance.get("/location/generate-id");
+  if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

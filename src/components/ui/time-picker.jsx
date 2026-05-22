@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { Input } from "./input";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import React from "react";
-import { getArrowByType, getDateByType, setDateByType } from "../../lib/time-picker-utils";
+import { getArrowByType, getDateByType, setDateByType } from "@/lib/time-picker-utils";
 
 const TimePickerInput = React.forwardRef(
   (
