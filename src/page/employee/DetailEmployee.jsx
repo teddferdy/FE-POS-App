@@ -290,6 +290,37 @@ const DetailEmployee = () => {
                 </p>
                 <p className="text-sm text-foreground">{formatDate(employee.startDate)}</p>
               </div>
+              {["contract", "internship"].includes(employee.employmentType) && (
+                <>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {employee.employmentType === "internship"
+                        ? "Durasi Magang"
+                        : "Durasi Kontrak"}
+                    </p>
+                    <p className="text-sm text-foreground">
+                      {employee.contractDuration
+                        ? {
+                            3: "3 Bulan",
+                            6: "6 Bulan",
+                            9: "9 Bulan",
+                            12: "12 Bulan / 1 Tahun",
+                            24: "2 Tahun",
+                            36: "3 Tahun",
+                            48: "4 Tahun",
+                            60: "5 Tahun"
+                          }[employee.contractDuration] || `${employee.contractDuration} Bulan`
+                        : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Tanggal Berakhir
+                    </p>
+                    <p className="text-sm text-foreground">{formatDate(employee.endDate)}</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
