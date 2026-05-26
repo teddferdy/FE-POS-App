@@ -103,15 +103,15 @@ const AddLocation = () => {
         .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
         .min(8, "Nomor telepon minimal 8 digit")
         .max(14, "Nomor telepon maksimal 14 digit"),
-      email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
+      email: z.string().email("Format email tidak valid").min(1, "Email wajib diisi"),
       address: z.string().min(5, "Alamat minimal 5 karakter"),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().optional(),
-      province: z.string().optional(),
-      district: z.string().optional(),
-      village: z.string().optional(),
-      postalCode: z.string().optional(),
+      city: z.string().min(1, "Kota/Kabupaten wajib dipilih"),
+      province: z.string().min(1, "Provinsi wajib dipilih"),
+      district: z.string().min(1, "Kecamatan wajib dipilih"),
+      village: z.string().min(1, "Kelurahan/Desa wajib dipilih"),
+      postalCode: z.string().min(1, "Kode pos wajib diisi"),
       isActive: z.boolean().default(true),
       category: z.string().optional(),
       managerName: z.string().optional(),
@@ -260,6 +260,11 @@ const AddLocation = () => {
   });
 
   const onSubmit = (values) => {
+    if (!isEdit && !imageFile) {
+      toast.error("Gagal", { description: "Foto toko wajib diupload" });
+      setIsSubmitting(false);
+      return;
+    }
     setIsSubmitting(true);
     const openingHoursFormatted = (values.openingHours || []).map((h) => ({
       day: h.day,
@@ -482,7 +487,7 @@ const AddLocation = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Email
+                            Email <span className="text-destructive">*</span>
                           </FormLabel>
                           <div className="relative">
                             <Mail
@@ -557,7 +562,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Provinsi
+                          Provinsi <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={provinces.map((p) => ({
@@ -599,7 +604,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kota/Kabupaten
+                          Kota/Kabupaten <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={cities.map((c) => ({
@@ -643,7 +648,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kecamatan
+                          Kecamatan <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={districts.map((d) => ({
@@ -687,7 +692,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kelurahan/Desa
+                          Kelurahan/Desa <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={villages.map((v) => ({
@@ -726,7 +731,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kode Pos
+                          Kode Pos <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           {...field}
@@ -940,7 +945,9 @@ const AddLocation = () => {
                 <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                   <div className="flex items-center gap-2">
                     <Building2 className="text-primary" size={20} />
-                    <h3 className="text-base font-semibold text-foreground">Foto Toko</h3>
+                    <h3 className="text-base font-semibold text-foreground">
+                      Foto Toko <span className="text-destructive">*</span>
+                    </h3>
                   </div>
                   <p className="text-sm text-muted-foreground">Format: JPG, PNG. Maksimal 2MB.</p>
                   <input
