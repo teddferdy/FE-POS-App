@@ -28,14 +28,21 @@ import { toast } from "sonner";
 
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import LocationMapPicker from "@/components/ui/location-map-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { addLocation, editLocation, generateLocationId } from "@/services/location";
+import { getAllEmployee } from "@/services/employee";
 import {
   getProvinces,
   getCities,
@@ -45,6 +52,7 @@ import {
 } from "@/services/general";
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { useQuery } from "react-query";
+import { Button } from "@/components/ui/button";
 
 const days = [
   { id: "monday", label: "Senin" },
@@ -75,6 +83,15 @@ const AddLocation = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
+  const [managerModalOpen, setManagerModalOpen] = useState(false);
+  const [managerSearch, setManagerSearch] = useState("");
+
+  const { data: managerEmployeesData } = useQuery(
+    ["employees-manager-picker", managerSearch],
+    () => getAllEmployee({ search: managerSearch, limit: 50 }),
+    { enabled: managerModalOpen }
+  );
+  const managerEmployees = managerEmployeesData?.data || managerEmployeesData?.employees || [];
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -425,99 +442,112 @@ const AddLocation = () => {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Nomor Telepon <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <div className="relative">
+                            <Phone
+                              size={16}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                              {...field}
+                              placeholder="62821000000"
+                              className="pl-9"
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                field.onChange(value);
+                              }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Maksimal 14 nomor, hanya angka
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Email */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Email
+                          </FormLabel>
+                          <div className="relative">
+                            <Mail
+                              size={16}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                              {...field}
+                              placeholder="toko@email.com"
+                              className="pl-9"
+                              type="email"
+                            />
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Address */}
                   <FormField
                     control={form.control}
-                    name="phoneNumber"
+                    name="address"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Nomor Telepon <span className="text-destructive">*</span>
+                          Alamat Lengkap <span className="text-destructive">*</span>
                         </FormLabel>
                         <div className="relative">
-                          <Phone
+                          <MapPin
                             size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            className="absolute left-3 top-3 text-muted-foreground"
                           />
-                          <Input
+                          <Textarea
                             {...field}
-                            placeholder="62821000000"
-                            className="pl-9"
-                            inputMode="numeric"
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, "").slice(0, 14);
-                              field.onChange(value);
-                            }}
+                            placeholder="Masukkan alamat lengkap toko..."
+                            className="pl-9 min-h-[80px]"
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Maksimal 14 nomor, hanya angka
-                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Detail Location */}
+                  <FormField
+                    control={form.control}
+                    name="detailLocation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Detail Lokasi (Patokan)
+                        </FormLabel>
+                        <Textarea
+                          {...field}
+                          placeholder="Lantai 2, Samping lift utara"
+                          className="min-h-[80px]"
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                {/* Address */}
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Alamat Lengkap <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <div className="relative">
-                        <MapPin size={16} className="absolute left-3 top-3 text-muted-foreground" />
-                        <Textarea
-                          {...field}
-                          placeholder="Masukkan alamat lengkap toko..."
-                          className="pl-9 min-h-[80px] resize-none"
-                        />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Detail Location */}
-                <FormField
-                  control={form.control}
-                  name="detailLocation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Detail Lokasi (Patokan)
-                      </FormLabel>
-                      <Input {...field} placeholder="Lantai 2, Samping lift utara" />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Location Map Picker */}
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Pilih Lokasi di Peta
-                      </FormLabel>
-                      <LocationMapPicker
-                        lat={form.watch("latitude")}
-                        lng={form.watch("longitude")}
-                        onChange={async (lat, lng) => {
-                          form.setValue("latitude", lat);
-                          form.setValue("longitude", lng);
-                          setGeoLoading(true);
-                        }}
-                        height="500px"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Province, City */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -710,6 +740,30 @@ const AddLocation = () => {
                   />
                 </div>
 
+                {/* Location Map Picker */}
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Pilih Lokasi di Peta
+                      </FormLabel>
+                      <LocationMapPicker
+                        lat={form.watch("latitude")}
+                        lng={form.watch("longitude")}
+                        onChange={async (lat, lng) => {
+                          form.setValue("latitude", lat);
+                          form.setValue("longitude", lng);
+                          setGeoLoading(true);
+                        }}
+                        height="500px"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Category */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -745,37 +799,18 @@ const AddLocation = () => {
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Nama Manager
                       </FormLabel>
-                      <div className="relative">
+                      <div
+                        className="relative cursor-pointer"
+                        onClick={() => setManagerModalOpen(true)}>
                         <User
                           size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input {...field} placeholder="Nama manager toko" className="pl-9" />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Email */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Email
-                      </FormLabel>
-                      <div className="relative">
-                        <Mail
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                         />
                         <Input
                           {...field}
-                          placeholder="toko@email.com"
-                          className="pl-9"
-                          type="email"
+                          placeholder="Klik untuk pilih manager"
+                          className="pl-9 cursor-pointer"
+                          readOnly
                         />
                       </div>
                       <FormMessage />
@@ -1003,6 +1038,97 @@ const AddLocation = () => {
       </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+
+      <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Pilih Manager</DialogTitle>
+            <DialogDescription>
+              Pilih karyawan yang akan menjadi manager toko ini.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+              search
+            </span>
+            <Input
+              placeholder="Cari karyawan..."
+              value={managerSearch}
+              onChange={(e) => setManagerSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <div className="overflow-x-auto max-h-80 overflow-y-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 bg-background">
+                <tr className="bg-muted/10">
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    ID
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Jabatan
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Toko
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {managerEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
+                      Tidak ada karyawan ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  managerEmployees.map((emp) => (
+                    <tr
+                      key={emp.id || emp._id}
+                      className="hover:bg-muted/20 transition-colors cursor-pointer"
+                      onClick={() => {
+                        form.setValue("managerName", emp.name);
+                        setManagerModalOpen(false);
+                      }}>
+                      <td className="px-4 py-3 text-sm font-mono">
+                        {emp.employeeId || emp.code || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium">{emp.name}</p>
+                        <p className="text-xs text-muted-foreground">{emp.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{emp.position || emp.role || "-"}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {emp.storeName || emp.locationName || "-"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex justify-between items-center pt-2 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManagerModalOpen(false);
+                navigate("/add-employee");
+              }}
+              className="gap-2">
+              <span className="material-symbols-outlined text-base">person_add</span>
+              Tambah Karyawan
+            </Button>
+            <Button variant="ghost" onClick={() => setManagerModalOpen(false)}>
+              Tutup
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Modal
         type="success"

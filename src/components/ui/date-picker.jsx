@@ -2,12 +2,15 @@
 "use client";
 
 import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { ScrollArea } from "./scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./button";
+import { Button } from "./button";
 import { DayPicker } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
   return (
@@ -88,4 +91,26 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
 }
 Calendar.displayName = "Calendar";
 
-export { Calendar };
+function DatePicker({ date, setDate, placeholder = "Pilih tanggal", className }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal h-10",
+            !date && "text-muted-foreground",
+            className
+          )}>
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          {date ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export { Calendar, DatePicker };

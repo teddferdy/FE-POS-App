@@ -8,6 +8,14 @@ export const getAllShift = async ({ store, page, limit, statusShift }) => {
   return data;
 };
 
+export const getShiftDropdown = async ({ store, statusShift }) => {
+  const { data, status } = await axiosInstance.get(
+    `/shift/dropdown?store=${store}&status=${statusShift}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const addShift = async (payload) => {
   const { data, status } = await axiosInstance.post("/shift/add-new-shift", payload);
   if (status !== 200) throw Error(`${data.message}`);

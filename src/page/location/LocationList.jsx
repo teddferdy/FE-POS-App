@@ -57,30 +57,30 @@ const LocationList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
-  const stats = [
-    {
-      label: "Total Toko",
-      value: data?.stats?.total ?? data?.total ?? 0,
-      color: "text-foreground"
-    },
-    {
-      label: "Toko Aktif",
-      value: data?.stats?.active ?? 0,
-      color: "text-green-600 dark:text-green-400"
-    },
-    {
-      label: "Tidak Aktif",
-      value: (data?.stats?.total ?? 0) - (data?.stats?.active ?? 0),
-      color: "text-white",
-      danger: true
-    },
-    {
-      label: "Wilayah Tercover",
-      value: data?.stats?.cities ?? 0,
-      sub: "Kota",
-      color: "text-foreground"
-    }
-  ];
+  // const stats = [
+  //   {
+  //     label: "Total Toko",
+  //     value: data?.stats?.total ?? data?.total ?? 0,
+  //     color: "text-foreground"
+  //   },
+  //   {
+  //     label: "Toko Aktif",
+  //     value: data?.stats?.active ?? 0,
+  //     color: "text-green-600 dark:text-green-400"
+  //   },
+  //   {
+  //     label: "Tidak Aktif",
+  //     value: (data?.stats?.total ?? 0) - (data?.stats?.active ?? 0),
+  //     color: "text-white",
+  //     danger: true
+  //   },
+  //   {
+  //     label: "Wilayah Tercover",
+  //     value: data?.stats?.cities ?? 0,
+  //     sub: "Kota",
+  //     color: "text-foreground"
+  //   }
+  // ];
 
   const handleDelete = (id) => {
     setDeleteTarget(id);
@@ -94,14 +94,34 @@ const LocationList = () => {
   };
 
   const filteredLocations = locations.filter((loc) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      loc.name?.toLowerCase().includes(q) ||
-      loc.address?.toLowerCase().includes(q) ||
-      loc.storeId?.toLowerCase().includes(q) ||
-      loc.phoneNumber?.toLowerCase().includes(q)
-    );
+    // Search filter
+    if (search) {
+      const q = search.toLowerCase();
+      if (
+        !loc.name?.toLowerCase().includes(q) &&
+        !loc.address?.toLowerCase().includes(q) &&
+        !loc.storeId?.toLowerCase().includes(q) &&
+        !loc.phoneNumber?.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      const matchesStatus =
+        statusFilter === "active"
+          ? loc.isActive || loc.status === "active"
+          : !(loc.isActive || loc.status === "active");
+      if (!matchesStatus) return false;
+    }
+
+    // Category filter
+    if (categoryFilter !== "all") {
+      if (loc.category !== categoryFilter) return false;
+    }
+
+    return true;
   });
 
   return (
@@ -132,21 +152,78 @@ const LocationList = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Card
-            key={stat.label}
-            className={`p-4 ${stat.danger ? "bg-red-600 border-red-600" : ""}`}>
-            <p
-              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
-              {stat.label}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Total Toko
             </p>
-            <div className="flex items-baseline gap-2">
-              <span className={`text-3xl font-bold ${stat.color}`}>{stat.value}</span>
-              {stat.sub && <span className="text-xs text-muted-foreground">{stat.sub}</span>}
-            </div>
-          </Card>
-        ))}
+            <h3 className="text-3xl font-bold text-foreground">
+              {(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
+            </h3>
+            <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">store</span>
+              Semua cabang terdaftar
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">store</span>
+          </div>
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Toko Aktif
+            </p>
+            <h3 className="text-3xl font-bold text-foreground">
+              {(data?.stats?.active ?? 0).toLocaleString()}
+            </h3>
+            <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              {(data?.stats?.total ?? 0) > 0
+                ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100)
+                : 0}
+              % Tingkat Keaktifan
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">check_circle</span>
+          </div>
+        </div>
+        <div className="bg-red-600 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 transition-colors hover:shadow-md transition-shadow">
+          <div>
+            <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+              Tidak Aktif
+            </p>
+            <h3 className="text-3xl font-bold text-white">
+              {((data?.stats?.total ?? 0) - (data?.stats?.active ?? 0)).toLocaleString()}
+            </h3>
+            <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">cancel</span>
+              Perlu perhatian
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-red-700 flex items-center justify-center text-white group-hover:bg-red-800 transition-colors group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">cancel</span>
+          </div>
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Wilayah Tercover
+            </p>
+            <h3 className="text-3xl font-bold text-foreground">
+              {(data?.stats?.cities ?? 0).toLocaleString()}
+            </h3>
+            <p className="text-xs font-semibold text-tertiary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">location_city</span>
+              Kota
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">location_city</span>
+          </div>
+        </div>
       </div>
 
       {/* Table Container */}
@@ -249,6 +326,9 @@ const LocationList = () => {
                     Store Name
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
                     Address
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
@@ -300,6 +380,11 @@ const LocationList = () => {
                           {loc.description || loc.type || "Main Branch"}
                         </p>
                       </td>
+                      <td className="px-4 py-4 text-capitalize">
+                        <span className="text-sm font-medium text-foreground">
+                          {loc.category || "Main Branch"}
+                        </span>
+                      </td>
                       <td className="px-4 py-4">
                         <p className="text-sm text-muted-foreground max-w-[180px] truncate">
                           {loc.address}
@@ -321,7 +406,7 @@ const LocationList = () => {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"

@@ -6,7 +6,7 @@ import {
   BookUser,
   CalendarDays,
   Store,
-  Shield,
+  // Shield,
   Package,
   Tag,
   BarChart3,
@@ -47,20 +47,20 @@ export const sidebarMenuSuperAdmin = [
     ],
     actions: []
   },
-  {
-    title: "Kelola Admin",
-    href: "",
-    icon: Shield,
-    children: [
-      {
-        title: "Daftar Admin",
-        href: "/user-list",
-        icon: Shield,
-        actions: ["add", "edit", "view"]
-      }
-    ],
-    actions: []
-  },
+  // {
+  //   title: "Kelola Admin",
+  //   href: "",
+  //   icon: Shield,
+  //   children: [
+  //     {
+  //       title: "Daftar Admin",
+  //       href: "/user-list",
+  //       icon: Shield,
+  //       actions: ["add", "edit", "view"]
+  //     }
+  //   ],
+  //   actions: []
+  // },
   {
     title: "Kelola Karyawan",
     href: "",

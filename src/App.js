@@ -46,6 +46,11 @@ import GlobalReport from "./page/report/GlobalReport";
 import AddRole from "./page/user/AddRole";
 import AddMemberTier from "./page/member-tier/AddMemberTier";
 
+// Employee
+import EmployeeList from "./page/employee/EmployeeList";
+import AddEmployee from "./page/employee/AddEmployee";
+import DetailEmployee from "./page/employee/DetailEmployee";
+
 function App() {
   const { i18n } = useTranslation();
   const { translation } = translationSelect();
@@ -141,8 +146,10 @@ function App() {
 
         <Route path="/user-list" element={withLayout(<AdminList />)} />
         <Route path="/add-user" element={withLayout(<AddAdmin />)} />
+        <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
         <Route path="/add-role" element={withLayout(<AddRole />)} />
-        <Route path="/employee-list" element={withLayout(<ComingSoon title="Employee List" />)} />
+        <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
+        <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
 
         <Route path="/location-list" element={withLayout(<LocationList />)} />
         <Route path="/add-location" element={withLayout(<AddLocation />)} />

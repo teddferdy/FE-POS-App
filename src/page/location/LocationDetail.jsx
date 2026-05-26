@@ -436,6 +436,44 @@ const LocationDetail = () => {
                 </div>
               </div>
 
+              {/* Informasi Sistem */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-base">info</span>
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">Informasi Sistem</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">Dibuat Pada</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.createdAt
+                        ? new Date(location.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                          })
+                        : "-"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Diperbarui Pada
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.updatedAt
+                        ? new Date(location.updatedAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                          })
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Help Cards */}
               <div className="space-y-3">
                 <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
