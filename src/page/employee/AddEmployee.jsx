@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { addMonths, format } from "date-fns";
 import { toast } from "sonner";
 import { addEmployee, generateEmployeeId } from "@/services/employee";
 import { getShiftDropdown } from "@/services/shift";
@@ -58,6 +59,8 @@ const AddEmployee = () => {
       position: z.string().optional().or(z.literal("")),
       store: z.string().optional().or(z.literal("")),
       employmentType: z.string().optional().or(z.literal("")),
+      contractDuration: z.string().optional().or(z.literal("")),
+      endDate: z.string().optional().or(z.literal("")),
       shift: z.string().optional().or(z.literal("")),
       startDate: z.string().optional().or(z.literal("")),
       isActive: z.boolean().default(true),
@@ -83,6 +86,8 @@ const AddEmployee = () => {
       position: "",
       store: "",
       employmentType: "",
+      contractDuration: "",
+      endDate: "",
       shift: "",
       startDate: "",
       isActive: true,
@@ -90,6 +95,34 @@ const AddEmployee = () => {
       accessMenu: ""
     }
   });
+
+  const employmentType = form.watch("employmentType");
+  const startDate = form.watch("startDate");
+  const contractDuration = form.watch("contractDuration");
+
+  const contractDurations = [
+    { value: "3", label: "3 Bulan" },
+    { value: "6", label: "6 Bulan" },
+    { value: "9", label: "9 Bulan" },
+    { value: "12", label: "12 Bulan / 1 Tahun" },
+    { value: "24", label: "2 Tahun" },
+    { value: "36", label: "3 Tahun" },
+    { value: "48", label: "4 Tahun" },
+    { value: "60", label: "5 Tahun" }
+  ];
+
+  useEffect(() => {
+    if (startDate && contractDuration && ["contract", "internship"].includes(employmentType)) {
+      const start = new Date(startDate);
+      const months = parseInt(contractDuration);
+      if (!isNaN(months)) {
+        const end = addMonths(start, months);
+        form.setValue("endDate", end.toISOString());
+      }
+    } else {
+      form.setValue("endDate", "");
+    }
+  }, [startDate, contractDuration, employmentType, form]);
 
   useEffect(() => {
     const fetchId = async () => {
@@ -529,6 +562,53 @@ const AddEmployee = () => {
                       </FormItem>
                     )}
                   />
+                  {["contract", "internship"].includes(employmentType) && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="contractDuration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {employmentType === "internship" ? "Durasi Magang" : "Durasi Kontrak"}
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih Durasi" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {contractDurations.map((d) => (
+                                  <SelectItem key={d.value} value={d.value}>
+                                    {d.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="endDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              Tanggal Berakhir
+                            </FormLabel>
+                            <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                              {field.value
+                                ? format(new Date(field.value), "dd MMM yyyy")
+                                : contractDuration && startDate
+                                  ? "Pilih durasi kontrak terlebih dahulu"
+                                  : "Pilih tanggal mulai & durasi"}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
                   <div className="flex flex-col gap-1.5 justify-end">
                     <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mt-auto">
                       <div>
