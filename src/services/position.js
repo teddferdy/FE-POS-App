@@ -6,9 +6,14 @@ export const getAllPosition = async () => {
   return data;
 };
 
-export const getAllPositionTable = async ({ page = 1, limit = 10, statusRole = "all" }) => {
+export const getAllPositionTable = async ({
+  page = 1,
+  limit = 10,
+  statusRole = "all",
+  search = ""
+}) => {
   const { data, status } = await axiosInstance.get(
-    `/position/get-position-all?page=${page}&limit=${limit}&status=${statusRole}`
+    `/position/get-position-all?page=${page}&limit=${limit}&status=${statusRole}&search=${search}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

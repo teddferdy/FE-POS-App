@@ -20,7 +20,13 @@ import {
   CheckCircle2,
   XCircle,
   Lock,
-  Edit
+  Edit,
+  Download,
+  Eye,
+  FileText,
+  FileSpreadsheet,
+  FileImage,
+  File as FileIcon
 } from "lucide-react";
 import { getEmployeeDetail } from "@/services/employee";
 import { Button } from "@/components/ui/button";
@@ -65,6 +71,74 @@ const DetailEmployee = () => {
       year: "numeric"
     });
   };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return "";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  const getFileIcon = (type, name) => {
+    const ext = name?.split(".").pop()?.toLowerCase();
+    if (type?.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))
+      return <FileImage size={18} className="text-blue-500 shrink-0" />;
+    if (["pdf"].includes(ext)) return <FileText size={18} className="text-red-500 shrink-0" />;
+    if (["xls", "xlsx", "csv"].includes(ext))
+      return <FileSpreadsheet size={18} className="text-green-600 shrink-0" />;
+    if (["doc", "docx"].includes(ext))
+      return <FileText size={18} className="text-blue-700 shrink-0" />;
+    return <FileIcon size={18} className="text-muted-foreground shrink-0" />;
+  };
+
+  const handleShow = (url) => {
+    const sep = url.includes("?") ? "&" : "?";
+    const previewUrl = url.includes("/raw/upload/") ? url + sep + "fl_attachment=false" : url;
+    window.open(previewUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDownload = async (url, fileName) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const normalizeDoc = (doc) => {
+    if (typeof doc === "string") {
+      const fileName = doc.split("/").pop() || doc;
+      const ext = fileName.split(".").pop()?.toLowerCase();
+      return {
+        fileUrl: doc,
+        fileName,
+        mimeType:
+          ext === "pdf"
+            ? "application/pdf"
+            : ext === "docx"
+              ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              : ext === "jpg" || ext === "jpeg"
+                ? "image/jpeg"
+                : ext === "png"
+                  ? "image/png"
+                  : undefined
+      };
+    }
+    return doc;
+  };
+  const documents =
+    typeof employee.documents === "string"
+      ? JSON.parse(employee.documents).map(normalizeDoc)
+      : (employee.documents || []).map(normalizeDoc);
 
   return (
     <div className="space-y-6">
@@ -141,7 +215,7 @@ const DetailEmployee = () => {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => navigate(`/add-employee?id=${employee.id}`)}>
+            onClick={() => navigate(`/edit-employee?id=${employee.id}`)}>
             <Edit size={16} />
             Edit Profil
           </Button>
@@ -355,6 +429,46 @@ const DetailEmployee = () => {
               <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
             </div>
           </div>
+
+          {documents.length > 0 && (
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
+                <span className="material-symbols-outlined text-primary">description</span>
+                <h4 className="text-base font-semibold text-foreground">Dokumen</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {documents.map((doc, index) => (
+                  <div
+                    key={doc.id || index}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20 group">
+                    {getFileIcon(doc.mimeType || doc.fileType, doc.fileName || doc.name)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {doc.fileName || doc.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(doc.fileSize || doc.size)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleShow(doc.fileUrl)}
+                      className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Lihat">
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(doc.fileUrl, doc.fileName || "dokumen")}
+                      className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Download">
+                      <Download size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-5">
             <h4 className="text-base font-semibold mb-4">Informasi Sistem</h4>

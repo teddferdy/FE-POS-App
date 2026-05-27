@@ -22,7 +22,9 @@ import {
   User,
   Building2,
   Globe,
-  Mail
+  Mail,
+  Search,
+  UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -85,13 +87,18 @@ const AddLocation = () => {
   const fileInputRef = useRef(null);
   const [managerModalOpen, setManagerModalOpen] = useState(false);
   const [managerSearch, setManagerSearch] = useState("");
+  const [managerFetchSearch, setManagerFetchSearch] = useState("");
+  const [managerPage, setManagerPage] = useState(1);
+  const limit = 10;
 
   const { data: managerEmployeesData } = useQuery(
-    ["employees-manager-picker", managerSearch],
-    () => getAllEmployee({ search: managerSearch, limit: 50 }),
+    ["employees-manager-picker", managerFetchSearch, managerPage],
+    () => getAllEmployee({ search: managerFetchSearch, limit, page: managerPage }),
     { enabled: managerModalOpen }
   );
   const managerEmployees = managerEmployeesData?.data || managerEmployeesData?.employees || [];
+  const managerTotal = managerEmployeesData?.total || managerEmployeesData?.pagination?.total || 0;
+  const managerTotalPages = Math.ceil(managerTotal / limit) || 1;
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -114,6 +121,7 @@ const AddLocation = () => {
       postalCode: z.string().min(1, "Kode pos wajib diisi"),
       isActive: z.boolean().default(true),
       category: z.string().optional(),
+      department: z.string().optional(),
       managerName: z.string().optional(),
       latitude: z.coerce.number().optional(),
       longitude: z.coerce.number().optional(),
@@ -196,6 +204,7 @@ const AddLocation = () => {
       postalCode: "",
       isActive: true,
       category: "Branch",
+      department: "",
       managerName: "",
       latitude: -6.2088,
       longitude: 106.8456,
@@ -506,6 +515,35 @@ const AddLocation = () => {
                       )}
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Departemen
+                        </FormLabel>
+                        <select
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                          <option value="">Pilih Departemen</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Food & Beverage">Food & Beverage</option>
+                          <option value="Service">Service</option>
+                          <option value="Finance">Finance</option>
+                          <option value="Warehouse">Warehouse</option>
+                          <option value="Marketing">Marketing</option>
+                          <option value="HR">HR</option>
+                          <option value="Management">Management</option>
+                        </select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1047,38 +1085,60 @@ const AddLocation = () => {
       {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
 
       <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Pilih Manager</DialogTitle>
-            <DialogDescription>
-              Pilih karyawan yang akan menjadi manager toko ini.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-              search
-            </span>
-            <Input
-              placeholder="Cari karyawan..."
-              value={managerSearch}
-              onChange={(e) => setManagerSearch(e.target.value)}
-              className="pl-9"
-            />
+        <DialogContent className="sm:max-w-2xl min-w-[800px] p-0 gap-0 overflow-hidden">
+          <div className="px-6 pt-6 pb-4 border-b border-border">
+            <DialogHeader>
+              <DialogTitle className="text-lg">Pilih Manager</DialogTitle>
+              <DialogDescription>
+                Pilih karyawan yang akan menjadi manager toko ini.
+              </DialogDescription>
+            </DialogHeader>
           </div>
 
-          <div className="overflow-x-auto max-h-80 overflow-y-auto">
+          <div className="px-6 py-4 border-b border-border bg-muted/20">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  placeholder="Cari karyawan..."
+                  value={managerSearch}
+                  onChange={(e) => {
+                    setManagerSearch(e.target.value);
+                    setManagerPage(1);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setManagerFetchSearch(managerSearch);
+                    }
+                  }}
+                  className="pl-9"
+                />
+              </div>
+              <Button onClick={() => setManagerFetchSearch(managerSearch)}>Cari</Button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "60vh" }}>
             <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-background">
-                <tr className="bg-muted/10">
+              <thead className="sticky top-0 bg-background z-10">
+                <tr className="bg-muted/20">
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     ID
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Foto
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     Nama
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Jabatan
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Departemen
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     Toko
@@ -1088,8 +1148,9 @@ const AddLocation = () => {
               <tbody className="divide-y divide-border">
                 {managerEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                      Tidak ada karyawan ditemukan
+                    <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                      <User size={32} className="mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Tidak ada karyawan ditemukan</p>
                     </td>
                   </tr>
                 ) : (
@@ -1098,20 +1159,33 @@ const AddLocation = () => {
                       key={emp.id || emp._id}
                       className="hover:bg-muted/20 transition-colors cursor-pointer"
                       onClick={() => {
-                        form.setValue("managerName", emp.name);
+                        form.setValue("managerName", emp.fullName);
                         setManagerModalOpen(false);
                       }}>
-                      <td className="px-4 py-3 text-sm font-mono">
-                        {emp.employeeId || emp.code || "-"}
+                      <td className="px-4 py-3 text-sm font-mono">{emp.employeeID || "-"}</td>
+                      <td className="px-4 py-3">
+                        <div className="w-9 h-9 rounded-full bg-muted overflow-hidden">
+                          {emp.image ? (
+                            <img
+                              src={emp.image}
+                              alt={emp.fullName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-muted-foreground bg-muted">
+                              {(emp.fullName || "?").charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{emp.name}</p>
-                        <p className="text-xs text-muted-foreground">{emp.email}</p>
+                        <p className="text-sm font-medium">{emp.fullName}</p>
                       </td>
-                      <td className="px-4 py-3 text-sm">{emp.position || emp.role || "-"}</td>
-                      <td className="px-4 py-3 text-sm">
-                        {emp.storeName || emp.locationName || "-"}
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {emp.email || "-"}
                       </td>
+                      <td className="px-4 py-3 text-sm">{emp.department || "-"}</td>
+                      <td className="px-4 py-3 text-sm">{emp.storeData?.name || "-"}</td>
                     </tr>
                   ))
                 )}
@@ -1119,20 +1193,48 @@ const AddLocation = () => {
             </table>
           </div>
 
-          <div className="flex justify-between items-center pt-2 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setManagerModalOpen(false);
-                navigate("/add-employee");
-              }}
-              className="gap-2">
-              <span className="material-symbols-outlined text-base">person_add</span>
-              Tambah Karyawan
-            </Button>
-            <Button variant="ghost" onClick={() => setManagerModalOpen(false)}>
-              Tutup
-            </Button>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={managerPage <= 1}
+                onClick={() => setManagerPage((p) => Math.max(1, p - 1))}
+                className="h-8">
+                Prev
+              </Button>
+              <span className="text-xs text-muted-foreground min-w-[60px] text-center">
+                {managerPage} / {managerTotalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={managerPage >= managerTotalPages}
+                onClick={() => setManagerPage((p) => p + 1)}
+                className="h-8">
+                Next
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setManagerModalOpen(false);
+                  navigate("/add-employee");
+                }}
+                className="h-8 gap-1.5">
+                <UserPlus size={14} />
+                Tambah Karyawan
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setManagerModalOpen(false)}
+                className="h-8">
+                Tutup
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
