@@ -23,7 +23,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       const toOpen = {};
       menuItems.forEach((item) => {
         if (item.children) {
-          const hasActive = item.children.some((child) => location.pathname === child.href);
+          const hasActive = item.children.some((child) => matchPath(child.href));
           if (hasActive) toOpen[item.title] = true;
         }
       });
@@ -31,14 +31,26 @@ const Sidebar = ({ collapsed, onToggle }) => {
     }
   }, [location.pathname, collapsed]);
 
+  const matchPath = (href) => {
+    if (!href) return false;
+    if (location.pathname === href) return true;
+    if (href.endsWith("-list")) {
+      const resource = href.replace("/", "").replace("-list", "");
+      return ["add", "edit", "detail"].some(
+        (action) => location.pathname === `/${action}-${resource}`
+      );
+    }
+    return false;
+  };
+
   const isActive = (href) => {
     if (!href) return false;
-    return location.pathname === href;
+    return matchPath(href);
   };
 
   const isParentActive = (item) => {
     if (!item.children) return false;
-    return item.children.some((child) => location.pathname === child.href);
+    return item.children.some((child) => matchPath(child.href));
   };
 
   const toggleSubmenu = (title) => {

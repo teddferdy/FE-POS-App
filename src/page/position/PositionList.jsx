@@ -1,0 +1,308 @@
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { getAllPositionTable, deletePosition } from "@/services/position";
+import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
+
+const PositionList = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const { data, isLoading } = useQuery(
+    ["positions", page, limit, search],
+    () =>
+      getAllPositionTable({
+        page,
+        limit,
+        statusRole: "all",
+        search
+      }),
+    { keepPreviousData: true }
+  );
+
+  const deleteMutation = useMutation(deletePosition, {
+    onSuccess: () => {
+      toast.success("Berhasil", { description: "Posisi berhasil dihapus" });
+      queryClient.invalidateQueries(["positions"]);
+    },
+    onError: (err) => {
+      toast.error("Gagal", {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const positions = data?.data || [];
+  const pagination = data?.pagination || {};
+  const stats = data?.stats || {};
+  const total = pagination?.totalItems || 0;
+  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
+
+  const handleDelete = (position) => {
+    setDeleteTarget(position);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget.id });
+      setDeleteTarget(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Kelola Jabatan</h2>
+          <nav className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <span>Kelola Karyawan</span>
+            <span className="material-symbols-outlined text-base">chevron_right</span>
+            <span className="text-primary font-semibold">Kelola Jabatan</span>
+          </nav>
+        </div>
+        <Button
+          onClick={() => navigate("/add-position")}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg shadow-md">
+          <span className="material-symbols-outlined text-lg">add</span>
+          Tambah Jabatan
+        </Button>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Total Jabatan
+            </p>
+            <h3 className="text-2xl font-bold text-foreground">{stats?.totalPositions ?? total}</h3>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+            <span
+              className="material-symbols-outlined text-primary text-[28px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
+              work
+            </span>
+          </div>
+        </div>
+        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Departemen Aktif
+            </p>
+            <h3 className="text-2xl font-bold text-foreground">
+              {stats?.totalDepartemenAktif ?? 0}
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
+            <span
+              className="material-symbols-outlined text-secondary text-[28px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
+              domain
+            </span>
+          </div>
+        </div>
+        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Tanpa Deskripsi
+            </p>
+            <h3 className="text-2xl font-bold text-foreground">
+              {stats?.totalTanpaDeskripsi ?? 0}
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center">
+            <span
+              className="material-symbols-outlined text-error text-[28px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
+              warning
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+        <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-muted-foreground">Tampilkan:</span>
+            <select
+              value={limit}
+              className="bg-background border border-border rounded px-2 py-1 text-sm focus:ring-primary focus:border-primary">
+              <option value={10}>10 Baris</option>
+              <option value={25}>25 Baris</option>
+              <option value={50}>50 Baris</option>
+            </select>
+          </div>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+              search
+            </span>
+            <input
+              placeholder="Cari jabatan..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+            />
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loading />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-muted/10 border-b border-border">
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
+                    No
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Nama Jabatan
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Departemen
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Deskripsi
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {positions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-12 text-center text-muted-foreground">
+                      <span className="material-symbols-outlined text-4xl block mb-2">badge</span>
+                      Tidak ada jabatan ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  positions.map((position, index) => (
+                    <tr
+                      key={position.id}
+                      className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                      onClick={() => navigate(`/detail-position?positionID=${position.id}`)}>
+                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
+                        {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="text-sm font-semibold text-primary">{position.name}</span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {position.department ? (
+                          <span className="inline-block px-2 py-0.5 rounded bg-secondary-fixed/30 text-on-secondary-fixed-variant text-xs font-semibold">
+                            {position.department}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3">
+                        <p className="text-sm text-muted-foreground max-w-xs truncate">
+                          {position.description || "-"}
+                        </p>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div
+                          className="flex items-center justify-center gap-1"
+                          onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => navigate(`/detail-position?positionID=${position.id}`)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+                            title="Lihat Detail">
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
+                            onClick={() => navigate(`/edit-position?id=${position.id}`)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+                            title="Edit">
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(position)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
+                            title="Hapus">
+                            <span className="material-symbols-outlined text-lg">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="p-4 border-t border-border flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            Menampilkan {positions.length} dari {total} data
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page <= 1}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
+              <span className="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-all ${
+                    page === pageNum
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border hover:bg-muted text-muted-foreground"
+                  }`}>
+                  {pageNum}
+                </button>
+              );
+            })}
+            {totalPages > 5 && (
+              <>
+                <span className="px-1 text-muted-foreground text-sm">...</span>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground text-sm font-semibold">
+                  {totalPages}
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
+              <span className="material-symbols-outlined text-lg">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`Hapus ${deleteTarget?.name || "Posisi"}?`}
+        confirmText="Ya, Hapus"
+        onConfirm={confirmDelete}
+      />
+    </div>
+  );
+};
+
+export default PositionList;

@@ -318,6 +318,7 @@ const EmployeeList = () => {
                               <span className="material-symbols-outlined text-lg">visibility</span>
                             </button>
                             <button
+                              onClick={() => navigate(`/edit-employee?id=${employee.id}`)}
                               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                               title="Edit Karyawan">
                               <span className="material-symbols-outlined text-lg">edit</span>

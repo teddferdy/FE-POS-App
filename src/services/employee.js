@@ -16,29 +16,30 @@ export const getAllEmployee = async ({
   return data;
 };
 
-export const addEmployee = async (payload) => {
+const buildFormData = (payload) => {
   const formData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
-      formData.append(key, value);
+      if (Array.isArray(value)) {
+        value.forEach((item) => formData.append(key, item));
+      } else {
+        formData.append(key, value);
+      }
     }
   });
+  return formData;
+};
+
+export const addEmployee = async (payload) => {
+  const formData = buildFormData(payload);
   const { data, status } = await axiosInstance.post("/employee/add-employee", formData);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
 export const editEmployee = async (payload) => {
-  const formData = new FormData();
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      formData.append(key, value);
-    }
-  });
-  const { data, status } = await axiosInstance.put(
-    `/employee/edit-employee/${payload.id}`,
-    formData
-  );
+  const formData = buildFormData(payload);
+  const { data, status } = await axiosInstance.put(`/employee/edit-employee`, formData);
   if (status !== 200) throw Error(`${data.message || data?.error}`);
   return data;
 };

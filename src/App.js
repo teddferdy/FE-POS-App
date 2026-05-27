@@ -49,7 +49,15 @@ import AddMemberTier from "./page/member-tier/AddMemberTier";
 // Employee
 import EmployeeList from "./page/employee/EmployeeList";
 import AddEmployee from "./page/employee/AddEmployee";
+import EditEmployee from "./page/employee/EditEmployee";
 import DetailEmployee from "./page/employee/DetailEmployee";
+import PositionList from "./page/position/PositionList";
+import AddPosition from "./page/position/AddPosition";
+import EditPosition from "./page/position/EditPosition";
+import DetailPosition from "./page/position/DetailPosition";
+import DepartmentList from "./page/department/DepartmentList";
+import AddDepartment from "./page/department/AddDepartment";
+import EditDepartment from "./page/department/EditDepartment";
 
 function App() {
   const { i18n } = useTranslation();
@@ -147,6 +155,7 @@ function App() {
         <Route path="/user-list" element={withLayout(<AdminList />)} />
         <Route path="/add-user" element={withLayout(<AddAdmin />)} />
         <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
+        <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
         <Route path="/add-role" element={withLayout(<AddRole />)} />
         <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
         <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
@@ -219,7 +228,13 @@ function App() {
         />
 
         <Route path="/role-list" element={withLayout(<ComingSoon title="Role List" />)} />
-        <Route path="/position-list" element={withLayout(<ComingSoon title="Position List" />)} />
+        <Route path="/position-list" element={withLayout(<PositionList />)} />
+        <Route path="/add-position" element={withLayout(<AddPosition />)} />
+        <Route path="/edit-position" element={withLayout(<EditPosition />)} />
+        <Route path="/detail-position" element={withLayout(<DetailPosition />)} />
+        <Route path="/department-list" element={withLayout(<DepartmentList />)} />
+        <Route path="/add-department" element={withLayout(<AddDepartment />)} />
+        <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
 
         {/* New Feature Routes */}
         <Route path="/table-list" element={withLayout(<ComingSoon title="Table List" />)} />

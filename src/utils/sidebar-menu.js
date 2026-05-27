@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   FileText,
+  Building2,
   CreditCard,
   Percent,
   Warehouse,
@@ -47,58 +48,64 @@ export const sidebarMenuSuperAdmin = [
     ],
     actions: []
   },
-  // {
-  //   title: "Kelola Admin",
-  //   href: "",
-  //   icon: Shield,
-  //   children: [
-  //     {
-  //       title: "Daftar Admin",
-  //       href: "/user-list",
-  //       icon: Shield,
-  //       actions: ["add", "edit", "view"]
-  //     }
-  //   ],
-  //   actions: []
-  // },
   {
-    title: "Kelola Karyawan",
+    title: "Karyawan",
     href: "",
     icon: Users,
     children: [
       {
-        title: "Daftar Karyawan",
-        href: "/employee-list",
+        title: "Departemen",
+        href: "/department-list",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Posisi",
+        href: "/position-list",
+        icon: FileText,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Kelola Karyawan",
+        href: "",
         icon: Users,
-        actions: ["add", "view", "edit-access", "reset-password"]
+        children: [
+          {
+            title: "Daftar Karyawan",
+            href: "/employee-list",
+            icon: Users,
+            actions: ["add", "view", "edit-access", "reset-password"]
+          }
+        ],
+        actions: []
       }
     ],
     actions: []
   },
   {
-    title: "Kelola Produk",
+    title: "Produk",
     href: "",
     icon: Package,
     children: [
       {
-        title: "Daftar Produk",
-        href: "/product-list",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Kelola Kategori",
-    href: "",
-    icon: Tag,
-    children: [
-      {
-        title: "Daftar Kategori",
+        title: "Kategori",
         href: "/category-list",
         icon: Tag,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Kelola Produk",
+        href: "",
+        icon: UtensilsCrossed,
+        children: [
+          {
+            title: "Daftar Produk",
+            href: "/product-list",
+            icon: UtensilsCrossed,
+            actions: ["add", "edit", "view", "delete", "import", "export"]
+          }
+        ],
+        actions: []
       }
     ],
     actions: []
@@ -167,43 +174,43 @@ export const sidebarMenuAdmin = [
     actions: ["view"]
   },
   {
-    title: "Kelola Produk",
+    title: "Produk",
     href: "",
     icon: Package,
     children: [
       {
-        title: "Daftar Produk",
-        href: "/product-list",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Kelola Kategori",
-    href: "",
-    icon: Tag,
-    children: [
-      {
-        title: "Daftar Kategori",
-        href: "/category-list",
+        title: "Kategori",
+        href: "",
         icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Kelola Sub-Kategori",
-    href: "",
-    icon: Layers,
-    children: [
+        children: [
+          {
+            title: "Daftar Kategori",
+            href: "/category-list",
+            icon: Tag,
+            actions: ["add", "edit", "view", "delete"]
+          },
+          {
+            title: "Sub Kategori",
+            href: "/sub-category-list",
+            icon: Layers,
+            actions: ["add", "edit", "view", "delete"]
+          }
+        ],
+        actions: []
+      },
       {
-        title: "Daftar Sub-Kategori",
-        href: "/sub-category-list",
-        icon: Layers,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Kelola Produk",
+        href: "",
+        icon: UtensilsCrossed,
+        children: [
+          {
+            title: "Daftar Produk",
+            href: "/product-list",
+            icon: UtensilsCrossed,
+            actions: ["add", "edit", "view", "delete", "import", "export"]
+          }
+        ],
+        actions: []
       }
     ],
     actions: []
@@ -223,15 +230,35 @@ export const sidebarMenuAdmin = [
     actions: []
   },
   {
-    title: "Kelola Karyawan",
+    title: "Karyawan",
     href: "",
     icon: Users,
     children: [
       {
-        title: "Daftar Karyawan",
-        href: "/user-list",
+        title: "Departemen",
+        href: "/department-list",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Posisi",
+        href: "/position-list",
+        icon: FileText,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Kelola Karyawan",
+        href: "",
         icon: Users,
-        actions: ["add", "edit", "view", "edit-access"]
+        children: [
+          {
+            title: "Daftar Karyawan",
+            href: "/user-list",
+            icon: Users,
+            actions: ["add", "edit", "view", "edit-access"]
+          }
+        ],
+        actions: []
       }
     ],
     actions: []
@@ -545,6 +572,41 @@ export const urlWithArrowBack = [
     url: -1,
     title: "Role",
     pathName: "/role-list"
+  },
+  {
+    url: -1,
+    title: "Position",
+    pathName: "/position-list"
+  },
+  {
+    url: "/position-list",
+    title: "Add Position",
+    pathName: "/add-position"
+  },
+  {
+    url: "/position-list",
+    title: "Edit Position",
+    pathName: "/edit-position"
+  },
+  {
+    url: "/position-list",
+    title: "Detail Position",
+    pathName: "/detail-position"
+  },
+  {
+    url: -1,
+    title: "Department",
+    pathName: "/department-list"
+  },
+  {
+    url: "/department-list",
+    title: "Add Department",
+    pathName: "/add-department"
+  },
+  {
+    url: "/department-list",
+    title: "Edit Department",
+    pathName: "/edit-department"
   },
 
   // Form Pages - Category

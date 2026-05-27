@@ -2,20 +2,21 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   CloudUpload,
   X,
+  Download,
   Eye,
   FileText,
   FileSpreadsheet,
   FileImage,
   File as FileIcon
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addMonths, format } from "date-fns";
 import { toast } from "sonner";
-import { addEmployee, generateEmployeeId } from "@/services/employee";
+import { editEmployee, getEmployeeById } from "@/services/employee";
 import { getShiftDropdown } from "@/services/shift";
 import { getAllLocation } from "@/services/location";
 import { getAllPosition } from "@/services/position";
@@ -37,16 +38,22 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-const AddEmployee = () => {
+const EditEmployee = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const employeeId = searchParams.get("id");
+
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [existingImageUrl, setExistingImageUrl] = useState(null);
   const fileInputRef = useRef(null);
   const documentInputRef = useRef(null);
   const [documents, setDocuments] = useState([]);
+  const [existingDocuments, setExistingDocuments] = useState([]);
+  const [deletedDocs, setDeletedDocs] = useState([]);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
 
@@ -55,7 +62,7 @@ const AddEmployee = () => {
       fullName: z.string().min(2, "Nama lengkap minimal 2 karakter"),
       userName: z.string().min(1, "Username wajib diisi"),
       email: z.string().email("Format email tidak valid"),
-      password: z.string().min(6, "Password minimal 6 karakter"),
+      password: z.string().optional().or(z.literal("")),
       phoneNumber: z
         .string()
         .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
@@ -109,6 +116,85 @@ const AddEmployee = () => {
     }
   });
 
+  const { data: employeeData, isLoading: isEmployeeLoading } = useQuery(
+    ["employee-edit", employeeId],
+    () => getEmployeeById({ id: employeeId }),
+    { enabled: !!employeeId }
+  );
+
+  const employee = employeeData?.data || employeeData?.employee || {};
+
+  useEffect(() => {
+    if (!employee.id) return;
+
+    setExistingImageUrl(employee.image || null);
+    if (employee.image) {
+      setPreviewImage(employee.image);
+    }
+    const raw =
+      typeof employee.documents === "string"
+        ? JSON.parse(employee.documents)
+        : employee.documents || [];
+    setExistingDocuments(raw.map(normalizeDoc));
+
+    const durationMap = {
+      "1 year": "12",
+      "2 years": "24",
+      "3 years": "36",
+      "4 years": "48",
+      "5 years": "60",
+      "3 bulan": "3",
+      "6 bulan": "6",
+      "9 bulan": "9",
+      "12 bulan": "12",
+      "1 tahun": "12"
+    };
+
+    const normalizeDuration = (val) => {
+      if (!val) return "";
+      const lower = String(val).toLowerCase();
+      if (durationMap[lower]) return durationMap[lower];
+      const num = parseInt(val);
+      if (!isNaN(num)) return String(num);
+      return String(val);
+    };
+
+    const genderMap = {
+      male: "Laki-laki",
+      female: "Perempuan",
+      "laki-laki": "Laki-laki",
+      perempuan: "Perempuan"
+    };
+    const employmentTypeMap = { fulltime: "full-time", parttime: "part-time" };
+
+    form.reset({
+      fullName: employee.fullName || "",
+      userName: employee.userName || "",
+      email: employee.email || "",
+      password: "",
+      phoneNumber: employee.phoneNumber || "",
+      placeOfBirth: employee.placeOfBirth || "",
+      address: employee.address || "",
+      gender: genderMap[employee.gender?.toLowerCase()] || employee.gender || "",
+      dateOfBirth: employee.dateOfBirth || "",
+      employeeId: String(employee.employeeID || ""),
+      department: employee.department || "",
+      position: String(employee.position || employee.positionData?.id || ""),
+      store: String(employee.store || employee.storeData?.id || ""),
+      employmentType:
+        employmentTypeMap[employee.employmentType?.toLowerCase()] || employee.employmentType || "",
+      contractDuration: normalizeDuration(employee.contractDuration),
+      endDate: employee.endDate || "",
+      shift: String(employee.shift || ""),
+      startDate: employee.startDate || "",
+      isActive: employee.statusActive === true,
+      roleId:
+        employee.roleId !== null && employee.roleId !== undefined ? String(employee.roleId) : "",
+      accessMenu: employee.accessMenu || "",
+      monthlySalary: employee.monthlySalary || ""
+    });
+  }, [employee, form]);
+
   const employmentType = form.watch("employmentType");
   const startDate = form.watch("startDate");
   const contractDuration = form.watch("contractDuration");
@@ -148,19 +234,6 @@ const AddEmployee = () => {
     }
   }, [startDate, contractDuration, employmentType, form]);
 
-  useEffect(() => {
-    const fetchId = async () => {
-      try {
-        const res = await generateEmployeeId();
-        const empId = res?.data?.employeeId || res?.employeeId || "";
-        form.setValue("employeeId", String(empId));
-      } catch {
-        // silently fail
-      }
-    };
-    fetchId();
-  }, []);
-
   const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000
   });
@@ -188,9 +261,11 @@ const AddEmployee = () => {
   );
   const shifts = shiftsData?.data || shiftsData?.shifts || [];
 
-  const createMutation = useMutation(addEmployee, {
+  const updateMutation = useMutation(editEmployee, {
     onSuccess: () => {
       queryClient.invalidateQueries(["employees"]);
+      queryClient.invalidateQueries(["employee-edit"]);
+      queryClient.invalidateQueries(["employee-detail"]);
       setIsSubmitting(false);
       setSuccessModal(true);
     },
@@ -200,25 +275,26 @@ const AddEmployee = () => {
     }
   });
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result);
-      reader.readAsDataURL(file);
+  const normalizeDoc = (doc) => {
+    if (typeof doc === "string") {
+      const fileName = doc.split("/").pop() || doc;
+      const ext = fileName.split(".").pop()?.toLowerCase();
+      return {
+        fileUrl: doc,
+        fileName,
+        mimeType:
+          ext === "pdf"
+            ? "application/pdf"
+            : ext === "docx"
+              ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              : ext === "jpg" || ext === "jpeg"
+                ? "image/jpeg"
+                : ext === "png"
+                  ? "image/png"
+                  : undefined
+      };
     }
-  };
-
-  const clearImage = (e) => {
-    e.stopPropagation();
-    setPreviewImage(null);
-    setImageFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    return doc;
   };
 
   const getFileIcon = (type, name) => {
@@ -253,28 +329,54 @@ const AddEmployee = () => {
     });
   };
 
+  const removeExistingDocument = (index) => {
+    setExistingDocuments((prev) => {
+      const doc = prev[index];
+      setDeletedDocs((d) => [...d, doc.fileUrl || doc]);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handlePreviewDocument = (doc) => {
     if (doc.previewUrl) {
       window.open(doc.previewUrl, "_blank");
     }
   };
 
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = (e) => {
+    e.stopPropagation();
+    setPreviewImage(existingImageUrl || null);
+    setImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const onSubmit = (values) => {
-    if (documents.length === 0) {
+    if (documents.length === 0 && existingDocuments.length === 0) {
       toast.error("Gagal", { description: "Dokumen karyawan wajib diupload minimal 1 file" });
       setIsSubmitting(false);
       return;
     }
     setIsSubmitting(true);
-    const payload = { ...values };
+    const payload = { ...values, id: employeeId };
     if (imageFile) {
       payload.image = imageFile;
+    }
+    if (deletedDocs.length > 0) {
+      payload.deletedDocuments = JSON.stringify(deletedDocs);
     }
     if (documents.length > 0) {
       payload.documents = documents.map((d) => d.file);
@@ -283,14 +385,30 @@ const AddEmployee = () => {
       payload.monthlySalary = Number(values.monthlySalary);
       payload.dailySalary = dailySalary;
     }
-    if (!payload.employeeId) {
-      delete payload.employeeId;
+    if (!payload.password) {
+      delete payload.password;
     }
     if (!payload.roleId) {
       delete payload.roleId;
     }
-    createMutation.mutate(payload);
+    updateMutation.mutate(payload);
   };
+
+  if (isEmployeeLoading) {
+    return <Loading fullscreen size="lg" label="Memuat data karyawan..." />;
+  }
+
+  if (!employeeId || !employee.id) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <span className="material-symbols-outlined text-6xl text-muted-foreground">badge</span>
+        <p className="text-muted-foreground">Karyawan tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/employee-list")}>
+          Kembali
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -305,13 +423,17 @@ const AddEmployee = () => {
               Kelola Karyawan
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Tambah Karyawan Baru</span>
+            <button
+              onClick={() => navigate(`/detail-employee?employeeID=${employee.employeeID}`)}
+              className="hover:text-primary transition-colors">
+              Detail Karyawan
+            </button>
+            <span>/</span>
+            <span className="text-primary font-semibold">Edit Karyawan</span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Tambah Karyawan Baru
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Karyawan</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Daftarkan anggota tim baru ke dalam sistem.
+            Perbarui data karyawan yang sudah ada.
           </p>
         </div>
       </div>
@@ -330,7 +452,7 @@ const AddEmployee = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="flex flex-col items-center gap-3">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Foto <span className="text-destructive">*</span>
+                      Foto
                     </label>
 
                     <input
@@ -513,7 +635,7 @@ const AddEmployee = () => {
                           {...field}
                           disabled
                           className="font-mono bg-muted/50"
-                          placeholder="Memuat..."
+                          placeholder="ID Karyawan"
                         />
                         <FormMessage />
                       </FormItem>
@@ -828,7 +950,7 @@ const AddEmployee = () => {
                 </div>
               </div>
 
-              {/* Section 3: Penggajian */}
+              {/* Penggajian */}
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">payments</span>
@@ -884,7 +1006,7 @@ const AddEmployee = () => {
                 </div>
               </div>
 
-              {/* Section 4: Akun & Hak Akses */}
+              {/* Section 3: Akun & Hak Akses */}
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">lock</span>
@@ -911,14 +1033,14 @@ const AddEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Password <span className="text-destructive">*</span>
+                          Password
                         </FormLabel>
                         <div className="relative">
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
                             className="pr-10"
-                            placeholder="••••••••"
+                            placeholder="Kosongkan jika tidak diubah"
                           />
                           <button
                             type="button"
@@ -929,6 +1051,9 @@ const AddEmployee = () => {
                             </span>
                           </button>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Kosongkan jika tidak ingin mengubah password.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -952,6 +1077,19 @@ const AddEmployee = () => {
                             <SelectItem value="4">Kasir</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="accessMenu"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Permission Tambahan
+                        </FormLabel>
+                        <Input {...field} placeholder="Opsional: export_laporan, dsb." />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -990,8 +1128,47 @@ const AddEmployee = () => {
                     </p>
                   </div>
 
+                  {existingDocuments.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Dokumen Tersimpan
+                      </p>
+                      {existingDocuments.map((doc, index) => (
+                        <div
+                          key={doc.id || index}
+                          className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+                            {getFileIcon(doc.mimeType || doc.fileType, doc.fileName || doc.name)}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {doc.fileName || doc.name}
+                              </p>
+                            </div>
+                            <Download
+                              size={16}
+                              className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                            />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => removeExistingDocument(index)}
+                            className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {documents.length > 0 && (
                     <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Dokumen Baru
+                      </p>
                       {documents.map((doc, index) => (
                         <div
                           key={index}
@@ -1000,9 +1177,6 @@ const AddEmployee = () => {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">
                               {doc.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatFileSize(doc.size)}
                             </p>
                           </div>
                           <button
@@ -1050,7 +1224,7 @@ const AddEmployee = () => {
                       <span className="material-symbols-outlined text-primary text-base">
                         check_circle
                       </span>
-                      <span>Data lain bersifat opsional.</span>
+                      <span>Kosongkan password jika tidak ingin mengubahnya.</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-foreground">
                       <span className="material-symbols-outlined text-primary text-base">
@@ -1080,7 +1254,7 @@ const AddEmployee = () => {
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
                   <span className="material-symbols-outlined text-lg">save</span>
-                  Simpan Karyawan
+                  Simpan Perubahan
                 </Button>
               </div>
             </div>
@@ -1094,7 +1268,8 @@ const AddEmployee = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Karyawan Berhasil Ditambahkan"
+        title="Karyawan Berhasil Diperbarui"
+        description="Data karyawan telah berhasil diperbarui."
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal
@@ -1109,4 +1284,4 @@ const AddEmployee = () => {
   );
 };
 
-export default AddEmployee;
+export default EditEmployee;
