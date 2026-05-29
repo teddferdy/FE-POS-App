@@ -245,7 +245,7 @@ const EmployeeList = () => {
                   </tr>
                 ) : (
                   employees.map((employee) => {
-                    const position = employee.position || employee.role || "staff";
+                    const position = employee.positionData?.name || employee.role || "staff";
                     return (
                       <tr
                         key={employee.id || employee._id}
