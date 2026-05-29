@@ -953,7 +953,7 @@ const EditLocation = () => {
                             <div className="col-span-2 text-sm font-medium">{day.label}</div>
                             <div className="col-span-3">
                               <input
-                                className="w-full px-3 py-2 rounded-lg border border-border text-sm"
+                                className="w-full px-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background"
                                 type="time"
                                 value={dayData.open || ""}
                                 disabled={!dayData.isOpen}
@@ -965,7 +965,7 @@ const EditLocation = () => {
                             </div>
                             <div className="col-span-3">
                               <input
-                                className="w-full px-3 py-2 rounded-lg border border-border text-sm"
+                                className="w-full px-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background"
                                 type="time"
                                 value={dayData.close || ""}
                                 disabled={!dayData.isOpen}
@@ -976,7 +976,7 @@ const EditLocation = () => {
                             </div>
                             <div className="col-span-2 flex justify-end items-center gap-2">
                               <span
-                                className={`text-xs ${dayData.isOpen ? "text-green-600" : "text-destructive"}`}>
+                                className={`text-xs ${dayData.isOpen ? "text-green-600 dark:text-green-400" : "text-destructive dark:text-red-400"}`}>
                                 {dayData.isOpen ? "Buka" : "Tutup"}
                               </span>
                               <label className="relative inline-flex items-center cursor-pointer">
@@ -986,7 +986,7 @@ const EditLocation = () => {
                                   checked={dayData.isOpen}
                                   onChange={() => toggleDay(day.id)}
                                 />
-                                <div className="w-9 h-5 bg-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600" />
+                                <div className="w-9 h-5 bg-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600 dark:peer-checked:bg-green-500" />
                               </label>
                             </div>
                           </div>

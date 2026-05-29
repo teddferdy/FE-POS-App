@@ -83,7 +83,7 @@ const StatusBadge = ({ isActive }) => (
 
 const FormattedOpeningHours = ({ openingHours }) => {
   if (!openingHours || openingHours.length === 0) {
-    return <p className="text-sm text-muted-foreground italic">Tidak ada jam operasional</p>;
+    return <p className="text-sm text-foreground italic">Tidak ada jam operasional</p>;
   }
   return (
     <div className="space-y-1">
