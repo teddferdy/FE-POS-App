@@ -124,8 +124,7 @@ const PositionList = () => {
                 toast.success("Berhasil", { description: "Data berhasil di-download" });
               } catch (err) {
                 toast.error("Gagal", {
-                  description:
-                    err?.response?.data?.message || err.message || "Gagal download data"
+                  description: err?.response?.data?.message || err.message || "Gagal download data"
                 });
               } finally {
                 setIsDownloadingData(false);
