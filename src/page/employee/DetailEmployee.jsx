@@ -169,7 +169,7 @@ const DetailEmployee = () => {
             )}
           </div>
           <div
-            className={`absolute -bottom-2 -right-2 p-1 rounded-full border-2 border-white ${
+            className={`absolute -bottom-2 -right-2 p-1 rounded-full border-2 border-background ${
               statusActive ? "bg-green-500" : "bg-muted-foreground"
             }`}>
             <span
@@ -185,8 +185,8 @@ const DetailEmployee = () => {
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
                 statusActive
-                  ? "bg-green-100 text-green-700 border border-green-200"
-                  : "bg-red-100 text-red-700 border border-red-200"
+                  ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                  : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
               }`}>
               {statusActive ? "Active" : "Non-aktif"}
             </span>

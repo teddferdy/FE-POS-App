@@ -56,12 +56,12 @@ const getInitials = (name) => {
 
 const avatarBg = (name) => {
   const colors = [
-    "bg-blue-100 text-blue-700",
-    "bg-green-100 text-green-700",
-    "bg-purple-100 text-purple-700",
-    "bg-amber-100 text-amber-700",
-    "bg-pink-100 text-pink-700",
-    "bg-cyan-100 text-cyan-700"
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
   ];
   let hash = 0;
   for (let i = 0; i < (name || "").length; i++) {
@@ -92,16 +92,16 @@ const AdminList = () => {
       label: "Total Admin",
       value: data?.stats?.total || total || 0,
       badge: "+4 bulan ini",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-700"
+      iconBg: "bg-blue-100 dark:bg-blue-900/40",
+      iconColor: "text-blue-700 dark:text-blue-300"
     },
     {
       icon: "verified_user",
       label: "Admin Aktif",
       value: data?.stats?.active || 0,
       badge: `${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}% Aktif`,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-700"
+      iconBg: "bg-green-100 dark:bg-green-900/40",
+      iconColor: "text-green-700 dark:text-green-300"
     },
     {
       icon: "pending_actions",

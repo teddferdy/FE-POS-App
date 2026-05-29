@@ -8,6 +8,7 @@ import {
   downloadDepartmentTemplate,
   downloadDepartmentExcel
 } from "@/services/department";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -43,6 +44,8 @@ const DepartmentList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data, isLoading } = useQuery(
     ["departments", page, limit, search],
@@ -93,35 +96,51 @@ const DepartmentList = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => {
-              downloadDepartmentTemplate()
-                .then(() =>
-                  toast.success("Berhasil", { description: "Template berhasil di-download" })
-                )
-                .catch((err) => {
-                  toast.error("Gagal", {
-                    description:
-                      err?.response?.data?.message || err.message || "Gagal download template"
-                  });
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadDepartmentTemplate();
+                toast.success("Berhasil", { description: "Template berhasil di-download" });
+              } catch (err) {
+                toast.error("Gagal", {
+                  description:
+                    err?.response?.data?.message || err.message || "Gagal download template"
                 });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
             }}>
-            <span className="material-symbols-outlined text-lg">table_rows</span>
-            Download Template
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate ? "Download..." : "Download Template"}
           </Button>
           <Button
             variant="outline"
-            onClick={() => {
-              downloadDepartmentExcel()
-                .then(() => toast.success("Berhasil", { description: "Data berhasil di-download" }))
-                .catch((err) => {
-                  toast.error("Gagal", {
-                    description:
-                      err?.response?.data?.message || err.message || "Gagal download data"
-                  });
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadDepartmentExcel();
+                toast.success("Berhasil", { description: "Data berhasil di-download" });
+              } catch (err) {
+                toast.error("Gagal", {
+                  description:
+                    err?.response?.data?.message || err.message || "Gagal download data"
                 });
+              } finally {
+                setIsDownloadingData(false);
+              }
             }}>
-            <span className="material-symbols-outlined text-lg">download</span>
-            Download Data
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData ? "Download..." : "Download Data"}
           </Button>
           <span className="w-px h-7 bg-border mx-1" />
           <Button variant="default" onClick={() => setUploadModalOpen(true)}>
@@ -176,7 +195,7 @@ const DepartmentList = () => {
             <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
         </div>
-        <div className="bg-red-600 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 transition-colors hover:shadow-md">
+        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               Departemen Nonaktif
@@ -189,7 +208,7 @@ const DepartmentList = () => {
               Perlu perhatian
             </p>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-red-700 flex items-center justify-center text-white transition-colors group-hover:scale-110 transition-transform">
+          <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
         </div>
@@ -221,7 +240,7 @@ const DepartmentList = () => {
             <span className="text-xs font-semibold text-muted-foreground">Tampilkan:</span>
             <select
               value={limit}
-              className="bg-background border border-border rounded px-2 py-1 text-sm focus:ring-primary focus:border-primary">
+              className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
               <option value={10}>10 Baris</option>
               <option value={25}>25 Baris</option>
               <option value={50}>50 Baris</option>

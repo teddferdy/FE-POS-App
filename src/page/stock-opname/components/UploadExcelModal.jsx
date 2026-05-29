@@ -165,7 +165,7 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
         <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
           <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
                 <FileSpreadsheet size={22} />
               </div>
               <div>

@@ -124,16 +124,16 @@ const StockOpnameList = () => {
       label: "Completed",
       value: data?.stats?.completed ?? 0,
       icon: CheckCircle2,
-      color: "text-green-600",
-      bg: "bg-green-100",
+      color: "text-green-600 dark:text-green-400",
+      bg: "bg-green-100 dark:bg-green-900/30",
       sub: "Telah diverifikasi"
     },
     {
       label: "Cancelled",
       value: data?.stats?.cancelled ?? 0,
       icon: AlertTriangle,
-      color: "text-red-600",
-      bg: "bg-red-100",
+      color: "text-red-600 dark:text-red-400",
+      bg: "bg-red-100 dark:bg-red-900/30",
       sub: "Dibatalkan"
     }
   ];

@@ -190,7 +190,7 @@ const LocationList = () => {
             <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
         </div>
-        <div className="bg-red-600 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 transition-colors hover:shadow-md transition-shadow">
+        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               Tidak Aktif
@@ -203,7 +203,7 @@ const LocationList = () => {
               Perlu perhatian
             </p>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-red-700 flex items-center justify-center text-white group-hover:bg-red-800 transition-colors group-hover:scale-110 transition-transform">
+          <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
         </div>

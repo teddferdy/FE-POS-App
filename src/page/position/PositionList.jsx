@@ -9,6 +9,7 @@ import {
   downloadPositionExcel
 } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -23,6 +24,8 @@ const PositionList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noDepartmentModal, setNoDepartmentModal] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data: departmentData } = useQuery(["departments-all"], getAllDepartment, {
     staleTime: 5 * 60 * 1000
@@ -85,39 +88,55 @@ const PositionList = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => {
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
               if (departments.length === 0) {
                 setNoDepartmentModal(true);
                 return;
               }
-              downloadPositionTemplate()
-                .then(() =>
-                  toast.success("Berhasil", { description: "Template berhasil di-download" })
-                )
-                .catch((err) => {
-                  toast.error("Gagal", {
-                    description:
-                      err?.response?.data?.message || err.message || "Gagal download template"
-                  });
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadPositionTemplate();
+                toast.success("Berhasil", { description: "Template berhasil di-download" });
+              } catch (err) {
+                toast.error("Gagal", {
+                  description:
+                    err?.response?.data?.message || err.message || "Gagal download template"
                 });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
             }}>
-            <span className="material-symbols-outlined text-lg">table_rows</span>
-            Download Template
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate ? "Download..." : "Download Template"}
           </Button>
           <Button
             variant="outline"
-            onClick={() => {
-              downloadPositionExcel()
-                .then(() => toast.success("Berhasil", { description: "Data berhasil di-download" }))
-                .catch((err) => {
-                  toast.error("Gagal", {
-                    description:
-                      err?.response?.data?.message || err.message || "Gagal download data"
-                  });
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadPositionExcel();
+                toast.success("Berhasil", { description: "Data berhasil di-download" });
+              } catch (err) {
+                toast.error("Gagal", {
+                  description:
+                    err?.response?.data?.message || err.message || "Gagal download data"
                 });
+              } finally {
+                setIsDownloadingData(false);
+              }
             }}>
-            <span className="material-symbols-outlined text-lg">download</span>
-            Download Data
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData ? "Download..." : "Download Data"}
           </Button>
           <span className="w-px h-7 bg-border mx-1" />
           <Button variant="default" onClick={() => setUploadModalOpen(true)}>
@@ -189,7 +208,7 @@ const PositionList = () => {
             <span className="text-xs font-semibold text-muted-foreground">Tampilkan:</span>
             <select
               value={limit}
-              className="bg-background border border-border rounded px-2 py-1 text-sm focus:ring-primary focus:border-primary">
+              className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
               <option value={10}>10 Baris</option>
               <option value={25}>25 Baris</option>
               <option value={50}>50 Baris</option>

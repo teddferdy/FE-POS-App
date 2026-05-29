@@ -101,16 +101,16 @@ const CategoryList = () => {
       label: "Kategori Aktif",
       value: activeCount,
       badge: `${total > 0 ? Math.round((activeCount / total) * 100) : 0}%`,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-700"
+      iconBg: "bg-green-100 dark:bg-green-900/40",
+      iconColor: "text-green-700 dark:text-green-300"
     },
     {
       icon: "cancel",
       label: "Kategori Nonaktif",
       value: inactiveCount,
       badge: "Perlu Ditinjau",
-      iconBg: "bg-red-100",
-      iconColor: "text-red-700"
+      iconBg: "bg-red-100 dark:bg-red-900/40",
+      iconColor: "text-red-700 dark:text-red-300"
     }
   ];
 
@@ -261,12 +261,12 @@ const CategoryList = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                             isActive
-                              ? "bg-green-100 text-green-700 border border-green-200"
-                              : "bg-red-100 text-red-700 border border-red-200"
+                              ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                              : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                           }`}>
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isActive ? "bg-green-500" : "bg-red-500"
+                              isActive ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"
                             }`}
                           />
                           {isActive ? "Aktif" : "Nonaktif"}

@@ -238,8 +238,8 @@ const PengaturanToko = () => {
               <Eye className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
               <h3 className="text-lg font-semibold">Preview Invoice</h3>
             </div>
-            <div className="bg-gray-100 p-4 rounded-lg flex justify-center items-start min-h-[600px]">
-              <div className="bg-white w-full max-w-[280px] shadow-md p-6 font-mono text-[11px] text-gray-800">
+            <div className="bg-muted p-4 rounded-lg flex justify-center items-start min-h-[600px]">
+              <div className="bg-card w-full max-w-[280px] shadow-md p-6 font-mono text-[11px] text-card-foreground">
                 <div className="text-center space-y-2 mb-4">
                   {previewEnabled.logo && (
                     <img
@@ -255,12 +255,12 @@ const PengaturanToko = () => {
                     Jakarta Selatan
                   </p>
                 </div>
-                <div className="border-t border-dashed border-gray-300 py-2">
+                <div className="border-t border-dashed border-border py-2">
                   <p>Inv: #KL-20240520-001</p>
                   <p>Tgl: 20/05/2024 14:30</p>
                   <p>Kasir: Super Admin</p>
                 </div>
-                <div className="border-t border-dashed border-gray-300 py-2 space-y-1">
+                <div className="border-t border-dashed border-border py-2 space-y-1">
                   <div className="flex justify-between">
                     <span>Kopi Susu Gula Aren x1</span>
                     <span>18.000</span>
@@ -274,7 +274,7 @@ const PengaturanToko = () => {
                     <span>10.000</span>
                   </div>
                 </div>
-                <div className="border-t border-dashed border-gray-300 py-2 space-y-1">
+                <div className="border-t border-dashed border-border py-2 space-y-1">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>43.000</span>
@@ -288,14 +288,14 @@ const PengaturanToko = () => {
                     <span>47.730</span>
                   </div>
                 </div>
-                <div className="border-t border-dashed border-gray-300 pt-4 text-center italic">
+                <div className="border-t border-dashed border-border pt-4 text-center italic">
                   <p>
                     Terima kasih telah berbelanja! Silakan simpan struk ini sebagai bukti transaksi
                     yang sah.
                   </p>
                 </div>
                 {previewEnabled.sosial && (
-                  <div className="border-t border-dashed border-gray-300 pt-3 mt-3 text-[10px] space-y-1">
+                  <div className="border-t border-dashed border-border pt-3 mt-3 text-[10px] space-y-1">
                     {socialEnabled.ig !== false && (
                       <div className="flex items-center gap-2">
                         <AtSign className="text-[12px]" />
@@ -317,7 +317,7 @@ const PengaturanToko = () => {
                   </div>
                 )}
                 <div className="mt-4 flex justify-center">
-                  <div className="w-24 h-10 bg-gray-200 flex items-center justify-center text-[10px] text-gray-400">
+                  <div className="w-24 h-10 bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
                     BARCODE
                   </div>
                 </div>

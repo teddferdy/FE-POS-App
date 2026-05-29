@@ -371,7 +371,7 @@ const LocationDetail = () => {
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isActive ? "bg-green-600 text-white" : "bg-red-600 text-white"
+                      isActive ? "bg-green-600 dark:bg-green-700 text-white" : "bg-red-600 dark:bg-red-900 text-white"
                     }`}>
                     {isActive ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
                   </div>

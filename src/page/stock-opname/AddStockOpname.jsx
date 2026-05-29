@@ -10,7 +10,8 @@ import {
   MapPin,
   Download,
   Upload as UploadIcon,
-  Building2
+  Building2,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -432,7 +433,11 @@ const AddStockOpname = () => {
             disabled={isDownloading}
             onClick={handleDownloadTemplate}
             className="transition-all">
-            <Download size={15} className="mr-1.5" />
+            {isDownloading ? (
+              <Loader2 size={15} className="mr-1.5 animate-spin" />
+            ) : (
+              <Download size={15} className="mr-1.5" />
+            )}
             {isDownloading ? "Download..." : "Download Template"}
           </Button>
         </div>
