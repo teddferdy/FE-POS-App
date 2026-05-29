@@ -19,7 +19,8 @@ const positionColors = {
 };
 
 const getPositionClass = (position) => {
-  return positionColors[position?.toLowerCase()] || "bg-surface-variant text-on-surface-variant";
+  const pos = typeof position === "string" ? position.toLowerCase() : "";
+  return positionColors[pos] || "bg-surface-variant text-on-surface-variant";
 };
 
 const EmployeeList = () => {
