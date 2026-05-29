@@ -121,7 +121,6 @@ const AddLocation = () => {
       postalCode: z.string().min(1, "Kode pos wajib diisi"),
       isActive: z.boolean().default(true),
       category: z.string().optional(),
-      department: z.string().optional(),
       managerName: z.string().optional(),
       latitude: z.coerce.number().optional(),
       longitude: z.coerce.number().optional(),
@@ -204,7 +203,6 @@ const AddLocation = () => {
       postalCode: "",
       isActive: true,
       category: "Branch",
-      department: "",
       managerName: "",
       latitude: -6.2088,
       longitude: 106.8456,
@@ -518,35 +516,6 @@ const AddLocation = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Departemen
-                        </FormLabel>
-                        <select
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                          <option value="">Pilih Departemen</option>
-                          <option value="Retail">Retail</option>
-                          <option value="Food & Beverage">Food & Beverage</option>
-                          <option value="Service">Service</option>
-                          <option value="Finance">Finance</option>
-                          <option value="Warehouse">Warehouse</option>
-                          <option value="Marketing">Marketing</option>
-                          <option value="HR">HR</option>
-                          <option value="Management">Management</option>
-                        </select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Address */}
                   <FormField
                     control={form.control}
@@ -842,19 +811,30 @@ const AddLocation = () => {
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Nama Manager
                       </FormLabel>
-                      <div
-                        className="relative cursor-pointer"
-                        onClick={() => setManagerModalOpen(true)}>
-                        <User
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                        />
-                        <Input
-                          {...field}
-                          placeholder="Klik untuk pilih manager"
-                          className="pl-9 cursor-pointer"
-                          readOnly
-                        />
+                      <div className="relative">
+                        <div className="cursor-pointer" onClick={() => setManagerModalOpen(true)}>
+                          <User
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                          />
+                          <Input
+                            {...field}
+                            placeholder="Klik untuk pilih manager"
+                            className="pl-9 pr-10 cursor-pointer"
+                            readOnly
+                          />
+                        </div>
+                        {field.value && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              form.setValue("managerName", "");
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-destructive transition-colors">
+                            <X size={16} />
+                          </button>
+                        )}
                       </div>
                       <FormMessage />
                     </FormItem>

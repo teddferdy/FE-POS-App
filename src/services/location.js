@@ -55,7 +55,7 @@ export const deleteLocation = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/location/delete-location`, {
     data: payload
   });
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200) throw Error(data?.message);
   return data;
 };
 

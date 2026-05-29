@@ -83,6 +83,13 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
+    title: "Stock Opname",
+    href: "/stock-opname",
+    icon: ClipboardList,
+    children: [],
+    actions: ["add", "view"]
+  },
+  {
     title: "Produk",
     href: "",
     icon: Package,

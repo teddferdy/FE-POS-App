@@ -2,10 +2,38 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { getAllDepartmentTable, deleteDepartment } from "@/services/department";
+import {
+  getAllDepartmentTable,
+  deleteDepartment,
+  downloadDepartmentTemplate,
+  downloadDepartmentExcel
+} from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
 
 const DepartmentList = () => {
   const navigate = useNavigate();
@@ -14,6 +42,7 @@ const DepartmentList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery(
     ["departments", page, limit, search],
@@ -61,64 +90,127 @@ const DepartmentList = () => {
             <span className="text-primary font-semibold">Kelola Departemen</span>
           </nav>
         </div>
-        <Button
-          onClick={() => navigate("/add-department")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg shadow-md">
-          <span className="material-symbols-outlined text-lg">add</span>
-          Tambah Departemen
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              downloadDepartmentTemplate()
+                .then(() =>
+                  toast.success("Berhasil", { description: "Template berhasil di-download" })
+                )
+                .catch((err) => {
+                  toast.error("Gagal", {
+                    description:
+                      err?.response?.data?.message || err.message || "Gagal download template"
+                  });
+                });
+            }}>
+            <span className="material-symbols-outlined text-lg">table_rows</span>
+            Download Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              downloadDepartmentExcel()
+                .then(() => toast.success("Berhasil", { description: "Data berhasil di-download" }))
+                .catch((err) => {
+                  toast.error("Gagal", {
+                    description:
+                      err?.response?.data?.message || err.message || "Gagal download data"
+                  });
+                });
+            }}>
+            <span className="material-symbols-outlined text-lg">download</span>
+            Download Data
+          </Button>
+          <span className="w-px h-7 bg-border mx-1" />
+          <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            Upload Excel
+          </Button>
+          <Button
+            variant="default"
+            onClick={() => navigate("/add-department")}
+            className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            Tambah Departemen
+          </Button>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Total Departemen
             </p>
-            <h3 className="text-2xl font-bold text-foreground">
+            <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalDepartemen ?? total}
             </h3>
+            <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">domain</span>
+              Semua departemen
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-primary text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              domain
-            </span>
+          <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">domain</span>
           </div>
         </div>
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Departemen Aktif
             </p>
-            <h3 className="text-2xl font-bold text-foreground">
+            <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalDepartemenAktif ?? 0}
             </h3>
+            <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              {stats?.totalDepartemen
+                ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
+                : 0}
+              % Aktif
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-secondary text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              check_circle
-            </span>
+          <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
         </div>
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+        <div className="bg-red-600 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 transition-colors hover:shadow-md">
+          <div>
+            <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+              Departemen Nonaktif
+            </p>
+            <h3 className="text-3xl font-bold text-white">
+              {stats?.totalDepartemenNonActive ?? 0}
+            </h3>
+            <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">cancel</span>
+              Perlu perhatian
+            </p>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-red-700 flex items-center justify-center text-white transition-colors group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">cancel</span>
+          </div>
+        </div>
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Tanpa Deskripsi
             </p>
-            <h3 className="text-2xl font-bold text-foreground">
+            <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalTanpaDeskripsi ?? 0}
             </h3>
+            <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">warning</span>
+              {stats?.totalDepartemen
+                ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
+                : 0}
+              % Perlu dilengkapi
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-error text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              warning
-            </span>
+          <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">warning</span>
           </div>
         </div>
       </div>
@@ -170,6 +262,15 @@ const DepartmentList = () => {
                     Deskripsi
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                    Status
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Tanggal Dibuat
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Diperbarui
+                  </th>
+                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
                     Aksi
                   </th>
                 </tr>
@@ -177,7 +278,7 @@ const DepartmentList = () => {
               <tbody className="divide-y divide-border">
                 {departments.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-5 py-12 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
                       <span className="material-symbols-outlined text-4xl block mb-2">domain</span>
                       Tidak ada departemen ditemukan
                     </td>
@@ -197,6 +298,22 @@ const DepartmentList = () => {
                         <p className="text-sm text-muted-foreground max-w-xs truncate">
                           {department.description || "-"}
                         </p>
+                      </td>
+                      <td className="px-5 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
+                            department.status
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+                          }`}>
+                          {department.status ? "Aktif" : "Nonaktif"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
+                        {formatDate(department.createdAt)}
+                      </td>
+                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
+                        {formatDate(department.updatedAt)}
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-center gap-1">
@@ -275,6 +392,11 @@ const DepartmentList = () => {
         title={`Hapus ${deleteTarget?.name || "Departemen"}?`}
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
+      />
+      <UploadDepartmentModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["departments"])}
       />
     </div>
   );

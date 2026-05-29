@@ -2,10 +2,17 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { getAllPositionTable, deletePosition } from "@/services/position";
+import {
+  getAllPositionTable,
+  deletePosition,
+  downloadPositionTemplate,
+  downloadPositionExcel
+} from "@/services/position";
+import { getAllDepartment } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import UploadPositionModal from "@/page/position/components/UploadPositionModal";
 
 const PositionList = () => {
   const navigate = useNavigate();
@@ -14,6 +21,14 @@ const PositionList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [noDepartmentModal, setNoDepartmentModal] = useState(false);
+
+  const { data: departmentData } = useQuery(["departments-all"], getAllDepartment, {
+    staleTime: 5 * 60 * 1000
+  });
+
+  const departments = departmentData?.data || departmentData?.departments || [];
 
   const { data, isLoading } = useQuery(
     ["positions", page, limit, search],
@@ -67,12 +82,53 @@ const PositionList = () => {
             <span className="text-primary font-semibold">Kelola Jabatan</span>
           </nav>
         </div>
-        <Button
-          onClick={() => navigate("/add-position")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg shadow-md">
-          <span className="material-symbols-outlined text-lg">add</span>
-          Tambah Jabatan
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (departments.length === 0) {
+                setNoDepartmentModal(true);
+                return;
+              }
+              downloadPositionTemplate()
+                .then(() =>
+                  toast.success("Berhasil", { description: "Template berhasil di-download" })
+                )
+                .catch((err) => {
+                  toast.error("Gagal", {
+                    description:
+                      err?.response?.data?.message || err.message || "Gagal download template"
+                  });
+                });
+            }}>
+            <span className="material-symbols-outlined text-lg">table_rows</span>
+            Download Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              downloadPositionExcel()
+                .then(() => toast.success("Berhasil", { description: "Data berhasil di-download" }))
+                .catch((err) => {
+                  toast.error("Gagal", {
+                    description:
+                      err?.response?.data?.message || err.message || "Gagal download data"
+                  });
+                });
+            }}>
+            <span className="material-symbols-outlined text-lg">download</span>
+            Download Data
+          </Button>
+          <span className="w-px h-7 bg-border mx-1" />
+          <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            Upload Excel
+          </Button>
+          <Button variant="default" onClick={() => navigate("/add-position")} className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            Tambah Jabatan
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -300,6 +356,20 @@ const PositionList = () => {
         title={`Hapus ${deleteTarget?.name || "Posisi"}?`}
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
+      />
+      <UploadPositionModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["positions"])}
+      />
+      <Modal
+        type="confirm"
+        open={noDepartmentModal}
+        onOpenChange={setNoDepartmentModal}
+        title="Departemen Belum Diisi"
+        description="Belum ada data departemen. Silakan tambah departemen terlebih dahulu sebelum mendownload template posisi."
+        confirmText="Tambah Departemen"
+        onConfirm={() => navigate("/add-department")}
       />
     </div>
   );

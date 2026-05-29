@@ -91,7 +91,15 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
 }
 Calendar.displayName = "Calendar";
 
-function DatePicker({ date, setDate, placeholder = "Pilih tanggal", className }) {
+function DatePicker({
+  date,
+  setDate,
+  placeholder = "Pilih tanggal",
+  className,
+  fromYear = 1945,
+  toYear = 2999,
+  captionLayout = "dropdown"
+}) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -107,7 +115,15 @@ function DatePicker({ date, setDate, placeholder = "Pilih tanggal", className })
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          initialFocus
+          captionLayout={captionLayout}
+          fromYear={fromYear}
+          toYear={toYear}
+        />
       </PopoverContent>
     </Popover>
   );
