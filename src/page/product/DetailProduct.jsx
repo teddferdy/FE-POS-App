@@ -15,9 +15,10 @@ import {
   Clock,
   Edit,
   ArrowLeft,
-  Hash
+  Hash,
+  CalendarDays
 } from "lucide-react";
-import { getProductById } from "@/services/product";
+import { getProductById, getProductBatches } from "@/services/product";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
@@ -62,6 +63,13 @@ const DetailProduct = () => {
   );
 
   const product = data?.data || {};
+
+  const { data: batchesData, isLoading: loadingBatches } = useQuery(
+    ["product-batches", productId],
+    () => getProductBatches({ productId, store: product.store || "" }),
+    { enabled: !!productId && !!product.store }
+  );
+  const batches = batchesData?.data || [];
 
   if (!productId) {
     return (
@@ -371,6 +379,46 @@ const DetailProduct = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </Card>
+
+          {/* Batch & Expiry */}
+          <Card>
+            <div className="p-5 border-b border-border flex items-center gap-2">
+              <CalendarDays size={16} className="text-primary" />
+              <h3 className="font-semibold text-sm">Batch & Expiry</h3>
+            </div>
+            <div className="p-5">
+              {loadingBatches ? (
+                <div className="flex justify-center py-4">
+                  <Loading size="sm" />
+                </div>
+              ) : batches.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada batch</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider pb-2 border-b border-border">
+                    <span>Nomor Batch</span>
+                    <span>Expiry Date</span>
+                    <span className="text-right">Stok</span>
+                  </div>
+                  {batches.map((batch, idx) => (
+                    <div key={idx} className="grid grid-cols-3 gap-2 text-sm items-center py-1.5">
+                      <span className="font-medium text-foreground">{batch.batchNumber}</span>
+                      <span className="text-muted-foreground">
+                        {batch.expiryDate
+                          ? new Date(batch.expiryDate).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })
+                          : "-"}
+                      </span>
+                      <span className="text-right font-medium">{batch.stock || 0}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
 

@@ -17,6 +17,7 @@ import {
   Trash2,
   GripVertical,
   Store,
+  Package,
   TrendingUp,
   ChevronLeft,
   ChevronRight,
@@ -86,6 +87,8 @@ const AddProduct = () => {
   const [variantGroups, setVariantGroups] = useState([]);
   const [modifierItems, setModifierItems] = useState([]);
   const [priceTiers, setPriceTiers] = useState([]);
+  const [hasBatch, setHasBatch] = useState(false);
+  const [batches, setBatches] = useState([]);
 
   const isSuperAdmin = role === "super_admin";
 
@@ -378,6 +381,10 @@ const AddProduct = () => {
 
     if (hasModifiers && modifierItems.length > 0) {
       payload.append("modifiers", JSON.stringify(modifierItems));
+    }
+
+    if (hasBatch && batches.length > 0) {
+      payload.append("batches", JSON.stringify(batches));
     }
 
     if (user?.id) payload.append("createdBy", user.id);
@@ -841,6 +848,99 @@ const AddProduct = () => {
                           </FormItem>
                         )}
                       />
+                    </div>
+                  </div>
+
+                  {/* Batch & Expiry */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                      <Package size={18} className="text-primary" />
+                      <h3 className="text-base font-semibold text-foreground">Batch & Expiry</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            Produk dengan Batch
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Aktifkan jika produk memiliki nomor batch & tanggal kedaluwarsa
+                          </p>
+                        </div>
+                        <Switch checked={hasBatch} onCheckedChange={setHasBatch} />
+                      </div>
+                      {hasBatch && (
+                        <div className="space-y-3">
+                          {batches.map((batch, idx) => (
+                            <div key={batch.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder="Nomor batch"
+                                  value={batch.batchNumber}
+                                  onChange={(e) => {
+                                    setBatches((prev) =>
+                                      prev.map((b, i) =>
+                                        i === idx ? { ...b, batchNumber: e.target.value } : b
+                                      )
+                                    );
+                                  }}
+                                  className="h-9 text-sm flex-1"
+                                />
+                                <Input
+                                  type="date"
+                                  value={batch.expiryDate}
+                                  onChange={(e) => {
+                                    setBatches((prev) =>
+                                      prev.map((b, i) =>
+                                        i === idx ? { ...b, expiryDate: e.target.value } : b
+                                      )
+                                    );
+                                  }}
+                                  className="h-9 text-sm w-40 shrink-0"
+                                />
+                                <Input
+                                  type="number"
+                                  placeholder="Stok"
+                                  value={batch.stock}
+                                  onChange={(e) => {
+                                    setBatches((prev) =>
+                                      prev.map((b, i) =>
+                                        i === idx ? { ...b, stock: e.target.value } : b
+                                      )
+                                    );
+                                  }}
+                                  className="h-9 text-sm w-24 shrink-0"
+                                />
+                                {batches.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive shrink-0"
+                                    onClick={() =>
+                                      setBatches((prev) => prev.filter((_, i) => i !== idx))
+                                    }>
+                                    <Trash2 size={15} />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() =>
+                              setBatches((prev) => [
+                                ...prev,
+                                { id: Date.now(), batchNumber: "", expiryDate: "", stock: "" }
+                              ])
+                            }>
+                            <Plus size={15} /> Tambah Batch
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
 

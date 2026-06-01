@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getMemberById } from "@/services/member";
+import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { Button } from "@/components/ui/button";
+import { Stars } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
 
 const levelConfig = {
@@ -67,10 +68,17 @@ const MemberDetail = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [activeTab, setActiveTab] = useState("transactions");
+  const [pointPage, setPointPage] = useState(1);
 
   const { data, isLoading } = useQuery(["member-detail", id], () => getMemberById({ id }), {
     enabled: !!id
   });
+
+  const { data: pointData, isLoading: pointLoading } = useQuery(
+    ["member-point-history", id, pointPage],
+    () => getMemberPointHistory({ id, page: pointPage }),
+    { enabled: !!id, keepPreviousData: true }
+  );
 
   const member = data?.data || data?.member || data;
 
@@ -424,34 +432,120 @@ const MemberDetail = () => {
             )}
 
             {activeTab === "points" && (
-              <div className="p-8 text-center text-muted-foreground">
-                <span className="material-symbols-outlined text-4xl block mb-2">stars</span>
-                <p className="text-sm">Riwayat aktivitas poin akan ditampilkan di sini</p>
-              </div>
+              <>
+                <div className="overflow-x-auto">
+                  {pointLoading ? (
+                    <div className="flex items-center justify-center h-32">
+                      <Loading />
+                    </div>
+                  ) : (
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border">
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Tanggal
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Deskripsi
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                            Poin
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                            Saldo
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {(pointData?.data || []).length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="px-4 py-12 text-center text-muted-foreground">
+                              <Stars size={36} className="mx-auto mb-2 opacity-30" />
+                              <p className="text-sm">Belum ada aktivitas poin</p>
+                            </td>
+                          </tr>
+                        ) : (
+                          (pointData?.data || []).map((pt, idx) => (
+                            <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
+                                {pt.date || pt.createdAt
+                                  ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric"
+                                    })
+                                  : "-"}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-foreground">
+                                {pt.description || pt.reason || "-"}
+                              </td>
+                              <td
+                                className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
+                                {pt.points > 0 ? "+" : ""}
+                                {pt.points?.toLocaleString() || 0}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
+                                {pt.balance?.toLocaleString() || "-"}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+                <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+                  <p className="text-xs text-muted-foreground">
+                    Menampilkan {(pointData?.data || []).length} dari{" "}
+                    {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
+                  </p>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setPointPage(Math.max(1, pointPage - 1))}
+                      disabled={pointPage <= 1}
+                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                      <span className="material-symbols-outlined text-lg">chevron_left</span>
+                    </button>
+                    <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                      {pointPage}
+                    </button>
+                    <button
+                      onClick={() => setPointPage(pointPage + 1)}
+                      disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
+                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                      <span className="material-symbols-outlined text-lg">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
-            <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
-              <p className="text-xs text-muted-foreground">
-                Showing {transactions.length} of {totalTransactions} transactions
-              </p>
-              <div className="flex gap-1">
-                <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                  <span className="material-symbols-outlined text-lg">chevron_left</span>
-                </button>
-                <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                  1
-                </button>
-                <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                  2
-                </button>
-                <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                  3
-                </button>
-                <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground">
-                  <span className="material-symbols-outlined text-lg">chevron_right</span>
-                </button>
+            {activeTab === "transactions" && (
+              <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+                <p className="text-xs text-muted-foreground">
+                  Showing {transactions.length} of {totalTransactions} transactions
+                </p>
+                <div className="flex gap-1">
+                  <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <span className="material-symbols-outlined text-lg">chevron_left</span>
+                  </button>
+                  <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                    1
+                  </button>
+                  <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
+                    2
+                  </button>
+                  <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
+                    3
+                  </button>
+                  <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground">
+                    <span className="material-symbols-outlined text-lg">chevron_right</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

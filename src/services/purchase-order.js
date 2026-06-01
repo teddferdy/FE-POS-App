@@ -20,6 +20,12 @@ export const editPurchaseOrder = async (payload) => {
   return data;
 };
 
+export const returnPurchaseOrder = async (id, payload) => {
+  const { data, status } = await axiosInstance.post(`/pos/purchase-order/${id}/return`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
 export const receivePurchaseOrder = async (id) => {
   const { data, status } = await axiosInstance.post(`/purchase-order/${id}/receive`);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);

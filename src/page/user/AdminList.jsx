@@ -128,10 +128,12 @@ const AdminList = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* 
           <Button variant="outline" onClick={() => navigate("/role-management")} className="gap-2">
             <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
             Manajemen Role
           </Button>
+          */}
           <Button
             onClick={() => navigate("/add-user")}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">

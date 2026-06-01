@@ -24,10 +24,18 @@ import EditLocation from "./page/location/EditLocation";
 import LocationDetail from "./page/location/LocationDetail";
 import StoreGeospatial from "./page/location/StoreGeospatial";
 
+// Social Media Invoice
+import SocialMediaList from "./page/social-media/SocialMediaList";
+import AddSocialMedia from "./page/social-media/AddSocialMedia";
+import EditSocialMedia from "./page/social-media/EditSocialMedia";
+import SocialMediaRegularList from "./page/social-media/SocialMediaRegularList";
+
+// Invoice
+import InvoicePage from "./page/invoice/InvoicePage";
+
 // Product
 import ProductList from "./page/product/ProductList";
 import AddProduct from "./page/product/AddProduct";
-import DetailProduct from "./page/product/DetailProduct";
 import EditProduct from "./page/product/EditProduct";
 
 // Category
@@ -44,7 +52,7 @@ import AddAdmin from "./page/user/AddAdmin";
 // Member
 import MemberList from "./page/member/MemberList";
 import AddMember from "./page/member/AddMember";
-import MemberDetail from "./page/member/MemberDetail";
+
 import MemberTier from "./page/member-tier";
 
 // Report
@@ -90,6 +98,14 @@ import EditPriceListTemplate from "./page/price-list-template/EditPriceListTempl
 import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
 import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 
+// Cashier
+import CashierPage from "./page/cashier/CashierPage";
+
+// Invoice Footer
+import InvoiceFooterList from "./page/invoice-footer/InvoiceFooterList";
+import AddInvoiceFooter from "./page/invoice-footer/AddInvoiceFooter";
+import EditInvoiceFooter from "./page/invoice-footer/EditInvoiceFooter";
+
 // Table
 import TableList from "./page/table/TableList";
 
@@ -97,6 +113,11 @@ import TableList from "./page/table/TableList";
 import DiscountList from "./page/discount/DiscountList";
 import AddDiscount from "./page/discount/AddDiscount";
 import EditDiscount from "./page/discount/EditDiscount";
+
+// Invoice Logo
+import InvoiceLogoList from "./page/invoice-logo/InvoiceLogoList";
+import AddInvoiceLogo from "./page/invoice-logo/AddInvoiceLogo";
+import EditInvoiceLogo from "./page/invoice-logo/EditInvoiceLogo";
 
 // Type Payment
 import TypePaymentList from "./page/type-payment/TypePaymentList";
@@ -107,11 +128,6 @@ import EditTypePayment from "./page/type-payment/EditTypePayment";
 import ShiftList from "./page/shift/ShiftList";
 import AddShift from "./page/shift/AddShift";
 import EditShift from "./page/shift/EditShift";
-
-// Sub Category
-import SubCategoryList from "./page/sub-category/SubCategoryList";
-import AddSubCategory from "./page/sub-category/AddSubCategory";
-import EditSubCategory from "./page/sub-category/EditSubCategory";
 
 // Expense Category
 import ExpenseCategoryList from "./page/expense-category/ExpenseCategoryList";
@@ -144,12 +160,6 @@ function App() {
 
   const withLayout = (element) => <DashboardLayout>{element}</DashboardLayout>;
 
-  const ComingSoon = ({ title }) => (
-    <div className="flex items-center justify-center h-64 text-muted-foreground">
-      {title || "Coming Soon"}
-    </div>
-  );
-
   return (
     <React.Fragment>
       <BrowserRouter>
@@ -162,40 +172,27 @@ function App() {
           {/* Dashboard Routes */}
           <Route path="/dashboard-super-admin" element={withLayout(<Dashboard />)} />
           <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
-          <Route path="/dashboard-by-outlet" element={withLayout(<Dashboard />)} />
-          <Route path="/home" element={withLayout(<Dashboard />)} />
+
+          <Route path="/home" element={<CashierPage />} />
 
           {/* Super Admin & Admin Routes */}
-          <Route path="/product-page" element={withLayout(<ComingSoon title="Product Page" />)} />
-          <Route
-            path="/product-by-outlet"
-            element={withLayout(<ComingSoon title="Products By Outlet" />)}
-          />
+
           <Route path="/product-list" element={withLayout(<ProductList />)} />
           <Route path="/add-product" element={withLayout(<AddProduct />)} />
           <Route path="/edit-product" element={withLayout(<EditProduct />)} />
-          <Route path="/detail-product" element={withLayout(<DetailProduct />)} />
 
           <Route path="/category-list" element={withLayout(<CategoryList />)} />
           <Route path="/add-category" element={withLayout(<AddCategory />)} />
           <Route path="/edit-category" element={withLayout(<EditCategory />)} />
           <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
 
-          <Route path="/sub-category-list" element={withLayout(<SubCategoryList />)} />
-          <Route path="/add-sub-category" element={withLayout(<AddSubCategory />)} />
-          <Route path="/edit-sub-category" element={withLayout(<EditSubCategory />)} />
-
           <Route path="/member-list" element={withLayout(<MemberList />)} />
           <Route path="/add-member" element={withLayout(<AddMember />)} />
-          <Route path="/member-detail" element={withLayout(<MemberDetail />)} />
+
           <Route path="/member-tier" element={withLayout(<MemberTier />)} />
           <Route
             path="/add-member-tier"
             element={withLayout(<AddMemberTier title="Add Member Tier" />)}
-          />
-          <Route
-            path="/edit-member-tier"
-            element={withLayout(<ComingSoon title="Edit Member Tier" />)}
           />
 
           <Route path="/discount-list" element={withLayout(<DiscountList />)} />
@@ -224,68 +221,23 @@ function App() {
           <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
           <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
 
-          <Route path="/invoice-page" element={withLayout(<ComingSoon title="Invoice Page" />)} />
-          <Route
-            path="/logo-invoice-list"
-            element={withLayout(<ComingSoon title="Logo Invoice" />)}
-          />
-          <Route
-            path="/footer-invoice-list"
-            element={withLayout(<ComingSoon title="Footer Invoice" />)}
-          />
-          <Route
-            path="/social-media-invoice-list"
-            element={withLayout(<ComingSoon title="Social Media Invoice" />)}
-          />
-          <Route
-            path="/add-social-media"
-            element={withLayout(<ComingSoon title="Add Social Media" />)}
-          />
-          <Route
-            path="/edit-social-media"
-            element={withLayout(<ComingSoon title="Edit Social Media" />)}
-          />
+          <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
+          <Route path="/logo-invoice-list" element={withLayout(<InvoiceLogoList />)} />
+          <Route path="/footer-invoice-list" element={withLayout(<InvoiceFooterList />)} />
+          <Route path="/social-media-invoice-list" element={withLayout(<SocialMediaList />)} />
+          <Route path="/add-social-media" element={withLayout(<AddSocialMedia />)} />
+          <Route path="/edit-social-media" element={withLayout(<EditSocialMedia />)} />
 
           {/* Global Setting Routes */}
           <Route path="/global-setting" element={withLayout(<GlobalSetting />)} />
-          <Route
-            path="/social-media-list"
-            element={withLayout(<ComingSoon title="Social Media" />)}
-          />
-          <Route
-            path="/add-social-media"
-            element={withLayout(<ComingSoon title="Add Social Media" />)}
-          />
-          <Route
-            path="/edit-social-media"
-            element={withLayout(<ComingSoon title="Edit Social Media" />)}
-          />
-          <Route
-            path="/add-invoice-logo"
-            element={withLayout(<ComingSoon title="Add Invoice Logo" />)}
-          />
-          <Route
-            path="/edit-invoice-logo"
-            element={withLayout(<ComingSoon title="Edit Invoice Logo" />)}
-          />
-          <Route
-            path="/add-invoice-footer"
-            element={withLayout(<ComingSoon title="Add Invoice Footer" />)}
-          />
-          <Route
-            path="/edit-invoice-footer"
-            element={withLayout(<ComingSoon title="Edit Invoice Footer" />)}
-          />
-          <Route
-            path="/add-invoice-social-media"
-            element={withLayout(<ComingSoon title="Add Invoice Social Media" />)}
-          />
-          <Route
-            path="/edit-invoice-social-media"
-            element={withLayout(<ComingSoon title="Edit Invoice Social Media" />)}
-          />
+          <Route path="/social-media-list" element={withLayout(<SocialMediaRegularList />)} />
+          <Route path="/add-invoice-logo" element={withLayout(<AddInvoiceLogo />)} />
+          <Route path="/edit-invoice-logo" element={withLayout(<EditInvoiceLogo />)} />
+          <Route path="/add-invoice-footer" element={withLayout(<AddInvoiceFooter />)} />
+          <Route path="/edit-invoice-footer" element={withLayout(<EditInvoiceFooter />)} />
+          <Route path="/add-invoice-social-media" element={withLayout(<AddSocialMedia />)} />
+          <Route path="/edit-invoice-social-media" element={withLayout(<EditSocialMedia />)} />
 
-          <Route path="/role-list" element={withLayout(<ComingSoon title="Role List" />)} />
           <Route path="/position-list" element={withLayout(<PositionList />)} />
           <Route path="/add-position" element={withLayout(<AddPosition />)} />
           <Route path="/edit-position" element={withLayout(<EditPosition />)} />

@@ -44,6 +44,12 @@ export const deleteOrder = async (payload) => {
   return data;
 };
 
+export const returnOrder = async (id, payload) => {
+  const { data, status } = await axiosInstance.post(`/pos/order/${id}/return`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
 export const applyDiscount = async (id, payload) => {
   const { data, status } = await axiosInstance.post(`/order/apply-discount/${id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);

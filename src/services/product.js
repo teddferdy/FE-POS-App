@@ -42,6 +42,26 @@ export const editProduct = async (payload) => {
   return data;
 };
 
+export const lookupBarcode = async (barcode) => {
+  const { data, status } = await axiosInstance.post("/pos/lookup-barcode", { barcode });
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const addProductBatch = async (payload) => {
+  const { data, status } = await axiosInstance.post("/pos/product/add-batch", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const getProductBatches = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/pos/product/batches?productId=${payload.productId}&store=${payload.store}`
+  );
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const deleteProduct = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/product/delete-product/${payload.id}`, {
     data: payload

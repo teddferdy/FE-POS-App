@@ -16,6 +16,7 @@ import {
   Trash2,
   GripVertical,
   TrendingUp,
+  Store,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -35,6 +36,8 @@ import { getAllCategory } from "@/services/category";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
+import { getAllLocation } from "@/services/location";
+import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 
 const unitOptions = [
   { value: "pcs", label: "Pcs" },
@@ -75,6 +78,8 @@ const EditProduct = () => {
   const [modifierItems, setModifierItems] = useState([]);
   const [priceTiers, setPriceTiers] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
+  const [storePrices, setStorePrices] = useState([]);
+  const [savingStoreId, setSavingStoreId] = useState(null);
 
   const { data: productData, isLoading: loadingProduct } = useQuery(
     ["product-edit", productId],
@@ -112,6 +117,24 @@ const EditProduct = () => {
     { enabled: isSuperAdmin }
   );
   const priceListTemplates = priceListTemplatesData?.data || [];
+
+  const { data: locationsData } = useQuery(["locations-for-edit"], getAllLocation, {
+    enabled: isSuperAdmin
+  });
+  const locations = locationsData?.data || locationsData?.locations || [];
+
+  const storeIds = locations.map((l) => l.id);
+  const { data: storePricesData } = useQuery(
+    ["product-store-prices", productId],
+    () => getProductPriceByStore({ productId, storeIds }),
+    { enabled: isSuperAdmin && !!productId && storeIds.length > 0 }
+  );
+
+  useEffect(() => {
+    if (storePricesData?.data) {
+      setStorePrices(storePricesData.data);
+    }
+  }, [storePricesData]);
 
   const handleSelectPriceTemplate = async (templateId) => {
     if (!templateId) return;
@@ -227,6 +250,29 @@ const EditProduct = () => {
       setIsSubmitting(false);
     }
   });
+
+  const updateStorePriceMutation = useMutation(updateProductPriceByStore, {
+    onSuccess: () => {
+      toast.success("Berhasil", { description: "Harga toko berhasil diperbarui" });
+      queryClient.invalidateQueries(["product-store-prices"]);
+      setSavingStoreId(null);
+    },
+    onError: (err) => {
+      toast.error("Gagal", {
+        description: err?.response?.data?.message || "Gagal memperbarui harga toko"
+      });
+      setSavingStoreId(null);
+    }
+  });
+
+  const handleSaveStorePrice = (storeId, price) => {
+    setSavingStoreId(storeId);
+    const payload = new FormData();
+    payload.append("productId", productId);
+    payload.append("storeId", storeId);
+    payload.append("price", price);
+    updateStorePriceMutation.mutate(payload);
+  };
 
   const addVariantGroup = () => {
     setVariantGroups((prev) => [...prev, { id: Date.now(), name: "", options: [""] }]);
@@ -787,6 +833,63 @@ const EditProduct = () => {
                       )}
                     </div>
                   </Card>
+
+                  {/* Harga per Toko */}
+                  {isSuperAdmin && (
+                    <Card className="p-6">
+                      <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                        <Store size={18} className="text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">Harga per Toko</h3>
+                      </div>
+                      {locations.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">Memuat daftar toko...</p>
+                      ) : storePrices.length === 0 && storeIds.length > 0 ? (
+                        <p className="text-sm text-muted-foreground">Memuat harga toko...</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {storePrices.map((sp) => (
+                            <div key={sp.storeId} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-foreground">
+                                    {sp.storeName}
+                                  </p>
+                                </div>
+                                <div className="relative w-40 shrink-0">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    type="number"
+                                    placeholder="0"
+                                    value={sp.price || ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setStorePrices((prev) =>
+                                        prev.map((p) =>
+                                          p.storeId === sp.storeId ? { ...p, price: val } : p
+                                        )
+                                      );
+                                    }}
+                                    className="h-9 text-sm pl-8"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={savingStoreId === sp.storeId}
+                                  onClick={() => handleSaveStorePrice(sp.storeId, sp.price)}
+                                  className="h-9 shrink-0">
+                                  {savingStoreId === sp.storeId ? <Loading size="sm" /> : "Simpan"}
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+                  )}
                 </>
               )}
 

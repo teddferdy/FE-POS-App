@@ -107,6 +107,26 @@ export const orderList = create(
             order: []
           };
         });
+      },
+
+      // Update Item Price (override)
+      updateItemPrice: (target, newPrice) => {
+        return set((state) => {
+          return {
+            order: state.order.map((items) => {
+              const matchKey = target.cartKey || target.id;
+              const itemKey = items.cartKey || items.id;
+              if (itemKey === matchKey) {
+                return {
+                  ...items,
+                  price: Number(newPrice),
+                  totalPrice: Number(newPrice) * (items.count || 1)
+                };
+              }
+              return { ...items };
+            })
+          };
+        });
       }
     }),
     {

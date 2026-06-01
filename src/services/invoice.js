@@ -192,3 +192,15 @@ export const getInvoiceFooterByLocation = async ({ store }) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const sendInvoiceWA = async (payload) => {
+  const { data, status } = await axiosInstance.post("/pos/invoice/send-wa", payload);
+  if (status !== 200 && status !== 201) throw Error(data?.message);
+  return data;
+};
+
+export const sendInvoiceEmail = async (payload) => {
+  const { data, status } = await axiosInstance.post("/pos/invoice/send-email", payload);
+  if (status !== 200 && status !== 201) throw Error(data?.message);
+  return data;
+};

@@ -26,6 +26,20 @@ export const getMemberById = async (payload) => {
   return data;
 };
 
+export const addMemberPoints = async (id, payload) => {
+  const { data, status } = await axiosInstance.post(`/pos/member/${id}/add-points`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getMemberPointHistory = async ({ id, page = 1, limit = 10 }) => {
+  const { data, status } = await axiosInstance.get(
+    `/pos/member/${id}/point-history?page=${page}&limit=${limit}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteMember = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/Member/delete-Member/${payload.id}`);
   if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);

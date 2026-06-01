@@ -17,11 +17,9 @@ import {
   Percent,
   Warehouse,
   Table,
-  Layers,
   ShoppingCart,
   TrendingUp,
   Receipt,
-  LifeBuoy,
   ClipboardList,
   Award,
   TriangleAlert
@@ -50,35 +48,47 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Karyawan",
+    title: "Produk",
     href: "",
-    icon: Users,
+    icon: Package,
     children: [
       {
-        title: "Departemen",
-        href: "/department-list",
+        title: "Kategori",
+        href: "/category-list",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Supplier",
+        href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Posisi",
-        href: "/position-list",
-        icon: FileText,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Daftar Produk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pelanggan",
+    href: "",
+    icon: BookUser,
+    children: [
+      {
+        title: "Daftar Member",
+        href: "/member-list",
+        icon: BookUser,
+        actions: ["add", "edit", "view", "edit-points"]
       },
       {
-        title: "Kelola Karyawan",
-        href: "",
-        icon: Users,
-        children: [
-          {
-            title: "Daftar Karyawan",
-            href: "/employee-list",
-            icon: Users,
-            actions: ["add", "view", "edit-access", "reset-password"]
-          }
-        ],
-        actions: []
+        title: "Member Tier",
+        href: "/member-tier",
+        icon: Award,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
@@ -110,73 +120,33 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Produk",
+    title: "Karyawan",
     href: "",
-    icon: Package,
+    icon: Users,
     children: [
       {
-        title: "Kategori",
-        href: "/category-list",
-        icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Supplier",
-        href: "/supplier",
+        title: "Departemen",
+        href: "/department-list",
         icon: Building2,
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Pajak",
-        href: "/tax-list",
-        icon: Percent,
+        title: "Posisi",
+        href: "/position-list",
+        icon: FileText,
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Template Harga",
-        href: "/price-list-template",
-        icon: TrendingUp,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Kelola Produk",
-        href: "",
-        icon: UtensilsCrossed,
-        children: [
-          {
-            title: "Daftar Produk",
-            href: "/product-list",
-            icon: UtensilsCrossed,
-            actions: ["add", "edit", "view", "delete", "import", "export"]
-          }
-        ],
-        actions: []
+        title: "Daftar Karyawan",
+        href: "/employee-list",
+        icon: Users,
+        actions: ["add", "view", "edit-access", "reset-password"]
       }
     ],
     actions: []
   },
   {
-    title: "Kelola Pelanggan",
-    href: "",
-    icon: BookUser,
-    children: [
-      {
-        title: "Daftar Member",
-        href: "/member-list",
-        icon: BookUser,
-        actions: ["add", "edit", "view", "edit-points"]
-      },
-      {
-        title: "Member Tier",
-        href: "/member-tier",
-        icon: Award,
-        actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Laporan Global",
+    title: "Laporan",
     href: "",
     icon: BarChart3,
     children: [
@@ -196,7 +166,7 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Pengaturan Sistem",
+    title: "Pengaturan",
     href: "",
     icon: Settings,
     children: [
@@ -205,6 +175,18 @@ export const sidebarMenuSuperAdmin = [
         href: "/global-setting",
         icon: Settings,
         actions: ["view", "edit"]
+      },
+      {
+        title: "Pajak",
+        href: "/tax-list",
+        icon: Percent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Template Harga",
+        href: "/price-list-template",
+        icon: TrendingUp,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
@@ -224,110 +206,28 @@ export const sidebarMenuAdmin = [
     icon: Package,
     children: [
       {
+        title: "Daftar Produk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
         title: "Kategori",
-        href: "",
+        href: "/category-list",
         icon: Tag,
-        children: [
-          {
-            title: "Daftar Kategori",
-            href: "/category-list",
-            icon: Tag,
-            actions: ["add", "edit", "view", "delete"]
-          },
-          {
-            title: "Sub Kategori",
-            href: "/sub-category-list",
-            icon: Layers,
-            actions: ["add", "edit", "view", "delete"]
-          }
-        ],
-        actions: []
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Supplier",
         href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Pajak",
-        href: "/tax-list",
-        icon: Percent,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Template Harga",
-        href: "/price-list-template",
-        icon: TrendingUp,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Kelola Produk",
-        href: "",
-        icon: UtensilsCrossed,
-        children: [
-          {
-            title: "Daftar Produk",
-            href: "/product-list",
-            icon: UtensilsCrossed,
-            actions: ["add", "edit", "view", "delete", "import", "export"]
-          }
-        ],
-        actions: []
       }
     ],
     actions: []
   },
   {
-    title: "Kelola Meja",
-    href: "",
-    icon: Table,
-    children: [
-      {
-        title: "Daftar Meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Karyawan",
-    href: "",
-    icon: Users,
-    children: [
-      {
-        title: "Departemen",
-        href: "/department-list",
-        icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Posisi",
-        href: "/position-list",
-        icon: FileText,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Kelola Karyawan",
-        href: "",
-        icon: Users,
-        children: [
-          {
-            title: "Daftar Karyawan",
-            href: "/user-list",
-            icon: Users,
-            actions: ["add", "edit", "view", "edit-access"]
-          }
-        ],
-        actions: []
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Kelola Pelanggan",
+    title: "Pelanggan",
     href: "",
     icon: BookUser,
     children: [
@@ -347,63 +247,27 @@ export const sidebarMenuAdmin = [
     actions: []
   },
   {
-    title: "Kelola Diskon",
-    href: "",
-    icon: Percent,
-    children: [
-      {
-        title: "Daftar Diskon",
-        href: "/discount-list",
-        icon: ShoppingCart,
-        actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Metode Pembayaran",
+    title: "Transaksi",
     href: "",
     icon: CreditCard,
     children: [
       {
-        title: "Daftar Pembayaran",
+        title: "Diskon",
+        href: "/discount-list",
+        icon: Percent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Metode Pembayaran",
         href: "/type-payment-list",
         icon: CreditCard,
         actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Shift Management",
-    href: "",
-    icon: CalendarDays,
-    children: [
+      },
       {
-        title: "Daftar Shift",
+        title: "Shift",
         href: "/shift-list",
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Laporan Toko",
-    href: "",
-    icon: BarChart3,
-    children: [
-      {
-        title: "Penjualan Harian",
-        href: "/report/sales",
-        icon: TrendingUp,
-        actions: ["view", "export"]
-      },
-      {
-        title: "Best Selling",
-        href: "/best-selling",
-        icon: BarChart3,
-        actions: ["view", "export"]
       }
     ],
     actions: []
@@ -413,12 +277,6 @@ export const sidebarMenuAdmin = [
     href: "",
     icon: Warehouse,
     children: [
-      {
-        title: "Supplier",
-        href: "/supplier",
-        icon: LifeBuoy,
-        actions: ["add", "edit", "view", "delete"]
-      },
       {
         title: "Purchase Order",
         href: "/purchase-order",
@@ -462,15 +320,79 @@ export const sidebarMenuAdmin = [
         href: "/expense",
         icon: Receipt,
         actions: ["add", "edit", "view", "approve"]
+      },
+      {
+        title: "Pajak",
+        href: "/tax-list",
+        icon: Percent,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
   },
   {
-    title: "Pengaturan Toko",
+    title: "Laporan",
+    href: "",
+    icon: BarChart3,
+    children: [
+      {
+        title: "Penjualan",
+        href: "/report/sales",
+        icon: TrendingUp,
+        actions: ["view", "export"]
+      },
+      {
+        title: "Best Selling",
+        href: "/best-selling",
+        icon: BarChart3,
+        actions: ["view", "export"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Karyawan",
+    href: "",
+    icon: Users,
+    children: [
+      {
+        title: "Departemen",
+        href: "/department-list",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Posisi",
+        href: "/position-list",
+        icon: FileText,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Karyawan",
+        href: "/user-list",
+        icon: Users,
+        actions: ["add", "edit", "view", "edit-access"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengaturan",
     href: "",
     icon: Settings,
     children: [
+      {
+        title: "Meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Template Harga",
+        href: "/price-list-template",
+        icon: TrendingUp,
+        actions: ["add", "edit", "view", "delete"]
+      },
       {
         title: "Invoice & Struk",
         href: "/invoice-page",
@@ -564,18 +486,8 @@ export const urlWithArrowBack = [
   },
   {
     url: -1,
-    title: "Product Page",
-    pathName: "/product-page"
-  },
-  {
-    url: -1,
     title: "Product",
     pathName: "/product-list"
-  },
-  {
-    url: -1,
-    title: "Sub Category",
-    pathName: "/sub-category-list"
   },
   {
     url: -1,
@@ -649,11 +561,6 @@ export const urlWithArrowBack = [
   },
   {
     url: -1,
-    title: "Role",
-    pathName: "/role-list"
-  },
-  {
-    url: -1,
     title: "Position",
     pathName: "/position-list"
   },
@@ -698,18 +605,6 @@ export const urlWithArrowBack = [
     url: "/category-list",
     title: "Edit Category",
     pathName: "/edit-category"
-  },
-
-  // Form Pages - Sub Category
-  {
-    url: "/sub-category-list",
-    title: "Add Sub Category",
-    pathName: "/add-sub-category"
-  },
-  {
-    url: "/sub-category-list",
-    title: "Edit Sub Category",
-    pathName: "/edit-sub-category"
   },
 
   // Form Pages - Product
@@ -905,10 +800,5 @@ export const urlWithArrowBack = [
     url: "/member-tier",
     title: "Add Member Tier",
     pathName: "/add-member-tier"
-  },
-  {
-    url: "/member-tier",
-    title: "Edit Member Tier",
-    pathName: "/edit-member-tier"
   }
 ];

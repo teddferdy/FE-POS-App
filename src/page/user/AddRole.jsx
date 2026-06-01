@@ -269,7 +269,7 @@ const AddRole = () => {
         open={successModal}
         onOpenChange={setSuccessModal}
         title="Data Berhasil Ditambahkan"
-        onConfirm={() => navigate("/role-management")}
+        onConfirm={() => navigate("/add-role")}
       />
       <Modal
         type="confirm"
