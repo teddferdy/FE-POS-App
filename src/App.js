@@ -93,6 +93,36 @@ import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 // Table
 import TableList from "./page/table/TableList";
 
+// Discount
+import DiscountList from "./page/discount/DiscountList";
+import AddDiscount from "./page/discount/AddDiscount";
+import EditDiscount from "./page/discount/EditDiscount";
+
+// Type Payment
+import TypePaymentList from "./page/type-payment/TypePaymentList";
+import AddTypePayment from "./page/type-payment/AddTypePayment";
+import EditTypePayment from "./page/type-payment/EditTypePayment";
+
+// Shift
+import ShiftList from "./page/shift/ShiftList";
+import AddShift from "./page/shift/AddShift";
+import EditShift from "./page/shift/EditShift";
+
+// Sub Category
+import SubCategoryList from "./page/sub-category/SubCategoryList";
+import AddSubCategory from "./page/sub-category/AddSubCategory";
+import EditSubCategory from "./page/sub-category/EditSubCategory";
+
+// Expense Category
+import ExpenseCategoryList from "./page/expense-category/ExpenseCategoryList";
+import AddExpenseCategory from "./page/expense-category/AddExpenseCategory";
+import EditExpenseCategory from "./page/expense-category/EditExpenseCategory";
+
+// Expense
+import ExpenseList from "./page/expense/ExpenseList";
+import AddExpense from "./page/expense/AddExpense";
+import EditExpense from "./page/expense/EditExpense";
+
 import Modal from "@/components/organism/modal";
 
 function App() {
@@ -151,18 +181,9 @@ function App() {
           <Route path="/edit-category" element={withLayout(<EditCategory />)} />
           <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
 
-          <Route
-            path="/sub-category-list"
-            element={withLayout(<ComingSoon title="Sub Category List" />)}
-          />
-          <Route
-            path="/add-sub-category"
-            element={withLayout(<ComingSoon title="Add Sub Category" />)}
-          />
-          <Route
-            path="/edit-sub-category"
-            element={withLayout(<ComingSoon title="Edit Sub Category" />)}
-          />
+          <Route path="/sub-category-list" element={withLayout(<SubCategoryList />)} />
+          <Route path="/add-sub-category" element={withLayout(<AddSubCategory />)} />
+          <Route path="/edit-sub-category" element={withLayout(<EditSubCategory />)} />
 
           <Route path="/member-list" element={withLayout(<MemberList />)} />
           <Route path="/add-member" element={withLayout(<AddMember />)} />
@@ -177,26 +198,17 @@ function App() {
             element={withLayout(<ComingSoon title="Edit Member Tier" />)}
           />
 
-          <Route path="/discount-list" element={withLayout(<ComingSoon title="Discount List" />)} />
-          <Route path="/add-discount" element={withLayout(<ComingSoon title="Add Discount" />)} />
-          <Route path="/edit-discount" element={withLayout(<ComingSoon title="Edit Discount" />)} />
+          <Route path="/discount-list" element={withLayout(<DiscountList />)} />
+          <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
+          <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
 
-          <Route
-            path="/type-payment-list"
-            element={withLayout(<ComingSoon title="Type Payment List" />)}
-          />
-          <Route
-            path="/add-type-payment"
-            element={withLayout(<ComingSoon title="Add Type Payment" />)}
-          />
-          <Route
-            path="/edit-type-payment"
-            element={withLayout(<ComingSoon title="Edit Type Payment" />)}
-          />
+          <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
+          <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
+          <Route path="/edit-type-payment" element={withLayout(<EditTypePayment />)} />
 
-          <Route path="/shift-list" element={withLayout(<ComingSoon title="Shift List" />)} />
-          <Route path="/add-shift" element={withLayout(<ComingSoon title="Add Shift" />)} />
-          <Route path="/edit-shift" element={withLayout(<ComingSoon title="Edit Shift" />)} />
+          <Route path="/shift-list" element={withLayout(<ShiftList />)} />
+          <Route path="/add-shift" element={withLayout(<AddShift />)} />
+          <Route path="/edit-shift" element={withLayout(<EditShift />)} />
 
           <Route path="/user-list" element={withLayout(<AdminList />)} />
           <Route path="/add-user" element={withLayout(<AddAdmin />)} />
@@ -309,22 +321,13 @@ function App() {
           <Route path="/stock-history" element={withLayout(<StockHistory />)} />
           <Route path="/low-stock" element={withLayout(<LowStock />)} />
 
-          <Route
-            path="/expense-category"
-            element={withLayout(<ComingSoon title="Expense Category" />)}
-          />
-          <Route
-            path="/add-expense-category"
-            element={withLayout(<ComingSoon title="Add Expense Category" />)}
-          />
-          <Route
-            path="/edit-expense-category"
-            element={withLayout(<ComingSoon title="Edit Expense Category" />)}
-          />
+          <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
+          <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
+          <Route path="/edit-expense-category" element={withLayout(<EditExpenseCategory />)} />
 
-          <Route path="/expense" element={withLayout(<ComingSoon title="Expense" />)} />
-          <Route path="/add-expense" element={withLayout(<ComingSoon title="Add Expense" />)} />
-          <Route path="/edit-expense" element={withLayout(<ComingSoon title="Edit Expense" />)} />
+          <Route path="/expense" element={withLayout(<ExpenseList />)} />
+          <Route path="/add-expense" element={withLayout(<AddExpense />)} />
+          <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
 
           <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
           <Route path="/best-selling" element={withLayout(<GlobalReport />)} />

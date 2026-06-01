@@ -1,0 +1,181 @@
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
+
+import { toast } from "sonner";
+import { Plus, Search, Edit, Trash2, Tag } from "lucide-react";
+import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
+
+const ExpenseCategoryList = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const { data, isLoading } = useQuery(["expense-categories"], () => getExpenseCategories());
+
+  const deleteMutation = useMutation(deleteExpenseCategory, {
+    onSuccess: () => {
+      toast.success("Berhasil", { description: "Kategori biaya berhasil dihapus" });
+      queryClient.invalidateQueries(["expense-categories"]);
+    },
+    onError: (err) => {
+      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+    }
+  });
+
+  const categories = data?.data || data || [];
+  const filtered = categories.filter(
+    (item) => !search || item.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = (category) => {
+    setDeleteTarget(category);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });
+      setDeleteTarget(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
+          Dashboard
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">Kategori Biaya</span>
+      </nav>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Kategori Biaya</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Kelola kategori biaya untuk pengeluaran bisnis Anda.
+          </p>
+        </div>
+        <Button onClick={() => navigate("/add-expense-category")} className="gap-2">
+          <Plus size={18} />
+          Tambah Kategori
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="p-5">
+          <p className="text-sm text-muted-foreground">Total Kategori</p>
+          <p className="text-2xl font-bold text-foreground mt-1">{categories.length}</p>
+        </Card>
+      </div>
+
+      <div className="relative w-full sm:w-72">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          placeholder="Cari kategori..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 h-10"
+        />
+      </div>
+
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loading />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-muted-foreground">
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Nama Kategori
+                  </th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Deskripsi
+                  </th>
+                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-12 text-center text-muted-foreground">
+                      <Tag size={40} className="mx-auto mb-3 opacity-30" />
+                      <p>Tidak ada kategori biaya ditemukan</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((cat, index) => (
+                    <tr
+                      key={cat.id || cat._id || index}
+                      className="hover:bg-accent/30 transition-colors">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                            <Tag size={14} />
+                          </div>
+                          <span className="font-medium text-foreground">{cat.name || "-"}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-muted-foreground max-w-[300px] truncate">
+                        {cat.description || "-"}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary"
+                            onClick={() =>
+                              navigate(`/edit-expense-category?id=${cat.id || cat._id}`)
+                            }>
+                            <Edit size={15} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => handleDelete(cat)}>
+                            <Trash2 size={15} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Kategori?"
+        description={`Yakin ingin menghapus kategori ${deleteTarget?.name || ""}?`}
+        confirmText="Ya, Hapus"
+        onConfirm={confirmDelete}
+      />
+    </div>
+  );
+};
+
+export default ExpenseCategoryList;
