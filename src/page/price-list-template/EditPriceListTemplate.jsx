@@ -68,7 +68,11 @@ const EditPriceListTemplate = () => {
   });
 
   const onSubmit = (values) => {
-    const payload = { id: templateId, ...values, tiers: tiers.map(({ id, ...t }) => t) };
+    const payload = {
+      id: templateId,
+      ...values,
+      tiers: tiers.map(({ name, price }) => ({ name, price }))
+    };
     updateMutation.mutate(payload);
   };
 
@@ -86,19 +90,35 @@ const EditPriceListTemplate = () => {
   };
 
   if (!templateId) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">ID template tidak ditemukan</p></div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">ID template tidak ditemukan</p>
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64"><Loading /></div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">Dashboard</button>
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
+          Dashboard
+        </button>
         <span className="text-xs">/</span>
-        <button onClick={() => navigate("/price-list-template")} className="hover:text-foreground transition-colors">Template Harga</button>
+        <button
+          onClick={() => navigate("/price-list-template")}
+          className="hover:text-foreground transition-colors">
+          Template Harga
+        </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">Edit Template</span>
       </nav>
@@ -109,9 +129,15 @@ const EditPriceListTemplate = () => {
           <p className="text-sm text-muted-foreground mt-1">Edit template tingkatan harga.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2"><X size={18} /> Batal</Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={updateMutation.isLoading} className="gap-2">
-            <Save size={18} />{updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <X size={18} /> Batal
+          </Button>
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={updateMutation.isLoading}
+            className="gap-2">
+            <Save size={18} />
+            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
           </Button>
         </div>
       </div>
@@ -121,23 +147,45 @@ const EditPriceListTemplate = () => {
           <Card className="p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel>Nama Template <span className="text-destructive">*</span></FormLabel>
-                    <Input placeholder="Contoh: Harga Retail" {...field} /><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem><FormLabel>Deskripsi</FormLabel>
-                    <Textarea placeholder="Deskripsi template" rows={3} {...field} /><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="isActive" render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-3">
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      <span className="text-sm text-muted-foreground">{field.value ? "Aktif" : "Tidak Aktif"}</span>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Nama Template <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input placeholder="Contoh: Harga Retail" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deskripsi</FormLabel>
+                      <Textarea placeholder="Deskripsi template" rows={3} {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center gap-3">
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        <span className="text-sm text-muted-foreground">
+                          {field.value ? "Aktif" : "Tidak Aktif"}
+                        </span>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </form>
             </Form>
           </Card>
@@ -146,19 +194,36 @@ const EditPriceListTemplate = () => {
             <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
               <div>
                 <h3 className="text-base font-semibold text-foreground">Tingkatan Harga</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Definisikan nama tingkatan yang akan muncul di produk</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Definisikan nama tingkatan yang akan muncul di produk
+                </p>
               </div>
             </div>
             <div className="space-y-3">
               {tiers.map((tier) => (
                 <div key={tier.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-3">
-                  <Input placeholder="Nama tingkat (contoh: Grosir)" value={tier.name}
-                    onChange={(e) => updateTier(tier.id, "name", e.target.value)} className="h-9 text-sm flex-1" />
-                  <Input type="number" placeholder="Urutan" value={tier.sortOrder ?? ""}
-                    onChange={(e) => updateTier(tier.id, "sortOrder", Number(e.target.value))} className="h-9 text-sm w-20" />
+                  <Input
+                    placeholder="Nama tingkat (contoh: Grosir)"
+                    value={tier.name}
+                    onChange={(e) => updateTier(tier.id, "name", e.target.value)}
+                    className="h-9 text-sm flex-1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Urutan"
+                    value={tier.sortOrder ?? ""}
+                    onChange={(e) => updateTier(tier.id, "sortOrder", Number(e.target.value))}
+                    className="h-9 text-sm w-20"
+                  />
                   {tiers.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0"
-                      onClick={() => removeTier(tier.id)}><Trash2 size={15} /></Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive shrink-0"
+                      onClick={() => removeTier(tier.id)}>
+                      <Trash2 size={15} />
+                    </Button>
                   )}
                 </div>
               ))}
@@ -170,12 +235,24 @@ const EditPriceListTemplate = () => {
         </div>
       </div>
 
-      <Modal type="confirm" open={cancelModal} onOpenChange={setCancelModal} title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang." confirmText="Ya, Batalkan"
-        onConfirm={() => navigate("/price-list-template")} />
-      <Modal type="success" open={successModal} onOpenChange={setSuccessModal} title="Berhasil!"
-        description="Template harga berhasil diupdate." confirmText="Kembali ke Daftar"
-        onConfirm={() => navigate("/price-list-template")} />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title="Batalkan?"
+        description="Perubahan yang belum disimpan akan hilang."
+        confirmText="Ya, Batalkan"
+        onConfirm={() => navigate("/price-list-template")}
+      />
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title="Berhasil!"
+        description="Template harga berhasil diupdate."
+        confirmText="Kembali ke Daftar"
+        onConfirm={() => navigate("/price-list-template")}
+      />
     </div>
   );
 };

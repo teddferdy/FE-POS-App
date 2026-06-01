@@ -9,7 +9,10 @@ export const getAllPriceListTemplate = async (payload) => {
 };
 
 export const addPriceListTemplate = async (payload) => {
-  const { data, status } = await axiosInstance.post("/price-list-template/add-new-price-list-template", payload);
+  const { data, status } = await axiosInstance.post(
+    "/price-list-template/add-new-price-list-template",
+    payload
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -24,15 +27,20 @@ export const editPriceListTemplate = async (payload) => {
 };
 
 export const deletePriceListTemplate = async (payload) => {
-  const { data, status } = await axiosInstance.delete(`/price-list-template/delete-price-list-template/${payload.id}`, {
-    data: payload
-  });
+  const { data, status } = await axiosInstance.delete(
+    `/price-list-template/delete-price-list-template/${payload.id}`,
+    {
+      data: payload
+    }
+  );
   if (status !== 200) throw Error(data?.error);
   return data;
 };
 
 export const getPriceListTemplateById = async (payload) => {
-  const { data, status } = await axiosInstance.get(`/price-list-template/get-price-list-template/${payload.id}`);
+  const { data, status } = await axiosInstance.get(
+    `/price-list-template/get-price-list-template/${payload.id}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Plus, Trash2, TrendingUp } from "lucide-react";
+import { X, Save, Plus, Trash2 } from "lucide-react";
 import { addPriceListTemplate } from "@/services/price-list-template";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ const AddPriceListTemplate = () => {
   });
 
   const onSubmit = (values) => {
-    const payload = { ...values, tiers: tiers.map(({ id, ...t }) => t) };
+    const payload = { ...values, tiers: tiers.map(({ name, price }) => ({ name, price })) };
     createMutation.mutate(payload);
   };
 
@@ -64,11 +64,15 @@ const AddPriceListTemplate = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           Dashboard
         </button>
         <span className="text-xs">/</span>
-        <button onClick={() => navigate("/price-list-template")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/price-list-template")}
+          className="hover:text-foreground transition-colors">
           Template Harga
         </button>
         <span className="text-xs">/</span>
@@ -86,7 +90,10 @@ const AddPriceListTemplate = () => {
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} /> Batal
           </Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={createMutation.isLoading} className="gap-2">
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={createMutation.isLoading}
+            className="gap-2">
             <Save size={18} />
             {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
           </Button>
@@ -103,7 +110,9 @@ const AddPriceListTemplate = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nama Template <span className="text-destructive">*</span></FormLabel>
+                      <FormLabel>
+                        Nama Template <span className="text-destructive">*</span>
+                      </FormLabel>
                       <Input placeholder="Contoh: Harga Retail" {...field} />
                       <FormMessage />
                     </FormItem>
@@ -127,7 +136,9 @@ const AddPriceListTemplate = () => {
                     <FormItem>
                       <div className="flex items-center gap-3">
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        <span className="text-sm text-muted-foreground">{field.value ? "Aktif" : "Tidak Aktif"}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {field.value ? "Aktif" : "Tidak Aktif"}
+                        </span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -192,12 +203,16 @@ const AddPriceListTemplate = () => {
               {tiers.filter((t) => t.name).length === 0 ? (
                 <p className="text-xs text-muted-foreground">Belum ada tingkatan</p>
               ) : (
-                tiers.filter((t) => t.name).map((tier, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded text-xs">
-                    <span className="font-medium text-foreground">{tier.name}</span>
-                    <span className="text-muted-foreground">Rp ...</span>
-                  </div>
-                ))
+                tiers
+                  .filter((t) => t.name)
+                  .map((tier, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-2 bg-muted/30 rounded text-xs">
+                      <span className="font-medium text-foreground">{tier.name}</span>
+                      <span className="text-muted-foreground">Rp ...</span>
+                    </div>
+                  ))
               )}
             </div>
           </Card>

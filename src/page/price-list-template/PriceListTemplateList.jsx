@@ -21,7 +21,6 @@ const PriceListTemplateList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
-  const role = user?.role || user?.roleType || "";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -58,7 +57,9 @@ const PriceListTemplateList = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           Dashboard
         </button>
         <span className="text-xs">/</span>
@@ -94,27 +95,43 @@ const PriceListTemplateList = () => {
       </div>
 
       <div className="relative w-full sm:w-72">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           placeholder="Cari template..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           className="pl-9 h-10"
         />
       </div>
 
       <Card className="overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center h-64"><Loading /></div>
+          <div className="flex items-center justify-center h-64">
+            <Loading />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">Nama Template</th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">Tingkatan Harga</th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">Deskripsi</th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">Aksi</th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Nama Template
+                  </th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Tingkatan Harga
+                  </th>
+                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Deskripsi
+                  </th>
+                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -127,28 +144,42 @@ const PriceListTemplateList = () => {
                   </tr>
                 ) : (
                   items.map((item, index) => (
-                    <tr key={item.id || item._id || index} className="hover:bg-accent/30 transition-colors">
+                    <tr
+                      key={item.id || item._id || index}
+                      className="hover:bg-accent/30 transition-colors">
                       <td className="px-4 py-4 font-medium text-foreground">{item.name || "-"}</td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-1">
                           {(item.tiers || []).map((tier, i) => (
-                            <span key={i} className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
+                            <span
+                              key={i}
+                              className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
                               {tier.name}
                             </span>
                           ))}
-                          {(!item.tiers || item.tiers.length === 0) && <span className="text-muted-foreground text-xs">-</span>}
+                          {(!item.tiers || item.tiers.length === 0) && (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-muted-foreground max-w-[250px] truncate">{item.description || "-"}</td>
+                      <td className="px-4 py-4 text-muted-foreground max-w-[250px] truncate">
+                        {item.description || "-"}
+                      </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            variant="ghost" size="icon" className="h-8 w-8 text-primary"
-                            onClick={() => navigate(`/edit-price-list-template?id=${item.id || item._id}`)}>
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary"
+                            onClick={() =>
+                              navigate(`/edit-price-list-template?id=${item.id || item._id}`)
+                            }>
                             <Edit size={15} />
                           </Button>
                           <Button
-                            variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
                             onClick={() => handleDelete(item)}>
                             <Trash2 size={15} />
                           </Button>
