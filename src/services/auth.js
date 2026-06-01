@@ -9,24 +9,24 @@ export const login = async (payload) => {
 
 export const register = async (payload) => {
   const { data, status } = await axiosInstance.post("/auth/register", payload);
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
 
 export const resetPassword = async (payload) => {
   const { data, status } = await axiosInstance.post("/auth/reset-password", payload);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201) throw Error(data?.error);
   return data;
 };
 
 export const logOut = async (payload) => {
   const { data, status } = await axiosInstance.post("/auth/logout", payload);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201) throw Error(data?.error);
   return data;
 };
 
 export const editProfile = async (payload) => {
   const { data, status } = await axiosInstance.put("/auth/edit-user", payload);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201) throw Error(data?.error);
   return data;
 };

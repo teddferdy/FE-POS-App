@@ -10,19 +10,19 @@ export const getAllSupplier = async (payload) => {
 
 export const addSupplier = async (payload) => {
   const { data, status } = await axiosInstance.post("/supplier", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editSupplier = async (payload) => {
   const { data, status } = await axiosInstance.put(`/supplier/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const deleteSupplier = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/supplier/${payload.id}`);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
   return data;
 };
 

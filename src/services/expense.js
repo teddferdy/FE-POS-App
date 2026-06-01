@@ -8,19 +8,19 @@ export const getExpenseCategories = async () => {
 
 export const addExpenseCategory = async (payload) => {
   const { data, status } = await axiosInstance.post("/expense-category", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editExpenseCategory = async (payload) => {
   const { data, status } = await axiosInstance.put(`/expense-category/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const deleteExpenseCategory = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/expense-category/${payload.id}`);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
   return data;
 };
 
@@ -34,18 +34,18 @@ export const getAllExpenses = async (payload) => {
 
 export const addExpense = async (payload) => {
   const { data, status } = await axiosInstance.post("/expense", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editExpense = async (payload) => {
   const { data, status } = await axiosInstance.put(`/expense/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const approveExpense = async (id) => {
   const { data, status } = await axiosInstance.post(`/expense/${id}/approve`);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };

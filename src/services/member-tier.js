@@ -8,7 +8,7 @@ export const getAllMemberTier = async () => {
 
 export const addMemberTier = async (payload) => {
   const { data, status } = await axiosInstance.post("/member-tier/add-new-member-tier", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

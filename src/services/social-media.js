@@ -10,7 +10,7 @@ export const getAllSocialMedia = async (payload) => {
 
 export const addSocialMedia = async (payload) => {
   const { data, status } = await axiosInstance.post("/social-media/add-social-media", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

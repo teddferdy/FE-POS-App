@@ -86,6 +86,13 @@ import PriceListTemplateList from "./page/price-list-template/PriceListTemplateL
 import AddPriceListTemplate from "./page/price-list-template/AddPriceListTemplate";
 import EditPriceListTemplate from "./page/price-list-template/EditPriceListTemplate";
 
+// Purchase Order
+import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
+import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
+
+// Table
+import TableList from "./page/table/TableList";
+
 import Modal from "@/components/organism/modal";
 
 function App() {
@@ -276,10 +283,9 @@ function App() {
           <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
           <Route path="/detail-department" element={withLayout(<DetailDepartment />)} />
 
-          {/* New Feature Routes */}
-          <Route path="/table-list" element={withLayout(<ComingSoon title="Table List" />)} />
-          <Route path="/add-table" element={withLayout(<ComingSoon title="Add Table" />)} />
-          <Route path="/edit-table" element={withLayout(<ComingSoon title="Edit Table" />)} />
+          {/* Table Routes */}
+          <Route path="/table-list" element={withLayout(<TableList />)} />
+          {/* Mobile add/edit handled in TableList modal */}
 
           <Route path="/supplier" element={withLayout(<SupplierList />)} />
           <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
@@ -293,14 +299,8 @@ function App() {
           <Route path="/add-price-list-template" element={withLayout(<AddPriceListTemplate />)} />
           <Route path="/edit-price-list-template" element={withLayout(<EditPriceListTemplate />)} />
 
-          <Route
-            path="/purchase-order"
-            element={withLayout(<ComingSoon title="Purchase Order" />)}
-          />
-          <Route
-            path="/add-purchase-order"
-            element={withLayout(<ComingSoon title="Add Purchase Order" />)}
-          />
+          <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
+          <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
 
           <Route path="/stock-opname" element={withLayout(<StockOpnameList />)} />
           <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />

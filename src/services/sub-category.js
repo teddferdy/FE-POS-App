@@ -18,7 +18,7 @@ export const getSubCategoryByCategory = async (payload) => {
 
 export const addSubCategory = async (payload) => {
   const { data, status } = await axiosInstance.post("/sub-category/add-subcategory", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

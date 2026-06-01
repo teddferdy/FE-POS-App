@@ -16,13 +16,13 @@ export const getAllRoleTable = async ({ page = 1, limit = 10, statusRole = "all"
 
 export const addRole = async (payload) => {
   const { data, status } = await axiosInstance.post("/role/add-new-role", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editRole = async (payload) => {
   const { data, status } = await axiosInstance.put(`/role/edit-role/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
 

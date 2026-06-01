@@ -25,13 +25,13 @@ export const getAllInvoiceLogo = async ({
 
 export const addInvoiceLogo = async (payload) => {
   const { data, status } = await axiosInstance.post("/invoice/add-new-invoice-logo", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editInvoiceLogo = async (payload) => {
   const { data, status } = await axiosInstance.put("/invoice/edit-invoice-logo", payload);
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
 
@@ -135,7 +135,7 @@ export const getAllInvoiceFooter = async (payload) => {
 
 export const addInvoiceFooter = async (payload) => {
   const { data, status } = await axiosInstance.post("/invoice/add-new-invoice-footer", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

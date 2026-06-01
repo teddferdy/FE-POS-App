@@ -23,7 +23,7 @@ export const getAllDiscount = async ({ location, page, limit, statusDiscount }) 
 
 export const addDiscount = async (payload) => {
   const { data, status } = await axiosInstance.post("/discount/add-new-discount", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

@@ -23,7 +23,7 @@ export const getAllTypePayment = async (payload) => {
 
 export const addTypePayment = async (payload) => {
   const { data, status } = await axiosInstance.post("/type-payment/add-new-type-payment", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

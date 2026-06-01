@@ -26,24 +26,24 @@ export const getTablesWithActiveOrders = async (payload) => {
 
 export const addTable = async (payload) => {
   const { data, status } = await axiosInstance.post("/table/add-new-table", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editTable = async (payload) => {
   const { data, status } = await axiosInstance.put(`/table/edit-table/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const updateTableStatus = async (payload) => {
   const { data, status } = await axiosInstance.put(`/table/edit-status/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const deleteTable = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/table/delete-table/${payload.id}`);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
   return data;
 };

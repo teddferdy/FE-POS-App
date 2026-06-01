@@ -18,13 +18,13 @@ export const getShiftDropdown = async ({ store, statusShift }) => {
 
 export const addShift = async (payload) => {
   const { data, status } = await axiosInstance.post("/shift/add-new-shift", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editShift = async (payload) => {
   const { data, status } = await axiosInstance.put(`/shift/edit-shift/${payload.id}`, payload);
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
 

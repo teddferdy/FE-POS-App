@@ -33,14 +33,14 @@ const buildFormData = (payload) => {
 export const addEmployee = async (payload) => {
   const formData = buildFormData(payload);
   const { data, status } = await axiosInstance.post("/employee/add-employee", formData);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
 export const editEmployee = async (payload) => {
   const formData = buildFormData(payload);
   const { data, status } = await axiosInstance.put(`/employee/edit-employee`, formData);
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
   return data;
 };
 
@@ -58,7 +58,7 @@ export const getEmployeeDetail = async (employeeID) => {
 
 export const deleteEmployee = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/employee/delete-employee/${payload.id}`);
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
   return data;
 };
 
