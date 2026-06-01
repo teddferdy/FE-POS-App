@@ -34,6 +34,12 @@ export const editPosition = async (payload) => {
   return data;
 };
 
+export const getPositionById = async (payload) => {
+  const { data, status } = await axiosInstance.get(`/position/get-position/${payload.id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deletePosition = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/position/delete-position/${payload.id}`, {
     data: payload

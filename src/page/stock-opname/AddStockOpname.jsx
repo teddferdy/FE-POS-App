@@ -11,7 +11,9 @@ import {
   Download,
   Upload as UploadIcon,
   Building2,
-  Loader2
+  Loader2,
+  Search,
+  Package
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +25,7 @@ import {
   getStockOpnameById
 } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
+import { getAllProduct } from "@/services/product";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +33,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -100,6 +111,7 @@ const createRow = (overrides = {}) => {
   const id = nextId++;
   return {
     id,
+    productId: overrides.productId || "",
     kodeBarang: overrides.kodeBarang || "",
     namaBarang: overrides.namaBarang || "",
     satuan: overrides.satuan || "",
@@ -175,6 +187,13 @@ const AddStockOpname = () => {
     getAllLocation
   );
   const locations = locationData?.data || locationData?.locations || locationData || [];
+
+  const { data: productsData } = useQuery(
+    ["all-products-for-opname"],
+    () => getAllProduct({ location: "", nameProduct: "", category: "" }),
+    { staleTime: 60000 }
+  );
+  const allProducts = productsData?.data || [];
 
   // Fetch existing stock opname if editing
   const { data: stockOpnameData } = useQuery(["stock-opname", id], () => getStockOpnameById(id), {
@@ -311,6 +330,7 @@ const AddStockOpname = () => {
       const selisih = calculateSelisih(row);
 
       return {
+        ...(row.productId ? { productId: row.productId } : {}),
         kodeBarang: row.kodeBarang,
         namaBarang: row.namaBarang,
         satuan: row.satuan,
@@ -558,13 +578,75 @@ const AddStockOpname = () => {
                         />
                       </td>
                       <td className="border-r border-muted/20 px-3 py-2 min-w-[140px]">
-                        <input
-                          type="text"
-                          value={row.namaBarang}
-                          onChange={(e) => updateRowField(row.id, "namaBarang", e.target.value)}
-                          placeholder="Nama barang"
-                          className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
-                        />
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={row.namaBarang}
+                            onChange={(e) => {
+                              updateRowField(row.id, "namaBarang", e.target.value);
+                              updateRowField(row.id, "productId", "");
+                            }}
+                            placeholder="Nama barang"
+                            className="flex-1 bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
+                          />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                className="shrink-0 p-1 text-muted-foreground/40 hover:text-primary transition-colors"
+                                title="Cari produk">
+                                <Search size={14} />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" side="bottom" className="p-0 w-[280px]">
+                              <Command>
+                                <CommandInput placeholder="Cari produk..." />
+                                <CommandList>
+                                  {allProducts.length === 0 && (
+                                    <CommandEmpty>Tidak ada produk ditemukan</CommandEmpty>
+                                  )}
+                                  {allProducts.map((p) => (
+                                    <CommandItem
+                                      key={p.id || p._id}
+                                      value={p.nameProduct || p.name}
+                                      onSelect={() => {
+                                        updateRowField(row.id, "productId", p.id || p._id);
+                                        updateRowField(row.id, "kodeBarang", p.barcode || "");
+                                        updateRowField(
+                                          row.id,
+                                          "namaBarang",
+                                          p.nameProduct || p.name
+                                        );
+                                        updateRowField(row.id, "satuan", p.unit || "pcs");
+                                        updateRowField(
+                                          row.id,
+                                          "stokAwalJumlah",
+                                          String(p.stock ?? "")
+                                        );
+                                      }}>
+                                      <div className="flex items-center gap-2">
+                                        <Package
+                                          size={14}
+                                          className="shrink-0 text-muted-foreground/40"
+                                        />
+                                        <div className="flex flex-col min-w-0">
+                                          <span className="text-sm truncate">
+                                            {p.nameProduct || p.name}
+                                          </span>
+                                          {p.barcode && (
+                                            <span className="text-[10px] text-muted-foreground truncate">
+                                              {p.barcode}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </td>
                       <td className="border-r border-muted/20 px-3 py-2">
                         <input

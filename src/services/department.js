@@ -34,6 +34,12 @@ export const editDepartment = async (payload) => {
   return data;
 };
 
+export const getDepartmentById = async (payload) => {
+  const { data, status } = await axiosInstance.get(`/department/get-department/${payload.id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteDepartment = async (payload) => {
   const { data, status } = await axiosInstance.delete(
     `/department/delete-department/${payload.id}`,

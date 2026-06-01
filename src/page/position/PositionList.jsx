@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadPositionModal from "@/page/position/components/UploadPositionModal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const PositionList = () => {
   const navigate = useNavigate();
@@ -60,7 +61,9 @@ const PositionList = () => {
   const positions = data?.data || [];
   const pagination = data?.pagination || {};
   const stats = data?.stats || {};
-  const total = pagination?.totalItems || 0;
+  const total = stats.total ?? pagination?.totalItems ?? data?.total ?? 0;
+  const activeCount = stats.active ?? 0;
+  const inactiveCount = stats.inactive ?? 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
   const handleDelete = (position) => {
@@ -75,79 +78,72 @@ const PositionList = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Kelola Jabatan</h2>
-          <nav className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-            <span>Kelola Karyawan</span>
-            <span className="material-symbols-outlined text-base">chevron_right</span>
-            <span className="text-primary font-semibold">Kelola Jabatan</span>
-          </nav>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            disabled={isDownloadingTemplate}
-            onClick={async () => {
-              if (departments.length === 0) {
-                setNoDepartmentModal(true);
-                return;
-              }
-              setIsDownloadingTemplate(true);
-              try {
-                await downloadPositionTemplate();
-                toast.success("Berhasil", { description: "Template berhasil di-download" });
-              } catch (err) {
-                toast.error("Gagal", {
-                  description:
-                    err?.response?.data?.message || err.message || "Gagal download template"
-                });
-              } finally {
-                setIsDownloadingTemplate(false);
-              }
-            }}>
-            {isDownloadingTemplate ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-            )}
-            {isDownloadingTemplate ? "Download..." : "Download Template"}
-          </Button>
-          <Button
-            variant="outline"
-            disabled={isDownloadingData}
-            onClick={async () => {
-              setIsDownloadingData(true);
-              try {
-                await downloadPositionExcel();
-                toast.success("Berhasil", { description: "Data berhasil di-download" });
-              } catch (err) {
-                toast.error("Gagal", {
-                  description: err?.response?.data?.message || err.message || "Gagal download data"
-                });
-              } finally {
-                setIsDownloadingData(false);
-              }
-            }}>
-            {isDownloadingData ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">download</span>
-            )}
-            {isDownloadingData ? "Download..." : "Download Data"}
-          </Button>
-          <span className="w-px h-7 bg-border mx-1" />
-          <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-            <span className="material-symbols-outlined text-lg">upload</span>
-            Upload Excel
-          </Button>
-          <Button variant="default" onClick={() => navigate("/add-position")} className="shadow-md">
-            <span className="material-symbols-outlined text-lg">add</span>
-            Tambah Jabatan
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <PageHeader
+        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Jabatan" }]}
+        title="Daftar Jabatan"
+        description="Kelola daftar jabatan, departemen, dan informasi posisi karyawan Anda.">
+        <Button
+          variant="outline"
+          disabled={isDownloadingTemplate}
+          onClick={async () => {
+            if (departments.length === 0) {
+              setNoDepartmentModal(true);
+              return;
+            }
+            setIsDownloadingTemplate(true);
+            try {
+              await downloadPositionTemplate();
+              toast.success("Berhasil", { description: "Template berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description:
+                  err?.response?.data?.message || err.message || "Gagal download template"
+              });
+            } finally {
+              setIsDownloadingTemplate(false);
+            }
+          }}>
+          {isDownloadingTemplate ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+          )}
+          {isDownloadingTemplate ? "Download..." : "Download Template"}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={isDownloadingData}
+          onClick={async () => {
+            setIsDownloadingData(true);
+            try {
+              await downloadPositionExcel();
+              toast.success("Berhasil", { description: "Data berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description: err?.response?.data?.message || err.message || "Gagal download data"
+              });
+            } finally {
+              setIsDownloadingData(false);
+            }
+          }}>
+          {isDownloadingData ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">download</span>
+          )}
+          {isDownloadingData ? "Download..." : "Download Data"}
+        </Button>
+        <span className="w-px h-7 bg-border mx-1" />
+        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+          <span className="material-symbols-outlined text-lg">upload</span>
+          Upload Excel
+        </Button>
+        <Button variant="default" onClick={() => navigate("/add-position")} className="shadow-md">
+          <span className="material-symbols-outlined text-lg">add</span>
+          Tambah Jabatan
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
@@ -155,7 +151,11 @@ const PositionList = () => {
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Total Jabatan
             </p>
-            <h3 className="text-2xl font-bold text-foreground">{stats?.totalPositions ?? total}</h3>
+            <h3 className="text-2xl font-bold text-foreground">{total.toLocaleString()}</h3>
+            <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">work</span>
+              Semua jabatan terdaftar
+            </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
             <span
@@ -168,34 +168,38 @@ const PositionList = () => {
         <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Departemen Aktif
+              Jabatan Aktif
             </p>
-            <h3 className="text-2xl font-bold text-foreground">
-              {stats?.totalDepartemenAktif ?? 0}
-            </h3>
+            <h3 className="text-2xl font-bold text-foreground">{activeCount.toLocaleString()}</h3>
+            <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              {total > 0 ? Math.round((activeCount / total) * 100) : 0}% Tingkat Keaktifan
+            </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
             <span
               className="material-symbols-outlined text-secondary text-[28px]"
               style={{ fontVariationSettings: "'FILL' 1" }}>
-              domain
+              check_circle
             </span>
           </div>
         </div>
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+        <div className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Tanpa Deskripsi
+            <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+              Jabatan Nonaktif
             </p>
-            <h3 className="text-2xl font-bold text-foreground">
-              {stats?.totalTanpaDeskripsi ?? 0}
-            </h3>
+            <h3 className="text-2xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
+            <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">cancel</span>
+              Perlu perhatian
+            </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-red-700 dark:bg-red-950 flex items-center justify-center">
             <span
-              className="material-symbols-outlined text-error text-[28px]"
+              className="material-symbols-outlined text-white text-[28px]"
               style={{ fontVariationSettings: "'FILL' 1" }}>
-              warning
+              cancel
             </span>
           </div>
         </div>
@@ -380,6 +384,31 @@ const PositionList = () => {
         onOpenChange={setUploadModalOpen}
         onUploadSuccess={() => queryClient.invalidateQueries(["positions"])}
       />
+      <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="material-symbols-outlined opacity-80">lightbulb</span>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+        </div>
+        <ul className="space-y-2">
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Pastikan setiap jabatan memiliki deskripsi tugas yang jelas.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Hubungkan jabatan dengan departemen yang sesuai.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Gunakan status aktif/nonaktif untuk mengelola akses jabatan.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Download template posisi untuk menambahkan data secara massal.</span>
+          </li>
+        </ul>
+      </div>
+
       <Modal
         type="confirm"
         open={noDepartmentModal}

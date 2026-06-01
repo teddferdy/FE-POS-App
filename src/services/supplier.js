@@ -25,3 +25,9 @@ export const deleteSupplier = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const getSupplierById = async (payload) => {
+  const { data, status } = await axiosInstance.get(`/supplier/${payload.id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

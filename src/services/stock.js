@@ -8,6 +8,34 @@ export const getStockHistory = async (payload) => {
   return data;
 };
 
+export const getAllStockHistory = async (payload) => {
+  const params = new URLSearchParams();
+  if (payload?.page) params.append("page", payload.page);
+  if (payload?.limit) params.append("limit", payload.limit);
+  if (payload?.product) params.append("product", payload.product);
+  if (payload?.referenceType) params.append("referenceType", payload.referenceType);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
+  const query = params.toString();
+  const { data, status } = await axiosInstance.get(
+    `/stock-history/get-all${query ? `?${query}` : ""}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getStockHistoryByProduct = async (productId) => {
+  const { data, status } = await axiosInstance.get(`/stock-history/get-by-product/${productId}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getLowStockProducts = async () => {
+  const { data, status } = await axiosInstance.get("/stock-history/low-stock");
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getStockOpname = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.page) params.append("page", payload.page);
@@ -87,6 +115,26 @@ export const exportStockOpnameExcel = async () => {
   const { data, status } = await axiosInstance.get("/stock-opname/export", {
     responseType: "arraybuffer"
   });
+  if (status !== 200) throw new Error("Gagal export data");
+  const blob = new Blob([data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "data-stock-opname.xlsx");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+export const exportStockOpnameByIds = async (ids) => {
+  const { data, status } = await axiosInstance.post(
+    "/stock-opname/export-selected",
+    { ids },
+    { responseType: "arraybuffer" }
+  );
   if (status !== 200) throw new Error("Gagal export data");
   const blob = new Blob([data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

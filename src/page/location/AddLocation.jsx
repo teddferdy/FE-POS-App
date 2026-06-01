@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  ArrowLeft,
   Save,
   MapPin,
   Phone,
@@ -15,7 +14,6 @@ import {
   ShieldCheck,
   Check,
   History,
-  Map,
   X,
   Clock,
   ChevronDown,
@@ -54,6 +52,7 @@ import {
 } from "@/services/general";
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { useQuery } from "react-query";
+import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 
 const days = [
@@ -369,41 +368,22 @@ const AddLocation = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/location-list")}
-          className="font-medium hover:text-primary transition-colors">
-          Kelola Toko
-        </button>
-        <span className="text-xs">/</span>
-        <span className="font-semibold text-foreground">Tambah Toko</span>
-      </nav>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard-super-admin" },
+          { label: "Kelola Toko", href: "/location-list" },
+          { label: "Tambah Toko" }
+        ]}
+        title="Tambah Lokasi Toko Baru"
+        description="Silakan lengkapi informasi detail untuk pendaftaran unit toko baru.">
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          Kembali ke Daftar
+        </Button>
+      </PageHeader>
 
       {/* Form Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-border flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 shrink-0"
-            onClick={() => setCancelModal(true)}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-              <Map size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Tambah Lokasi Toko Baru</h2>
-              <p className="text-sm text-muted-foreground">
-                Silakan lengkapi informasi detail untuk pendaftaran unit toko baru.
-              </p>
-            </div>
-          </div>
-        </div>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

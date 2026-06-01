@@ -1,5 +1,11 @@
 import { axiosInstance } from ".";
 
+export const getProductById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/product/get-by-id/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getAllProduct = async ({ location, nameProduct, category }) => {
   const { data, status } = await axiosInstance.get(
     `/product/get-product?store=${location}&nameProduct=${nameProduct}&category=${category}`
@@ -26,7 +32,7 @@ export const getAllProductTable = async ({ location, limit, page, statusProduct 
 
 export const addProduct = async (payload) => {
   const { data, status } = await axiosInstance.post("/product/add-product", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 

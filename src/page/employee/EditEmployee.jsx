@@ -37,6 +37,7 @@ import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import PageHeader from "@/components/ui/PageHeader";
 
 const EditEmployee = () => {
   const navigate = useNavigate();
@@ -412,31 +413,16 @@ const EditEmployee = () => {
 
   return (
     <div>
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Manajemen SDM</span>
-            <span>/</span>
-            <button
-              onClick={() => navigate("/employee-list")}
-              className="hover:text-primary transition-colors">
-              Kelola Karyawan
-            </button>
-            <span>/</span>
-            <button
-              onClick={() => navigate(`/detail-employee?employeeID=${employee.employeeID}`)}
-              className="hover:text-primary transition-colors">
-              Detail Karyawan
-            </button>
-            <span>/</span>
-            <span className="text-primary font-semibold">Edit Karyawan</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Karyawan</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Perbarui data karyawan yang sudah ada.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Manajemen SDM" },
+          { label: "Kelola Karyawan", href: "/employee-list" },
+          { label: "Detail Karyawan", href: `/detail-employee?employeeID=${employee.employeeID}` },
+          { label: "Edit Karyawan" }
+        ]}
+        title="Edit Karyawan"
+        description="Perbarui data karyawan yang sudah ada."
+      />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -931,21 +917,42 @@ const EditEmployee = () => {
                     </>
                   )}
                   <div className="flex flex-col gap-1.5 justify-end">
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mt-auto">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Status Aktif</p>
-                        <p className="text-xs text-muted-foreground">Karyawan aktif bekerja.</p>
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <div
+                          className={`flex items-center justify-between p-4 rounded-lg mt-auto transition-all ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                field.value
+                                  ? "bg-green-600 text-white"
+                                  : "bg-destructive/10 text-destructive"
+                              }`}>
+                              <span className="material-symbols-outlined text-lg">
+                                {field.value ? "check" : "close"}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                Status {field.value ? "Aktif" : "Nonaktif"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {field.value
+                                  ? "Karyawan ini aktif dan dapat ditugaskan"
+                                  : "Karyawan ini tidak aktif"}
+                              </p>
+                            </div>
                           </div>
-                        )}
-                      />
-                    </div>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </div>
+                      )}
+                    />
                   </div>
                 </div>
               </div>

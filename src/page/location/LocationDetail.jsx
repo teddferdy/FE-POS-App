@@ -7,7 +7,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
-  ArrowLeft,
   Store,
   MapPin,
   Phone,
@@ -37,6 +36,7 @@ import {
   getVillages,
   getPostalCode
 } from "@/services/general";
+import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 
@@ -200,45 +200,22 @@ const LocationDetail = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/location-list")}
-          className="font-medium hover:text-primary transition-colors">
-          Kelola Toko
-        </button>
-        <span className="text-xs">/</span>
-        <span className="font-semibold text-foreground">Detail Toko</span>
-      </nav>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard-super-admin" },
+          { label: "Kelola Toko", href: "/location-list" },
+          { label: "Detail Toko" }
+        ]}
+        title="Detail Toko"
+        description="Informasi lengkap cabang toko">
+        <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
+          <Edit size={16} />
+          Edit Toko
+        </Button>
+      </PageHeader>
 
       {/* Main Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-border flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => navigate("/location-list")}>
-              <ArrowLeft size={18} />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                <Store size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Detail Toko</h2>
-                <p className="text-sm text-muted-foreground">Informasi lengkap cabang toko</p>
-              </div>
-            </div>
-          </div>
-          <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
-            <Edit size={16} />
-            Edit Toko
-          </Button>
-        </div>
-
         {/* Content */}
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

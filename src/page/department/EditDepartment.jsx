@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 
 const EditDepartment = () => {
   const navigate = useNavigate();
@@ -101,23 +102,15 @@ const EditDepartment = () => {
 
   return (
     <div className="space-y-8">
-      <div className="mb-xl">
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-          <span>Kelola Karyawan</span>
-          <span>/</span>
-          <button
-            onClick={() => navigate("/department-list")}
-            className="hover:text-primary transition-colors">
-            Kelola Departemen
-          </button>
-          <span>/</span>
-          <span className="text-primary font-semibold">Edit Departemen</span>
-        </nav>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Departemen</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Perbarui informasi unit atau divisi dalam struktur organisasi.
-        </p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Kelola Karyawan" },
+          { label: "Kelola Departemen", href: "/department-list" },
+          { label: "Edit Departemen" }
+        ]}
+        title="Edit Departemen"
+        description="Perbarui informasi unit atau divisi dalam struktur organisasi."
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">

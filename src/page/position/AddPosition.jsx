@@ -208,6 +208,20 @@ const AddPosition = () => {
           </div>
         </div>
 
+        <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
+          <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
+          <div>
+            <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
+              Catatan Keamanan
+            </h4>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Penambahan jabatan baru akan dicatat dalam audit log sistem. Pastikan pemberian level
+              akses sesuai dengan kebijakan keamanan perusahaan untuk menghindari penyalahgunaan
+              data sensitif.
+            </p>
+          </div>
+        </div>
+
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button
             type="button"
@@ -226,20 +240,6 @@ const AddPosition = () => {
           </Button>
         </div>
       </form>
-
-      <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
-        <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
-        <div>
-          <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
-            Catatan Keamanan
-          </h4>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Penambahan jabatan baru akan dicatat dalam audit log sistem. Pastikan pemberian level
-            akses sesuai dengan kebijakan keamanan perusahaan untuk menghindari penyalahgunaan data
-            sensitif.
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

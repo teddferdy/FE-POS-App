@@ -809,21 +809,42 @@ const AddEmployee = () => {
                     </>
                   )}
                   <div className="flex flex-col gap-1.5 justify-end">
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mt-auto">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Status Aktif</p>
-                        <p className="text-xs text-muted-foreground">Karyawan aktif bekerja.</p>
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <div
+                          className={`flex items-center justify-between p-4 rounded-lg mt-auto transition-all ${
+                            field.value
+                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                          }`}>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                field.value
+                                  ? "bg-green-600 text-white"
+                                  : "bg-destructive/10 text-destructive"
+                              }`}>
+                              <span className="material-symbols-outlined text-lg">
+                                {field.value ? "check" : "close"}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                Status {field.value ? "Aktif" : "Nonaktif"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {field.value
+                                  ? "Karyawan ini aktif dan dapat ditugaskan"
+                                  : "Karyawan ini tidak aktif"}
+                              </p>
+                            </div>
                           </div>
-                        )}
-                      />
-                    </div>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </div>
+                      )}
+                    />
                   </div>
                 </div>
               </div>

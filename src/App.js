@@ -26,10 +26,15 @@ import StoreGeospatial from "./page/location/StoreGeospatial";
 
 // Product
 import ProductList from "./page/product/ProductList";
+import AddProduct from "./page/product/AddProduct";
+import DetailProduct from "./page/product/DetailProduct";
+import EditProduct from "./page/product/EditProduct";
 
 // Category
 import CategoryList from "./page/category/CategoryList";
 import AddCategory from "./page/category/AddCategory";
+import EditCategory from "./page/category/EditCategory";
+import DetailCategory from "./page/category/DetailCategory";
 
 // User
 import AdminList from "./page/user/AdminList";
@@ -52,6 +57,8 @@ import EmployeeList from "./page/employee/EmployeeList";
 import StockOpnameList from "./page/stock-opname/StockOpnameList";
 import AddStockOpname from "./page/stock-opname/AddStockOpname";
 import DetailStockOpname from "./page/stock-opname/DetailStockOpname";
+import StockHistory from "./page/stock-opname/StockHistory";
+import LowStock from "./page/stock-opname/LowStock";
 import AddEmployee from "./page/employee/AddEmployee";
 import EditEmployee from "./page/employee/EditEmployee";
 import DetailEmployee from "./page/employee/DetailEmployee";
@@ -62,6 +69,23 @@ import DetailPosition from "./page/position/DetailPosition";
 import DepartmentList from "./page/department/DepartmentList";
 import AddDepartment from "./page/department/AddDepartment";
 import EditDepartment from "./page/department/EditDepartment";
+import DetailDepartment from "./page/department/DetailDepartment";
+
+// Supplier
+import SupplierList from "./page/supplier/SupplierList";
+import AddSupplier from "./page/supplier/AddSupplier";
+import EditSupplier from "./page/supplier/EditSupplier";
+
+// Tax Config
+import TaxConfigList from "./page/tax-config/TaxConfigList";
+import AddTaxConfig from "./page/tax-config/AddTaxConfig";
+import EditTaxConfig from "./page/tax-config/EditTaxConfig";
+
+// Price List Template
+import PriceListTemplateList from "./page/price-list-template/PriceListTemplateList";
+import AddPriceListTemplate from "./page/price-list-template/AddPriceListTemplate";
+import EditPriceListTemplate from "./page/price-list-template/EditPriceListTemplate";
+
 import Modal from "@/components/organism/modal";
 
 function App() {
@@ -111,12 +135,14 @@ function App() {
             element={withLayout(<ComingSoon title="Products By Outlet" />)}
           />
           <Route path="/product-list" element={withLayout(<ProductList />)} />
-          <Route path="/add-product" element={withLayout(<ComingSoon title="Add Product" />)} />
-          <Route path="/edit-product" element={withLayout(<ComingSoon title="Edit Product" />)} />
+          <Route path="/add-product" element={withLayout(<AddProduct />)} />
+          <Route path="/edit-product" element={withLayout(<EditProduct />)} />
+          <Route path="/detail-product" element={withLayout(<DetailProduct />)} />
 
           <Route path="/category-list" element={withLayout(<CategoryList />)} />
           <Route path="/add-category" element={withLayout(<AddCategory />)} />
-          <Route path="/edit-category" element={withLayout(<ComingSoon title="Edit Category" />)} />
+          <Route path="/edit-category" element={withLayout(<EditCategory />)} />
+          <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
 
           <Route
             path="/sub-category-list"
@@ -248,15 +274,24 @@ function App() {
           <Route path="/department-list" element={withLayout(<DepartmentList />)} />
           <Route path="/add-department" element={withLayout(<AddDepartment />)} />
           <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
+          <Route path="/detail-department" element={withLayout(<DetailDepartment />)} />
 
           {/* New Feature Routes */}
           <Route path="/table-list" element={withLayout(<ComingSoon title="Table List" />)} />
           <Route path="/add-table" element={withLayout(<ComingSoon title="Add Table" />)} />
           <Route path="/edit-table" element={withLayout(<ComingSoon title="Edit Table" />)} />
 
-          <Route path="/supplier" element={withLayout(<ComingSoon title="Supplier" />)} />
-          <Route path="/add-supplier" element={withLayout(<ComingSoon title="Add Supplier" />)} />
-          <Route path="/edit-supplier" element={withLayout(<ComingSoon title="Edit Supplier" />)} />
+          <Route path="/supplier" element={withLayout(<SupplierList />)} />
+          <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
+          <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
+
+          <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
+          <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
+          <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
+
+          <Route path="/price-list-template" element={withLayout(<PriceListTemplateList />)} />
+          <Route path="/add-price-list-template" element={withLayout(<AddPriceListTemplate />)} />
+          <Route path="/edit-price-list-template" element={withLayout(<EditPriceListTemplate />)} />
 
           <Route
             path="/purchase-order"
@@ -271,7 +306,8 @@ function App() {
           <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />
           <Route path="/add-stock-opname" element={withLayout(<AddStockOpname />)} />
 
-          <Route path="/stock-history" element={withLayout(<ComingSoon title="Stock History" />)} />
+          <Route path="/stock-history" element={withLayout(<StockHistory />)} />
+          <Route path="/low-stock" element={withLayout(<LowStock />)} />
 
           <Route
             path="/expense-category"

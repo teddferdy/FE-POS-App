@@ -23,7 +23,8 @@ import {
   Receipt,
   LifeBuoy,
   ClipboardList,
-  Award
+  Award,
+  TriangleAlert
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -83,11 +84,30 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Stock Opname",
-    href: "/stock-opname",
+    title: "Manajemen Stok",
+    href: "",
     icon: ClipboardList,
-    children: [],
-    actions: ["add", "view"]
+    children: [
+      {
+        title: "Stock Opname",
+        href: "/stock-opname",
+        icon: ClipboardList,
+        actions: ["add", "view"]
+      },
+      {
+        title: "History Stok",
+        href: "/stock-history",
+        icon: FileText,
+        actions: ["view"]
+      },
+      {
+        title: "Low Stock",
+        href: "/low-stock",
+        icon: TriangleAlert,
+        actions: ["view"]
+      }
+    ],
+    actions: []
   },
   {
     title: "Produk",
@@ -98,6 +118,24 @@ export const sidebarMenuSuperAdmin = [
         title: "Kategori",
         href: "/category-list",
         icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Supplier",
+        href: "/supplier",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Pajak",
+        href: "/tax-list",
+        icon: Percent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Template Harga",
+        href: "/price-list-template",
+        icon: TrendingUp,
         actions: ["add", "edit", "view", "delete"]
       },
       {
@@ -204,6 +242,24 @@ export const sidebarMenuAdmin = [
           }
         ],
         actions: []
+      },
+      {
+        title: "Supplier",
+        href: "/supplier",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Pajak",
+        href: "/tax-list",
+        icon: Percent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Template Harga",
+        href: "/price-list-template",
+        icon: TrendingUp,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Kelola Produk",
@@ -380,6 +436,12 @@ export const sidebarMenuAdmin = [
         href: "/stock-history",
         icon: FileText,
         actions: ["view"]
+      },
+      {
+        title: "Low Stock",
+        href: "/low-stock",
+        icon: TriangleAlert,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -542,6 +604,11 @@ export const urlWithArrowBack = [
   },
   {
     url: -1,
+    title: "Pajak",
+    pathName: "/tax-list"
+  },
+  {
+    url: -1,
     title: "Purchase Order",
     pathName: "/purchase-order"
   },
@@ -554,6 +621,11 @@ export const urlWithArrowBack = [
     url: -1,
     title: "Stock History",
     pathName: "/stock-history"
+  },
+  {
+    url: -1,
+    title: "Low Stock",
+    pathName: "/low-stock"
   },
   {
     url: -1,

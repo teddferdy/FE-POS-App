@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -83,78 +84,68 @@ const DepartmentList = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Kelola Departemen</h2>
-          <nav className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-            <span>Kelola Karyawan</span>
-            <span className="material-symbols-outlined text-base">chevron_right</span>
-            <span className="text-primary font-semibold">Kelola Departemen</span>
-          </nav>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            disabled={isDownloadingTemplate}
-            onClick={async () => {
-              setIsDownloadingTemplate(true);
-              try {
-                await downloadDepartmentTemplate();
-                toast.success("Berhasil", { description: "Template berhasil di-download" });
-              } catch (err) {
-                toast.error("Gagal", {
-                  description:
-                    err?.response?.data?.message || err.message || "Gagal download template"
-                });
-              } finally {
-                setIsDownloadingTemplate(false);
-              }
-            }}>
-            {isDownloadingTemplate ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-            )}
-            {isDownloadingTemplate ? "Download..." : "Download Template"}
-          </Button>
-          <Button
-            variant="outline"
-            disabled={isDownloadingData}
-            onClick={async () => {
-              setIsDownloadingData(true);
-              try {
-                await downloadDepartmentExcel();
-                toast.success("Berhasil", { description: "Data berhasil di-download" });
-              } catch (err) {
-                toast.error("Gagal", {
-                  description: err?.response?.data?.message || err.message || "Gagal download data"
-                });
-              } finally {
-                setIsDownloadingData(false);
-              }
-            }}>
-            {isDownloadingData ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">download</span>
-            )}
-            {isDownloadingData ? "Download..." : "Download Data"}
-          </Button>
-          <span className="w-px h-7 bg-border mx-1" />
-          <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-            <span className="material-symbols-outlined text-lg">upload</span>
-            Upload Excel
-          </Button>
-          <Button
-            variant="default"
-            onClick={() => navigate("/add-department")}
-            className="shadow-md">
-            <span className="material-symbols-outlined text-lg">add</span>
-            Tambah Departemen
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <PageHeader
+        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Departemen" }]}
+        title="Daftar Departemen"
+        description="Kelola daftar departemen dan informasi divisi perusahaan Anda.">
+        <Button
+          variant="outline"
+          disabled={isDownloadingTemplate}
+          onClick={async () => {
+            setIsDownloadingTemplate(true);
+            try {
+              await downloadDepartmentTemplate();
+              toast.success("Berhasil", { description: "Template berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description:
+                  err?.response?.data?.message || err.message || "Gagal download template"
+              });
+            } finally {
+              setIsDownloadingTemplate(false);
+            }
+          }}>
+          {isDownloadingTemplate ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+          )}
+          {isDownloadingTemplate ? "Download..." : "Download Template"}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={isDownloadingData}
+          onClick={async () => {
+            setIsDownloadingData(true);
+            try {
+              await downloadDepartmentExcel();
+              toast.success("Berhasil", { description: "Data berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description: err?.response?.data?.message || err.message || "Gagal download data"
+              });
+            } finally {
+              setIsDownloadingData(false);
+            }
+          }}>
+          {isDownloadingData ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">download</span>
+          )}
+          {isDownloadingData ? "Download..." : "Download Data"}
+        </Button>
+        <span className="w-px h-7 bg-border mx-1" />
+        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+          <span className="material-symbols-outlined text-lg">upload</span>
+          Upload Excel
+        </Button>
+        <Button variant="default" onClick={() => navigate("/add-department")} className="shadow-md">
+          <span className="material-symbols-outlined text-lg">add</span>
+          Tambah Departemen
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -336,6 +327,12 @@ const DepartmentList = () => {
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-center gap-1">
                           <button
+                            onClick={() => navigate(`/detail-department?id=${department.id}`)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+                            title="Detail">
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
                             onClick={() => navigate(`/edit-department?id=${department.id}`)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
                             title="Edit">
@@ -401,6 +398,31 @@ const DepartmentList = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="material-symbols-outlined opacity-80">lightbulb</span>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+        </div>
+        <ul className="space-y-2">
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Departemen membantu mengelompokkan jabatan berdasarkan fungsi kerja.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Pastikan setiap departemen memiliki deskripsi yang jelas.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Gunakan status untuk mengatur visibilitas departemen di sistem.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Download template untuk menambahkan banyak departemen sekaligus.</span>
+          </li>
+        </ul>
       </div>
 
       <Modal

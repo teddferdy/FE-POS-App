@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
 
@@ -62,6 +63,8 @@ const EmployeeList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || {};
+  const activeCount = stats.active ?? 0;
+  const inactiveCount = stats.inactive ?? 0;
 
   const handleDelete = (employee) => {
     setDeleteTarget(employee);
@@ -76,26 +79,17 @@ const EmployeeList = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Manajemen SDM</span>
-            <span>/</span>
-            <span className="text-primary font-semibold">Kelola Karyawan</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Kelola Karyawan</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Pusat kendali manajemen SDM. Atur akses, pantau status keaktifan, dan kelola penugasan
-            karyawan di seluruh cabang.
-          </p>
-        </div>
+      <PageHeader
+        breadcrumbs={[{ label: "Manajemen SDM" }, { label: "Kelola Karyawan" }]}
+        title="Kelola Karyawan"
+        description="Pusat kendali manajemen SDM. Atur akses, pantau status keaktifan, dan kelola penugasan karyawan di seluruh cabang.">
         <Button
           onClick={() => navigate("/add-employee")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">person_add</span>
           Tambah Karyawan
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -119,34 +113,32 @@ const EmployeeList = () => {
               Karyawan Aktif
             </p>
             <h3 className="text-3xl font-bold text-foreground">
-              {stats?.active?.toLocaleString() || "0"}
+              {activeCount.toLocaleString() || "0"}
             </h3>
             <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              {total > 0 ? Math.round(((stats?.active || 0) / total) * 100) : 0}% Tingkat Keaktifan
+              {total > 0 ? Math.round((activeCount / total) * 100) : 0}% Tingkat Keaktifan
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">how_to_reg</span>
           </div>
         </div>
-        {/* <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Cabang Tercover
+            <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+              Karyawan Nonaktif
             </p>
-            <h3 className="text-3xl font-bold text-foreground">
-              {stats?.locations || data?.locations || "0"}
-            </h3>
-            <p className="text-xs font-semibold text-tertiary flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-sm">storefront</span>
-              Tersebar di seluruh cabang
+            <h3 className="text-3xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
+            <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+              <span className="material-symbols-outlined text-sm">cancel</span>
+              Perlu perhatian
             </p>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">domain</span>
+          <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
-        </div> */}
+        </div>
       </div>
 
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -387,17 +379,29 @@ const EmployeeList = () => {
         </div>
       </div>
 
-      <div className="bg-primary-fixed/30 border border-primary-fixed rounded-xl p-6 flex gap-4 items-start">
-        <div className="bg-primary text-white p-2 rounded-lg shrink-0">
-          <span className="material-symbols-outlined">lightbulb</span>
+      <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="material-symbols-outlined opacity-80">lightbulb</span>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
         </div>
-        <div>
-          <h4 className="text-base font-semibold text-on-primary-fixed">Tips Manajemen Karyawan</h4>
-          <p className="text-sm text-on-primary-fixed-variant mt-1">
-            Gunakan filter &quot;Cabang&quot; untuk melihat beban kerja per lokasi secara cepat.
-            Anda juga dapat mengunduh laporan karyawan dalam format CSV melalui menu Settings.
-          </p>
-        </div>
+        <ul className="space-y-2">
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Gunakan filter cabang untuk melihat beban kerja per lokasi secara cepat.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Unduh laporan karyawan dalam format Excel melalui menu download data.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Pastikan data karyawan selalu diperbarui untuk akurasi penggajian.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Gunakan status aktif/nonaktif untuk mengelola akses karyawan.</span>
+          </li>
+        </ul>
       </div>
 
       <Modal

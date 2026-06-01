@@ -2,7 +2,15 @@ import { axiosInstance } from ".";
 
 export const getAllCategory = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category?store=${payload.location}`
+    `/category/get-category-all?store=${payload.location || ""}&page=1&limit=50&status=all`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getAllCategoryActive = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/category/get-category-all?store=${payload.location || ""}&status=true`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
@@ -18,7 +26,7 @@ export const getAllCategoryTable = async ({ location, limit, page, statusCategor
 
 export const addCategory = async (payload) => {
   const { data, status } = await axiosInstance.post("/category/add-new-category", payload);
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
 
@@ -27,7 +35,13 @@ export const editCategory = async (payload) => {
     `/category/edit-category/${payload.id}`,
     payload
   );
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);
+  return data;
+};
+
+export const getCategoryById = async (payload) => {
+  const { data, status } = await axiosInstance.get(`/category/get-category/${payload.id}`);
+  if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
@@ -39,30 +53,38 @@ export const deleteCategory = async (payload) => {
   return data;
 };
 
-export const downloadExcel = async () => {
-  const { data, status } = await axiosInstance.get(`/category/download-excel`, {
-    headers: {
-      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    },
-    responseType: "arraybuffer" // This ensures we handle the binary data correctly
+const downloadBlob = async (url, filename) => {
+  const { data, status } = await axiosInstance.get(url, {
+    responseType: "arraybuffer"
   });
 
-  if (status !== 200) throw new Error(`${data.message}`);
+  if (status !== 200) throw new Error("Download failed");
 
-  // Create the filename with .xlsx extension
-  const outputFilename = `${Date.now()}-category.xlsx`;
-
-  // Create a blob with the correct MIME type for Excel files
   const blob = new Blob([data], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
 
-  // Generate URL for the blob and download
-  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", outputFilename);
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};
+
+export const downloadExcel = async () => {
+  return downloadBlob(`/category/download`, `${Date.now()}-category.xlsx`);
+};
+
+export const downloadTemplate = async () => {
+  return downloadBlob(`/category/download-template`, `template-kategori.xlsx`);
+};
+
+export const uploadExcel = async (payload) => {
+  const { data, status } = await axiosInstance.post("/category/upload-excel", payload, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
 };

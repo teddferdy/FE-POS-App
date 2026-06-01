@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getAllProductTable, deleteProduct } from "@/services/product";
+import { getAllCategoryActive } from "@/services/category";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -34,13 +36,30 @@ const ProductList = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortFilter, setSortFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [noStoreModal, setNoStoreModal] = useState(false);
 
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
   const locationParam = searchParams.get("location");
 
-  if (role === "super_admin" && !locationParam) {
-    navigate("/location-list", { replace: true });
+  const { data: locationsData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-all"],
+    getAllLocation,
+    { enabled: role === "super_admin" }
+  );
+
+  const locations = locationsData?.data || [];
+
+  useEffect(() => {
+    if (role !== "super_admin" || isLoadingLocations) return;
+    if (locations.length === 0) {
+      setNoStoreModal(true);
+    } else if (!locationParam) {
+      navigate("/location-list", { replace: true });
+    }
+  }, [role, locations, locationParam, isLoadingLocations, navigate]);
+
+  if (role === "super_admin" && !isLoadingLocations && !locationParam && locations.length > 0) {
     return null;
   }
 
@@ -49,6 +68,14 @@ const ProductList = () => {
     () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
     { keepPreviousData: true }
   );
+
+  const { data: categoriesData } = useQuery(
+    ["categories-active", locationParam],
+    () => getAllCategoryActive({ location: locationParam || "" }),
+    { enabled: !!locationParam || role !== "super_admin" }
+  );
+
+  const categories = categoriesData?.data || [];
 
   const deleteMutation = useMutation(deleteProduct, {
     onSuccess: () => {
@@ -196,9 +223,11 @@ const ProductList = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
             <option value="">Semua Kategori</option>
-            <option value="Makanan Berat">Makanan Berat</option>
-            <option value="Minuman">Minuman</option>
-            <option value="Snack">Snack</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
           </select>
           <select
             value={sortFilter}
@@ -349,6 +378,15 @@ const ProductList = () => {
         title="Hapus Produk?"
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
+      />
+      <Modal
+        type="confirm"
+        open={noStoreModal}
+        onOpenChange={setNoStoreModal}
+        title="Toko Belum Dibuat"
+        description="Belum ada toko yang terdaftar. Silakan tambah toko terlebih dahulu sebelum mengelola produk."
+        confirmText="Tambah Toko"
+        onConfirm={() => navigate("/add-location")}
       />
     </div>
   );

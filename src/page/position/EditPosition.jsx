@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 import {
   Select,
   SelectContent,
@@ -119,23 +120,15 @@ const EditPosition = () => {
 
   return (
     <div className="space-y-8">
-      <div className="mb-xl">
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-          <span>Manajemen SDM</span>
-          <span>/</span>
-          <button
-            onClick={() => navigate("/position-list")}
-            className="hover:text-primary transition-colors">
-            Kelola Jabatan
-          </button>
-          <span>/</span>
-          <span className="text-primary font-semibold">Edit Jabatan</span>
-        </nav>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Jabatan</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Perbarui informasi dan level akses untuk jabatan ini.
-        </p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Manajemen SDM" },
+          { label: "Kelola Jabatan", href: "/position-list" },
+          { label: "Edit Jabatan" }
+        ]}
+        title="Edit Jabatan"
+        description="Perbarui informasi dan level akses untuk jabatan ini."
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">

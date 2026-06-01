@@ -1,56 +1,52 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
-import { getAllPositionTable } from "@/services/position";
+import { getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 
-const DetailPosition = () => {
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
+
+const DetailDepartment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const positionId = searchParams.get("positionID");
+  const departmentId = searchParams.get("id");
 
-  const { data, isLoading } = useQuery(
-    ["position-detail", positionId],
-    () => getAllPositionTable({ page: 1, limit: 100, statusRole: "all" }),
-    {
-      enabled: !!positionId,
-      select: (res) => {
-        const list = res?.data || [];
-        return list.find((p) => String(p.id) === positionId);
-      }
-    }
+  const { data: departmentData, isLoading } = useQuery(
+    ["department-detail", departmentId],
+    () => getDepartmentById({ id: departmentId }),
+    { enabled: !!departmentId }
   );
 
-  const position = data;
+  const dept = departmentData?.data || departmentData?.department || {};
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "-";
-    try {
-      return format(new Date(dateStr), "dd MMM yyyy", { locale: id });
-    } catch {
-      return "-";
-    }
-  };
-
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return "-";
-    try {
-      return format(new Date(dateStr), "dd MMM yyyy, HH:mm", { locale: id });
-    } catch {
-      return "-";
-    }
-  };
-
-  if (!positionId) {
+  if (!departmentId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>ID posisi tidak ditemukan</p>
-        <Button variant="outline" onClick={() => navigate("/position-list")}>
+        <span className="material-symbols-outlined text-4xl">domain</span>
+        <p>ID departemen tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/department-list")}>
           Kembali
         </Button>
       </div>
@@ -65,12 +61,12 @@ const DetailPosition = () => {
     );
   }
 
-  if (!position) {
+  if (!dept || !dept.id) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>Posisi tidak ditemukan</p>
-        <Button variant="outline" onClick={() => navigate("/position-list")}>
+        <span className="material-symbols-outlined text-4xl">domain</span>
+        <p>Departemen tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/department-list")}>
           Kembali
         </Button>
       </div>
@@ -81,17 +77,17 @@ const DetailPosition = () => {
     <div className="space-y-8">
       <PageHeader
         breadcrumbs={[
-          { label: "Manajemen SDM" },
-          { label: "Kelola Posisi", href: "/position-list" },
-          { label: position.name }
+          { label: "Dashboard", href: "/dashboard-super-admin" },
+          { label: "Kelola Departemen", href: "/department-list" },
+          { label: dept.name }
         ]}
-        title={position.name}
-        description="Informasi detail jabatan dan sistem.">
+        title={dept.name}
+        description="Informasi detail departemen dan sistem.">
         <Button
-          onClick={() => navigate(`/edit-position?id=${position.id}`)}
+          onClick={() => navigate(`/edit-department?id=${dept.id}`)}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">edit</span>
-          Edit Posisi
+          Edit Departemen
         </Button>
       </PageHeader>
 
@@ -99,22 +95,22 @@ const DetailPosition = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-              <span className="material-symbols-outlined text-primary">badge</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Jabatan</h3>
+              <span className="material-symbols-outlined text-primary">domain</span>
+              <h3 className="text-base font-semibold text-foreground">Informasi Departemen</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Jabatan
+                  Nama Departemen
                 </label>
-                <p className="text-sm font-semibold text-foreground mt-1">{position.name || "-"}</p>
+                <p className="text-sm font-semibold text-foreground mt-1">{dept.name || "-"}</p>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  ID Jabatan
+                  ID Departemen
                 </label>
                 <p className="text-sm font-semibold text-foreground mt-1 font-mono">
-                  #{position.id || "-"}
+                  #{dept.id || "-"}
                 </p>
               </div>
               <div>
@@ -124,14 +120,14 @@ const DetailPosition = () => {
                 <div>
                   <span
                     className={`inline-flex items-center gap-1 px-3 py-1 mt-1 rounded-full text-xs font-bold uppercase tracking-tight ${
-                      position.status
+                      dept.status
                         ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
                         : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
                     }`}>
                     <span className="material-symbols-outlined text-sm">
-                      {position.status ? "check_circle" : "cancel"}
+                      {dept.status ? "check_circle" : "cancel"}
                     </span>
-                    {position.status ? "Active" : "Inactive"}
+                    {dept.status ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>
@@ -141,7 +137,7 @@ const DetailPosition = () => {
                 Deskripsi
               </label>
               <p className="text-sm text-foreground mt-1">
-                {position.description || "Tidak ada deskripsi"}
+                {dept.description || "Tidak ada deskripsi"}
               </p>
             </div>
           </div>
@@ -165,9 +161,9 @@ const DetailPosition = () => {
                     Dibuat Pada
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {formatDate(position.createdAt)}
+                    {formatDate(dept.createdAt)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{position.createdBy || "System"}</p>
+                  <p className="text-xs text-muted-foreground">{dept.createdBy || "System"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -179,9 +175,9 @@ const DetailPosition = () => {
                     Diperbarui Pada
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {formatDateTime(position.updatedAt)}
+                    {formatDate(dept.updatedAt)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{position.modifiedBy || "System"}</p>
+                  <p className="text-xs text-muted-foreground">{dept.modifiedBy || "System"}</p>
                 </div>
               </div>
             </div>
@@ -192,4 +188,4 @@ const DetailPosition = () => {
   );
 };
 
-export default DetailPosition;
+export default DetailDepartment;

@@ -1,17 +1,18 @@
-import React, { useState, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "react-query";
+import { useQuery, useMutation } from "react-query";
 import { toast } from "sonner";
-import { addCategory } from "@/services/category";
+import { getCategoryById, editCategory } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const iconSections = [
@@ -319,8 +320,11 @@ const quickIcons = [
 
 const allIconsFlat = iconSections.flatMap((s) => s.icons);
 
-const AddCategory = () => {
+const EditCategory = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get("id");
+
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("");
   const [iconSearch, setIconSearch] = useState("");
@@ -330,6 +334,14 @@ const AddCategory = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const fileInputRef = useRef(null);
+
+  const { data: categoryData, isLoading: categoryLoading } = useQuery(
+    ["category-edit", categoryId],
+    () => getCategoryById({ id: categoryId }),
+    { enabled: !!categoryId }
+  );
+
+  const category = categoryData?.data || categoryData?.category || {};
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -348,7 +360,19 @@ const AddCategory = () => {
     }
   });
 
-  const createMutation = useMutation(addCategory, {
+  useEffect(() => {
+    if (!category || !category.id) return;
+    form.reset({
+      name: category.name || "",
+      description: category.description || "",
+      isActive: category.status ?? category.isActive ?? true
+    });
+    if (category.image) {
+      setSelectedIcon(category.image.startsWith("http") ? "" : category.image);
+    }
+  }, [category, form]);
+
+  const updateMutation = useMutation(editCategory, {
     onSuccess: () => {
       setIsSubmitting(false);
       setSuccessModal(true);
@@ -386,8 +410,11 @@ const AddCategory = () => {
       payload.append("image", selectedIcon);
     } else if (selectedImage) {
       payload.append("image", selectedImage);
+    } else if (category.image && !category.image.startsWith("http")) {
+      payload.append("image", category.image);
     }
-    createMutation.mutate(payload);
+    payload.append("id", category.id || category._id);
+    updateMutation.mutate(payload);
   };
 
   const filteredIconSections = iconSearch.trim() ? null : iconSections;
@@ -400,29 +427,33 @@ const AddCategory = () => {
       )
     : [];
 
+  if (categoryLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Admin Console</span>
-            <span>/</span>
-            <button
-              onClick={() => navigate("/category-list")}
-              className="hover:text-primary transition-colors">
-              Kelola Kategori
-            </button>
-            <span>/</span>
-            <span className="text-primary font-semibold">Tambah Kategori Baru</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Tambah Kategori Baru
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Definisikan kelompok produk baru untuk memudahkan pengelolaan inventaris Anda.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Admin Console" },
+          { label: "Kelola Kategori", href: "/category-list" },
+          { label: "Edit Kategori" }
+        ]}
+        title="Edit Kategori"
+        description="Perbarui informasi kelompok produk yang telah ada.">
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          Kembali ke Daftar
+        </Button>
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="gap-2">
+          <span className="material-symbols-outlined text-lg">save</span>
+          Simpan Perubahan
+        </Button>
+      </PageHeader>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -543,6 +574,15 @@ const AddCategory = () => {
                         </div>
                         <p className="text-sm font-semibold text-foreground">Ikon Terpilih</p>
                       </div>
+                    ) : category.image && !category.image.startsWith("http") ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                          <span className="material-symbols-outlined text-6xl">
+                            {category.image}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">Ikon Saat Ini</p>
+                      </div>
                     ) : (
                       <>
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
@@ -611,6 +651,17 @@ const AddCategory = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-primary text-base">info</span>
+                  <span className="text-sm font-semibold text-primary">Tips Penamaan</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Gunakan nama kategori yang singkat dan jelas agar mudah ditemukan oleh pelanggan.
+                  Gunakan deskripsi untuk menjelaskan cakupan produk dalam kategori tersebut.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -619,7 +670,7 @@ const AddCategory = () => {
               Batal
             </Button>
             <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
-              Simpan Kategori
+              Simpan Perubahan
             </Button>
           </div>
         </form>
@@ -748,7 +799,7 @@ const AddCategory = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title="Data Berhasil Diubah"
         onConfirm={() => navigate("/category-list")}
       />
       <Modal
@@ -763,4 +814,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default EditCategory;

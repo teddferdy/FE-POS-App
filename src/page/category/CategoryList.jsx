@@ -2,11 +2,19 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { getAllCategoryTable, deleteCategory, downloadExcel } from "@/services/category";
+import { Loader2 } from "lucide-react";
+import {
+  getAllCategoryTable,
+  deleteCategory,
+  downloadTemplate,
+  downloadExcel
+} from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import UploadCategoryModal from "@/page/category/components/UploadCategoryModal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -20,6 +28,28 @@ const getCategoryIcon = (name) => {
   return categoryIcon[key] || "category";
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
+
 const CategoryList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -29,6 +59,9 @@ const CategoryList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const locationParam = searchParams.get("location");
 
@@ -58,6 +91,21 @@ const CategoryList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
+  // Extract stats from BE response if available, otherwise calculate from current page data
+  const statsFromBE = data?.stats || {};
+  const hasBEStats =
+    statsFromBE.total !== undefined ||
+    statsFromBE.active !== undefined ||
+    statsFromBE.inactive !== undefined;
+
+  const statsTotal = hasBEStats ? statsFromBE.total || total : total;
+  const activeCount = hasBEStats
+    ? statsFromBE.active || 0
+    : categories.filter((cat) => cat.status === "active" || cat.isActive).length;
+  const inactiveCount = hasBEStats
+    ? statsFromBE.inactive || 0
+    : categories.filter((cat) => cat.status === "inactive" || !cat.isActive).length;
+
   const handleDelete = (id) => {
     setDeleteTarget(id);
   };
@@ -69,10 +117,6 @@ const CategoryList = () => {
     }
   };
 
-  const handleExport = () => {
-    downloadExcel();
-  };
-
   const filtered = categories.filter((cat) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -82,16 +126,11 @@ const CategoryList = () => {
     );
   });
 
-  const activeCount = categories.filter((cat) => cat.status === "active" || cat.isActive).length;
-  const inactiveCount = categories.filter(
-    (cat) => cat.status === "inactive" || !cat.isActive
-  ).length;
-
   const stats = [
     {
       icon: "category",
       label: "Total Kategori",
-      value: total,
+      value: statsTotal,
       badge: `${categories.length} ditampilkan`,
       iconBg: "bg-primary/10",
       iconColor: "text-primary"
@@ -100,7 +139,7 @@ const CategoryList = () => {
       icon: "check_circle",
       label: "Kategori Aktif",
       value: activeCount,
-      badge: `${total > 0 ? Math.round((activeCount / total) * 100) : 0}%`,
+      badge: `${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`,
       iconBg: "bg-green-100 dark:bg-green-900/40",
       iconColor: "text-green-700 dark:text-green-300"
     },
@@ -108,51 +147,102 @@ const CategoryList = () => {
       icon: "cancel",
       label: "Kategori Nonaktif",
       value: inactiveCount,
-      badge: "Perlu Ditinjau",
+      badge: `${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`,
       iconBg: "bg-red-100 dark:bg-red-900/40",
-      iconColor: "text-red-700 dark:text-red-300"
+      iconColor: "text-red-700 dark:text-red-300",
+      danger: true
     }
   ];
 
   return (
     <div className="space-y-8">
-      <div>
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-          <span>Admin Console</span>
-          <span>/</span>
-          <span className="text-primary font-semibold">Kelola Kategori</span>
-        </nav>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Daftar Kategori</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Kelola pengelompokan produk dan inventaris toko Anda.
-            </p>
-          </div>
-          <Button
-            onClick={() => navigate("/add-category")}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-            <span className="material-symbols-outlined text-lg">add</span>
-            Tambah Kategori Baru
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Kategori" }]}
+        title="Daftar Kategori"
+        description="Kelola pengelompokan produk dan inventaris toko Anda.">
+        <Button
+          variant="outline"
+          disabled={isDownloadingTemplate}
+          onClick={async () => {
+            setIsDownloadingTemplate(true);
+            try {
+              await downloadTemplate();
+              toast.success("Berhasil", { description: "Template berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description:
+                  err?.response?.data?.message || err.message || "Gagal download template"
+              });
+            } finally {
+              setIsDownloadingTemplate(false);
+            }
+          }}>
+          {isDownloadingTemplate ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+          )}
+          {isDownloadingTemplate ? "Download..." : "Download Template"}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={isDownloadingData}
+          onClick={async () => {
+            setIsDownloadingData(true);
+            try {
+              await downloadExcel();
+              toast.success("Berhasil", { description: "Data berhasil di-download" });
+            } catch (err) {
+              toast.error("Gagal", {
+                description: err?.response?.data?.message || err.message || "Gagal download data"
+              });
+            } finally {
+              setIsDownloadingData(false);
+            }
+          }}>
+          {isDownloadingData ? (
+            <Loader2 size={16} className="mr-1 animate-spin" />
+          ) : (
+            <span className="material-symbols-outlined text-lg mr-1">download</span>
+          )}
+          {isDownloadingData ? "Download..." : "Download Data"}
+        </Button>
+        <span className="w-px h-7 bg-border mx-1" />
+        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+          <span className="material-symbols-outlined text-lg">upload</span>
+          Upload Excel
+        </Button>
+        <Button onClick={() => navigate("/add-category")} className="shadow-md">
+          <span className="material-symbols-outlined text-lg">add</span>
+          Tambah Kategori Baru
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-card p-6 rounded-xl shadow-sm border border-border">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 ${stat.iconBg} rounded-lg`}>
-                <span className={`material-symbols-outlined ${stat.iconColor}`}>{stat.icon}</span>
+          <div
+            key={stat.label}
+            className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
+            <div className="flex justify-between items-start w-full mb-4">
+              <div
+                className={`p-3 ${stat.danger ? "bg-red-700 dark:bg-red-950" : stat.iconBg} rounded-lg`}>
+                <span
+                  className={`material-symbols-outlined ${stat.danger ? "text-white" : stat.iconColor}`}>
+                  {stat.icon}
+                </span>
               </div>
-              <span className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-1 rounded">
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded ${stat.danger ? "bg-red-500/30 text-red-100" : "bg-muted text-muted-foreground"}`}>
                 {stat.badge}
               </span>
             </div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <p
+              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
               {stat.label}
             </p>
-            <h3 className="text-3xl font-bold text-foreground">{stat.value}</h3>
+            <h3 className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
+              {stat.value}
+            </h3>
           </div>
         ))}
       </div>
@@ -194,10 +284,6 @@ const CategoryList = () => {
               <span className="material-symbols-outlined text-base">filter_list</span>
               Filter
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 h-9" onClick={handleExport}>
-              <span className="material-symbols-outlined text-base">file_download</span>
-              Ekspor
-            </Button>
           </div>
         </div>
 
@@ -227,6 +313,12 @@ const CategoryList = () => {
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                     Status
                   </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Tanggal Dibuat
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                    Diperbarui
+                  </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
                     Actions
                   </th>
@@ -234,7 +326,7 @@ const CategoryList = () => {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map((cat) => {
-                  const isActive = cat.status === "active" || cat.isActive;
+                  const isActive = cat.status || cat.isActive;
                   return (
                     <tr
                       key={cat.id || cat._id}
@@ -247,9 +339,23 @@ const CategoryList = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                            <span className="material-symbols-outlined text-primary">
-                              {getCategoryIcon(cat.name)}
-                            </span>
+                            {cat.image ? (
+                              cat.image.startsWith("http") ? (
+                                <img
+                                  src={cat.image}
+                                  alt={cat.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <span className="material-symbols-outlined text-primary">
+                                  {cat.image}
+                                </span>
+                              )
+                            ) : (
+                              <span className="material-symbols-outlined text-primary">
+                                {getCategoryIcon(cat.name)}
+                              </span>
+                            )}
                           </div>
                           <span className="text-sm font-semibold text-foreground">{cat.name}</span>
                         </div>
@@ -274,11 +380,24 @@ const CategoryList = () => {
                           {isActive ? "Aktif" : "Nonaktif"}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
+                        {formatDate(cat.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
+                        {formatDate(cat.updatedAt)}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
+                            onClick={() => navigate(`/detail-category?id=${cat.id || cat._id}`)}
+                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                            title="Detail">
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
                             onClick={() => navigate(`/edit-category?id=${cat.id || cat._id}`)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
+                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                            title="Edit">
                             <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
                           <button
@@ -342,6 +461,33 @@ const CategoryList = () => {
         </div>
       </div>
 
+      <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="material-symbols-outlined opacity-80">lightbulb</span>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+        </div>
+        <ul className="space-y-2">
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>
+              Gunakan nama kategori yang singkat dan jelas untuk memudahkan pencarian produk.
+            </span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Atur status kategori untuk mengontrol visibilitas di toko.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Manfaatkan ikon untuk mempermudah identifikasi kategori oleh pelanggan.</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>Download template untuk menambahkan banyak kategori sekaligus.</span>
+          </li>
+        </ul>
+      </div>
+
       <Modal
         type="confirm"
         open={!!deleteTarget}
@@ -349,6 +495,11 @@ const CategoryList = () => {
         title="Hapus Kategori?"
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
+      />
+      <UploadCategoryModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["categories"])}
       />
     </div>
   );

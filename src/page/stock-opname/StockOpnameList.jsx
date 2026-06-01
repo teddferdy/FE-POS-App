@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,14 +13,21 @@ import {
   ClipboardList,
   AlertTriangle,
   TrendingUp,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
-import { getStockOpname, deleteStockOpname, exportStockOpnameExcel } from "@/services/stock";
+import {
+  getStockOpname,
+  deleteStockOpname,
+  exportStockOpnameExcel,
+  exportStockOpnameByIds
+} from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { Checkbox } from "@/components/ui/checkbox";
 import Modal from "@/components/organism/modal";
 
 const statusColors = {
@@ -51,6 +58,7 @@ const StockOpnameList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [noDataModal, setNoDataModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const { data, isLoading } = useQuery(
     ["stockOpname", page, limit, warehouseFilter, statusFilter],
@@ -82,6 +90,44 @@ const StockOpnameList = () => {
     return true;
   });
 
+  const allSelected = filteredItems.length > 0 && selectedItems.length === filteredItems.length;
+  const someSelected = selectedItems.length > 0 && !allSelected;
+
+  const toggleSelectAll = useCallback(() => {
+    if (allSelected) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredItems.map((item) => item.id || item._id));
+    }
+  }, [allSelected, filteredItems]);
+
+  const toggleSelectItem = useCallback((id) => {
+    setSelectedItems((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedItems([]);
+  }, []);
+
+  const handleExportSelected = useCallback(() => {
+    exportStockOpnameByIds(selectedItems)
+      .then(() => {
+        toast.success("Berhasil", {
+          description: `${selectedItems.length} data berhasil diexport`
+        });
+        clearSelection();
+      })
+      .catch((err) => {
+        toast.error("Gagal", {
+          description: err?.response?.data?.message || err.message || "Gagal export data"
+        });
+      });
+  }, [selectedItems, clearSelection]);
+
+  useEffect(() => {
+    clearSelection();
+  }, [page, search, warehouseFilter, statusFilter, clearSelection]);
+
   const deleteMutation = useMutation(deleteStockOpname, {
     onSuccess: () => {
       toast.success("Berhasil", { description: "Stock opname berhasil dihapus" });
@@ -100,6 +146,59 @@ const StockOpnameList = () => {
       deleteMutation.mutate(deleteTarget);
     }
   };
+
+  const toastIdRef = React.useRef(null);
+
+  useEffect(() => {
+    if (selectedItems.length > 0) {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+      }
+      toastIdRef.current = toast(
+        <div className="flex items-center justify-between gap-4 w-full">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">Export Stock Opname</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {selectedItems.length} data dipilih
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => {
+                handleExportSelected();
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <FileDown size={14} />
+              Export
+            </button>
+            <button
+              onClick={() => {
+                clearSelection();
+                if (toastIdRef.current) {
+                  toast.dismiss(toastIdRef.current);
+                  toastIdRef.current = null;
+                }
+              }}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+        </div>,
+        { duration: Infinity, position: "bottom-center" }
+      );
+    } else {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+    }
+    return () => {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+    };
+  }, [selectedItems, handleExportSelected, clearSelection]);
 
   const stats = [
     {
@@ -302,9 +401,10 @@ const StockOpnameList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider w-12">
-                    <input
-                      type="checkbox"
-                      className="rounded border-input text-primary focus:ring-primary"
+                    <Checkbox
+                      checked={someSelected ? "indeterminate" : allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      className="data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary"
                     />
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
@@ -339,21 +439,25 @@ const StockOpnameList = () => {
                   </tr>
                 ) : (
                   filteredItems.map((item, index) => {
+                    const id = item.id || item._id;
                     const status = item.status || "draft";
                     const statusStyle = statusColors[status] || statusColors.draft;
                     const isDraft = status === "draft";
                     const isCompleted = status === "completed";
+                    const isChecked = selectedItems.includes(id);
 
                     return (
                       <tr
-                        key={item.id || item._id || index}
+                        key={id || index}
                         className={`hover:bg-accent/30 transition-colors group ${
                           isCompleted ? "bg-green-50/50 dark:bg-green-950/10" : ""
-                        } ${status === "cancelled" ? "bg-red-50/50 dark:bg-red-950/10" : ""}`}>
+                        } ${status === "cancelled" ? "bg-red-50/50 dark:bg-red-950/10" : ""} ${
+                          isChecked ? "bg-primary/5" : ""
+                        }`}>
                         <td className="px-4 py-4">
-                          <input
-                            type="checkbox"
-                            className="rounded border-input text-primary focus:ring-primary"
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={() => toggleSelectItem(id)}
                           />
                         </td>
                         <td className="px-4 py-4">

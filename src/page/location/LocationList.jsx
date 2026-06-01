@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
 
 const LocationList = () => {
   const navigate = useNavigate();
@@ -126,30 +127,18 @@ const LocationList = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          Dashboard
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Kelola Toko</span>
-      </nav>
-
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Manajemen Lokasi Toko</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kelola daftar cabang, status operasional, dan informasi kontak toko Anda.
-          </p>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard-super-admin" },
+          { label: "Kelola Toko" }
+        ]}
+        title="Manajemen Lokasi Toko"
+        description="Kelola daftar cabang, status operasional, dan informasi kontak toko Anda.">
         <Button onClick={() => navigate("/add-location")} className="shrink-0">
           <Plus size={18} />
           Tambah Toko
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
