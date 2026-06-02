@@ -26,3 +26,5 @@ yarn-error.log*
 
 .early.coverage
 .vercel
+build-err.txt
+build-out.txt
