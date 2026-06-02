@@ -12,7 +12,7 @@ export const getUserByLocation = async (payload) => {
 
 export const getAllUsers = async ({ page = 1, limit = 10, search = "" }) => {
   const { data, status } = await axiosInstance.get(
-    `/auth/get-all-users?page=${page}&limit=${limit}&search=${search}`
+    `/auth/get-all-user?page=${page}&limit=${limit}&search=${search}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

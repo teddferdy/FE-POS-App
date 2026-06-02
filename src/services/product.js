@@ -43,8 +43,8 @@ export const editProduct = async (payload) => {
 };
 
 export const lookupBarcode = async (barcode) => {
-  const { data, status } = await axiosInstance.post("/pos/lookup-barcode", { barcode });
-  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  const { data, status } = await axiosInstance.get(`/pos/lookup-barcode?barcode=${barcode}`);
+  if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 

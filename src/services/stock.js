@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getStockHistory = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/stock-history?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}`
+    `/stock-history/get-all?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
@@ -112,7 +112,7 @@ export const downloadStockOpnameTemplate = async () => {
 };
 
 export const exportStockOpnameExcel = async () => {
-  const { data, status } = await axiosInstance.get("/stock-opname/export", {
+  const { data, status } = await axiosInstance.get("/stock-opname/download-excel", {
     responseType: "arraybuffer"
   });
   if (status !== 200) throw new Error("Gagal export data");
