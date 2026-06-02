@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
+import { useSocket } from "@/services/socket";
+import { useQueryClient } from "react-query";
+import { axiosInstance } from "@/services";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -189,7 +192,22 @@ const UserDropdown = () => {
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const unreadCount = 3;
+  const { newNotification } = useSocket() || {};
+  const queryClient = useQueryClient();
+
+  const { data: unreadData } = useQuery(
+    ["unread-notif-count"],
+    () => axiosInstance.get("/notification/unread").then((r) => r.data),
+    { refetchInterval: 30000 }
+  );
+
+  useEffect(() => {
+    if (newNotification) {
+      queryClient.invalidateQueries(["unread-notif-count"]);
+    }
+  }, [newNotification, queryClient]);
+
+  const unreadCount = unreadData?.data?.unreadCount || 0;
 
   return (
     <button
