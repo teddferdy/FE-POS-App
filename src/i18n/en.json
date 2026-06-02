@@ -2,6 +2,8 @@
   "header.selectStore": "Select Store",
   "header.search": "Search...",
   "header.logout": "Logout",
+  "header.settings": "Settings",
+  "header.notifications": "Notifications",
   "header.addStore": "Add Store",
   "header.noStore": "No Store Available",
   "header.allStore": "All Store",
@@ -1756,5 +1758,16 @@
   "page.product.form.successAddTitle": "Product Added",
   "page.product.form.successEditDesc": "Product has been updated successfully",
   "page.product.form.successEditTitle": "Product Updated",
-  "page.product.form.uploadImage": "Upload Image"
+  "page.product.form.uploadImage": "Upload Image",
+  "page.notification.title": "Notifications",
+  "page.notification.description": "Manage your system notifications",
+  "page.notification.empty": "No notifications",
+  "page.notification.emptyDesc": "You'll receive notifications when there is important activity",
+  "page.notification.markAllRead": "Mark All as Read",
+  "page.notification.item1.title": "Low Product Stock",
+  "page.notification.item1.desc": "Some products have stock below minimum level. Please restock soon.",
+  "page.notification.item2.title": "New Purchase Order",
+  "page.notification.item2.desc": "Purchase order #PO-0012 has been created and is pending approval.",
+  "page.notification.item3.title": "Payment Received",
+  "page.notification.item3.desc": "Payment of Rp 250,000 from order #ORD-089 has been confirmed."
 }

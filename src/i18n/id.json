@@ -2,6 +2,8 @@
   "header.selectStore": "Pilih Toko",
   "header.search": "Cari...",
   "header.logout": "Keluar",
+  "header.settings": "Pengaturan",
+  "header.notifications": "Notifikasi",
   "header.addStore": "Tambah Toko",
   "header.noStore": "Tidak Ada Toko",
   "header.allStore": "Semua Toko",
@@ -1756,5 +1758,16 @@
   "page.product.form.successAddTitle": "Produk Ditambahkan",
   "page.product.form.successEditDesc": "Produk berhasil diperbarui",
   "page.product.form.successEditTitle": "Produk Diperbarui",
-  "page.product.form.uploadImage": "Unggah Gambar"
+  "page.product.form.uploadImage": "Unggah Gambar",
+  "page.notification.title": "Notifikasi",
+  "page.notification.description": "Kelola notifikasi sistem Anda",
+  "page.notification.empty": "Tidak ada notifikasi",
+  "page.notification.emptyDesc": "Anda akan mendapatkan notifikasi saat ada aktivitas penting",
+  "page.notification.markAllRead": "Tandai Semua Dibaca",
+  "page.notification.item1.title": "Stok Produk Menipis",
+  "page.notification.item1.desc": "Beberapa produk memiliki stok di bawah batas minimum. Segera lakukan restock.",
+  "page.notification.item2.title": "Purchase Order Baru",
+  "page.notification.item2.desc": "Purchase order #PO-0012 telah dibuat dan menunggu persetujuan.",
+  "page.notification.item3.title": "Pembayaran Diterima",
+  "page.notification.item3.desc": "Pembayaran sebesar Rp 250.000 dari pesanan #ORD-089 telah dikonfirmasi."
 }

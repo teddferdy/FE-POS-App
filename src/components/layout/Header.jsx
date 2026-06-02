@@ -1,9 +1,13 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Moon, Sun, Bell, Search, Menu, Store, ChevronDown, Check, Building2 } from "lucide-react";
+import {
+  Moon, Sun, Bell, Search, Menu, Store, ChevronDown, Check, Building2,
+  Settings, LogOut, ChevronRight
+} from "lucide-react";
 import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
 
@@ -106,14 +110,91 @@ const StoreSelector = ({ cookie, setCookie }) => {
   );
 };
 
+const UserDropdown = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const [cookie, , removeCookie] = useCookies();
+
+  const user = cookie?.user;
+  const userName = user?.userName || user?.name || "Admin";
+  const userRole = user?.role || user?.roleType || "admin";
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleLogout = () => {
+    removeCookie("token");
+    removeCookie("user");
+    navigate("/");
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-xs font-bold shrink-0 hover:brightness-90 transition-all">
+        {userName.charAt(0).toUpperCase()}
+      </button>
+
+      {open && (
+        <div className="absolute top-full mt-2 right-0 w-56 bg-card border border-border rounded-xl shadow-lg z-50 py-2 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+            <p className="text-[11px] text-muted-foreground capitalize">{userRole.replace("_", " ")}</p>
+          </div>
+
+          <button
+            onClick={() => { setOpen(false); navigate("/global-setting"); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors">
+            <Settings size={16} className="text-muted-foreground" />
+            {t("header.settings")}
+            <ChevronRight size={14} className="ml-auto text-muted-foreground" />
+          </button>
+
+          <div className="border-t border-border mt-1 pt-1">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+              <LogOut size={16} />
+              {t("header.logout")}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NotificationBell = () => {
+  const navigate = useNavigate();
+  const unreadCount = 3;
+
+  return (
+    <button
+      onClick={() => navigate("/notification")}
+      className="relative p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+      <Bell size={18} />
+      {unreadCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full px-1 leading-none shadow-sm">
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </span>
+      )}
+    </button>
+  );
+};
+
 const Header = ({ onMenuToggle }) => {
   const { t } = useTranslation();
   const [cookie, setCookie] = useCookies();
   const { translation, updateTranslation } = translationSelect();
   const [showSearch, setShowSearch] = useState(false);
-
-  const user = cookie?.user;
-  const userName = user?.userName || user?.name || "Admin";
 
   const toggleTheme = () => {
     document.documentElement.classList.toggle("dark");
@@ -183,15 +264,10 @@ const Header = ({ onMenuToggle }) => {
           </button>
 
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-            <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-          </button>
+          <NotificationBell />
 
-          {/* Avatar */}
-          <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-xs font-bold shrink-0">
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          {/* User Dropdown */}
+          <UserDropdown />
         </div>
       </div>
 

@@ -98,6 +98,9 @@ import CashierPage from "./page/cashier/CashierPage";
 // Table
 import TableList from "./page/table/TableList";
 
+// Notification
+import NotificationPage from "./page/notification/NotificationPage";
+
 // Discount
 import DiscountList from "./page/discount/DiscountList";
 import AddDiscount from "./page/discount/AddDiscount";
@@ -244,6 +247,7 @@ function App() {
 
           <Route path="/stock-history" element={withLayout(<StockHistory />)} />
           <Route path="/low-stock" element={withLayout(<LowStock />)} />
+          <Route path="/notification" element={withLayout(<NotificationPage />)} />
 
           <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
           <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
