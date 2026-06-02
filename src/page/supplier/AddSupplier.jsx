@@ -5,10 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import {
-  X,
-  Save
-} from "lucide-react";
+import { X, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { addSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
@@ -49,7 +46,8 @@ const AddSupplier = () => {
     },
     onError: (err) => {
       toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message || t("page.supplier.toast.addFailed")
+        description:
+          err?.response?.data?.message || err.message || t("page.supplier.toast.addFailed")
       });
     }
   });
@@ -119,7 +117,10 @@ const AddSupplier = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
-                    <Input placeholder={t("page.supplier.form.contactPersonPlaceholder")} {...field} />
+                    <Input
+                      placeholder={t("page.supplier.form.contactPersonPlaceholder")}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -153,7 +154,11 @@ const AddSupplier = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("page.supplier.form.address")}</FormLabel>
-                  <Textarea placeholder={t("page.supplier.form.addressPlaceholder")} rows={3} {...field} />
+                  <Textarea
+                    placeholder={t("page.supplier.form.addressPlaceholder")}
+                    rows={3}
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

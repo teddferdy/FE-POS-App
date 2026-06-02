@@ -5,8 +5,18 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import {
-  Moon, Sun, Bell, Search, Menu, Store, ChevronDown, Check, Building2,
-  Settings, LogOut, ChevronRight
+  Moon,
+  Sun,
+  Bell,
+  Search,
+  Menu,
+  Store,
+  ChevronDown,
+  Check,
+  Building2,
+  Settings,
+  LogOut,
+  ChevronRight
 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
@@ -147,11 +157,16 @@ const UserDropdown = () => {
         <div className="absolute top-full mt-2 right-0 w-56 bg-card border border-border rounded-xl shadow-lg z-50 py-2 overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
-            <p className="text-[11px] text-muted-foreground capitalize">{userRole.replace("_", " ")}</p>
+            <p className="text-[11px] text-muted-foreground capitalize">
+              {userRole.replace("_", " ")}
+            </p>
           </div>
 
           <button
-            onClick={() => { setOpen(false); navigate("/global-setting"); }}
+            onClick={() => {
+              setOpen(false);
+              navigate("/global-setting");
+            }}
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors">
             <Settings size={16} className="text-muted-foreground" />
             {t("header.settings")}

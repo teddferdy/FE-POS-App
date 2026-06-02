@@ -86,8 +86,7 @@ const NotificationPage = () => {
                     ? "bg-primary/5 border-primary/20"
                     : "bg-card border-border hover:bg-accent/50"
                 }`}>
-                <div
-                  className={`p-2.5 rounded-full shrink-0 ${notif.iconBg} ${notif.iconColor}`}>
+                <div className={`p-2.5 rounded-full shrink-0 ${notif.iconBg} ${notif.iconColor}`}>
                   <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
