@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { useTranslation } from "react-i18next";
 import { getCategoryById } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -28,6 +29,7 @@ const formatDate = (dateStr) => {
 };
 
 const DetailCategory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryId = searchParams.get("id");
@@ -44,9 +46,9 @@ const DetailCategory = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">category</span>
-        <p>ID kategori tidak ditemukan</p>
+        <p>{t("page.category.detail.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/category-list")}>
-          Kembali
+          {t("page.category.detail.back")}
         </Button>
       </div>
     );
@@ -64,9 +66,9 @@ const DetailCategory = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">category</span>
-        <p>Kategori tidak ditemukan</p>
+        <p>{t("page.category.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/category-list")}>
-          Kembali
+          {t("page.category.detail.back")}
         </Button>
       </div>
     );
@@ -80,13 +82,13 @@ const DetailCategory = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/category-list")}
           className="hover:text-foreground transition-colors">
-          Kelola Kategori
+          {t("breadcrumb.category")}
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">{cat.name}</span>
@@ -120,11 +122,11 @@ const DetailCategory = () => {
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
                   />
-                  {isActive ? "Aktif" : "Nonaktif"}
+                  {isActive ? t("common.active") : t("common.inactive")}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground max-w-xl">
-                {cat.description || "Tidak ada deskripsi"}
+                {cat.description || t("page.category.detail.noDescription")}
               </p>
             </div>
           </div>
@@ -137,7 +139,7 @@ const DetailCategory = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                ID Kategori
+                {t("page.category.detail.id")}
               </p>
               <p className="text-sm font-semibold text-foreground mt-0.5 font-mono">
                 {cat.code || cat.idCategory || `#CAT-${String(cat.id).padStart(3, "0")}`}
@@ -150,7 +152,7 @@ const DetailCategory = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Jumlah Produk
+                {t("page.category.detail.productCount")}
               </p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {cat.productCount || cat.totalProduct || 0} Item
@@ -163,7 +165,7 @@ const DetailCategory = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Dibuat
+                {t("page.category.detail.created")}
               </p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {formatDate(cat.createdAt)}
@@ -176,7 +178,9 @@ const DetailCategory = () => {
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
           <span className="material-symbols-outlined text-primary">info</span>
-          <h3 className="text-base font-semibold text-foreground">Informasi Sistem</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            {t("page.category.detail.systemInfo")}
+          </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-start gap-3">
@@ -187,7 +191,7 @@ const DetailCategory = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Dibuat Pada
+                {t("page.category.detail.createdAt")}
               </p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {formatDate(cat.createdAt)}
@@ -201,7 +205,7 @@ const DetailCategory = () => {
             </div>
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Diperbarui Pada
+                {t("page.category.detail.updatedAt")}
               </p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {formatDate(cat.updatedAt)}
@@ -215,11 +219,11 @@ const DetailCategory = () => {
       <div className="flex justify-end gap-3">
         <Button variant="outline" onClick={() => navigate("/category-list")} className="gap-2">
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Kembali ke Daftar
+          {t("page.category.button.back")}
         </Button>
         <Button onClick={() => navigate(`/edit-category?id=${cat.id}`)} className="gap-2 shadow-md">
           <span className="material-symbols-outlined text-lg">edit</span>
-          Edit Kategori
+          {t("page.category.button.edit")}
         </Button>
       </div>
     </div>

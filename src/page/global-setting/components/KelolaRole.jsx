@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -34,6 +35,7 @@ const roles = [
 ];
 
 const KelolaRole = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
@@ -52,7 +54,7 @@ const KelolaRole = () => {
         <span
           className={`w-1.5 h-1.5 rounded-full ${status === "active" ? "bg-secondary" : "bg-outline-variant"}`}
         />
-        {status === "active" ? "Active" : "Inactive"}
+        {status === "active" ? t("common.active") : t("common.inactive")}
       </span>
     );
   };
@@ -66,17 +68,16 @@ const KelolaRole = () => {
             <span className="material-symbols-outlined text-sm">chevron_right</span>
             <span className="text-primary font-semibold">Kelola Role</span>
           </nav> */}
-          <h2 className="text-2xl font-bold">Kelola Role</h2>
+          <h2 className="text-2xl font-bold">{t("page.globalSetting.roleManagement.title")}</h2>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Kelola hak akses dan tanggung jawab setiap role pengguna dalam sistem Kinetic Ledger
-            untuk menjaga keamanan data.
+            {t("page.globalSetting.roleManagement.description")}
           </p>
         </div>
         <button
           onClick={() => navigate("/add-role")}
           className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20">
           <Plus size={18} />
-          <span className="font-medium">Tambah Role Baru</span>
+          <span className="font-medium">{t("page.globalSetting.roleManagement.addRole")}</span>
         </button>
       </div>
 
@@ -87,7 +88,7 @@ const KelolaRole = () => {
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Total Role
+              {t("page.globalSetting.roleManagement.totalRoles")}
             </p>
             <p className="text-lg font-bold">12</p>
           </div>
@@ -98,7 +99,7 @@ const KelolaRole = () => {
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Role Aktif
+              {t("page.globalSetting.roleManagement.activeRoles")}
             </p>
             <p className="text-lg font-bold">10</p>
           </div>
@@ -109,7 +110,7 @@ const KelolaRole = () => {
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Pendaftaran Baru
+              {t("page.globalSetting.roleManagement.newRegistrations")}
             </p>
             <p className="text-lg font-bold">+4</p>
           </div>
@@ -120,7 +121,7 @@ const KelolaRole = () => {
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Butuh Review
+              {t("page.globalSetting.roleManagement.needsReview")}
             </p>
             <p className="text-lg font-bold">2</p>
           </div>
@@ -130,9 +131,11 @@ const KelolaRole = () => {
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-2">
-            <span className="font-semibold">Daftar Hak Akses</span>
+            <span className="font-semibold">
+              {t("page.globalSetting.roleManagement.accessList")}
+            </span>
             <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded uppercase">
-              Master List
+              {t("page.globalSetting.roleManagement.masterList")}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -150,22 +153,22 @@ const KelolaRole = () => {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  ID Role
+                  {t("page.globalSetting.roleManagement.table.id")}
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Nama Role
+                  {t("page.globalSetting.roleManagement.table.name")}
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Deskripsi
+                  {t("page.globalSetting.roleManagement.table.description")}
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Jumlah Pengguna
+                  {t("page.globalSetting.roleManagement.table.users")}
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("common.status")}
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">
-                  Aksi
+                  {t("common.actions")}
                 </th>
               </tr>
             </thead>
@@ -202,14 +205,17 @@ const KelolaRole = () => {
 
         <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-muted/20">
           <span className="text-sm text-muted-foreground">
-            Menampilkan {paginatedRoles.length} dari {roles.length} role
+            {t("page.globalSetting.roleManagement.showing", {
+              count: paginatedRoles.length,
+              total: roles.length
+            })}
           </span>
           <div className="flex items-center gap-2">
             <button
               className="px-3 py-1.5 border border-border rounded-lg text-sm hover:bg-muted transition-all disabled:opacity-30"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}>
-              Sebelumnya
+              {t("page.globalSetting.roleManagement.previous")}
             </button>
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => (
@@ -229,7 +235,7 @@ const KelolaRole = () => {
               className="px-3 py-1.5 border border-border rounded-lg text-sm hover:bg-muted transition-all disabled:opacity-30"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}>
-              Selanjutnya
+              {t("page.globalSetting.roleManagement.next")}
             </button>
           </div>
         </div>

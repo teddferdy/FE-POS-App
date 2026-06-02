@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { editDepartment, getAllDepartment } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 
 const EditDepartment = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -39,12 +41,12 @@ const EditDepartment = () => {
 
   const editMutation = useMutation(editDepartment, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Departemen berhasil diperbarui" });
+      toast.success(t("common.success"), { description: t("page.department.toast.updateSuccess") });
       queryClient.invalidateQueries(["departments"]);
       navigate("/department-list");
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -72,9 +74,9 @@ const EditDepartment = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>ID departemen tidak ditemukan</p>
+        <p>{t("page.department.detail.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/department-list")}>
-          Kembali
+          {t("page.department.button.back")}
         </Button>
       </div>
     );
@@ -92,9 +94,9 @@ const EditDepartment = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>Departemen tidak ditemukan</p>
+        <p>{t("page.department.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/department-list")}>
-          Kembali
+          {t("page.department.button.back")}
         </Button>
       </div>
     );
@@ -104,12 +106,12 @@ const EditDepartment = () => {
     <div className="space-y-8">
       <PageHeader
         breadcrumbs={[
-          { label: "Kelola Karyawan" },
-          { label: "Kelola Departemen", href: "/department-list" },
-          { label: "Edit Departemen" }
+          { label: t("breadcrumb.employee") },
+          { label: t("breadcrumb.department"), href: "/department-list" },
+          { label: t("page.department.edit.title") }
         ]}
-        title="Edit Departemen"
-        description="Perbarui informasi unit atau divisi dalam struktur organisasi."
+        title={t("page.department.edit.title")}
+        description={t("page.department.edit.description")}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -117,7 +119,7 @@ const EditDepartment = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Nama Departemen <span className="text-destructive">*</span>
+                {t("page.department.form.name")} <span className="text-destructive">*</span>
               </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
@@ -126,7 +128,7 @@ const EditDepartment = () => {
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Research & Development"
+                  placeholder={t("page.department.form.namePlaceholder")}
                   className="pl-9"
                 />
               </div>
@@ -136,12 +138,12 @@ const EditDepartment = () => {
 
           <div className="flex flex-col gap-1.5 mb-5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Deskripsi Departemen
+              {t("page.department.form.description")}
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tuliskan fungsi dan tanggung jawab departemen ini..."
+              placeholder={t("page.department.form.descPlaceholder")}
               rows={4}
               className="resize-none"
             />
@@ -164,12 +166,14 @@ const EditDepartment = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Status {isActive ? "Aktif" : "Nonaktif"}
+                  {isActive
+                    ? t("page.department.form.statusActive")
+                    : t("page.department.form.statusInactive")}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {isActive
-                    ? "Departemen ini aktif dan dapat digunakan"
-                    : "Departemen ini tidak aktif"}
+                    ? t("page.department.form.activeDesc")
+                    : t("page.department.form.inactiveDesc")}
                 </p>
               </div>
             </div>
@@ -184,14 +188,14 @@ const EditDepartment = () => {
             onClick={() => navigate("/department-list")}
             className="gap-2">
             <span className="material-symbols-outlined text-lg">close</span>
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={editMutation.isLoading}
             className="gap-2 shadow-lg shadow-primary/20">
             <span className="material-symbols-outlined text-lg">save</span>
-            Simpan Perubahan
+            {t("page.department.button.saveChanges")}
           </Button>
         </div>
       </form>

@@ -53,6 +53,7 @@ import {
   SelectSeparator
 } from "@/components/ui/select";
 import UploadExcelModal from "./components/UploadExcelModal";
+import { useTranslation } from "react-i18next";
 
 const toInt = (val) => {
   if (val === null || val === undefined || val === "") return 0;
@@ -88,19 +89,19 @@ const getSelisihStyle = (value) => {
   return "text-foreground";
 };
 
-const getAvailabilityStatus = (stock) => {
+const getAvailabilityStatus = (stock, t) => {
   if (stock <= 0)
     return {
-      label: "Habis",
+      label: t("page.stockOpname.status.habis"),
       className: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
     };
   if (stock <= 10)
     return {
-      label: "Menipis",
+      label: t("page.stockOpname.status.menipis"),
       className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300"
     };
   return {
-    label: "Tersedia",
+    label: t("page.stockOpname.status.tersedia"),
     className: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
   };
 };
@@ -126,7 +127,7 @@ const createRow = (overrides = {}) => {
   };
 };
 
-const LokasiSelect = ({ value, locations, loading, onChange, onAddNew }) => {
+const LokasiSelect = ({ value, locations, loading, onChange, onAddNew, t }) => {
   if (loading) return <Skeleton className="h-9 w-full" />;
 
   return (
@@ -142,7 +143,7 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew }) => {
       <SelectTrigger className="h-9 border-0 border-b border-dashed border-muted-foreground/30 rounded-none focus:border-primary focus:border-solid shadow-none px-0 text-sm">
         <div className="flex items-center gap-2">
           <MapPin size={14} className="text-muted-foreground/40 shrink-0" />
-          <SelectValue placeholder="Pilih Lokasi" />
+          <SelectValue placeholder={t("page.stockOpname.form.selectLocation")} />
         </div>
       </SelectTrigger>
       <SelectContent>
@@ -154,7 +155,7 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew }) => {
         <SelectSeparator />
         <SelectItem value="__add__" className="text-primary font-medium">
           <div className="flex items-center gap-2">
-            <Building2 size={14} />+ Tambah Lokasi Baru
+            <Building2 size={14} />+ {t("page.stockOpname.button.addLocation")}
           </div>
         </SelectItem>
       </SelectContent>
@@ -163,6 +164,7 @@ const LokasiSelect = ({ value, locations, loading, onChange, onAddNew }) => {
 };
 
 const AddStockOpname = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -267,10 +269,13 @@ const AddStockOpname = () => {
     setIsDownloading(true);
     try {
       await downloadStockOpnameTemplate();
-      toast.success("Berhasil", { description: "Template berhasil di-download" });
+      toast.success(t("common.success"), {
+        description: t("page.stockOpname.toast.downloadSuccess")
+      });
     } catch (err) {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal download template"
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message || err.message || t("page.stockOpname.toast.downloadError")
       });
     } finally {
       setIsDownloading(false);
@@ -280,7 +285,9 @@ const AddStockOpname = () => {
   const handleUploadParsed = (parsedRows) => {
     const filled = parsedRows.filter((r) => r.kodeBarang || r.namaBarang);
     if (filled.length === 0) {
-      toast.warning("Import selesai", { description: "Tidak ada data barang yang ditemukan" });
+      toast.warning(t("page.stockOpname.toast.importDone"), {
+        description: t("page.stockOpname.toast.importEmpty")
+      });
       return;
     }
     const newRows = filled.map((r) => {
@@ -302,8 +309,8 @@ const AddStockOpname = () => {
       });
     });
     setRows(newRows);
-    toast.success("Berhasil", {
-      description: `${newRows.length} data berhasil diimport dari Excel`
+    toast.success(t("common.success"), {
+      description: t("page.stockOpname.toast.importSuccess", { count: newRows.length })
     });
   };
 
@@ -349,11 +356,15 @@ const AddStockOpname = () => {
 
   const validate = () => {
     if (!formMeta.tanggalAudit) {
-      toast.error("Gagal", { description: "Tanggal audit wajib diisi" });
+      toast.error(t("common.error"), {
+        description: t("page.stockOpname.validation.auditDateRequired")
+      });
       return false;
     }
     if (!formMeta.auditor.trim()) {
-      toast.error("Gagal", { description: "Nama auditor wajib diisi" });
+      toast.error(t("common.error"), {
+        description: t("page.stockOpname.validation.auditorRequired")
+      });
       return false;
     }
     const invalidRow = rows.find(
@@ -369,7 +380,9 @@ const AddStockOpname = () => {
         !row.keterangan.trim()
     );
     if (invalidRow) {
-      toast.error("Gagal", { description: "Semua data barang wajib diisi" });
+      toast.error(t("common.error"), {
+        description: t("page.stockOpname.validation.allFieldsRequired")
+      });
       return false;
     }
     return true;
@@ -384,16 +397,20 @@ const AddStockOpname = () => {
       if (id) {
         // Edit mode
         await updateStockOpname(id, payload);
-        toast.success("Berhasil", { description: "Stock opname berhasil diupdate" });
+        toast.success(t("common.success"), {
+          description: t("page.stockOpname.toast.updateSuccess")
+        });
       } else {
         // Create mode
         await addStockOpname(payload);
-        toast.success("Berhasil", { description: "Stock opname disimpan sebagai Draft" });
+        toast.success(t("common.success"), {
+          description: t("page.stockOpname.toast.saveDraftSuccess")
+        });
       }
       queryClient.invalidateQueries(["stockOpname"]);
       navigate("/stock-opname");
     } catch (err) {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -414,15 +431,17 @@ const AddStockOpname = () => {
         // Create mode
         const created = await addStockOpname(payload);
         newId = created?.data?.id || created?.id;
-        if (!newId) throw new Error("Gagal mendapatkan ID opname");
+        if (!newId) throw new Error(t("page.stockOpname.toast.getIdError"));
       }
       // Then change status to completed
       await changeStockOpnameStatus(newId, "completed");
-      toast.success("Berhasil", { description: "Stock opname berhasil diselesaikan" });
+      toast.success(t("common.success"), {
+        description: t("page.stockOpname.toast.completeSuccess")
+      });
       queryClient.invalidateQueries(["stockOpname"]);
       navigate("/stock-opname");
     } catch (err) {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -434,9 +453,9 @@ const AddStockOpname = () => {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {id ? "Edit Stock Opname" : "Input Stock Opname"}
+            {id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">Audit persediaan produk di gudang</p>
+          <p className="text-sm text-muted-foreground">{t("page.stockOpname.add.description")}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
@@ -445,7 +464,7 @@ const AddStockOpname = () => {
             onClick={() => setUploadModalOpen(true)}
             className="transition-all">
             <UploadIcon size={15} className="mr-1.5" />
-            Upload Excel
+            {t("page.stockOpname.button.uploadExcel")}
           </Button>
           <Button
             variant="outline"
@@ -458,7 +477,9 @@ const AddStockOpname = () => {
             ) : (
               <Download size={15} className="mr-1.5" />
             )}
-            {isDownloading ? "Download..." : "Download Template"}
+            {isDownloading
+              ? t("page.stockOpname.button.downloading")
+              : t("page.stockOpname.button.downloadTemplate")}
           </Button>
         </div>
       </div>
@@ -468,7 +489,7 @@ const AddStockOpname = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="tanggalAudit">
-              Tanggal Audit <span className="text-destructive">*</span>
+              {t("page.stockOpname.form.auditDate")} <span className="text-destructive">*</span>
             </Label>
             <DatePicker
               date={formMeta.tanggalAudit}
@@ -479,11 +500,11 @@ const AddStockOpname = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="auditor">
-              Auditor <span className="text-destructive">*</span>
+              {t("page.stockOpname.form.auditor")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="auditor"
-              placeholder="Nama Auditor"
+              placeholder={t("page.stockOpname.form.auditorPlaceholder")}
               value={formMeta.auditor}
               onChange={(e) => setFormMeta((prev) => ({ ...prev, auditor: e.target.value }))}
             />
@@ -493,12 +514,8 @@ const AddStockOpname = () => {
 
       {/* Formula hint */}
       <div className="bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 text-xs text-blue-700 dark:text-blue-300 flex flex-wrap gap-x-6 gap-y-1 transition-colors">
-        <span>
-          <strong>Persediaan Akhir</strong> = Stok Awal + Barang Masuk − Barang Keluar
-        </span>
-        <span>
-          <strong>Selisih Audit</strong> = Stock Fisik − Persediaan Akhir
-        </span>
+        <span>{t("page.stockOpname.formula.endingStockFormula")}</span>
+        <span>{t("page.stockOpname.formula.differenceFormula")}</span>
       </div>
 
       {/* Table */}
@@ -508,40 +525,40 @@ const AddStockOpname = () => {
             <thead>
               <tr className="bg-muted/60 border-b">
                 <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Kode Barang
+                  {t("page.stockOpname.table.kodeBarang")}
                 </th>
                 <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Nama Barang
+                  {t("page.stockOpname.table.namaBarang")}
                 </th>
                 <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap w-16">
-                  Satuan
+                  {t("page.stockOpname.table.satuan")}
                 </th>
                 <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Lokasi
+                  {t("page.stockOpname.table.lokasi")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Stok Awal
+                  {t("page.stockOpname.table.stokAwal")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Barang Masuk
+                  {t("page.stockOpname.table.barangMasuk")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Barang Keluar
+                  {t("page.stockOpname.table.barangKeluar")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Persd. Akhir
+                  {t("page.stockOpname.table.persdAkhir")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Stock Fisik
+                  {t("page.stockOpname.table.stockFisik")}
                 </th>
                 <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Selisih
+                  {t("page.stockOpname.table.selisih")}
                 </th>
                 <th className="px-3 py-3 text-center font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Ketersediaan
+                  {t("page.stockOpname.table.ketersediaan")}
                 </th>
                 <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
-                  Keterangan
+                  {t("page.stockOpname.table.keterangan")}
                 </th>
                 <th className="px-3 py-3 w-10"></th>
               </tr>
@@ -552,9 +569,7 @@ const AddStockOpname = () => {
                   <td colSpan={13} className="px-3 py-12 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Info size={32} className="text-muted-foreground/40" />
-                      <p className="text-sm">
-                        Belum ada produk. Klik &rdquo;Tambah Produk&rdquo; untuk memulai.
-                      </p>
+                      <p className="text-sm">{t("page.stockOpname.table.empty")}</p>
                     </div>
                   </td>
                 </tr>
@@ -562,7 +577,7 @@ const AddStockOpname = () => {
                 rows.map((row) => {
                   const stokAkhir = calculateStockAkhir(row);
                   const selisih = calculateSelisih(row);
-                  const availability = getAvailabilityStatus(stokAkhir);
+                  const availability = getAvailabilityStatus(stokAkhir, t);
 
                   return (
                     <tr
@@ -573,7 +588,7 @@ const AddStockOpname = () => {
                           type="text"
                           value={row.kodeBarang}
                           onChange={(e) => updateRowField(row.id, "kodeBarang", e.target.value)}
-                          placeholder="Kode"
+                          placeholder={t("page.stockOpname.form.kodePlaceholder")}
                           className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                         />
                       </td>
@@ -586,7 +601,7 @@ const AddStockOpname = () => {
                               updateRowField(row.id, "namaBarang", e.target.value);
                               updateRowField(row.id, "productId", "");
                             }}
-                            placeholder="Nama barang"
+                            placeholder={t("page.stockOpname.form.namaPlaceholder")}
                             className="flex-1 bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                           />
                           <Popover>
@@ -594,16 +609,18 @@ const AddStockOpname = () => {
                               <button
                                 type="button"
                                 className="shrink-0 p-1 text-muted-foreground/40 hover:text-primary transition-colors"
-                                title="Cari produk">
+                                title={t("common.search")}>
                                 <Search size={14} />
                               </button>
                             </PopoverTrigger>
                             <PopoverContent align="start" side="bottom" className="p-0 w-[280px]">
                               <Command>
-                                <CommandInput placeholder="Cari produk..." />
+                                <CommandInput placeholder={t("common.search")} />
                                 <CommandList>
                                   {allProducts.length === 0 && (
-                                    <CommandEmpty>Tidak ada produk ditemukan</CommandEmpty>
+                                    <CommandEmpty>
+                                      {t("page.stockOpname.table.productNotFound")}
+                                    </CommandEmpty>
                                   )}
                                   {allProducts.map((p) => (
                                     <CommandItem
@@ -653,7 +670,7 @@ const AddStockOpname = () => {
                           type="text"
                           value={row.satuan}
                           onChange={(e) => updateRowField(row.id, "satuan", e.target.value)}
-                          placeholder="PCS"
+                          placeholder={t("page.stockOpname.form.satuanPlaceholder")}
                           className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                         />
                       </td>
@@ -664,6 +681,7 @@ const AddStockOpname = () => {
                           loading={locationLoading}
                           onChange={(val) => handleLokasiChange(row.id, val)}
                           onAddNew={openAddLocation}
+                          t={t}
                         />
                       </td>
                       {[
@@ -703,7 +721,7 @@ const AddStockOpname = () => {
                           type="text"
                           value={row.keterangan}
                           onChange={(e) => updateRowField(row.id, "keterangan", e.target.value)}
-                          placeholder="Catatan"
+                          placeholder={t("page.stockOpname.form.keteranganPlaceholder")}
                           className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                         />
                       </td>
@@ -731,12 +749,12 @@ const AddStockOpname = () => {
             onClick={addRow}
             className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
             <Plus size={16} />
-            Tambah Produk
+            {t("page.stockOpname.button.addProduct")}
           </button>
           <div className="text-right">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Info size={12} />
-              Total Selisih
+              {t("page.stockOpname.table.totalDifference")}
             </div>
             <div
               className={`font-bold text-lg tabular-nums ${getSelisihStyle(totals.selisihJumlah)}`}>
@@ -749,14 +767,15 @@ const AddStockOpname = () => {
       {/* Notes */}
       <div className="space-y-2">
         <Label htmlFor="catatan">
-          Catatan Audit <span className="text-muted-foreground font-normal">(Opsional)</span>
+          {t("page.stockOpname.form.auditNotes")}{" "}
+          <span className="text-muted-foreground font-normal">({t("common.optional")})</span>
         </Label>
         <Textarea
           id="catatan"
           rows={3}
           value={catatan}
           onChange={(e) => setCatatan(e.target.value)}
-          placeholder="Catatan tambahan tentang hasil stock opname..."
+          placeholder={t("page.stockOpname.form.auditNotesPlaceholder")}
         />
       </div>
 
@@ -764,7 +783,7 @@ const AddStockOpname = () => {
       <div className="flex items-center justify-end gap-2 pt-2">
         <Button variant="outline" onClick={() => setCancelModal(true)} className="transition-all">
           <X size={16} className="mr-1" />
-          Batal
+          {t("common.cancel")}
         </Button>
         <Button
           variant="outline"
@@ -772,28 +791,28 @@ const AddStockOpname = () => {
           disabled={isSubmitting}
           className="transition-all min-w-[140px]">
           <Save size={16} className="mr-1" />
-          {isSubmitting ? "Menyimpan..." : "Simpan sebagai Draft"}
+          {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveDraft")}
         </Button>
         <Button
           onClick={handleSaveComplete}
           disabled={isSubmitting}
           className="transition-all min-w-[140px]">
           <Save size={16} className="mr-1" />
-          {isSubmitting ? "Menyimpan..." : "Simpan & Selesai"}
+          {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveComplete")}
         </Button>
       </div>
 
       {/* Loading */}
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       {/* Cancel Modal */}
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={(open) => !open && setCancelModal(false)}
-        title="Batalkan Input?"
-        description="Data yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.stockOpname.modal.cancelTitle")}
+        description={t("page.stockOpname.modal.cancelDescription")}
+        confirmText={t("page.stockOpname.modal.confirmCancel")}
         onConfirm={() => {
           setCancelModal(false);
           navigate("/stock-opname");
@@ -805,9 +824,9 @@ const AddStockOpname = () => {
         type="confirm"
         open={noLocationModal}
         onOpenChange={setNoLocationModal}
-        title="Lokasi Belum Diisi"
-        description="Belum ada data lokasi. Silakan tambah lokasi terlebih dahulu sebelum mendownload template stock opname."
-        confirmText="Tambah Lokasi"
+        title={t("page.stockOpname.modal.noLocationTitle")}
+        description={t("page.stockOpname.modal.noLocationDescription")}
+        confirmText={t("page.stockOpname.modal.addLocation")}
         onConfirm={() => navigate("/add-location")}
       />
 

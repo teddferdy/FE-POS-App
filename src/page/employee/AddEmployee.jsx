@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addMonths, format } from "date-fns";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { addEmployee, generateEmployeeId } from "@/services/employee";
 import { getShiftDropdown } from "@/services/shift";
 import { getAllLocation } from "@/services/location";
@@ -49,23 +50,24 @@ const AddEmployee = () => {
   const [documents, setDocuments] = useState([]);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const { t } = useTranslation();
 
   const formSchema = useMemo(() => {
     return z.object({
-      fullName: z.string().min(2, "Nama lengkap minimal 2 karakter"),
-      userName: z.string().min(1, "Username wajib diisi"),
-      email: z.string().email("Format email tidak valid"),
-      password: z.string().min(6, "Password minimal 6 karakter"),
+      fullName: z.string().min(2, t("page.employee.form.fullNameMin")),
+      userName: z.string().min(1, t("page.employee.form.userNameRequired")),
+      email: z.string().email(t("page.employee.form.emailInvalid")),
+      password: z.string().min(6, t("page.employee.form.passwordMin")),
       phoneNumber: z
         .string()
-        .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
-        .min(8, "Minimal 8 digit")
-        .max(14, "Maksimal 14 digit"),
-      placeOfBirth: z.string().min(2, "Tempat lahir minimal 2 karakter"),
-      address: z.string().min(5, "Alamat minimal 5 karakter"),
-      gender: z.string().min(1, "Pilih jenis kelamin"),
-      dateOfBirth: z.string().min(1, "Pilih tanggal lahir"),
-      employeeId: z.string().min(1, "ID Karyawan harus diisi"),
+        .regex(/^\d+$/, t("page.employee.form.phoneOnlyNumbers"))
+        .min(8, t("page.employee.form.phoneMinDigits"))
+        .max(14, t("page.employee.form.phoneMaxDigits")),
+      placeOfBirth: z.string().min(2, t("page.employee.form.placeOfBirthMin")),
+      address: z.string().min(5, t("page.employee.form.addressMin")),
+      gender: z.string().min(1, t("page.employee.form.genderRequired")),
+      dateOfBirth: z.string().min(1, t("page.employee.form.dateOfBirthRequired")),
+      employeeId: z.string().min(1, t("page.employee.form.employeeIdRequired")),
       department: z.string().optional().or(z.literal("")),
       position: z.string().optional().or(z.literal("")),
       store: z.string().optional().or(z.literal("")),
@@ -77,9 +79,13 @@ const AddEmployee = () => {
       isActive: z.boolean().default(true),
       roleId: z.string().optional().or(z.literal("")),
       accessMenu: z.string().optional().or(z.literal("")),
-      monthlySalary: z.coerce.number().min(0, "Tidak boleh negatif").optional().or(z.literal(""))
+      monthlySalary: z.coerce
+        .number()
+        .min(0, t("page.employee.form.salaryNegative"))
+        .optional()
+        .or(z.literal(""))
     });
-  }, []);
+  }, [t]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -297,22 +303,20 @@ const AddEmployee = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Manajemen SDM</span>
+            <span>{t("sidebar.karyawan")}</span>
             <span>/</span>
             <button
               onClick={() => navigate("/employee-list")}
               className="hover:text-primary transition-colors">
-              Kelola Karyawan
+              {t("page.employee.list.title")}
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Tambah Karyawan Baru</span>
+            <span className="text-primary font-semibold">{t("page.employee.add.title")}</span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Tambah Karyawan Baru
+            {t("page.employee.add.title")}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Daftarkan anggota tim baru ke dalam sistem.
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.employee.add.description")}</p>
         </div>
       </div>
 
@@ -377,7 +381,10 @@ const AddEmployee = () => {
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               Nama Lengkap <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input {...field} placeholder="Contoh: Budi Santoso" />
+                            <Input
+                              {...field}
+                              placeholder={t("page.employee.form.fullNamePlaceholder")}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -390,7 +397,11 @@ const AddEmployee = () => {
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               Email <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input {...field} type="email" placeholder="email@domain.com" />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder={t("page.employee.form.emailPlaceholder")}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -408,7 +419,7 @@ const AddEmployee = () => {
                             <Input
                               {...field}
                               type="tel"
-                              placeholder="0812-xxxx-xxxx"
+                              placeholder={t("page.employee.form.phonePlaceholder")}
                               onChange={(e) => {
                                 const value = e.target.value.replace(/\D/g, "").slice(0, 14);
                                 field.onChange(value);

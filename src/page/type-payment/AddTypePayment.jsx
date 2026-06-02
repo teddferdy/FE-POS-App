@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,7 @@ const formSchema = z.object({
 });
 
 const AddTypePayment = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -49,9 +51,9 @@ const AddTypePayment = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description:
-          err?.response?.data?.message || err.message || "Gagal menambahkan tipe pembayaran"
+          err?.response?.data?.message || err.message || t("page.typePayment.toast.addFailed")
       });
     }
   });
@@ -66,34 +68,36 @@ const AddTypePayment = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/type-payment")}
           className="hover:text-foreground transition-colors">
-          Tipe Pembayaran
+          {t("breadcrumb.payment")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Tipe Pembayaran</span>
+        <span className="text-primary font-semibold">{t("page.typePayment.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Tipe Pembayaran</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah metode pembayaran baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.typePayment.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.typePayment.add.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -108,9 +112,9 @@ const AddTypePayment = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Pembayaran <span className="text-destructive">*</span>
+                      {t("page.typePayment.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama pembayaran" {...field} />
+                    <Input placeholder={t("page.typePayment.form.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -121,11 +125,11 @@ const AddTypePayment = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tipe <span className="text-destructive">*</span>
+                      {t("page.typePayment.form.type")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe" />
+                        <SelectValue placeholder={t("page.typePayment.form.typePlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Tunai">Tunai</SelectItem>
@@ -143,9 +147,9 @@ const AddTypePayment = () => {
               name="deskripsi"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
+                  <FormLabel>{t("page.typePayment.form.description")}</FormLabel>
                   <Textarea
-                    placeholder="Deskripsi tipe pembayaran (opsional)"
+                    placeholder={t("page.typePayment.form.descriptionPlaceholder")}
                     rows={3}
                     {...field}
                   />
@@ -166,12 +170,13 @@ const AddTypePayment = () => {
                     }`}>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        Status {field.value ? "Aktif" : "Tidak Aktif"}
+                        {t("common.status")}{" "}
+                        {field.value ? t("common.active") : t("common.inactive")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {field.value
-                          ? "Tipe pembayaran aktif dan dapat digunakan"
-                          : "Tipe pembayaran tidak aktif"}
+                          ? t("page.typePayment.form.statusActive")
+                          : t("page.typePayment.form.statusInactive")}
                       </p>
                     </div>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -188,18 +193,18 @@ const AddTypePayment = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/type-payment")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Tipe pembayaran berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("common.success")}
+        description={t("page.typePayment.toast.addSuccess")}
+        confirmText={t("modal.backToList")}
         onConfirm={() => navigate("/type-payment")}
       />
     </div>

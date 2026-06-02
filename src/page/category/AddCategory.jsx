@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { addCategory } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -320,6 +321,7 @@ const quickIcons = [
 const allIconsFlat = iconSections.flatMap((s) => s.icons);
 
 const AddCategory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("");
@@ -405,22 +407,20 @@ const AddCategory = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Admin Console</span>
+            <span>{t("breadcrumb.adminConsole")}</span>
             <span>/</span>
             <button
               onClick={() => navigate("/category-list")}
               className="hover:text-primary transition-colors">
-              Kelola Kategori
+              {t("breadcrumb.category")}
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Tambah Kategori Baru</span>
+            <span className="text-primary font-semibold">{t("page.category.add.title")}</span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Tambah Kategori Baru
+            {t("page.category.add.title")}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Definisikan kelompok produk baru untuk memudahkan pengelolaan inventaris Anda.
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.category.add.description")}</p>
         </div>
       </div>
 
@@ -429,7 +429,9 @@ const AddCategory = () => {
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-6">Informasi Kategori</h3>
+                <h3 className="text-base font-semibold text-foreground mb-6">
+                  {t("page.category.form.info")}
+                </h3>
                 <div className="space-y-6">
                   <FormField
                     control={form.control}
@@ -437,11 +439,11 @@ const AddCategory = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Nama Kategori <span className="text-destructive">*</span>
+                          {t("page.category.form.name")} <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           {...field}
-                          placeholder="Misal: Minuman Dingin, Elektronik, Pakaian"
+                          placeholder={t("page.category.form.namePlaceholder")}
                           className="h-12"
                         />
                         <FormMessage />
@@ -454,11 +456,11 @@ const AddCategory = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Deskripsi
+                          {t("page.category.form.description")}
                         </FormLabel>
                         <Textarea
                           {...field}
-                          placeholder="Berikan deskripsi singkat mengenai kategori ini..."
+                          placeholder={t("page.category.form.descPlaceholder")}
                           className="resize-none"
                           rows={5}
                         />
@@ -490,12 +492,14 @@ const AddCategory = () => {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-foreground">
-                                Status {field.value ? "Aktif" : "Nonaktif"}
+                                {field.value
+                                  ? t("page.category.form.statusActive")
+                                  : t("page.category.form.statusInactive")}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {field.value
-                                  ? "Kategori ini aktif dan dapat digunakan"
-                                  : "Kategori ini tidak aktif"}
+                                  ? t("page.category.form.activeDesc")
+                                  : t("page.category.form.inactiveDesc")}
                               </p>
                             </div>
                           </div>
@@ -510,18 +514,21 @@ const AddCategory = () => {
               <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="material-symbols-outlined text-primary text-base">info</span>
-                  <span className="text-sm font-semibold text-primary">Tips Penamaan</span>
+                  <span className="text-sm font-semibold text-primary">
+                    {t("page.category.form.namingTip")}
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Gunakan nama kategori yang singkat dan jelas agar mudah ditemukan oleh pelanggan.
-                  Gunakan deskripsi untuk menjelaskan cakupan produk dalam kategori tersebut.
+                  {t("page.category.form.namingTipDesc")}
                 </p>
               </div>
             </div>
 
             <div className="col-span-12 lg:col-span-4 space-y-6">
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-6">Ikon & Gambar</h3>
+                <h3 className="text-base font-semibold text-foreground mb-6">
+                  {t("page.category.form.iconSection")}
+                </h3>
                 <div className="space-y-6">
                   <div
                     onClick={() => {
@@ -541,15 +548,21 @@ const AddCategory = () => {
                         <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                           <span className="material-symbols-outlined text-6xl">{selectedIcon}</span>
                         </div>
-                        <p className="text-sm font-semibold text-foreground">Ikon Terpilih</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {t("page.category.form.iconSelected")}
+                        </p>
                       </div>
                     ) : (
                       <>
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
                           <span className="material-symbols-outlined text-3xl">image_search</span>
                         </div>
-                        <p className="text-sm font-semibold text-foreground">Klik untuk Unggah</p>
-                        <p className="text-xs text-muted-foreground mt-2">Format: JPG, PNG, WEBP</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {t("page.category.form.clickToUpload")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {t("page.category.form.imageFormat")}
+                        </p>
                       </>
                     )}
                   </div>
@@ -564,7 +577,7 @@ const AddCategory = () => {
                     <button
                       onClick={() => setSelectedIcon("")}
                       className="text-xs text-destructive hover:underline">
-                      Hapus ikon
+                      {t("page.category.form.removeIcon")}
                     </button>
                   )}
                   {imagePreview && (
@@ -575,13 +588,13 @@ const AddCategory = () => {
                         if (fileInputRef.current) fileInputRef.current.value = "";
                       }}
                       className="text-xs text-destructive hover:underline">
-                      Hapus gambar
+                      {t("page.category.form.removeImage")}
                     </button>
                   )}
 
                   <div className={imagePreview ? "pointer-events-none opacity-40" : ""}>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      Ikon Cepat
+                      {t("page.category.form.quickIcons")}
                     </p>
                     <div className="grid grid-cols-4 gap-2">
                       {quickIcons.map((icon) => (
@@ -606,7 +619,7 @@ const AddCategory = () => {
                       }}
                       className="mt-4 py-2 px-4 rounded-lg border border-border text-sm text-muted-foreground hover:bg-accent transition-colors flex items-center gap-2 ml-auto">
                       <span className="material-symbols-outlined text-base">menu_book</span>
-                      Lihat Semua Ikon
+                      {t("page.category.form.viewAllIcons")}
                     </button>
                   </div>
                 </div>
@@ -616,10 +629,10 @@ const AddCategory = () => {
 
           <div className="flex justify-end gap-4 mt-6">
             <Button variant="outline" onClick={() => setCancelModal(true)}>
-              Batal
+              {t("common.cancel")}
             </Button>
             <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
-              Simpan Kategori
+              {t("page.category.button.save")}
             </Button>
           </div>
         </form>
@@ -632,7 +645,9 @@ const AddCategory = () => {
             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-muted/30">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">category</span>
-                <h3 className="text-base font-semibold text-foreground">Pilih Ikon Kategori</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.category.iconPicker.title")}
+                </h3>
               </div>
               <button
                 onClick={() => setIconPickerOpen(false)}
@@ -650,7 +665,7 @@ const AddCategory = () => {
                   value={iconSearch}
                   onChange={(e) => setIconSearch(e.target.value)}
                   className="w-full h-11 pl-11 pr-4 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm"
-                  placeholder="Cari nama ikon..."
+                  placeholder={t("page.category.iconPicker.search")}
                 />
               </div>
             </div>
@@ -685,7 +700,7 @@ const AddCategory = () => {
                       <span className="material-symbols-outlined text-4xl block mb-2">
                         search_off
                       </span>
-                      Tidak ada ikon ditemukan
+                      {t("page.category.iconPicker.empty")}
                     </div>
                   )}
                 </div>
@@ -728,35 +743,35 @@ const AddCategory = () => {
 
             <div className="px-8 py-5 border-t border-border bg-muted/30 flex justify-end gap-4">
               <Button variant="outline" onClick={() => setIconPickerOpen(false)}>
-                Batal
+                {t("page.category.iconPicker.cancel")}
               </Button>
               <Button
                 onClick={() => {
                   if (selectedIcon) setIconPickerOpen(false);
                 }}
                 disabled={!selectedIcon}>
-                Pilih Ikon
+                {t("page.category.iconPicker.select")}
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title={t("page.category.modal.successAdd")}
         onConfirm={() => navigate("/category-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.category.modal.cancelTitle")}
+        confirmText={t("page.category.modal.confirmCancel")}
         onConfirm={() => navigate("/category-list")}
       />
     </div>

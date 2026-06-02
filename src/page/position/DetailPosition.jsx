@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { format } from "date-fns";
@@ -9,6 +10,7 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 
 const DetailPosition = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const positionId = searchParams.get("positionID");
@@ -49,9 +51,9 @@ const DetailPosition = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>ID posisi tidak ditemukan</p>
+        <p>{t("page.position.detail.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/position-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -69,9 +71,9 @@ const DetailPosition = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>Posisi tidak ditemukan</p>
+        <p>{t("page.position.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/position-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -81,17 +83,17 @@ const DetailPosition = () => {
     <div className="space-y-8">
       <PageHeader
         breadcrumbs={[
-          { label: "Manajemen SDM" },
-          { label: "Kelola Posisi", href: "/position-list" },
+          { label: t("breadcrumb.hrm") },
+          { label: t("breadcrumb.position"), href: "/position-list" },
           { label: position.name }
         ]}
         title={position.name}
-        description="Informasi detail jabatan dan sistem.">
+        description={t("page.position.detail.description")}>
         <Button
           onClick={() => navigate(`/edit-position?id=${position.id}`)}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">edit</span>
-          Edit Posisi
+          {t("page.position.button.edit")}
         </Button>
       </PageHeader>
 
@@ -100,18 +102,20 @@ const DetailPosition = () => {
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
               <span className="material-symbols-outlined text-primary">badge</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Jabatan</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.position.detail.jobInfo")}
+              </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Jabatan
+                  {t("page.position.detail.positionName")}
                 </label>
                 <p className="text-sm font-semibold text-foreground mt-1">{position.name || "-"}</p>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  ID Jabatan
+                  {t("page.position.detail.positionId")}
                 </label>
                 <p className="text-sm font-semibold text-foreground mt-1 font-mono">
                   #{position.id || "-"}
@@ -119,7 +123,7 @@ const DetailPosition = () => {
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("common.status")}
                 </label>
                 <div>
                   <span
@@ -131,17 +135,17 @@ const DetailPosition = () => {
                     <span className="material-symbols-outlined text-sm">
                       {position.status ? "check_circle" : "cancel"}
                     </span>
-                    {position.status ? "Active" : "Inactive"}
+                    {position.status ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
               </div>
             </div>
             <div className="mt-5 pt-5 border-t border-border">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Deskripsi
+                {t("page.position.detail.description")}
               </label>
               <p className="text-sm text-foreground mt-1">
-                {position.description || "Tidak ada deskripsi"}
+                {position.description || t("page.position.detail.noDescription")}
               </p>
             </div>
           </div>
@@ -151,7 +155,9 @@ const DetailPosition = () => {
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
               <span className="material-symbols-outlined text-primary">info</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Sistem</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.position.detail.systemInfo")}
+              </h3>
             </div>
             <div className="space-y-5">
               <div className="flex items-start gap-3">
@@ -162,7 +168,7 @@ const DetailPosition = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Dibuat Pada
+                    {t("page.position.detail.createdAt")}
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
                     {formatDate(position.createdAt)}
@@ -176,12 +182,14 @@ const DetailPosition = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Diperbarui Pada
+                    {t("page.position.detail.updatedAt")}
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
                     {formatDateTime(position.updatedAt)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{position.modifiedBy || "System"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {position.modifiedBy || t("common.system")}
+                  </p>
                 </div>
               </div>
             </div>

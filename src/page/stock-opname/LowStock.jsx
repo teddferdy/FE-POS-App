@@ -14,6 +14,7 @@ import {
   TableCell
 } from "@/components/ui/table";
 import PageHeader from "@/components/ui/PageHeader";
+import { useTranslation } from "react-i18next";
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -21,6 +22,7 @@ const formatNumber = (num) => {
 };
 
 const LowStock = () => {
+  const { t } = useTranslation();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
@@ -33,9 +35,16 @@ const LowStock = () => {
   const products = lowStockData.products || [];
   const ingredients = lowStockData.ingredients || [];
 
-  const getStockStatus = (stock) => {
-    if (stock <= 0) return { label: "Habis", cls: "bg-red-100 text-red-700 border-red-200" };
-    return { label: "Menipis", cls: "bg-orange-100 text-orange-700 border-orange-200" };
+  const getStockStatus = (stock, t) => {
+    if (stock <= 0)
+      return {
+        label: t("page.stockOpname.status.habis"),
+        cls: "bg-red-100 text-red-700 border-red-200"
+      };
+    return {
+      label: t("page.stockOpname.status.menipis"),
+      cls: "bg-orange-100 text-orange-700 border-orange-200"
+    };
   };
 
   return (
@@ -43,7 +52,7 @@ const LowStock = () => {
       <PageHeader
         breadcrumbs={[
           {
-            label: "Dashboard",
+            label: t("breadcrumb.home"),
             href:
               role === "super_admin"
                 ? "/dashboard-super-admin"
@@ -51,11 +60,11 @@ const LowStock = () => {
                   ? "/dashboard-admin"
                   : "/home"
           },
-          { label: "Inventory" },
-          { label: "Low Stock" }
+          { label: t("breadcrumb.inventory") },
+          { label: t("breadcrumb.lowStock") }
         ]}
-        title="Low Stock"
-        description="Produk dengan stok yang menipis atau habis."
+        title={t("page.lowStock.title")}
+        description={t("page.lowStock.description")}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,7 +74,7 @@ const LowStock = () => {
           </div>
           <div>
             <p className="text-2xl font-bold">{lowStockData.totalProducts || 0}</p>
-            <p className="text-sm text-muted-foreground">Produk Low Stock</p>
+            <p className="text-sm text-muted-foreground">{t("page.lowStock.productLowStock")}</p>
           </div>
         </Card>
         <Card className="p-5 flex items-center gap-4">
@@ -74,7 +83,7 @@ const LowStock = () => {
           </div>
           <div>
             <p className="text-2xl font-bold">{lowStockData.totalIngredients || 0}</p>
-            <p className="text-sm text-muted-foreground">Bahan Baku Low Stock</p>
+            <p className="text-sm text-muted-foreground">{t("page.lowStock.ingredientLowStock")}</p>
           </div>
         </Card>
       </div>
@@ -86,8 +95,8 @@ const LowStock = () => {
       ) : products.length === 0 && ingredients.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
           <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">Semua stok aman</p>
-          <p className="text-sm mt-1">Tidak ada produk atau bahan baku dengan stok menipis.</p>
+          <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
+          <p className="text-sm mt-1">{t("page.lowStock.emptyDetail")}</p>
         </Card>
       ) : (
         <>
@@ -96,23 +105,27 @@ const LowStock = () => {
               <div className="p-4 border-b border-border bg-muted/30">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Package size={16} className="text-destructive" />
-                  Produk ({products.length})
+                  {t("page.lowStock.product")} ({products.length})
                 </h3>
               </div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nama Produk</TableHead>
-                      <TableHead className="text-right">Stok Saat Ini</TableHead>
-                      <TableHead className="text-right">Min. Stok</TableHead>
-                      <TableHead>Satuan</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("page.lowStock.table.productName")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("page.lowStock.table.currentStock")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("page.lowStock.table.minStock")}
+                      </TableHead>
+                      <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                      <TableHead>{t("common.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {products.map((p) => {
-                      const status = getStockStatus(p.stock);
+                      const status = getStockStatus(p.stock, t);
                       return (
                         <TableRow key={p.id}>
                           <TableCell className="font-medium">{p.nameProduct}</TableCell>
@@ -146,23 +159,27 @@ const LowStock = () => {
               <div className="p-4 border-b border-border bg-muted/30">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
                   <ShoppingBasket size={16} className="text-orange-500" />
-                  Bahan Baku ({ingredients.length})
+                  {t("page.lowStock.ingredient")} ({ingredients.length})
                 </h3>
               </div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nama Bahan</TableHead>
-                      <TableHead className="text-right">Stok Saat Ini</TableHead>
-                      <TableHead className="text-right">Min. Stok</TableHead>
-                      <TableHead>Satuan</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("page.lowStock.table.currentStock")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("page.lowStock.table.minStock")}
+                      </TableHead>
+                      <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                      <TableHead>{t("common.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {ingredients.map((i) => {
-                      const status = getStockStatus(i.stock);
+                      const status = getStockStatus(i.stock, t);
                       return (
                         <TableRow key={i.id}>
                           <TableCell className="font-medium">{i.name}</TableCell>

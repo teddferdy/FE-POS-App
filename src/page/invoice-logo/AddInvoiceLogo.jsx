@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Save, X } from "lucide-react";
 import { addInvoiceLogo } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 
 const AddInvoiceLogo = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const [name, setName] = useState("");
@@ -24,11 +26,13 @@ const AddInvoiceLogo = () => {
 
   const mutation = useMutation(addInvoiceLogo, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Logo berhasil ditambahkan" });
+      toast.success(t("common.success"), { description: t("page.invoiceLogo.toast.success") });
       navigate("/logo-invoice-list");
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || "Gagal menambahkan logo");
+      toast.error(
+        err?.response?.data?.message || err?.message || t("page.invoiceLogo.toast.addError")
+      );
     }
   });
 
@@ -42,8 +46,8 @@ const AddInvoiceLogo = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name) return toast.error("Nama logo wajib diisi");
-    if (!image) return toast.error("Gambar logo wajib diupload");
+    if (!name) return toast.error(t("page.invoiceLogo.validation.nameRequired"));
+    if (!image) return toast.error(t("page.invoiceLogo.validation.imageRequired"));
 
     const formData = new FormData();
     formData.append("name", name);
@@ -58,31 +62,33 @@ const AddInvoiceLogo = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/logo-invoice-list")}
           className="hover:text-foreground transition-colors">
-          Logo Invoice
+          {t("page.invoiceLogo.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Logo</span>
+        <span className="text-primary font-semibold">{t("page.invoiceLogo.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Logo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah logo baru untuk invoice.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.invoiceLogo.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.invoiceLogo.add.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button type="submit" form="logo-form" disabled={mutation.isLoading} className="gap-2">
             <Save size={18} />
-            {mutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {mutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -91,17 +97,17 @@ const AddInvoiceLogo = () => {
         <form id="logo-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium block">
-              Nama Logo <span className="text-destructive">*</span>
+              {t("page.invoiceLogo.form.name")} <span className="text-destructive">*</span>
             </label>
             <Input
-              placeholder="Masukkan nama logo"
+              placeholder={t("page.invoiceLogo.form.namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium block">
-              Gambar Logo <span className="text-destructive">*</span>
+              {t("page.invoiceLogo.form.image")} <span className="text-destructive">*</span>
             </label>
             <Input type="file" accept="image/*" onChange={handleImageChange} />
             {preview && (
@@ -117,9 +123,9 @@ const AddInvoiceLogo = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.invoiceLogo.cancelModal.title")}
+        description={t("page.invoiceLogo.cancelModal.description")}
+        confirmText={t("page.invoiceLogo.cancelModal.confirm")}
         onConfirm={() => navigate("/logo-invoice-list")}
       />
     </div>

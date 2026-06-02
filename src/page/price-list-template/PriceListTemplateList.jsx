@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const PriceListTemplateList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -31,11 +33,13 @@ const PriceListTemplateList = () => {
 
   const deleteMutation = useMutation(deletePriceListTemplate, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Template harga berhasil dihapus" });
+      toast.success(t("common.success"), {
+        description: t("page.priceListTemplate.toast.deleted")
+      });
       queryClient.invalidateQueries(["price-list-templates"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -60,36 +64,38 @@ const PriceListTemplateList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Template Harga</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.priceListTemplate")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Template Harga</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.priceListTemplate.list.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola template harga untuk tingkatan harga (Grosir, Member, dll.).
+            {t("page.priceListTemplate.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-price-list-template")} className="gap-2">
           <Plus size={18} />
-          Tambah Template
+          {t("page.priceListTemplate.button.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Template</p>
+          <p className="text-sm text-muted-foreground">{t("page.priceListTemplate.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tidak Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
       </div>
@@ -100,7 +106,7 @@ const PriceListTemplateList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari template..."
+          placeholder={t("page.priceListTemplate.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -121,16 +127,16 @@ const PriceListTemplateList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Template
+                    {t("page.priceListTemplate.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tingkatan Harga
+                    {t("page.priceListTemplate.table.tiers")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.priceListTemplate.table.description")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -139,7 +145,7 @@ const PriceListTemplateList = () => {
                   <tr>
                     <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                       <TrendingUp size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada template ditemukan</p>
+                      <p>{t("page.priceListTemplate.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -196,7 +202,10 @@ const PriceListTemplateList = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, items.length)} dari {total} template
+          {t("page.priceListTemplate.list.showing", {
+            count: Math.min(limit, items.length),
+            total
+          })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -233,9 +242,11 @@ const PriceListTemplateList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Template?"
-        description={`Yakin ingin menghapus template ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.priceListTemplate.modal.deleteTitle")}
+        description={t("page.priceListTemplate.modal.deleteDescription", {
+          name: deleteTarget?.name || ""
+        })}
+        confirmText={t("page.priceListTemplate.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
     </div>

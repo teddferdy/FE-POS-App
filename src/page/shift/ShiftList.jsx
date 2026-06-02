@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getAllShift, deleteShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const ShiftList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -61,36 +63,34 @@ const ShiftList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Shift</span>
+        <span className="text-primary font-semibold">{t("page.shift.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Shift</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kelola data shift untuk jadwal kerja.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
         </div>
         <Button onClick={() => navigate("/add-shift")} className="gap-2">
           <Plus size={18} />
-          Tambah Shift
+          {t("breadcrumb.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Shift</p>
+          <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tidak Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
       </div>
@@ -101,13 +101,10 @@ const ShiftList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari shift..."
+          placeholder={t("page.shift.list.search")}
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 h-9 text-sm"
         />
       </div>
 
@@ -122,19 +119,19 @@ const ShiftList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Shift
+                    {t("page.shift.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Jam Mulai
+                    {t("page.shift.table.startTime")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Jam Selesai
+                    {t("page.shift.table.endTime")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.shift.table.status")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -143,7 +140,7 @@ const ShiftList = () => {
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                       <Clock size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada shift ditemukan</p>
+                      <p>{t("page.shift.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -175,8 +172,8 @@ const ShiftList = () => {
                               : "bg-red-100 text-red-700"
                           }`}>
                           {shift.status === "Aktif" || shift.status === 1 || shift.status === true
-                            ? "Aktif"
-                            : "Tidak Aktif"}
+                            ? t("common.active")
+                            : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -245,9 +242,9 @@ const ShiftList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Shift?"
-        description={`Yakin ingin menghapus shift ${deleteTarget?.nama_shift || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("modal.confirmDelete")}
+        description={`${t("common.delete")} ${deleteTarget?.nama_shift || ""}?`}
+        confirmText={t("common.delete")}
         onConfirm={confirmDelete}
       />
     </div>

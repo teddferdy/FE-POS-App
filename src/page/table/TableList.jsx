@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -18,13 +19,8 @@ const statusColors = {
   reserved: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
 };
 
-const statusLabels = {
-  available: "Tersedia",
-  occupied: "Terisi",
-  reserved: "Dipesan"
-};
-
 const TableList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -47,18 +43,18 @@ const TableList = () => {
 
   const deleteMutation = useMutation(deleteTable, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Meja berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.table.toast.deleted") });
       queryClient.invalidateQueries(["tables"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const saveMutation = useMutation(editTarget ? editTable : addTable, {
     onSuccess: () => {
-      toast.success("Berhasil", {
-        description: editTarget ? "Meja berhasil diupdate" : "Meja berhasil ditambahkan"
+      toast.success(t("common.success"), {
+        description: editTarget ? t("page.table.toast.updated") : t("page.table.toast.added")
       });
       setEditTarget(null);
       setFormName("");
@@ -66,7 +62,7 @@ const TableList = () => {
       queryClient.invalidateQueries(["tables"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -83,7 +79,7 @@ const TableList = () => {
 
   const handleSave = () => {
     if (!formName.trim()) {
-      toast.error("Nama meja harus diisi");
+      toast.error(t("page.table.validation.nameRequired"));
       return;
     }
     const payload = { store: locationParam, name: formName, capacity: formCapacity };
@@ -97,16 +93,16 @@ const TableList = () => {
         <button
           onClick={() => navigate("/dashboard-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Daftar Meja</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.table")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Daftar Meja</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola meja restoran / cafe.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.table.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.table.list.description")}</p>
         </div>
         <Button
           onClick={() => {
@@ -116,21 +112,21 @@ const TableList = () => {
           }}
           className="gap-2">
           <Plus size={18} />
-          Tambah Meja
+          {t("page.table.button.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Meja</p>
+          <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tersedia</p>
+          <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.available ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Terisi</p>
+          <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.occupied ?? 0}</p>
         </Card>
       </div>
@@ -141,7 +137,7 @@ const TableList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari meja..."
+          placeholder={t("page.table.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -162,16 +158,16 @@ const TableList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Meja
+                    {t("page.table.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Kapasitas
+                    {t("page.table.table.capacity")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("common.status")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -180,20 +176,24 @@ const TableList = () => {
                   <tr>
                     <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                       <Sofa size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Belum ada meja</p>
+                      <p>{t("page.table.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
-                  tables.map((t, idx) => (
-                    <tr key={t.id || t._id || idx} className="hover:bg-accent/30 transition-colors">
+                  tables.map((table, idx) => (
+                    <tr
+                      key={table.id || table._id || idx}
+                      className="hover:bg-accent/30 transition-colors">
                       <td className="px-4 py-4 font-medium text-foreground">
-                        {t.name || t.number || `Meja ${t.id}`}
+                        {table.name || table.number || `${t("page.table.table.name")} ${table.id}`}
                       </td>
-                      <td className="px-4 py-4">{t.capacity || "-"} orang</td>
+                      <td className="px-4 py-4">
+                        {t("page.table.table.capacityValue", { capacity: table.capacity || "-" })}
+                      </td>
                       <td className="px-4 py-4">
                         <span
-                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[t.status] || statusColors.available}`}>
-                          {statusLabels[t.status] || statusLabels.available}
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[table.status] || statusColors.available}`}>
+                          {t(`page.table.status.${table.status || "available"}`)}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -202,14 +202,14 @@ const TableList = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-primary"
-                            onClick={() => openEdit(t)}>
+                            onClick={() => openEdit(table)}>
                             <Edit size={15} />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive"
-                            onClick={() => setDeleteTarget(t)}>
+                            onClick={() => setDeleteTarget(table)}>
                             <Trash2 size={15} />
                           </Button>
                         </div>
@@ -225,7 +225,7 @@ const TableList = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, tables.length)} dari {total} meja
+          {t("page.table.list.showing", { count: Math.min(limit, tables.length), total })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -260,20 +260,24 @@ const TableList = () => {
         onOpenChange={(open) => {
           if (!open) setEditTarget(null);
         }}
-        title={editTarget ? "Edit Meja" : "Tambah Meja"}
-        confirmText="Simpan"
+        title={editTarget ? t("page.table.modal.editTitle") : t("page.table.modal.addTitle")}
+        confirmText={t("common.save")}
         onConfirm={handleSave}>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Nama Meja</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.table.form.name")}
+            </label>
             <Input
-              placeholder="Contoh: Meja 1, VIP A"
+              placeholder={t("page.table.form.namePlaceholder")}
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Kapasitas</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.table.form.capacity")}
+            </label>
             <Input
               type="number"
               placeholder="4"
@@ -288,9 +292,9 @@ const TableList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Hapus Meja?"
-        description={`Yakin ingin menghapus ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.table.modal.deleteTitle")}
+        description={t("page.table.modal.deleteDescription", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.table.modal.confirmDelete")}
         onConfirm={() => {
           deleteMutation.mutate({ id: deleteTarget.id });
           setDeleteTarget(null);

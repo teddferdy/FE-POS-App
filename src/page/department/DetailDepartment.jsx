@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { useTranslation } from "react-i18next";
 import { getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
@@ -29,6 +30,7 @@ const formatDate = (dateStr) => {
 };
 
 const DetailDepartment = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const departmentId = searchParams.get("id");
@@ -45,9 +47,9 @@ const DetailDepartment = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>ID departemen tidak ditemukan</p>
+        <p>{t("page.department.detail.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/department-list")}>
-          Kembali
+          {t("page.department.button.back")}
         </Button>
       </div>
     );
@@ -65,9 +67,9 @@ const DetailDepartment = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>Departemen tidak ditemukan</p>
+        <p>{t("page.department.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/department-list")}>
-          Kembali
+          {t("page.department.button.back")}
         </Button>
       </div>
     );
@@ -77,17 +79,17 @@ const DetailDepartment = () => {
     <div className="space-y-8">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard-super-admin" },
-          { label: "Kelola Departemen", href: "/department-list" },
+          { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
+          { label: t("breadcrumb.department"), href: "/department-list" },
           { label: dept.name }
         ]}
         title={dept.name}
-        description="Informasi detail departemen dan sistem.">
+        description={t("page.department.detail.description")}>
         <Button
           onClick={() => navigate(`/edit-department?id=${dept.id}`)}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">edit</span>
-          Edit Departemen
+          {t("page.department.button.edit")}
         </Button>
       </PageHeader>
 
@@ -96,18 +98,20 @@ const DetailDepartment = () => {
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
               <span className="material-symbols-outlined text-primary">domain</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Departemen</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.department.detail.info")}
+              </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Departemen
+                  {t("page.department.detail.name")}
                 </label>
                 <p className="text-sm font-semibold text-foreground mt-1">{dept.name || "-"}</p>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  ID Departemen
+                  {t("page.department.detail.id")}
                 </label>
                 <p className="text-sm font-semibold text-foreground mt-1 font-mono">
                   #{dept.id || "-"}
@@ -115,7 +119,7 @@ const DetailDepartment = () => {
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("page.department.detail.status")}
                 </label>
                 <div>
                   <span
@@ -127,17 +131,17 @@ const DetailDepartment = () => {
                     <span className="material-symbols-outlined text-sm">
                       {dept.status ? "check_circle" : "cancel"}
                     </span>
-                    {dept.status ? "Active" : "Inactive"}
+                    {dept.status ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
               </div>
             </div>
             <div className="mt-5 pt-5 border-t border-border">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Deskripsi
+                {t("page.department.table.description")}
               </label>
               <p className="text-sm text-foreground mt-1">
-                {dept.description || "Tidak ada deskripsi"}
+                {dept.description || t("page.department.detail.noDescription")}
               </p>
             </div>
           </div>
@@ -147,7 +151,9 @@ const DetailDepartment = () => {
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
               <span className="material-symbols-outlined text-primary">info</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Sistem</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.department.detail.systemInfo")}
+              </h3>
             </div>
             <div className="space-y-5">
               <div className="flex items-start gap-3">
@@ -158,7 +164,7 @@ const DetailDepartment = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Dibuat Pada
+                    {t("page.department.detail.createdAt")}
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
                     {formatDate(dept.createdAt)}
@@ -172,7 +178,7 @@ const DetailDepartment = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Diperbarui Pada
+                    {t("page.department.detail.updatedAt")}
                   </p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
                     {formatDate(dept.updatedAt)}

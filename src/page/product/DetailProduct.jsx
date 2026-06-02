@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { useTranslation } from "react-i18next";
 import {
   Package,
   DollarSign,
@@ -52,6 +53,7 @@ const formatDate = (dateStr) => {
 };
 
 const DetailProduct = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const productId = searchParams.get("id");
@@ -75,9 +77,9 @@ const DetailProduct = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Package size={48} className="opacity-30" />
-        <p>ID produk tidak ditemukan</p>
+        <p>{t("page.product.detail.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/product-list")}>
-          Kembali
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -95,9 +97,9 @@ const DetailProduct = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Package size={48} className="opacity-30" />
-        <p>Produk tidak ditemukan</p>
+        <p>{t("page.product.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/product-list")}>
-          Kembali
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -116,13 +118,13 @@ const DetailProduct = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/product-list")}
           className="hover:text-foreground transition-colors">
-          Produk
+          {t("breadcrumb.product")}
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">{product.nameProduct}</span>
@@ -157,24 +159,24 @@ const DetailProduct = () => {
                   <span
                     className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isActive ? "bg-green-400" : "bg-gray-400"}`}
                   />
-                  {isActive ? "Aktif" : "Nonaktif"}
+                  {isActive ? t("common.active") : t("common.inactive")}
                 </Badge>
                 {isOutOfStock && (
                   <Badge variant="destructive" className="mt-1">
-                    Stok Habis
+                    {t("page.product.detail.outOfStock")}
                   </Badge>
                 )}
                 {isLowStock && (
                   <Badge
                     variant="warning"
                     className="mt-1 bg-orange-100 text-orange-700 border-orange-200">
-                    Stok Menipis
+                    {t("page.product.detail.lowStock")}
                   </Badge>
                 )}
               </div>
 
               <p className="text-sm text-muted-foreground">
-                {product.description || "Tidak ada deskripsi"}
+                {product.description || t("page.product.detail.noDescription")}
               </p>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -209,7 +211,7 @@ const DetailProduct = () => {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Harga Jual
+                {t("page.product.detail.sellingPrice")}
               </p>
               <p className="text-sm font-bold text-foreground">{formatCurrency(product.price)}</p>
             </div>
@@ -220,7 +222,7 @@ const DetailProduct = () => {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Harga Modal
+                {t("page.product.detail.costPrice")}
               </p>
               <p className="text-sm font-bold text-foreground">
                 {product.costPrice ? formatCurrency(product.costPrice) : "-"}
@@ -239,11 +241,11 @@ const DetailProduct = () => {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Stok
+                {t("page.product.detail.stock")}
               </p>
               <p
                 className={`text-sm font-bold ${isOutOfStock ? "text-red-600" : isLowStock ? "text-orange-600" : "text-foreground"}`}>
-                {stock} {product.unit || "pcs"}
+                {stock} {product.unit || t("page.product.detail.unitPcs")}
               </p>
             </div>
           </div>
@@ -253,7 +255,7 @@ const DetailProduct = () => {
             </div>
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Poin Member
+                {t("page.product.detail.memberPoints")}
               </p>
               <p className="text-sm font-bold text-foreground">{product.point || 0}</p>
             </div>
@@ -268,7 +270,7 @@ const DetailProduct = () => {
           <Card>
             <div className="p-5 border-b border-border flex items-center gap-2">
               <Tag size={16} className="text-primary" />
-              <h3 className="font-semibold text-sm">Informasi Produk</h3>
+              <h3 className="font-semibold text-sm">{t("page.product.detail.productInfo")}</h3>
             </div>
             <div className="p-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -278,7 +280,7 @@ const DetailProduct = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                      Kategori
+                      {t("page.product.detail.category")}
                     </p>
                     <p className="text-sm font-medium text-foreground">
                       {product.categoryData?.name || "-"}
@@ -291,7 +293,7 @@ const DetailProduct = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                      Satuan
+                      {t("page.product.detail.unit")}
                     </p>
                     <p className="text-sm font-medium text-foreground">{product.unit || "pcs"}</p>
                   </div>
@@ -302,10 +304,10 @@ const DetailProduct = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                      Min. Stok
+                      {t("page.product.detail.minStock")}
                     </p>
                     <p className="text-sm font-medium text-foreground">
-                      {minStock} {product.unit || "pcs"}
+                      {minStock} {product.unit || t("page.product.detail.unitPcs")}
                     </p>
                   </div>
                 </div>
@@ -315,10 +317,10 @@ const DetailProduct = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                      Waktu Persiapan
+                      {t("page.product.detail.preparationTime")}
                     </p>
                     <p className="text-sm font-medium text-foreground">
-                      {product.preparationTime || 0} menit
+                      {product.preparationTime || 0} {t("page.product.detail.minutes")}
                     </p>
                   </div>
                 </div>
@@ -329,14 +331,16 @@ const DetailProduct = () => {
           <Card>
             <div className="p-5 border-b border-border flex items-center gap-2">
               <Layers size={16} className="text-primary" />
-              <h3 className="font-semibold text-sm">Varian & Opsi</h3>
+              <h3 className="font-semibold text-sm">{t("page.product.detail.variants")}</h3>
             </div>
             <div className="p-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Punya varian</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.product.detail.hasVariant")}
+                  </span>
                   <Badge variant={product.isOption ? "default" : "secondary"}>
-                    {product.isOption ? "Ya" : "Tidak"}
+                    {product.isOption ? t("common.yes") : t("common.no")}
                   </Badge>
                 </div>
                 {product.isOption && product.options?.length > 0 && (
@@ -344,7 +348,7 @@ const DetailProduct = () => {
                     {product.options.map((group, gi) => (
                       <div key={gi} className="text-sm">
                         <p className="font-medium text-foreground">
-                          {group.name || `Varian ${gi + 1}`}
+                          {group.name || `${t("page.product.detail.variant")} ${gi + 1}`}
                         </p>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           {group.options?.map((opt, oi) => (
@@ -361,9 +365,11 @@ const DetailProduct = () => {
                 )}
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Punya modifier</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.product.detail.hasModifier")}
+                  </span>
                   <Badge variant={product.hasModifiers ? "default" : "secondary"}>
-                    {product.hasModifiers ? "Ya" : "Tidak"}
+                    {product.hasModifiers ? t("common.yes") : t("common.no")}
                   </Badge>
                 </div>
                 {product.hasModifiers && product.modifiers?.length > 0 && (
@@ -386,7 +392,7 @@ const DetailProduct = () => {
           <Card>
             <div className="p-5 border-b border-border flex items-center gap-2">
               <CalendarDays size={16} className="text-primary" />
-              <h3 className="font-semibold text-sm">Batch & Expiry</h3>
+              <h3 className="font-semibold text-sm">{t("page.product.detail.batchExpiry")}</h3>
             </div>
             <div className="p-5">
               {loadingBatches ? (
@@ -394,13 +400,15 @@ const DetailProduct = () => {
                   <Loading size="sm" />
                 </div>
               ) : batches.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada batch</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("page.product.detail.noBatch")}
+                </p>
               ) : (
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider pb-2 border-b border-border">
-                    <span>Nomor Batch</span>
-                    <span>Expiry Date</span>
-                    <span className="text-right">Stok</span>
+                    <span>{t("page.product.detail.batchNumber")}</span>
+                    <span>{t("page.product.detail.expiryDate")}</span>
+                    <span className="text-right">{t("page.product.detail.stock")}</span>
                   </div>
                   {batches.map((batch, idx) => (
                     <div key={idx} className="grid grid-cols-3 gap-2 text-sm items-center py-1.5">
@@ -425,22 +433,24 @@ const DetailProduct = () => {
           <Card>
             <div className="p-5 border-b border-border flex items-center gap-2">
               <Clock size={16} className="text-primary" />
-              <h3 className="font-semibold text-sm">Informasi Sistem</h3>
+              <h3 className="font-semibold text-sm">{t("page.product.detail.systemInfo")}</h3>
             </div>
             <div className="p-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                    Dibuat Pada
+                    {t("page.product.detail.createdAt")}
                   </p>
                   <p className="text-sm font-medium text-foreground">
                     {formatDate(product.createdAt)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{product.createdBy || "System"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {product.createdBy || t("common.system")}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                    Diperbarui Pada
+                    {t("page.product.detail.updatedAt")}
                   </p>
                   <p className="text-sm font-medium text-foreground">
                     {formatDate(product.updatedAt)}
@@ -463,7 +473,7 @@ const DetailProduct = () => {
                     isOutOfStock ? "text-red-600" : isLowStock ? "text-orange-600" : "text-primary"
                   }
                 />
-                <h3 className="font-semibold text-sm">Status Stok</h3>
+                <h3 className="font-semibold text-sm">{t("page.product.detail.stockStatus")}</h3>
               </div>
             </div>
             <div className="p-5 space-y-4">
@@ -473,7 +483,9 @@ const DetailProduct = () => {
                   {stock}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Stok saat ini ({product.unit || "pcs"})
+                  {t("page.product.detail.currentStock", {
+                    unit: product.unit || t("page.product.detail.unitPcs")
+                  })}
                 </p>
               </div>
               <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
@@ -485,8 +497,14 @@ const DetailProduct = () => {
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Min. stok: {minStock}</span>
-                <span>{stock > minStock ? "Aman" : isOutOfStock ? "Habis" : "Menipis"}</span>
+                <span>{t("page.product.detail.minStockLabel", { minStock })}</span>
+                <span>
+                  {stock > minStock
+                    ? t("page.product.detail.safe")
+                    : isOutOfStock
+                      ? t("page.product.detail.outOfStock")
+                      : t("page.product.detail.lowStock")}
+                </span>
               </div>
             </div>
           </Card>
@@ -496,12 +514,16 @@ const DetailProduct = () => {
               <div className="p-5 border-b border-border bg-purple-50">
                 <div className="flex items-center gap-2">
                   <Star size={16} className="text-purple-600" />
-                  <h3 className="font-semibold text-sm">Poin Member</h3>
+                  <h3 className="font-semibold text-sm">
+                    {t("page.product.detail.memberPointsTitle")}
+                  </h3>
                 </div>
               </div>
               <div className="p-5 text-center">
                 <p className="text-3xl font-bold text-purple-600">{product.point}</p>
-                <p className="text-xs text-muted-foreground mt-1">Poin per pembelian</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("page.product.detail.pointsPerPurchase")}
+                </p>
               </div>
             </Card>
           )}
@@ -511,14 +533,16 @@ const DetailProduct = () => {
               <div className="p-5 border-b border-border">
                 <div className="flex items-center gap-2">
                   <ShoppingCart size={16} className="text-primary" />
-                  <h3 className="font-semibold text-sm">Ketersediaan</h3>
+                  <h3 className="font-semibold text-sm">{t("page.product.detail.availability")}</h3>
                 </div>
               </div>
               <div className="p-5 text-center">
                 <Badge
                   variant={product.isAvailable ? "default" : "secondary"}
                   className="text-sm px-4 py-1">
-                  {product.isAvailable ? "Tersedia" : "Tidak Tersedia"}
+                  {product.isAvailable
+                    ? t("page.product.detail.available")
+                    : t("page.product.detail.unavailable")}
                 </Badge>
               </div>
             </Card>
@@ -530,13 +554,13 @@ const DetailProduct = () => {
       <div className="flex justify-between items-center gap-3 pt-2">
         <Button variant="outline" onClick={() => navigate("/product-list")} className="gap-2">
           <ArrowLeft size={16} />
-          Kembali
+          {t("common.back")}
         </Button>
         <Button
           onClick={() => navigate(`/edit-product?id=${product.id}`)}
           className="gap-2 shadow-md">
           <Edit size={16} />
-          Edit Produk
+          {t("page.product.detail.editProduct")}
         </Button>
       </div>
     </div>

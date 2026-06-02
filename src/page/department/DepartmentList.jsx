@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   getAllDepartmentTable,
   deleteDepartment,
@@ -38,6 +39,7 @@ const formatDate = (dateStr) => {
 };
 
 const DepartmentList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -56,11 +58,11 @@ const DepartmentList = () => {
 
   const deleteMutation = useMutation(deleteDepartment, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Departemen berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.department.toast.deleteSuccess") });
       queryClient.invalidateQueries(["departments"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -86,9 +88,12 @@ const DepartmentList = () => {
   return (
     <div className="space-y-8">
       <PageHeader
-        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Departemen" }]}
-        title="Daftar Departemen"
-        description="Kelola daftar departemen dan informasi divisi perusahaan Anda.">
+        breadcrumbs={[
+          { label: t("breadcrumb.adminConsole") },
+          { label: t("breadcrumb.department") }
+        ]}
+        title={t("page.department.list.title")}
+        description={t("page.department.list.description")}>
         <Button
           variant="outline"
           disabled={isDownloadingTemplate}
@@ -96,11 +101,15 @@ const DepartmentList = () => {
             setIsDownloadingTemplate(true);
             try {
               await downloadDepartmentTemplate();
-              toast.success("Berhasil", { description: "Template berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.department.toast.templateSuccess")
+              });
             } catch (err) {
-              toast.error("Gagal", {
+              toast.error(t("common.error"), {
                 description:
-                  err?.response?.data?.message || err.message || "Gagal download template"
+                  err?.response?.data?.message ||
+                  err.message ||
+                  t("page.department.toast.templateError")
               });
             } finally {
               setIsDownloadingTemplate(false);
@@ -111,7 +120,9 @@ const DepartmentList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
           )}
-          {isDownloadingTemplate ? "Download..." : "Download Template"}
+          {isDownloadingTemplate
+            ? t("page.department.button.downloading")
+            : t("page.department.button.downloadTemplate")}
         </Button>
         <Button
           variant="outline"
@@ -120,10 +131,15 @@ const DepartmentList = () => {
             setIsDownloadingData(true);
             try {
               await downloadDepartmentExcel();
-              toast.success("Berhasil", { description: "Data berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.department.toast.dataSuccess")
+              });
             } catch (err) {
-              toast.error("Gagal", {
-                description: err?.response?.data?.message || err.message || "Gagal download data"
+              toast.error(t("common.error"), {
+                description:
+                  err?.response?.data?.message ||
+                  err.message ||
+                  t("page.department.toast.dataError")
               });
             } finally {
               setIsDownloadingData(false);
@@ -134,16 +150,18 @@ const DepartmentList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">download</span>
           )}
-          {isDownloadingData ? "Download..." : "Download Data"}
+          {isDownloadingData
+            ? t("page.department.button.downloading")
+            : t("page.department.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
         <Button variant="default" onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
-          Upload Excel
+          {t("page.department.button.upload")}
         </Button>
         <Button variant="default" onClick={() => navigate("/add-department")} className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
-          Tambah Departemen
+          {t("page.department.button.add")}
         </Button>
       </PageHeader>
 
@@ -151,14 +169,14 @@ const DepartmentList = () => {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Total Departemen
+              {t("page.department.list.statsTotal")}
             </p>
             <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalDepartemen ?? total}
             </h3>
             <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">domain</span>
-              Semua departemen
+              {t("page.department.list.statsAll")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -168,7 +186,7 @@ const DepartmentList = () => {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Departemen Aktif
+              {t("page.department.list.statsActive")}
             </p>
             <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalDepartemenAktif ?? 0}
@@ -178,7 +196,7 @@ const DepartmentList = () => {
               {stats?.totalDepartemen
                 ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
                 : 0}
-              % Aktif
+              {t("page.department.list.statsActivePercent")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
@@ -188,14 +206,14 @@ const DepartmentList = () => {
         <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-              Departemen Nonaktif
+              {t("page.department.list.statsInactive")}
             </p>
             <h3 className="text-3xl font-bold text-white">
               {stats?.totalDepartemenNonActive ?? 0}
             </h3>
             <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">cancel</span>
-              Perlu perhatian
+              {t("page.department.list.statsAttention")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -205,7 +223,7 @@ const DepartmentList = () => {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Tanpa Deskripsi
+              {t("page.department.list.statsNoDesc")}
             </p>
             <h3 className="text-3xl font-bold text-foreground">
               {stats?.totalTanpaDeskripsi ?? 0}
@@ -215,7 +233,7 @@ const DepartmentList = () => {
               {stats?.totalDepartemen
                 ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
                 : 0}
-              % Perlu dilengkapi
+              {t("page.department.list.statsNoDescPercent")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
@@ -227,13 +245,15 @@ const DepartmentList = () => {
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">Tampilkan:</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t("page.department.list.showLabel")}
+            </span>
             <select
               value={limit}
               className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-              <option value={10}>10 Baris</option>
-              <option value={25}>25 Baris</option>
-              <option value={50}>50 Baris</option>
+              <option value={10}>{t("page.department.list.show10")}</option>
+              <option value={25}>{t("page.department.list.show25")}</option>
+              <option value={50}>{t("page.department.list.show50")}</option>
             </select>
           </div>
           <div className="relative">
@@ -241,7 +261,7 @@ const DepartmentList = () => {
               search
             </span>
             <input
-              placeholder="Cari departemen..."
+              placeholder={t("page.department.list.search")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -262,25 +282,25 @@ const DepartmentList = () => {
               <thead>
                 <tr className="bg-muted/10 border-b border-border">
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                    No
+                    {t("page.department.table.no")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nama Departemen
+                    {t("page.department.table.name")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.department.table.description")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    Status
+                    {t("page.department.table.status")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Tanggal Dibuat
+                    {t("page.department.table.createdDate")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Diperbarui
+                    {t("page.department.table.updatedDate")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    Aksi
+                    {t("page.department.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -289,7 +309,7 @@ const DepartmentList = () => {
                   <tr>
                     <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
                       <span className="material-symbols-outlined text-4xl block mb-2">domain</span>
-                      Tidak ada departemen ditemukan
+                      {t("page.department.list.empty")}
                     </td>
                   </tr>
                 ) : (
@@ -315,7 +335,7 @@ const DepartmentList = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
                           }`}>
-                          {department.status ? "Aktif" : "Nonaktif"}
+                          {department.status ? t("common.active") : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
@@ -329,19 +349,19 @@ const DepartmentList = () => {
                           <button
                             onClick={() => navigate(`/detail-department?id=${department.id}`)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title="Detail">
+                            title={t("common.view")}>
                             <span className="material-symbols-outlined text-lg">visibility</span>
                           </button>
                           <button
                             onClick={() => navigate(`/edit-department?id=${department.id}`)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title="Edit">
+                            title={t("common.edit")}>
                             <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
                           <button
                             onClick={() => handleDelete(department)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-                            title="Hapus">
+                            title={t("common.delete")}>
                             <span className="material-symbols-outlined text-lg">delete</span>
                           </button>
                         </div>
@@ -356,7 +376,7 @@ const DepartmentList = () => {
 
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            Menampilkan {departments.length} dari {total} data
+            {t("page.department.list.showing", { count: departments.length, total })}
           </p>
           <div className="flex items-center gap-1">
             <button
@@ -403,24 +423,26 @@ const DepartmentList = () => {
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">
           <span className="material-symbols-outlined opacity-80">lightbulb</span>
-          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+            {t("page.department.tips.title")}
+          </h4>
         </div>
         <ul className="space-y-2">
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Departemen membantu mengelompokkan jabatan berdasarkan fungsi kerja.</span>
+            <span>{t("page.department.tips.1")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Pastikan setiap departemen memiliki deskripsi yang jelas.</span>
+            <span>{t("page.department.tips.2")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Gunakan status untuk mengatur visibilitas departemen di sistem.</span>
+            <span>{t("page.department.tips.3")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Download template untuk menambahkan banyak departemen sekaligus.</span>
+            <span>{t("page.department.tips.4")}</span>
           </li>
         </ul>
       </div>
@@ -429,8 +451,8 @@ const DepartmentList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`Hapus ${deleteTarget?.name || "Departemen"}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.department.modal.deleteTitle", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.department.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
       <UploadDepartmentModal

@@ -6,10 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
-  // Building2,
   X,
   Save
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { addSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ const formSchema = z.object({
 });
 
 const AddSupplier = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -47,8 +48,8 @@ const AddSupplier = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal menambahkan supplier"
+      toast.error(t("common.error"), {
+        description: err?.response?.data?.message || err.message || t("page.supplier.toast.addFailed")
       });
     }
   });
@@ -63,34 +64,34 @@ const AddSupplier = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/supplier")}
           className="hover:text-foreground transition-colors">
-          Supplier
+          {t("breadcrumb.supplier")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Supplier</span>
+        <span className="text-primary font-semibold">{t("page.supplier.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Supplier</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah data pemasok barang baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -105,9 +106,9 @@ const AddSupplier = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Supplier <span className="text-destructive">*</span>
+                      {t("page.supplier.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama supplier" {...field} />
+                    <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -117,8 +118,8 @@ const AddSupplier = () => {
                 name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kontak Person</FormLabel>
-                    <Input placeholder="Nama kontak person" {...field} />
+                    <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
+                    <Input placeholder={t("page.supplier.form.contactPersonPlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -128,8 +129,8 @@ const AddSupplier = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telepon</FormLabel>
-                    <Input placeholder="Nomor telepon" {...field} />
+                    <FormLabel>{t("page.supplier.form.phone")}</FormLabel>
+                    <Input placeholder={t("page.supplier.form.phonePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -139,8 +140,8 @@ const AddSupplier = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <Input placeholder="email@supplier.com" {...field} />
+                    <FormLabel>{t("page.supplier.form.email")}</FormLabel>
+                    <Input placeholder={t("page.supplier.form.emailPlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -151,8 +152,8 @@ const AddSupplier = () => {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alamat</FormLabel>
-                  <Textarea placeholder="Alamat lengkap supplier" rows={3} {...field} />
+                  <FormLabel>{t("page.supplier.form.address")}</FormLabel>
+                  <Textarea placeholder={t("page.supplier.form.addressPlaceholder")} rows={3} {...field} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -165,18 +166,18 @@ const AddSupplier = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.supplier.modal.cancelTitle")}
+        description={t("page.supplier.modal.cancelDescription")}
+        confirmText={t("page.supplier.modal.confirmCancel")}
         onConfirm={() => navigate("/supplier")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Supplier berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("common.success")}
+        description={t("page.supplier.toast.addSuccess")}
+        confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
       />
     </div>

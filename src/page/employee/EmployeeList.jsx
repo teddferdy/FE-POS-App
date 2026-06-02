@@ -10,6 +10,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
+import { useTranslation } from "react-i18next";
 
 const positionColors = {
   manager: "bg-primary-fixed text-on-primary-fixed",
@@ -33,6 +34,7 @@ const EmployeeList = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useQuery(
     ["employees", page, limit, search, locationFilter, positionFilter],
@@ -80,14 +82,17 @@ const EmployeeList = () => {
   return (
     <div className="space-y-8">
       <PageHeader
-        breadcrumbs={[{ label: "Manajemen SDM" }, { label: "Kelola Karyawan" }]}
-        title="Kelola Karyawan"
-        description="Pusat kendali manajemen SDM. Atur akses, pantau status keaktifan, dan kelola penugasan karyawan di seluruh cabang.">
+        breadcrumbs={[
+          { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
+          { label: t("page.employee.list.title"), i18nKey: "page.employee.list.title" }
+        ]}
+        title={t("page.employee.list.title")}
+        description={t("page.employee.list.description")}>
         <Button
           onClick={() => navigate("/add-employee")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">person_add</span>
-          Tambah Karyawan
+          {t("page.employee.add.title")}
         </Button>
       </PageHeader>
 
@@ -95,7 +100,7 @@ const EmployeeList = () => {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Total Karyawan
+              {t("page.employee.table.total")}
             </p>
             <h3 className="text-3xl font-bold text-foreground">{total.toLocaleString() || "0"}</h3>
             <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
@@ -110,14 +115,15 @@ const EmployeeList = () => {
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Karyawan Aktif
+              {t("page.employee.table.active")}
             </p>
             <h3 className="text-3xl font-bold text-foreground">
               {activeCount.toLocaleString() || "0"}
             </h3>
             <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              {total > 0 ? Math.round((activeCount / total) * 100) : 0}% Tingkat Keaktifan
+              {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
+              {t("page.employee.table.activeRate")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
@@ -127,12 +133,12 @@ const EmployeeList = () => {
         <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-              Karyawan Nonaktif
+              {t("page.employee.table.inactive")}
             </p>
             <h3 className="text-3xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
             <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">cancel</span>
-              Perlu perhatian
+              {t("page.employee.table.attentionNeeded")}
             </p>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
@@ -208,22 +214,22 @@ const EmployeeList = () => {
                     Foto
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    ID Karyawan
+                    {t("page.employee.table.id")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Nama Lengkap
+                    {t("page.employee.table.name")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Jabatan
+                    {t("page.employee.table.position")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Toko/Cabang
+                    {t("page.employee.table.branch")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-center">
-                    Status
+                    {t("page.employee.table.status")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    Aksi
+                    {t("page.employee.table.actions")}
                   </th>
                 </tr>
               </thead>

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Upload,
   FileSpreadsheet,
@@ -26,6 +27,7 @@ const formatFileSize = (bytes) => {
 };
 
 const UploadPositionModal = ({ open, onOpenChange, onUploadSuccess }) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -111,8 +113,12 @@ const UploadPositionModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 <FileSpreadsheet size={22} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Import Excel</h2>
-                <p className="text-sm text-muted-foreground">Unggah file Excel jabatan</p>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {t("page.position.uploadModal.title")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.position.uploadModal.subtitle")}
+                </p>
               </div>
             </div>
             <button
@@ -151,10 +157,12 @@ const UploadPositionModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     {dragOver
-                      ? "Lepaskan file di sini"
-                      : "Tarik & lepas file Excel, atau klik untuk pilih"}
+                      ? t("page.position.uploadModal.dropHere")
+                      : t("page.position.uploadModal.dragDrop")}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Format: .xlsx, .xls, .csv</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("page.position.uploadModal.format")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -184,26 +192,26 @@ const UploadPositionModal = ({ open, onOpenChange, onUploadSuccess }) => {
             {parseError && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal membaca file. Pastikan format Excel benar.
+                {t("page.position.uploadModal.parseError")}
               </div>
             )}
 
             {uploadStatus === "success" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <CheckCircle2 size={18} />
-                File berhasil diupload dan diproses
+                {t("page.position.uploadModal.success")}
               </div>
             )}
             {uploadStatus === "error" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal mengupload file. Silakan coba lagi.
+                {t("page.position.uploadModal.error")}
               </div>
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button variant="outline" onClick={handleClose}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button
                 disabled={!file || uploading}
@@ -212,12 +220,12 @@ const UploadPositionModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 {uploading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Mengupload...
+                    {t("page.position.uploadModal.uploading")}
                   </>
                 ) : (
                   <>
                     <Database size={16} />
-                    Upload Langsung
+                    {t("page.position.uploadModal.upload")}
                   </>
                 )}
               </Button>

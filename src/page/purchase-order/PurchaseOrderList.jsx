@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Undo2
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   getAllPurchaseOrder,
   receivePurchaseOrder,
@@ -41,6 +42,7 @@ const statusMap = {
 };
 
 const PurchaseOrderList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -97,40 +99,42 @@ const PurchaseOrderList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Purchase Order</span>
+        <span className="text-primary font-semibold">{t("page.purchaseOrder.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Purchase Order</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.purchaseOrder.list.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola pemesanan pembelian barang ke supplier.
+            {t("page.purchaseOrder.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
           <Plus size={18} />
-          Buat PO
+          {t("breadcrumb.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total PO</p>
+          <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.title")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Menunggu</p>
+          <p className="text-sm text-muted-foreground">{t("common.status")}</p>
           <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.pending ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Diterima</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.received ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Dibatalkan</p>
+          <p className="text-sm text-muted-foreground">{t("common.delete")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.cancelled ?? 0}</p>
         </Card>
       </div>

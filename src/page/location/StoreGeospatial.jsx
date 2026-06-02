@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -63,6 +64,7 @@ const categoryColors = {
 };
 
 const StoreGeospatial = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -125,17 +127,17 @@ const StoreGeospatial = () => {
           onClick={() => navigate("/location-list")}
           className="font-medium hover:text-primary transition-colors flex items-center gap-1">
           <ArrowLeft size={16} />
-          Kelola Toko
+          {t("page.location.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="font-semibold text-foreground">Store Geospatial</span>
+        <span className="font-semibold text-foreground">{t("page.location.list.title")}</span>
       </nav>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Store Geospatial View</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.location.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Visualisasi semua lokasi toko pada peta interaktif
+            {t("page.location.list.description")}
           </p>
         </div>
       </div>
@@ -143,27 +145,31 @@ const StoreGeospatial = () => {
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">Status:</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t("common.status")}:
+            </span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">Semua</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Tidak Aktif</option>
+              <option value="all">{t("common.all")}</option>
+              <option value="active">{t("common.active")}</option>
+              <option value="inactive">{t("common.inactive")}</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">Kategori:</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t("common.category")}:
+            </span>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">Semua</option>
-              <option value="Main Branch">Main Branch</option>
-              <option value="Branch">Branch</option>
-              <option value="Warehouse">Warehouse</option>
-              <option value="Office">Office</option>
+              <option value="all">{t("common.all")}</option>
+              <option value="Main Branch">{t("page.location.category.mainBranch")}</option>
+              <option value="Branch">{t("page.location.category.branch")}</option>
+              <option value="Warehouse">{t("page.location.category.warehouse")}</option>
+              <option value="Office">{t("page.location.category.office")}</option>
             </select>
           </div>
           <p className="text-xs text-muted-foreground self-center ml-auto">

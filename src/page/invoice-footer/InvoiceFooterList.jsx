@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
@@ -18,6 +19,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const InvoiceFooterList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -43,17 +45,25 @@ const InvoiceFooterList = () => {
 
   const deleteMutation = useMutation(deleteInvoiceFooter, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Footer invoice berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.invoiceFooter.delete.successDescription") });
       queryClient.invalidateQueries(["invoice-footers"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const toggleMutation = useMutation(activateOrNotActiveInvoiceFooter, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Status footer berhasil diubah" });
+      toast.success(t("common.success"), { description: t("page.invoiceFooter.toggle.successDescription") });
+      queryClient.invalidateQueries(["invoice-footers"]);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+    }
+  }); = useMutation(activateOrNotActiveInvoiceFooter, {
+    onSuccess: () => {
+      toast.success(t("common.success"), { description: t("page.invoiceFooter.toggle.successDescription") });
       queryClient.invalidateQueries(["invoice-footers"]);
     },
     onError: (err) => {
@@ -93,20 +103,20 @@ const InvoiceFooterList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Footer Invoice</span>
+        <span className="text-primary font-semibold">{t("page.invoiceFooter.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Footer Invoice</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola footer untuk invoice.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.invoiceFooter.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.invoiceFooter.list.description")}</p>
         </div>
         <Button onClick={() => navigate("/add-invoice-footer")} className="gap-2">
           <Plus size={18} />
-          Tambah Footer
+          {t("page.invoiceFooter.list.addButton")}
         </Button>
       </div>
 
@@ -116,7 +126,7 @@ const InvoiceFooterList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari footer..."
+          placeholder={t("page.invoiceFooter.list.searchPlaceholder")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -137,19 +147,19 @@ const InvoiceFooterList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama
+                    {t("page.invoiceFooter.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Konten
+                    {t("page.invoiceFooter.table.content")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("common.status")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Dibuat
+                    {t("page.invoiceFooter.table.createdAt")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -158,7 +168,7 @@ const InvoiceFooterList = () => {
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                       <FileText size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada footer ditemukan</p>
+                      <p>{t("page.invoiceFooter.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -186,7 +196,7 @@ const InvoiceFooterList = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                           }`}>
-                          {item.isActive ? "Aktif" : "Tidak Aktif"}
+                          {item.isActive ? t("common.active") : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-muted-foreground">
@@ -227,7 +237,7 @@ const InvoiceFooterList = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, footers.length)} dari {total} footer
+          {t("page.invoiceFooter.list.showing", { count: Math.min(limit, footers.length), total })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -264,9 +274,9 @@ const InvoiceFooterList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Footer?"
-        description={`Yakin ingin menghapus footer ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.invoiceFooter.deleteModal.title")}
+        description={t("page.invoiceFooter.deleteModal.description", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.invoiceFooter.deleteModal.confirmText")}
         onConfirm={confirmDelete}
       />
     </div>

@@ -24,12 +24,6 @@ import EditLocation from "./page/location/EditLocation";
 import LocationDetail from "./page/location/LocationDetail";
 import StoreGeospatial from "./page/location/StoreGeospatial";
 
-// Social Media Invoice
-import SocialMediaList from "./page/social-media/SocialMediaList";
-import AddSocialMedia from "./page/social-media/AddSocialMedia";
-import EditSocialMedia from "./page/social-media/EditSocialMedia";
-import SocialMediaRegularList from "./page/social-media/SocialMediaRegularList";
-
 // Invoice
 import InvoicePage from "./page/invoice/InvoicePage";
 
@@ -101,11 +95,6 @@ import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 // Cashier
 import CashierPage from "./page/cashier/CashierPage";
 
-// Invoice Footer
-import InvoiceFooterList from "./page/invoice-footer/InvoiceFooterList";
-import AddInvoiceFooter from "./page/invoice-footer/AddInvoiceFooter";
-import EditInvoiceFooter from "./page/invoice-footer/EditInvoiceFooter";
-
 // Table
 import TableList from "./page/table/TableList";
 
@@ -113,11 +102,6 @@ import TableList from "./page/table/TableList";
 import DiscountList from "./page/discount/DiscountList";
 import AddDiscount from "./page/discount/AddDiscount";
 import EditDiscount from "./page/discount/EditDiscount";
-
-// Invoice Logo
-import InvoiceLogoList from "./page/invoice-logo/InvoiceLogoList";
-import AddInvoiceLogo from "./page/invoice-logo/AddInvoiceLogo";
-import EditInvoiceLogo from "./page/invoice-logo/EditInvoiceLogo";
 
 // Type Payment
 import TypePaymentList from "./page/type-payment/TypePaymentList";
@@ -222,21 +206,9 @@ function App() {
           <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
 
           <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
-          <Route path="/logo-invoice-list" element={withLayout(<InvoiceLogoList />)} />
-          <Route path="/footer-invoice-list" element={withLayout(<InvoiceFooterList />)} />
-          <Route path="/social-media-invoice-list" element={withLayout(<SocialMediaList />)} />
-          <Route path="/add-social-media" element={withLayout(<AddSocialMedia />)} />
-          <Route path="/edit-social-media" element={withLayout(<EditSocialMedia />)} />
 
           {/* Global Setting Routes */}
           <Route path="/global-setting" element={withLayout(<GlobalSetting />)} />
-          <Route path="/social-media-list" element={withLayout(<SocialMediaRegularList />)} />
-          <Route path="/add-invoice-logo" element={withLayout(<AddInvoiceLogo />)} />
-          <Route path="/edit-invoice-logo" element={withLayout(<EditInvoiceLogo />)} />
-          <Route path="/add-invoice-footer" element={withLayout(<AddInvoiceFooter />)} />
-          <Route path="/edit-invoice-footer" element={withLayout(<EditInvoiceFooter />)} />
-          <Route path="/add-invoice-social-media" element={withLayout(<AddSocialMedia />)} />
-          <Route path="/edit-invoice-social-media" element={withLayout(<EditSocialMedia />)} />
 
           <Route path="/position-list" element={withLayout(<PositionList />)} />
           <Route path="/add-position" element={withLayout(<AddPosition />)} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const EditPosition = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -55,12 +57,12 @@ const EditPosition = () => {
 
   const editMutation = useMutation(editPosition, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Jabatan berhasil diperbarui" });
+      toast.success(t("common.success"), { description: t("page.position.toast.updated") });
       queryClient.invalidateQueries(["positions"]);
       navigate("/position-list");
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -68,8 +70,8 @@ const EditPosition = () => {
 
   const validate = () => {
     const errs = {};
-    if (!name.trim()) errs.name = "Nama jabatan wajib diisi";
-    if (!department) errs.department = "Departemen wajib dipilih";
+    if (!name.trim()) errs.name = t("page.position.validation.nameRequired");
+    if (!department) errs.department = t("page.position.validation.departmentRequired");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -90,9 +92,9 @@ const EditPosition = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>ID jabatan tidak ditemukan</p>
+        <p>{t("page.position.edit.idNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/position-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -110,9 +112,9 @@ const EditPosition = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <span className="material-symbols-outlined text-4xl">badge</span>
-        <p>Jabatan tidak ditemukan</p>
+        <p>{t("page.position.edit.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/position-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -122,12 +124,12 @@ const EditPosition = () => {
     <div className="space-y-8">
       <PageHeader
         breadcrumbs={[
-          { label: "Manajemen SDM" },
-          { label: "Kelola Jabatan", href: "/position-list" },
-          { label: "Edit Jabatan" }
+          { label: t("breadcrumb.hrm") },
+          { label: t("breadcrumb.position"), href: "/position-list" },
+          { label: t("breadcrumb.edit") }
         ]}
-        title="Edit Jabatan"
-        description="Perbarui informasi dan level akses untuk jabatan ini."
+        title={t("page.position.edit.title")}
+        description={t("page.position.edit.description")}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -135,7 +137,7 @@ const EditPosition = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Nama Jabatan <span className="text-destructive">*</span>
+                {t("page.position.form.name")} <span className="text-destructive">*</span>
               </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
@@ -144,7 +146,7 @@ const EditPosition = () => {
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Senior Supervisor"
+                  placeholder={t("page.position.form.namePlaceholder")}
                   className="pl-9"
                 />
               </div>
@@ -152,7 +154,7 @@ const EditPosition = () => {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Departemen <span className="text-destructive">*</span>
+                {t("page.position.form.department")} <span className="text-destructive">*</span>
               </label>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none">
@@ -168,9 +170,11 @@ const EditPosition = () => {
                           domain
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-foreground">Belum ada departemen</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {t("page.position.empty.noDepartments")}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Tambah departemen terlebih dahulu
+                        {t("page.position.empty.addDepartmentFirst")}
                       </p>
                     </div>
                     <Button
@@ -180,7 +184,7 @@ const EditPosition = () => {
                       onClick={() => navigate("/add-department")}
                       className="gap-2">
                       <span className="material-symbols-outlined text-base">add</span>
-                      Tambah Departemen
+                      {t("page.position.button.addDepartment")}
                     </Button>
                   </div>
                 ) : (
@@ -188,7 +192,9 @@ const EditPosition = () => {
                     <div className="flex-1">
                       <Select value={department} onValueChange={setDepartment}>
                         <SelectTrigger className="pl-9">
-                          <SelectValue placeholder="Pilih Departemen" />
+                          <SelectValue
+                            placeholder={t("page.position.form.departmentPlaceholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {departments.map((d) => (
@@ -205,7 +211,7 @@ const EditPosition = () => {
                       size="icon"
                       className="shrink-0 mt-0.5"
                       onClick={() => navigate("/add-department")}
-                      title="Tambah Departemen Baru">
+                      title={t("page.position.button.addDepartmentNew")}>
                       <span className="material-symbols-outlined text-base">add</span>
                     </Button>
                   </div>
@@ -219,12 +225,12 @@ const EditPosition = () => {
 
           <div className="flex flex-col gap-1.5 mb-5">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Deskripsi Jabatan
+              {t("page.position.form.description")}
             </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tuliskan detail tanggung jawab dan cakupan kerja untuk jabatan ini..."
+              placeholder={t("page.position.form.descriptionPlaceholder")}
               rows={4}
               className="resize-none"
             />
@@ -247,10 +253,12 @@ const EditPosition = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Status {isActive ? "Aktif" : "Nonaktif"}
+                  {t("common.status")} {isActive ? t("common.active") : t("common.inactive")}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {isActive ? "Jabatan ini aktif dan dapat digunakan" : "Jabatan ini tidak aktif"}
+                  {isActive
+                    ? t("page.position.form.statusActive")
+                    : t("page.position.form.statusInactive")}
                 </p>
               </div>
             </div>
@@ -265,14 +273,14 @@ const EditPosition = () => {
             onClick={() => navigate("/position-list")}
             className="gap-2">
             <span className="material-symbols-outlined text-lg">close</span>
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={editMutation.isLoading}
             className="gap-2 shadow-lg shadow-primary/20">
             <span className="material-symbols-outlined text-lg">save</span>
-            Simpan Perubahan
+            {t("page.position.button.saveChanges")}
           </Button>
         </div>
       </form>
@@ -281,11 +289,10 @@ const EditPosition = () => {
         <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
         <div>
           <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
-            Catatan Keamanan
+            {t("page.position.edit.securityNote")}
           </h4>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Perubahan pada jabatan akan dicatat dalam audit log sistem. Pastikan pemberian level
-            akses sesuai dengan kebijakan keamanan perusahaan.
+            {t("page.position.edit.securityDescription")}
           </p>
         </div>
       </div>

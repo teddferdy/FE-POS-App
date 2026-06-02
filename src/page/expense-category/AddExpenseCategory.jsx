@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
@@ -20,6 +21,7 @@ const formSchema = z.object({
 });
 
 const AddExpenseCategory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -54,16 +56,16 @@ const AddExpenseCategory = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/expense-category")}
           className="hover:text-foreground transition-colors">
-          Kategori Biaya
+          {t("page.expenseCategory.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Kategori</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
       </nav>
 
       <div className="flex items-center justify-between">

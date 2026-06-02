@@ -1,11 +1,114 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
-import { Moon, Sun, Bell, Search, Menu } from "lucide-react";
+import { useQuery } from "react-query";
+import { useTranslation } from "react-i18next";
+import { Moon, Sun, Bell, Search, Menu, Store, ChevronDown, Check, Building2 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
+import { getAllLocation } from "@/services/location";
+
+const StoreSelector = ({ cookie, setCookie }) => {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const user = cookie?.user;
+  const role = user?.role || user?.roleType || "";
+
+  const { data: locationsData } = useQuery(["all-locations-header"], getAllLocation, {
+    enabled: role === "super_admin"
+  });
+  const locations = locationsData?.data || [];
+
+  const activeStoreId = cookie?.activeStore;
+  const activeStore = locations.find((l) => (l.id || l._id) === activeStoreId);
+  const storeName =
+    activeStore?.name ||
+    activeStore?.storeName ||
+    cookie?.activeStoreName ||
+    t("header.selectStore");
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (role !== "super_admin") return null;
+
+  const handleSelect = (loc) => {
+    const id = loc.id || loc._id;
+    const name = loc.name || loc.storeName || "";
+    setCookie("activeStore", id, { path: "/" });
+    setCookie("activeStoreName", name, { path: "/" });
+    setCookie("user", { ...user, store: id, storeName: name }, { path: "/" });
+    setOpen(false);
+    window.location.reload();
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/50 hover:bg-accent transition-colors text-sm max-w-[200px]">
+        <Building2 size={16} className="text-primary shrink-0" />
+        <span className="truncate font-medium text-foreground">{storeName}</span>
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute top-full mt-1 left-0 w-64 bg-card border border-border rounded-xl shadow-lg z-50 py-1 max-h-72 overflow-y-auto">
+          <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {t("header.selectStore")}
+          </p>
+          {locations.length === 0 ? (
+            <div className="px-4 py-6 text-center space-y-3">
+              <Store size={24} className="mx-auto text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">{t("header.noStore")}</p>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  window.location.href = "/add-location";
+                }}
+                className="text-sm font-medium text-primary hover:underline">
+                + {t("header.addStore")}
+              </button>
+            </div>
+          ) : (
+            locations.map((loc) => {
+              const id = loc.id || loc._id;
+              const name = loc.name || loc.storeName || "";
+              const isSelected = id === activeStoreId;
+              return (
+                <button
+                  key={id}
+                  onClick={() => handleSelect(loc)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-accent ${
+                    isSelected ? "bg-primary/10 text-primary font-medium" : "text-foreground"
+                  }`}>
+                  <Store
+                    size={16}
+                    className={isSelected ? "text-primary" : "text-muted-foreground"}
+                  />
+                  <span className="truncate flex-1 text-left">{name}</span>
+                  {isSelected && <Check size={14} className="text-primary shrink-0" />}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Header = ({ onMenuToggle }) => {
-  const [cookie] = useCookies();
+  const { t } = useTranslation();
+  const [cookie, setCookie] = useCookies();
   const { translation, updateTranslation } = translationSelect();
   const [showSearch, setShowSearch] = useState(false);
 
@@ -19,7 +122,6 @@ const Header = ({ onMenuToggle }) => {
   const languages = [
     { code: "id", label: "ID" },
     { code: "en", label: "EN" }
-    // { code: "jpn", label: "JP" }
   ];
 
   return (
@@ -39,7 +141,7 @@ const Header = ({ onMenuToggle }) => {
             <Search size={16} className="text-muted-foreground shrink-0" />
             <input
               className="bg-transparent border-none focus:ring-0 text-sm px-2 w-48 lg:w-64 text-foreground placeholder:text-muted-foreground/60"
-              placeholder="Cari data..."
+              placeholder={t("header.search")}
               type="text"
             />
           </div>
@@ -47,6 +149,8 @@ const Header = ({ onMenuToggle }) => {
 
         {/* Right */}
         <div className="flex items-center gap-2">
+          <StoreSelector cookie={cookie} setCookie={setCookie} />
+
           {/* Mobile Search */}
           <button
             onClick={() => setShowSearch(!showSearch)}
@@ -98,7 +202,7 @@ const Header = ({ onMenuToggle }) => {
             <Search size={16} className="text-muted-foreground shrink-0" />
             <input
               className="bg-transparent border-none focus:ring-0 text-sm px-2 w-full text-foreground placeholder:text-muted-foreground/60"
-              placeholder="Cari data..."
+              placeholder={t("header.search")}
               type="text"
               autoFocus
             />

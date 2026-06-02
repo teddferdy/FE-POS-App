@@ -3,6 +3,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -73,6 +74,7 @@ const categoryOptions = [
 ];
 
 const AddLocation = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -260,7 +262,7 @@ const AddLocation = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -370,15 +372,23 @@ const AddLocation = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard-super-admin" },
-          { label: "Kelola Toko", href: "/location-list" },
-          { label: "Tambah Toko" }
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.location.list.title"),
+            href: "/location-list",
+            i18nKey: "page.location.list.title"
+          },
+          { label: t("page.location.add.title"), i18nKey: "page.location.add.title" }
         ]}
-        title="Tambah Lokasi Toko Baru"
-        description="Silakan lengkapi informasi detail untuk pendaftaran unit toko baru.">
+        title={t("page.location.add.title")}
+        description={t("page.location.add.description")}>
         <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Kembali ke Daftar
+          {t("breadcrumb.back")}
         </Button>
       </PageHeader>
 
@@ -406,7 +416,7 @@ const AddLocation = () => {
                           </FormLabel>
                           <Input
                             {...field}
-                            placeholder="Contoh: Kinetic Coffee - Sudirman"
+                            placeholder={t("page.location.form.namePlaceholder")}
                             className="h-12"
                           />
                           <FormMessage />
@@ -1042,7 +1052,7 @@ const AddLocation = () => {
         </Form>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
         <DialogContent className="sm:max-w-2xl min-w-[800px] p-0 gap-0 overflow-hidden">

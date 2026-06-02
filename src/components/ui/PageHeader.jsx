@@ -1,22 +1,24 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const PageHeader = ({ breadcrumbs = [], title, description, children }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <header className="space-y-4">
       {breadcrumbs.length > 0 && (
         <nav className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
           {breadcrumbs.map((crumb, i) => (
-            <React.Fragment key={crumb.label + i}>
+            <React.Fragment key={(crumb.i18nKey || crumb.label) + i}>
               {i > 0 && <span className="text-xs">/</span>}
               {crumb.href ? (
                 <button
                   onClick={() => navigate(crumb.href)}
                   className="hover:text-foreground transition-colors whitespace-nowrap">
-                  {crumb.label}
+                  {crumb.i18nKey ? t(crumb.i18nKey) : crumb.label}
                 </button>
               ) : (
                 <span
@@ -25,7 +27,7 @@ const PageHeader = ({ breadcrumbs = [], title, description, children }) => {
                       ? "text-primary font-semibold whitespace-nowrap"
                       : "whitespace-nowrap"
                   }>
-                  {crumb.label}
+                  {crumb.i18nKey ? t(crumb.i18nKey) : crumb.label}
                 </span>
               )}
             </React.Fragment>

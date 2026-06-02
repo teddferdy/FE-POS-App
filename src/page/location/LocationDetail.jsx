@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useTranslation } from "react-i18next";
 import {
   Store,
   MapPin,
@@ -120,6 +121,7 @@ const SectionHeader = ({ icon: Icon, title, action }) => (
 );
 
 const LocationDetail = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -202,15 +204,23 @@ const LocationDetail = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard-super-admin" },
-          { label: "Kelola Toko", href: "/location-list" },
-          { label: "Detail Toko" }
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.location.list.title"),
+            href: "/location-list",
+            i18nKey: "page.location.list.title"
+          },
+          { label: t("page.location.detail.title"), i18nKey: "page.location.detail.title" }
         ]}
-        title="Detail Toko"
-        description="Informasi lengkap cabang toko">
+        title={t("page.location.detail.title")}
+        description={t("page.location.detail.description")}>
         <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
           <Edit size={16} />
-          Edit Toko
+          {t("breadcrumb.edit")}
         </Button>
       </PageHeader>
 

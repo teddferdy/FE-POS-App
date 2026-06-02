@@ -10,6 +10,7 @@ import {
   ArrowUpToLine
 } from "lucide-react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { uploadExcel } from "@/services/category";
 
@@ -26,6 +27,7 @@ const formatFileSize = (bytes) => {
 };
 
 const UploadCategoryModal = ({ open, onOpenChange, onUploadSuccess }) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -113,8 +115,12 @@ const UploadCategoryModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 <FileSpreadsheet size={22} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Import Excel</h2>
-                <p className="text-sm text-muted-foreground">Unggah file Excel kategori</p>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {t("page.category.upload.title")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.category.upload.subtitle")}
+                </p>
               </div>
             </div>
             <button
@@ -153,10 +159,12 @@ const UploadCategoryModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     {dragOver
-                      ? "Lepaskan file di sini"
-                      : "Tarik & lepas file Excel, atau klik untuk pilih"}
+                      ? t("page.category.upload.dragActive")
+                      : t("page.category.upload.dragInactive")}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Format: .xlsx, .xls, .csv</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("page.category.upload.format")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -186,26 +194,26 @@ const UploadCategoryModal = ({ open, onOpenChange, onUploadSuccess }) => {
             {parseError && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal membaca file. Pastikan format Excel benar.
+                {t("page.category.upload.parseError")}
               </div>
             )}
 
             {uploadStatus === "success" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <CheckCircle2 size={18} />
-                File berhasil diupload dan diproses
+                {t("page.category.upload.successMsg")}
               </div>
             )}
             {uploadStatus === "error" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal mengupload file. Silakan coba lagi.
+                {t("page.category.upload.errorMsg")}
               </div>
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button variant="outline" onClick={handleClose}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button
                 disabled={!file || uploading}
@@ -214,12 +222,12 @@ const UploadCategoryModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 {uploading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Mengupload...
+                    {t("page.category.upload.uploading")}
                   </>
                 ) : (
                   <>
                     <Database size={16} />
-                    Upload Langsung
+                    {t("page.category.upload.directUpload")}
                   </>
                 )}
               </Button>

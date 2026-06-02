@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   Search,
@@ -26,6 +27,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const InvoiceLogoList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -45,11 +47,11 @@ const InvoiceLogoList = () => {
 
   const deleteMutation = useMutation(deleteInvoiceLogo, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Logo berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.invoiceLogo.toast.deleted") });
       queryClient.invalidateQueries(["invoice-logos"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -57,11 +59,13 @@ const InvoiceLogoList = () => {
 
   const toggleMutation = useMutation(activateOrNotActiveInvoiceLogo, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Status logo berhasil diubah" });
+      toast.success(t("common.success"), {
+        description: t("page.invoiceLogo.toast.statusUpdated")
+      });
       queryClient.invalidateQueries(["invoice-logos"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -103,20 +107,22 @@ const InvoiceLogoList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Logo Invoice</span>
+        <span className="text-primary font-semibold">{t("page.invoiceLogo.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Logo Invoice</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola logo untuk invoice.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.invoiceLogo.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.invoiceLogo.list.description")}
+          </p>
         </div>
         <Button onClick={() => navigate("/add-invoice-logo")} className="gap-2">
           <Plus size={18} />
-          Tambah Logo
+          {t("page.invoiceLogo.button.add")}
         </Button>
       </div>
 
@@ -126,7 +132,7 @@ const InvoiceLogoList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari logo..."
+          placeholder={t("page.invoiceLogo.search.placeholder")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -147,19 +153,19 @@ const InvoiceLogoList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Gambar
+                    {t("page.invoiceLogo.table.image")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama
+                    {t("page.invoiceLogo.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.invoiceLogo.table.status")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Dibuat
+                    {t("page.invoiceLogo.table.created")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("page.invoiceLogo.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -168,7 +174,7 @@ const InvoiceLogoList = () => {
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                       <Image size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada logo ditemukan</p>
+                      <p>{t("page.invoiceLogo.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -193,7 +199,9 @@ const InvoiceLogoList = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                           }`}>
-                          {item.isActive ? "Aktif" : "Tidak Aktif"}
+                          {item.isActive
+                            ? t("page.invoiceLogo.status.active")
+                            : t("page.invoiceLogo.status.inactive")}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-muted-foreground">
@@ -239,7 +247,7 @@ const InvoiceLogoList = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, logos.length)} dari {total} logo
+          {t("page.invoiceLogo.list.showing", { count: Math.min(limit, logos.length), total })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -276,9 +284,9 @@ const InvoiceLogoList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Logo?"
-        description={`Yakin ingin menghapus logo ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.invoiceLogo.delete.title")}
+        description={t("page.invoiceLogo.delete.description", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.invoiceLogo.delete.confirm")}
         onConfirm={confirmDelete}
       />
     </div>

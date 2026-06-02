@@ -22,10 +22,10 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  XCircle,
-  Lightbulb
+  XCircle
 } from "lucide-react";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 
 import PageHeader from "@/components/ui/PageHeader";
 import { Combobox } from "@/components/ui/combobox";
@@ -43,29 +43,30 @@ import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
 
-const unitOptions = [
-  { value: "pcs", label: "Pcs" },
-  { value: "item", label: "Item" },
-  { value: "unit", label: "Unit" },
-  { value: "buah", label: "Buah" },
-  { value: "pasang", label: "Pasang" },
-  { value: "set", label: "Set" },
-  { value: "lusin", label: "Lusin" },
-  { value: "pack", label: "Pack" },
-  { value: "box", label: "Box" },
-  { value: "karton", label: "Karton" },
-  { value: "kg", label: "Kg" },
-  { value: "gram", label: "Gram" },
-  { value: "liter", label: "Liter" },
-  { value: "ml", label: "Ml" },
-  { value: "meter", label: "Meter" },
-  { value: "cm", label: "Cm" },
-  { value: "cup", label: "Cup" },
-  { value: "gelas", label: "Gelas" },
-  { value: "porsi", label: "Porsi" }
-];
-
 const AddProduct = () => {
+  const { t } = useTranslation();
+  const unitOptions = [
+    { value: "pcs", label: t("page.product.form.unit.pcs") },
+    { value: "item", label: t("page.product.form.unit.item") },
+    { value: "unit", label: t("page.product.form.unit.unit") },
+    { value: "buah", label: t("page.product.form.unit.buah") },
+    { value: "pasang", label: t("page.product.form.unit.pasang") },
+    { value: "set", label: t("page.product.form.unit.set") },
+    { value: "lusin", label: t("page.product.form.unit.lusin") },
+    { value: "pack", label: t("page.product.form.unit.pack") },
+    { value: "box", label: t("page.product.form.unit.box") },
+    { value: "karton", label: t("page.product.form.unit.karton") },
+    { value: "kg", label: t("page.product.form.unit.kg") },
+    { value: "gram", label: t("page.product.form.unit.gram") },
+    { value: "liter", label: t("page.product.form.unit.liter") },
+    { value: "ml", label: t("page.product.form.unit.ml") },
+    { value: "meter", label: t("page.product.form.unit.meter") },
+    { value: "cm", label: t("page.product.form.unit.cm") },
+    { value: "cup", label: t("page.product.form.unit.cup") },
+    { value: "gelas", label: t("page.product.form.unit.gelas") },
+    { value: "porsi", label: t("page.product.form.unit.porsi") }
+  ];
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -141,23 +142,23 @@ const AddProduct = () => {
         );
       }
     } catch {
-      toast.error("Gagal", { description: "Gagal memuat template harga" });
+      toast.error(t("page.product.form.failed"), {
+        description: t("page.product.form.failedLoadTemplate")
+      });
     }
   };
 
   const formSchema = useMemo(() => {
     return z.object({
-      nameProduct: z.string().min(1, "Nama produk wajib diisi"),
+      nameProduct: z.string().min(1, t("page.product.form.requiredName")),
       productType: z.string().default("simple"),
       sku: z.string().optional().or(z.literal("")),
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
-      category: z.string().min(1, "Kategori wajib dipilih"),
+      category: z.string().min(1, t("page.product.form.requiredCategory")),
       supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
-      priceTemplate: z.string().optional().or(z.literal("")),
-      description: z.string().optional().or(z.literal("")),
-      price: z.coerce.number().min(1, "Harga jual harus diisi"),
+      price: z.coerce.number().min(1, t("page.product.form.requiredPrice")),
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
@@ -204,8 +205,9 @@ const AddProduct = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal menambahkan produk"
+      toast.error(t("page.product.form.failed"), {
+        description:
+          err?.response?.data?.message || err.message || t("page.product.form.failedAddProduct")
       });
       setIsSubmitting(false);
     }
@@ -319,9 +321,9 @@ const AddProduct = () => {
     if (!canGoNext()) {
       const msg =
         currentStep === 1
-          ? "Lengkapi field wajib (Nama Produk & Kategori) sebelum lanjut."
-          : "Lengkapi field wajib (Harga Jual) sebelum lanjut.";
-      toast.error("Lengkapi Data", { description: msg });
+          ? t("page.product.form.requiredStep1")
+          : t("page.product.form.requiredStep2");
+      toast.error(t("page.product.form.completeData"), { description: msg });
       return;
     }
     setCurrentStep((prev) => Math.min(prev + 1, 3));
@@ -343,8 +345,8 @@ const AddProduct = () => {
 
   const onSubmit = (values) => {
     if (selectedStores.length === 0) {
-      toast.error("Pilih Toko", {
-        description: "Silakan pilih minimal satu toko terlebih dahulu."
+      toast.error(t("page.product.form.selectStoreError"), {
+        description: t("page.product.form.selectStoreErrorDesc")
       });
       return;
     }
@@ -394,21 +396,21 @@ const AddProduct = () => {
   };
 
   const steps = [
-    { num: 1, title: "Informasi Produk", desc: "Nama, kategori, brand, satuan" },
-    { num: 2, title: "Harga & Stok", desc: "Harga jual, stok, price tiers" },
-    { num: 3, title: "Media & Status", desc: "Foto, varian, modifier, status" }
+    { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },
+    { num: 2, title: t("page.product.step.price"), desc: t("page.product.step.priceDesc") },
+    { num: 3, title: t("page.product.step.media"), desc: t("page.product.step.mediaDesc") }
   ];
 
   return (
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard-super-admin" },
-          { label: "Produk", href: "/product-list" },
-          { label: "Tambah Produk" }
+          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          { i18nKey: "breadcrumb.product", href: "/product-list" },
+          { i18nKey: "breadcrumb.add" }
         ]}
-        title="Tambah Produk"
-        description="Lengkapi informasi detail produk untuk inventaris toko Anda."></PageHeader>
+        title={t("page.product.add.title")}
+        description={t("page.product.add.description")}></PageHeader>
 
       {/* Stepper */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">
@@ -470,26 +472,32 @@ const AddProduct = () => {
                       <div className="flex items-center gap-3 mb-3">
                         <Store size={20} className="text-primary shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground">Pilih Toko</p>
+                          <p className="text-sm font-medium text-foreground">
+                            {t("page.product.add.storeSection.title")}
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            Pilih toko tujuan untuk produk ini
+                            {t("page.product.add.storeSection.desc")}
                           </p>
                         </div>
                         {locations.length > 0 && (
                           <span className="text-xs text-muted-foreground">
-                            {selectedStores.length} dipilih
+                            {t("page.product.add.storeSection.selected", {
+                              count: selectedStores.length
+                            })}
                           </span>
                         )}
                       </div>
                       {locations.length === 0 ? (
                         <div className="flex items-center gap-3 pl-9">
-                          <p className="text-sm text-muted-foreground">Belum ada toko terdaftar</p>
+                          <p className="text-sm text-muted-foreground">
+                            {t("page.product.add.storeSection.noStore")}
+                          </p>
                           <Button
                             size="sm"
                             onClick={() => navigate("/add-location")}
                             className="gap-1.5 shrink-0">
                             <Plus size={16} />
-                            Buat Toko Baru
+                            {t("page.product.add.storeSection.addStore")}
                           </Button>
                         </div>
                       ) : (
@@ -536,7 +544,7 @@ const AddProduct = () => {
                     <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
                       <Store size={16} className="shrink-0" />
                       <span>
-                        Menambahkan produk untuk:{" "}
+                        {t("page.product.add.storeInfo")}{" "}
                         <strong className="text-foreground">
                           {user?.storeName || `Toko #${selectedStores[0]}`}
                         </strong>
@@ -547,12 +555,14 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <Info size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Informasi Produk</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.add.productInfoSection")}
+                      </h3>
                     </div>
 
                     <div className="flex items-center gap-3 pb-4 mb-4 border-b border-border">
                       <span className="text-sm font-medium text-foreground shrink-0">
-                        Tipe Produk
+                        {t("page.product.add.productType")}
                       </span>
                       <div className="flex bg-muted rounded-lg p-0.5 gap-0.5">
                         {["simple", "service"].map((type) => (
@@ -565,14 +575,16 @@ const AddProduct = () => {
                                 ? "bg-background text-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground"
                             }`}>
-                            {type === "simple" ? "Barang Fisik" : "Jasa"}
+                            {type === "simple"
+                              ? t("page.product.add.productType.simple")
+                              : t("page.product.add.productType.service")}
                           </button>
                         ))}
                       </div>
                       <span className="text-[11px] text-muted-foreground">
                         {form.watch("productType") === "service"
-                          ? "Produk jasa, tidak menggunakan stok"
-                          : "Produk fisik dengan stok"}
+                          ? t("page.product.add.productType.serviceDesc")
+                          : t("page.product.add.productType.simpleDesc")}
                       </span>
                     </div>
 
@@ -583,9 +595,13 @@ const AddProduct = () => {
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
                             <FormLabel>
-                              Nama Produk <span className="text-destructive">*</span>
+                              {t("page.product.form.name")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input placeholder="Masukkan nama produk" {...field} />
+                            <Input
+                              placeholder={t("page.product.form.namePlaceholder")}
+                              {...field}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -597,7 +613,8 @@ const AddProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Kategori <span className="text-destructive">*</span>
+                              {t("page.product.form.category")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={categories.map((c) => ({
@@ -606,8 +623,8 @@ const AddProduct = () => {
                               }))}
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Pilih Kategori"
-                              searchPlaceholder="Cari kategori..."
+                              placeholder={t("page.product.form.categoryPlaceholder")}
+                              searchPlaceholder={t("page.product.form.categoryPlaceholder") + "..."}
                             />
                             <FormMessage />
                           </FormItem>
@@ -619,10 +636,13 @@ const AddProduct = () => {
                         name="brand"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Merek / Brand</FormLabel>
-                            <Input placeholder="Contoh: Nike, Samsung, Aqua" {...field} />
+                            <FormLabel>{t("page.product.form.brand")}</FormLabel>
+                            <Input
+                              placeholder={t("page.product.form.brandPlaceholder")}
+                              {...field}
+                            />
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Merek produk (opsional)
+                              {t("page.product.form.brandOptional")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -634,10 +654,13 @@ const AddProduct = () => {
                         name="barcode"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Barcode</FormLabel>
-                            <Input placeholder="Scan atau masukkan barcode" {...field} />
+                            <FormLabel>{t("page.product.form.barcode")}</FormLabel>
+                            <Input
+                              placeholder={t("page.product.form.barcodePlaceholder")}
+                              {...field}
+                            />
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Kode barcode produk (opsional)
+                              {t("page.product.form.barcodeOptional")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -649,10 +672,13 @@ const AddProduct = () => {
                         name="sku"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>SKU</FormLabel>
-                            <Input placeholder="Kosongkan untuk auto-generate" {...field} />
+                            <FormLabel>{t("page.product.form.sku")}</FormLabel>
+                            <Input
+                              placeholder={t("page.product.form.skuPlaceholder2")}
+                              {...field}
+                            />
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Kode unik internal toko (opsional)
+                              {t("page.product.form.skuOptional")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -664,13 +690,13 @@ const AddProduct = () => {
                         name="unit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Satuan</FormLabel>
+                            <FormLabel>{t("page.product.form.unit")}</FormLabel>
                             <Combobox
                               options={unitOptions}
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Pilih Satuan"
-                              searchPlaceholder="Cari satuan..."
+                              placeholder={t("page.product.form.unitPlaceholder")}
+                              searchPlaceholder={t("page.product.form.unitPlaceholder") + "..."}
                             />
                             <FormMessage />
                           </FormItem>
@@ -683,7 +709,7 @@ const AddProduct = () => {
                           name="supplier"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Supplier</FormLabel>
+                              <FormLabel>{t("page.product.form.supplier")}</FormLabel>
                               <Combobox
                                 options={supplierOptions.map((s) => ({
                                   value: String(s.id),
@@ -691,8 +717,10 @@ const AddProduct = () => {
                                 }))}
                                 value={field.value}
                                 onChange={field.onChange}
-                                placeholder="Pilih Supplier"
-                                searchPlaceholder="Cari supplier..."
+                                placeholder={t("page.product.form.supplierPlaceholder")}
+                                searchPlaceholder={
+                                  t("page.product.form.supplierPlaceholder") + "..."
+                                }
                               />
                               <FormMessage />
                             </FormItem>
@@ -706,16 +734,16 @@ const AddProduct = () => {
                           name="tax"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Pajak</FormLabel>
+                              <FormLabel>{t("page.product.form.tax")}</FormLabel>
                               <Combobox
-                                options={taxOptions.map((t) => ({
-                                  value: String(t.id),
-                                  label: `${t.name} (${t.rate}%)`
+                                options={taxOptions.map((tOpt) => ({
+                                  value: String(tOpt.id),
+                                  label: `${tOpt.name} (${tOpt.rate}%)`
                                 }))}
                                 value={field.value}
                                 onChange={field.onChange}
-                                placeholder="Pilih Pajak"
-                                searchPlaceholder="Cari pajak..."
+                                placeholder={t("page.product.form.taxPlaceholder")}
+                                searchPlaceholder={t("page.product.form.taxSearch")}
                               />
                               <FormMessage />
                             </FormItem>
@@ -728,15 +756,20 @@ const AddProduct = () => {
                         name="preparationTime"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Waktu Persiapan</FormLabel>
+                            <FormLabel>{t("page.product.form.preparationTime")}</FormLabel>
                             <div className="relative w-48">
-                              <Input type="number" placeholder="15" className="pr-14" {...field} />
+                              <Input
+                                type="number"
+                                placeholder={t("page.product.form.preparationTimePlaceholder")}
+                                className="pr-14"
+                                {...field}
+                              />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                menit
+                                {t("page.product.form.preparationTimeUnit")}
                               </span>
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Estimasi waktu pembuatan produk
+                              {t("page.product.form.preparationTimeInfo")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -747,9 +780,9 @@ const AddProduct = () => {
                         name="description"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>Deskripsi</FormLabel>
+                            <FormLabel>{t("page.product.form.description")}</FormLabel>
                             <Textarea
-                              placeholder="Deskripsi produk (opsional)"
+                              placeholder={t("page.product.form.descriptionPlaceholder")}
                               className="min-h-[80px] resize-y"
                               {...field}
                             />
@@ -767,7 +800,9 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <DollarSign size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Harga & Stok</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.priceSection")}
+                      </h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -777,7 +812,8 @@ const AddProduct = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              Harga Jual <span className="text-destructive">*</span>
+                              {t("page.product.form.price")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
@@ -795,7 +831,7 @@ const AddProduct = () => {
                         name="costPrice"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Harga Modal</FormLabel>
+                            <FormLabel>{t("page.product.form.costPrice")}</FormLabel>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                                 Rp
@@ -812,7 +848,7 @@ const AddProduct = () => {
                         name="stock"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Stok</FormLabel>
+                            <FormLabel>{t("page.product.form.stock")}</FormLabel>
                             <Input type="number" placeholder="0" {...field} />
                             <FormMessage />
                           </FormItem>
@@ -824,10 +860,10 @@ const AddProduct = () => {
                         name="minStock"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Min. Stok</FormLabel>
+                            <FormLabel>{t("page.product.form.minStock")}</FormLabel>
                             <Input type="number" placeholder="0" {...field} />
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Notifikasi ketika stok menipis
+                              {t("page.product.form.minStockInfo")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -839,10 +875,10 @@ const AddProduct = () => {
                         name="point"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Poin Member</FormLabel>
+                            <FormLabel>{t("page.product.form.point")}</FormLabel>
                             <Input type="number" placeholder="0" {...field} />
                             <p className="text-[11px] text-muted-foreground mt-1">
-                              Poin yang didapat member saat membeli produk ini
+                              {t("page.product.form.pointInfo")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -855,16 +891,18 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <Package size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Batch & Expiry</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.batchSection")}
+                      </h3>
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            Produk dengan Batch
+                            {t("page.product.form.hasBatch")}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Aktifkan jika produk memiliki nomor batch & tanggal kedaluwarsa
+                            {t("page.product.form.hasBatchDesc")}
                           </p>
                         </div>
                         <Switch checked={hasBatch} onCheckedChange={setHasBatch} />
@@ -875,7 +913,7 @@ const AddProduct = () => {
                             <div key={batch.id} className="bg-muted/30 rounded-lg p-4">
                               <div className="flex items-center gap-2">
                                 <Input
-                                  placeholder="Nomor batch"
+                                  placeholder={t("page.product.form.batchNumberPlaceholder")}
                                   value={batch.batchNumber}
                                   onChange={(e) => {
                                     setBatches((prev) =>
@@ -900,7 +938,7 @@ const AddProduct = () => {
                                 />
                                 <Input
                                   type="number"
-                                  placeholder="Stok"
+                                  placeholder={t("page.product.form.batchStockPlaceholder")}
                                   value={batch.stock}
                                   onChange={(e) => {
                                     setBatches((prev) =>
@@ -937,7 +975,7 @@ const AddProduct = () => {
                                 { id: Date.now(), batchNumber: "", expiryDate: "", stock: "" }
                               ])
                             }>
-                            <Plus size={15} /> Tambah Batch
+                            <Plus size={15} /> {t("page.product.form.addBatch")}
                           </Button>
                         </div>
                       )}
@@ -947,7 +985,9 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <TrendingUp size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Harga Berjenjang</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.tierSection")}
+                      </h3>
                     </div>
                     {isSuperAdmin && (
                       <div className="space-y-3">
@@ -956,19 +996,19 @@ const AddProduct = () => {
                           name="priceTemplate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Template Harga</FormLabel>
+                              <FormLabel>{t("page.product.form.priceTemplate")}</FormLabel>
                               <Combobox
-                                options={priceListTemplates.map((t) => ({
-                                  value: String(t.id),
-                                  label: t.name
+                                options={priceListTemplates.map((tOpt) => ({
+                                  value: String(tOpt.id),
+                                  label: tOpt.name
                                 }))}
                                 value={field.value}
                                 onChange={(value) => {
                                   field.onChange(value);
                                   if (value) handleSelectPriceTemplate(value);
                                 }}
-                                placeholder="Pilih Template Harga"
-                                searchPlaceholder="Cari template..."
+                                placeholder={t("page.product.form.priceTemplatePlaceholder")}
+                                searchPlaceholder={t("page.product.form.priceTemplateSearch")}
                               />
                               <FormMessage />
                             </FormItem>
@@ -981,7 +1021,7 @@ const AddProduct = () => {
                         <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
                           <div className="flex items-center gap-2">
                             <Input
-                              placeholder="Nama tingkat (contoh: Grosir, Member)"
+                              placeholder={t("page.product.form.tierNamePlaceholder")}
                               value={tier.name}
                               onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
                               className="h-9 text-sm flex-1"
@@ -1015,12 +1055,11 @@ const AddProduct = () => {
                         size="sm"
                         className="gap-1"
                         onClick={addPriceTier}>
-                        <Plus size={15} /> Tambah Tingkat Harga
+                        <Plus size={15} /> {t("page.product.form.addTier")}
                       </Button>
                       {priceTiers.length === 0 && (
                         <p className="text-xs text-muted-foreground">
-                          Tambahkan harga khusus untuk pelanggan grosir, member, atau tingkat
-                          lainnya.
+                          {t("page.product.form.tierEmpty")}
                         </p>
                       )}
                     </div>
@@ -1033,15 +1072,19 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <Layers size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Varian & Opsi</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.variantSection")}
+                      </h3>
                     </div>
 
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-foreground">Punya Varian</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.product.form.hasVariant")}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Aktifkan jika produk memiliki varian (ukuran, rasa, dll.)
+                            {t("page.product.form.hasVariantDesc")}
                           </p>
                         </div>
                         <Switch
@@ -1061,7 +1104,7 @@ const AddProduct = () => {
                                     className="text-muted-foreground shrink-0"
                                   />
                                   <Input
-                                    placeholder="Nama varian (contoh: Ukuran)"
+                                    placeholder={t("page.product.form.variantNamePlaceholder")}
                                     value={group.name}
                                     onChange={(e) =>
                                       updateVariantGroup(group.id, "name", e.target.value)
@@ -1082,7 +1125,9 @@ const AddProduct = () => {
                                 {group.options.map((opt, idx) => (
                                   <div key={idx} className="flex items-center gap-2">
                                     <Input
-                                      placeholder={`Opsi ${idx + 1}`}
+                                      placeholder={t("page.product.form.optionPlaceholder", {
+                                        number: idx + 1
+                                      })}
                                       value={opt.name}
                                       onChange={(e) =>
                                         updateVariantOption(group.id, idx, "name", e.target.value)
@@ -1110,7 +1155,7 @@ const AddProduct = () => {
                                     </div>
                                     <Input
                                       type="number"
-                                      placeholder="Stok"
+                                      placeholder={t("page.product.form.variantStockPlaceholder")}
                                       value={opt.stock}
                                       onChange={(e) =>
                                         updateVariantOption(group.id, idx, "stock", e.target.value)
@@ -1136,7 +1181,7 @@ const AddProduct = () => {
                                 size="sm"
                                 className="gap-1 h-8 text-xs"
                                 onClick={() => addVariantOption(group.id)}>
-                                <Plus size={14} /> Tambah Opsi
+                                <Plus size={14} /> {t("page.product.form.addOption")}
                               </Button>
                             </div>
                           ))}
@@ -1146,7 +1191,7 @@ const AddProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={addVariantGroup}>
-                            <Plus size={15} /> Tambah Grup Varian
+                            <Plus size={15} /> {t("page.product.form.addVariantGroup")}
                           </Button>
                         </div>
                       )}
@@ -1154,10 +1199,11 @@ const AddProduct = () => {
                       <div className="border-t border-border pt-5">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-foreground">Punya Modifier</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              {t("page.product.form.hasModifier")}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              Aktifkan jika produk memiliki opsi tambahan (extra topping, level,
-                              dll.)
+                              {t("page.product.form.hasModifierDesc")}
                             </p>
                           </div>
                           <Switch
@@ -1172,7 +1218,7 @@ const AddProduct = () => {
                               <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
                                 <div className="flex items-center gap-2 mb-3">
                                   <Input
-                                    placeholder="Nama modifier (contoh: Extra Cheese)"
+                                    placeholder={t("page.product.form.modifierNamePlaceholder")}
                                     value={mod.name}
                                     onChange={(e) =>
                                       updateModifierItem(mod.id, "name", e.target.value)
@@ -1210,7 +1256,7 @@ const AddProduct = () => {
                               size="sm"
                               className="gap-1"
                               onClick={addModifierItem}>
-                              <Plus size={15} /> Tambah Modifier
+                              <Plus size={15} /> {t("page.product.form.addModifier")}
                             </Button>
                           </div>
                         )}
@@ -1229,7 +1275,9 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
                       <CloudUpload size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Foto Produk</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.imageSection")}
+                      </h3>
                     </div>
 
                     <input
@@ -1244,7 +1292,7 @@ const AddProduct = () => {
                       <div className="relative rounded-lg overflow-hidden border border-border">
                         <img
                           src={previewImage}
-                          alt="Preview"
+                          alt={t("page.product.form.previewAlt")}
                           className="w-full aspect-square object-cover"
                         />
                         <button
@@ -1265,11 +1313,15 @@ const AddProduct = () => {
                           size={48}
                           className="mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors"
                         />
-                        <p className="text-sm font-medium text-foreground">Upload Foto</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Klik untuk memilih gambar
+                        <p className="text-sm font-medium text-foreground">
+                          {t("page.product.form.uploadImage")}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG maks. 5MB</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.product.form.clickToSelect")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.product.form.imageFormat")}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1278,7 +1330,9 @@ const AddProduct = () => {
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
                       <Tag size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">Status</h3>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.statusSection")}
+                      </h3>
                     </div>
 
                     <div className="space-y-4">
@@ -1304,12 +1358,15 @@ const AddProduct = () => {
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
-                                    Status {field.value ? "Aktif" : "Nonaktif"}
+                                    Status{" "}
+                                    {field.value
+                                      ? t("page.product.form.active")
+                                      : t("page.product.form.inactive")}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
                                     {field.value
-                                      ? "Produk ini aktif dan dapat dijual"
-                                      : "Produk ini tidak aktif"}
+                                      ? t("page.product.form.activeDesc")
+                                      : t("page.product.form.inactiveDesc")}
                                   </p>
                                 </div>
                               </div>
@@ -1341,12 +1398,14 @@ const AddProduct = () => {
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
-                                    Tersedia {field.value ? "Ya" : "Tidak"}
+                                    {field.value
+                                      ? t("page.product.form.yes")
+                                      : t("page.product.form.no")}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
                                     {field.value
-                                      ? "Produk tersedia untuk dipesan"
-                                      : "Produk tidak tersedia untuk dipesan"}
+                                      ? t("page.product.form.availableDesc")
+                                      : t("page.product.form.unavailableDesc")}
                                   </p>
                                 </div>
                               </div>
@@ -1356,32 +1415,6 @@ const AddProduct = () => {
                         )}
                       />
                     </div>
-                  </div>
-
-                  {/* Tips */}
-                  <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 text-white">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Lightbulb size={18} />
-                      <h4 className="text-sm font-semibold">Tips Pengisian</h4>
-                    </div>
-                    <ul className="space-y-2 text-xs text-white/80">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                        <span>Gunakan foto produk yang jelas dan menarik</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                        <span>Isi harga jual dan stok dengan benar untuk kelancaran transaksi</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                        <span>Scan barcode untuk mempercepat proses di kasir</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                        <span>Atur stok minimal untuk notifikasi ketika stok menipis</span>
-                      </li>
-                    </ul>
                   </div>
                 </>
               )}
@@ -1396,24 +1429,24 @@ const AddProduct = () => {
               onClick={() => setCancelModal(true)}
               className="gap-2 w-full sm:w-auto">
               <X size={18} />
-              Batal
+              {t("page.product.form.cancel")}
             </Button>
             <div className="flex items-center gap-3">
               {currentStep > 1 && (
                 <Button type="button" variant="outline" onClick={handlePrev} className="gap-2">
                   <ChevronLeft size={18} />
-                  Sebelumnya
+                  {t("page.product.form.prev")}
                 </Button>
               )}
               {currentStep < 3 ? (
                 <Button type="button" onClick={handleNext} className="gap-2 shadow-md">
-                  Selanjutnya
+                  {t("page.product.form.next")}
                   <ChevronRight size={18} />
                 </Button>
               ) : (
                 <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
                   {isSubmitting ? <Loading size="sm" className="text-white" /> : <Save size={18} />}
-                  Simpan Produk
+                  {t("page.product.form.save")}
                 </Button>
               )}
             </div>
@@ -1425,8 +1458,8 @@ const AddProduct = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Produk Berhasil Ditambahkan"
-        description="Produk baru telah berhasil ditambahkan ke dalam daftar inventaris."
+        title={t("page.product.form.successAddTitle")}
+        description={t("page.product.form.successAddDesc")}
         onConfirm={() => navigate("/product-list")}
       />
 
@@ -1434,14 +1467,14 @@ const AddProduct = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Penambahan?"
-        description="Data yang sudah diisi tidak akan disimpan."
-        confirmText="Ya, Batalkan"
-        cancelText="Lanjutkan Mengisi"
+        title={t("page.product.form.cancelTitle")}
+        description={t("page.product.form.cancelDesc")}
+        confirmText={t("page.product.form.cancelConfirm")}
+        cancelText={t("page.product.form.cancelBack")}
         onConfirm={() => navigate("/product-list")}
       />
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan produk..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.saving")} />}
     </div>
   );
 };

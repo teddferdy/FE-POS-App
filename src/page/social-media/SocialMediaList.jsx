@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, Edit, Trash2, Power, PowerOff } from "lucide-react";
 import {
   getAllInvoiceSocialMedia,
@@ -18,6 +19,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 
 const SocialMediaList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -36,21 +38,23 @@ const SocialMediaList = () => {
 
   const deleteMutation = useMutation(deleteInvoiceSocialMedia, {
     onSuccess: () => {
-      toast.success("Success", { description: "Social media deleted successfully" });
+      toast.success(t("common.success"), { description: t("page.socialMedia.toast.deleted") });
       queryClient.invalidateQueries(["social-media-invoice"]);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const toggleMutation = useMutation(activateOrNotActiveInvoiceSocialMedia, {
     onSuccess: () => {
-      toast.success("Success", { description: "Status updated successfully" });
+      toast.success(t("common.success"), {
+        description: t("page.socialMedia.toast.statusUpdated")
+      });
       queryClient.invalidateQueries(["social-media-invoice"]);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -90,14 +94,14 @@ const SocialMediaList = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Social Media Invoice" }
+          { label: t("breadcrumb.home"), href: "/dashboard" },
+          { label: t("page.socialMedia.list.title") }
         ]}
-        title="Social Media Invoice"
-        description="Manage social media links displayed on invoices.">
+        title={t("page.socialMedia.list.title")}
+        description={t("page.socialMedia.list.description")}>
         <Button onClick={() => navigate("/add-social-media")} className="shrink-0">
           <Plus size={18} />
-          Add Social Media
+          {t("page.socialMedia.button.add")}
         </Button>
       </PageHeader>
 
@@ -109,7 +113,7 @@ const SocialMediaList = () => {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Search by platform name or URL..."
+              placeholder={t("page.socialMedia.list.search")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -120,7 +124,10 @@ const SocialMediaList = () => {
           </div>
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              Showing {Math.min(limit, filtered.length)} of {items.length} items
+              {t("page.socialMedia.list.showing", {
+                count: Math.min(limit, filtered.length),
+                total: items.length
+              })}
             </p>
             <div className="flex items-center border border-border rounded-md overflow-hidden">
               <button
@@ -150,19 +157,19 @@ const SocialMediaList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Platform Name
+                    {t("page.socialMedia.table.platformName")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    URL
+                    {t("page.socialMedia.table.url")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Icon
+                    {t("page.socialMedia.table.icon")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.socialMedia.table.status")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Actions
+                    {t("page.socialMedia.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -170,7 +177,7 @@ const SocialMediaList = () => {
                 {paginatedItems.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
-                      No social media found
+                      {t("page.socialMedia.list.empty")}
                     </td>
                   </tr>
                 ) : (
@@ -210,7 +217,7 @@ const SocialMediaList = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
                           }`}>
-                          {item.isActive ? "Active" : "Inactive"}
+                          {item.isActive ? t("common.active") : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -250,7 +257,9 @@ const SocialMediaList = () => {
 
         <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex items-center gap-3">
-            <p className="text-xs text-muted-foreground">Rows per page:</p>
+            <p className="text-xs text-muted-foreground">
+              {t("page.socialMedia.list.rowsPerPage")}
+            </p>
             <select
               className="bg-background border border-border rounded px-2 py-1 text-xs"
               value={limit}
@@ -282,8 +291,8 @@ const SocialMediaList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete Social Media?"
-        confirmText="Yes, Delete"
+        title={t("page.socialMedia.delete.title")}
+        confirmText={t("page.socialMedia.delete.confirm")}
         onConfirm={confirmDelete}
       />
     </div>

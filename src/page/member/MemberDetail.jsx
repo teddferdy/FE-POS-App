@@ -5,6 +5,7 @@ import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { Button } from "@/components/ui/button";
 import { Stars } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
+import { useTranslation } from "react-i18next";
 
 const levelConfig = {
   platinum: {
@@ -64,6 +65,7 @@ const formatCurrency = (value) => {
 };
 
 const MemberDetail = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -166,15 +168,15 @@ const MemberDetail = () => {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
-            <span>Kelola Pelanggan</span>
+            <span>{t("breadcrumb.management")}</span>
             <span className="material-symbols-outlined text-sm">chevron_right</span>
             <button
               onClick={() => navigate("/member-list")}
               className="hover:text-primary transition-colors">
-              Daftar Member
+              {t("breadcrumb.list")}
             </button>
             <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span className="text-primary font-semibold">Detail Member</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
             Detail Member: {name}

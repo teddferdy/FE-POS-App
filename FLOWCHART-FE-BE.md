@@ -1,6 +1,7 @@
 # Flowchart FE ↔ BE — POS System
 
 ## Legend
+
 ```
 [FE Page] → service function() → 🔵 GET /api/...
 [FE Page] → service function() → 🟢 POST /api/...
@@ -69,6 +70,7 @@ flowchart TD
 ```
 
 ### Field Mapping Kritis — Add Product
+
 ```json
 {
   "name": "string*",
@@ -78,7 +80,7 @@ flowchart TD
   "purchasePrice": "number",
   "description": "string",
   "isActive": "boolean",
-  "options": "[{ name, price, stock }]",  // <-- per variant: string[] → object[]
+  "options": "[{ name, price, stock }]", // <-- per variant: string[] → object[]
   "taxes": "[{ id: number }]",
   "images": "File[]"
 }
@@ -123,6 +125,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Discount
+
 ```json
 {
   "name": "string*",
@@ -137,6 +140,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Type Payment
+
 ```json
 {
   "name": "string*",
@@ -147,6 +151,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Shift
+
 ```json
 {
   "name": "string*",
@@ -233,6 +238,7 @@ flowchart TD
 ```
 
 ### Stock Chain — Critical Path
+
 ```mermaid
 flowchart LR
     PO["🟢 Purchase Order\nReceive"] --> STOCK["+ Stock qty"]
@@ -279,6 +285,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Purchase Order
+
 ```json
 {
   "store": "number*",
@@ -302,6 +309,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Table
+
 ```json
 {
   "name": "string*",
@@ -336,6 +344,7 @@ flowchart TD
 ```
 
 ### Field Mapping — Expense
+
 ```json
 {
   "categoryId": "number*",
@@ -424,6 +433,7 @@ flowchart TD
 ```
 
 > **⚠️ Catatan BE:** `POST /checkout/checkout-item` harus atomic:
+>
 > 1. Validasi stok semua item
 > 2. Kurangi stok (per variant option jika ada)
 > 3. Tulis stock history dengan `referenceType='sale'`
@@ -526,6 +536,7 @@ flowchart TD
 Semua service FE mengharapkan response dengan struktur berikut:
 
 ### GET (List)
+
 ```json
 {
   "data": [{ ...objects }],
@@ -544,6 +555,7 @@ Semua service FE mengharapkan response dengan struktur berikut:
 ```
 
 ### GET (Detail / By ID)
+
 ```json
 {
   "data": { ...singleObject }
@@ -551,6 +563,7 @@ Semua service FE mengharapkan response dengan struktur berikut:
 ```
 
 ### POST / PUT
+
 ```json
 {
   "data": { ...createdOrUpdatedObject },
@@ -559,6 +572,7 @@ Semua service FE mengharapkan response dengan struktur berikut:
 ```
 
 ### DELETE
+
 - Status: `200`, `201`, atau `204`
 - Body: `{ "message": "Deleted" }` (optional)
 
@@ -566,18 +580,18 @@ Semua service FE mengharapkan response dengan struktur berikut:
 
 ## 12. CRITICAL NOTES — YANG PERLU DICOBAKAN SAMA BE
 
-| # | Issue | Dampak |
-|---|-------|--------|
-| 1 | **Express default return 201** → FE service sudah fix terima 201/204 | ✅ No action needed |
-| 2 | **Category endpoint** → `/category/get-category-all` (with `-all`) bukan `/category/get-category` | BE harus sediain endpoint ini |
-| 3 | **Product variant options** → FE kirim `[{ name, price, stock }]` bukan `["Large"]` | BE harus parse sesuai |
-| 4 | **Purchase Order** → FE kirim `{ store, supplier, notes, items: [{ product, qty, price }] }` | BE harus terima format ini |
-| 5 | **Stock opname items** → FE kirim `{ productId, ... }` | BE perlu siapin kolom `productId` di tabel stock_opname_items |
-| 6 | **Stock history referenceType** → FE filter pakai `referenceType` untuk categorisasi | BE harus isi field ini |
-| 7 | **Product fields** → FE kirim `sku`, `productType`, `options` | BE harus siapin kolom ini |
-| 8 | **Expense category** → `GET /expense-category` tanpa parameter | Tidak ada filter store → bisa campur aduk |
-| 9 | **Sub category** → `GET /sub-category/get-all-sub-category?store=` | Tidak ada pagination di FE — perlu ditambah? |
-| 10 | **Discount/TipePayment/Shift** → Tidak ada `getById` endpoint | FE filter client-side, tapi idealnya BE sediain get-by-id |
+| #   | Issue                                                                                             | Dampak                                                        |
+| --- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1   | **Express default return 201** → FE service sudah fix terima 201/204                              | ✅ No action needed                                           |
+| 2   | **Category endpoint** → `/category/get-category-all` (with `-all`) bukan `/category/get-category` | BE harus sediain endpoint ini                                 |
+| 3   | **Product variant options** → FE kirim `[{ name, price, stock }]` bukan `["Large"]`               | BE harus parse sesuai                                         |
+| 4   | **Purchase Order** → FE kirim `{ store, supplier, notes, items: [{ product, qty, price }] }`      | BE harus terima format ini                                    |
+| 5   | **Stock opname items** → FE kirim `{ productId, ... }`                                            | BE perlu siapin kolom `productId` di tabel stock_opname_items |
+| 6   | **Stock history referenceType** → FE filter pakai `referenceType` untuk categorisasi              | BE harus isi field ini                                        |
+| 7   | **Product fields** → FE kirim `sku`, `productType`, `options`                                     | BE harus siapin kolom ini                                     |
+| 8   | **Expense category** → `GET /expense-category` tanpa parameter                                    | Tidak ada filter store → bisa campur aduk                     |
+| 9   | **Sub category** → `GET /sub-category/get-all-sub-category?store=`                                | Tidak ada pagination di FE — perlu ditambah?                  |
+| 10  | **Discount/TipePayment/Shift** → Tidak ada `getById` endpoint                                     | FE filter client-side, tapi idealnya BE sediain get-by-id     |
 
 ---
 

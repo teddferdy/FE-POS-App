@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -18,6 +19,7 @@ const typeColors = {
 };
 
 const TaxConfigList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -38,11 +40,11 @@ const TaxConfigList = () => {
 
   const deleteMutation = useMutation(deleteTaxConfig, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Pajak berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.taxConfig.toast.deleteSuccess") });
       queryClient.invalidateQueries(["tax-configs"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -67,36 +69,36 @@ const TaxConfigList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Konfigurasi Pajak</span>
+        <span className="text-primary font-semibold">{t("page.taxConfig.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Konfigurasi Pajak</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola tarif pajak untuk produk dan transaksi.
+            {t("page.taxConfig.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-tax")} className="gap-2">
           <Plus size={18} />
-          Tambah Pajak
+          {t("page.taxConfig.button.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Pajak</p>
+          <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tidak Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
       </div>
@@ -107,7 +109,7 @@ const TaxConfigList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari pajak..."
+          placeholder={t("page.taxConfig.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -128,19 +130,19 @@ const TaxConfigList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Pajak
+                    {t("page.taxConfig.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tipe
+                    {t("page.taxConfig.table.type")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tarif
+                    {t("page.taxConfig.table.rate")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.taxConfig.table.description")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -149,7 +151,7 @@ const TaxConfigList = () => {
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
                       <Percent size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada pajak ditemukan</p>
+                      <p>{t("page.taxConfig.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -199,7 +201,7 @@ const TaxConfigList = () => {
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, items.length)} dari {total} pajak
+          {t("page.taxConfig.list.showing", { count: Math.min(limit, items.length), total })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -236,9 +238,11 @@ const TaxConfigList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Pajak?"
-        description={`Yakin ingin menghapus pajak ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("modal.deleteTitle")}
+        description={t("page.taxConfig.deleteConfirmDescription", {
+          name: deleteTarget?.name || ""
+        })}
+        confirmText={t("modal.yesDelete")}
         onConfirm={confirmDelete}
       />
     </div>

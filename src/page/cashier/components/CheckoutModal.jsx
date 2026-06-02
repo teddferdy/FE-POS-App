@@ -11,11 +11,13 @@ import { getTablesByStore } from "@/services/table";
 import { getAllDiscountByLocationAndActive } from "@/services/discount";
 import { createOrder } from "@/services/order";
 import { addMemberPoints } from "@/services/member";
+import { useTranslation } from "react-i18next";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000];
 
 const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplete }) => {
+  const { t } = useTranslation();
   const [paymentTypeId, setPaymentTypeId] = useState("");
   const [amountReceived, setAmountReceived] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
@@ -84,7 +86,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
       });
     },
     onError: (err) => {
-      toast?.error?.(err?.message || "Gagal memproses pesanan");
+      toast?.error?.(err?.message || t("page.cashier.toast.processError"));
     }
   });
 
@@ -153,7 +155,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
     <div className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/50 overflow-y-auto">
       <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg mt-4 sm:mt-8">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-base">Pembayaran</h3>
+          <h3 className="font-semibold text-base">{t("page.cashier.payment")}</h3>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
             <X size={16} />
           </Button>
@@ -161,7 +163,9 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
 
         <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Total Belanja</span>
+            <span className="text-sm text-muted-foreground">
+              {t("page.cashier.modal.totalShopping")}
+            </span>
             <div className="text-right">
               {discountAmount > 0 && (
                 <span className="text-sm text-muted-foreground line-through block">
@@ -175,7 +179,9 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Metode Pembayaran</label>
+            <label className="text-sm font-medium mb-1.5 block">
+              {t("page.cashier.modal.paymentMethod")}
+            </label>
             <div className="grid grid-cols-2 gap-2">
               {payments.map((p) => {
                 const pid = p.id || p._id;
@@ -197,7 +203,9 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Jumlah Dibayar</label>
+            <label className="text-sm font-medium mb-1.5 block">
+              {t("page.cashier.modal.amountPaid")}
+            </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                 Rp
@@ -222,14 +230,14 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
               ))}
             </div>
             {Number(amountReceived) > 0 && Number(amountReceived) < finalTotal && (
-              <p className="text-xs text-red-500 mt-1">Jumlah dibayar kurang dari total</p>
+              <p className="text-xs text-red-500 mt-1">{t("page.cashier.modal.amountShort")}</p>
             )}
           </div>
 
           {Number(amountReceived) >= finalTotal && (
             <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
               <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                Kembalian
+                {t("page.cashier.change")}
               </span>
               <span className="text-lg font-bold text-green-700 dark:text-green-400">
                 {formatCurrencyRupiah(change)}
@@ -240,7 +248,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
           {tables.length > 0 && (
             <div>
               <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
-                <Table2 size={14} /> Meja (opsional)
+                <Table2 size={14} /> {t("page.cashier.modal.table")}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 <button
@@ -250,7 +258,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
                       ? "bg-primary text-primary-foreground border-primary"
                       : "border-border text-muted-foreground hover:bg-accent"
                   }`}>
-                  Tidak ada
+                  {t("page.cashier.modal.none")}
                 </button>
                 {tables.map((t) => {
                   const tid = t.id || t._id;
@@ -274,7 +282,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
           {discounts.length > 0 && (
             <div>
               <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
-                <Percent size={14} /> Diskon (opsional)
+                <Percent size={14} /> {t("page.cashier.modal.discount")}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 <button
@@ -284,7 +292,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
                       ? "bg-primary text-primary-foreground border-primary"
                       : "border-border text-muted-foreground hover:bg-accent"
                   }`}>
-                  Tidak ada
+                  {t("page.cashier.modal.none")}
                 </button>
                 {discounts.map((d) => {
                   const did = d.id || d._id;
@@ -313,7 +321,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
 
           <div>
             <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
-              <User size={14} /> Member (opsional)
+              <User size={14} /> {t("page.cashier.modal.member")}
             </label>
             <div className="relative">
               <User
@@ -321,7 +329,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Cari nama/no. telepon member"
+                placeholder={t("page.cashier.modal.memberSearch")}
                 value={memberSearch}
                 onChange={(e) => {
                   setMemberSearch(e.target.value);
@@ -342,14 +350,16 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
                     setMemberSearch("");
                   }}
                   className="ml-auto text-xs text-red-500">
-                  Hapus
+                  {t("common.delete")}
                 </button>
               </div>
             )}
             {showMemberResults && memberSearch.length >= 2 && !selectedMember && (
               <div className="mt-1 border border-border rounded-lg max-h-32 overflow-y-auto">
                 {members.length === 0 ? (
-                  <p className="p-2 text-xs text-muted-foreground">Member tidak ditemukan</p>
+                  <p className="p-2 text-xs text-muted-foreground">
+                    {t("page.cashier.modal.memberNotFound")}
+                  </p>
                 ) : (
                   members.map((m) => (
                     <button
@@ -371,9 +381,11 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Catatan (opsional)</label>
+            <label className="text-sm font-medium mb-1.5 block">
+              {t("page.cashier.modal.notes")}
+            </label>
             <textarea
-              placeholder="Catatan pesanan..."
+              placeholder={t("page.cashier.modal.notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
@@ -384,13 +396,15 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
 
         <div className="px-5 py-4 border-t border-border flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!isComplete || orderMutation.isLoading}
             className="min-w-[140px]">
-            {orderMutation.isLoading ? "Memproses..." : `Bayar ${formatCurrencyRupiah(finalTotal)}`}
+            {orderMutation.isLoading
+              ? t("page.cashier.modal.processing")
+              : `${t("page.cashier.checkout")} ${formatCurrencyRupiah(finalTotal)}`}
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { Plus, Minus, ShoppingCart, Pencil } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const CartPanel = ({
@@ -13,6 +14,7 @@ const CartPanel = ({
   totalItems,
   onUpdatePrice
 }) => {
+  const { t } = useTranslation();
   const [editingPrice, setEditingPrice] = useState(null);
   const [editValue, setEditValue] = useState("");
 
@@ -47,8 +49,8 @@ const CartPanel = ({
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <ShoppingCart size={48} className="mb-2 opacity-30" />
-            <p className="text-sm">Belum ada produk</p>
-            <p className="text-xs">Silakan pilih produk dari daftar</p>
+            <p className="text-sm">{t("page.cashier.cart.empty")}</p>
+            <p className="text-xs">{t("page.cashier.cart.emptyHint")}</p>
           </div>
         ) : (
           items.map((item, idx) => {
@@ -113,7 +115,7 @@ const CartPanel = ({
                   <button
                     onClick={() => onDelete(item)}
                     className="text-xs text-red-500 hover:text-red-600 mt-0.5">
-                    Hapus
+                    {t("common.delete")}
                   </button>
                 </div>
               </div>
@@ -124,18 +126,20 @@ const CartPanel = ({
 
       <div className="border-t border-border p-4 space-y-3 shrink-0">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal ({totalItems} item)</span>
+          <span className="text-muted-foreground">
+            {t("page.cashier.cart.subtotal", { count: totalItems })}
+          </span>
           <span className="font-semibold">{formatCurrencyRupiah(subtotal)}</span>
         </div>
         <div className="flex justify-between text-lg font-bold">
-          <span>Total</span>
+          <span>{t("page.cashier.total")}</span>
           <span className="text-primary">{formatCurrencyRupiah(subtotal)}</span>
         </div>
         <button
           className="w-full h-11 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={items.length === 0}
           onClick={onCheckout}>
-          Bayar {formatCurrencyRupiah(subtotal)}
+          {t("page.cashier.checkout")} {formatCurrencyRupiah(subtotal)}
         </button>
       </div>
     </div>

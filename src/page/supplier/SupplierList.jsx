@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   Plus,
@@ -22,6 +23,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const SupplierList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -42,11 +44,11 @@ const SupplierList = () => {
 
   const deleteMutation = useMutation(deleteSupplier, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Supplier berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.supplier.toast.success") });
       queryClient.invalidateQueries(["suppliers"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -73,38 +75,38 @@ const SupplierList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Supplier</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.supplier")}</span>
       </nav>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Supplier</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola data pemasok barang untuk inventaris Anda.
+            {t("page.supplier.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-supplier")} className="gap-2">
           <Plus size={18} />
-          Tambah Supplier
+          {t("page.supplier.button.add")}
         </Button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Supplier</p>
+          <p className="text-sm text-muted-foreground">{t("page.supplier.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tidak Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
       </div>
@@ -116,7 +118,7 @@ const SupplierList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari supplier..."
+          placeholder={t("page.supplier.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -138,22 +140,22 @@ const SupplierList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Supplier
+                    {t("page.supplier.form.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Kontak Person
+                    {t("page.supplier.form.contactPerson")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Telepon
+                    {t("page.supplier.form.phone")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Email
+                    {t("page.supplier.form.email")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Alamat
+                    {t("page.supplier.form.address")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -162,7 +164,7 @@ const SupplierList = () => {
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                       <Building2 size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada supplier ditemukan</p>
+                      <p>{t("page.supplier.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -230,7 +232,7 @@ const SupplierList = () => {
       {/* Pagination */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, suppliers.length)} dari {total} supplier
+          {t("page.supplier.list.showing", { count: Math.min(limit, suppliers.length), total })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -267,9 +269,9 @@ const SupplierList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Supplier?"
+        title={t("modal.confirmDelete")}
         description={`Yakin ingin menghapus supplier ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        confirmText={t("common.delete")}
         onConfirm={confirmDelete}
       />
     </div>

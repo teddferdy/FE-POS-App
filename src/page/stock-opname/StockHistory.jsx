@@ -17,6 +17,7 @@ import {
   TableCell
 } from "@/components/ui/table";
 import PageHeader from "@/components/ui/PageHeader";
+import { useTranslation } from "react-i18next";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -46,6 +47,7 @@ const formatNumber = (num) => {
 };
 
 const StockHistory = () => {
+  const { t } = useTranslation();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
@@ -85,12 +87,12 @@ const StockHistory = () => {
   const products = productsData?.data || productsData?.products || [];
 
   const referenceTypeOptions = [
-    { value: "", label: "Semua Tipe" },
-    { value: "purchase", label: "Pembelian" },
-    { value: "sale", label: "Penjualan" },
-    { value: "adjustment", label: "Penyesuaian" },
-    { value: "opname", label: "Stok Opname" },
-    { value: "return", label: "Retur" }
+    { value: "", label: t("page.stockHistory.filter.allTypes") },
+    { value: "purchase", label: t("page.stockHistory.reference.purchase") },
+    { value: "sale", label: t("page.stockHistory.reference.sale") },
+    { value: "adjustment", label: t("page.stockHistory.reference.adjustment") },
+    { value: "opname", label: t("page.stockHistory.reference.opname") },
+    { value: "return", label: t("page.stockHistory.reference.return") }
   ];
 
   const getChangeDisplay = (change) => {
@@ -114,11 +116,11 @@ const StockHistory = () => {
       return: "bg-rose-100 text-rose-700"
     };
     const labels = {
-      purchase: "Pembelian",
-      sale: "Penjualan",
-      adjustment: "Penyesuaian",
-      opname: "Stok Opname",
-      return: "Retur"
+      purchase: t("page.stockHistory.reference.purchase"),
+      sale: t("page.stockHistory.reference.sale"),
+      adjustment: t("page.stockHistory.reference.adjustment"),
+      opname: t("page.stockHistory.reference.opname"),
+      return: t("page.stockHistory.reference.return")
     };
     return (
       <span
@@ -133,7 +135,7 @@ const StockHistory = () => {
       <PageHeader
         breadcrumbs={[
           {
-            label: "Dashboard",
+            label: t("breadcrumb.home"),
             href:
               role === "super_admin"
                 ? "/dashboard-super-admin"
@@ -141,20 +143,22 @@ const StockHistory = () => {
                   ? "/dashboard-admin"
                   : "/home"
           },
-          { label: "Inventory" },
-          { label: "History Stok" }
+          { label: t("breadcrumb.inventory") },
+          { label: t("breadcrumb.stockHistory") }
         ]}
-        title="History Stok"
-        description="Riwayat perubahan stok produk secara real-time."
+        title={t("page.stockHistory.title")}
+        description={t("page.stockHistory.description")}
       />
 
       <Card className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Produk</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              {t("page.stockHistory.filter.product")}
+            </label>
             <Combobox
               options={[
-                { value: "", label: "Semua Produk" },
+                { value: "", label: t("page.stockHistory.filter.allProducts") },
                 ...products.map((p) => ({
                   value: String(p.id || p._id),
                   label: p.name || p.nameProduct
@@ -165,13 +169,13 @@ const StockHistory = () => {
                 setProductFilter(v);
                 setPage(1);
               }}
-              placeholder="Semua Produk"
-              searchPlaceholder="Cari produk..."
+              placeholder={t("page.stockHistory.filter.allProducts")}
+              searchPlaceholder={t("common.search")}
             />
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-              Tipe Referensi
+              {t("page.stockHistory.filter.referenceType")}
             </label>
             <Combobox
               options={referenceTypeOptions}
@@ -180,13 +184,13 @@ const StockHistory = () => {
                 setReferenceFilter(v);
                 setPage(1);
               }}
-              placeholder="Semua Tipe"
-              searchPlaceholder="Cari tipe..."
+              placeholder={t("page.stockHistory.filter.allTypes")}
+              searchPlaceholder={t("common.search")}
             />
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-              Dari Tanggal
+              {t("page.stockHistory.filter.startDate")}
             </label>
             <Input
               type="date"
@@ -200,7 +204,7 @@ const StockHistory = () => {
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-              Sampai Tanggal
+              {t("page.stockHistory.filter.endDate")}
             </label>
             <Input
               type="date"
@@ -222,8 +226,8 @@ const StockHistory = () => {
       ) : histories.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
           <Calendar size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">Belum ada history stok</p>
-          <p className="text-sm mt-1">History akan muncul saat ada perubahan stok produk.</p>
+          <p className="text-lg font-medium">{t("page.stockHistory.empty")}</p>
+          <p className="text-sm mt-1">{t("page.stockHistory.emptyDetail")}</p>
         </Card>
       ) : (
         <Card className="overflow-hidden">
@@ -231,13 +235,17 @@ const StockHistory = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Waktu</TableHead>
-                  <TableHead>Produk</TableHead>
-                  <TableHead className="text-right">Sebelum</TableHead>
-                  <TableHead className="text-right">Perubahan</TableHead>
-                  <TableHead className="text-right">Sesudah</TableHead>
-                  <TableHead>Tipe</TableHead>
-                  <TableHead>Catatan</TableHead>
+                  <TableHead>{t("page.stockHistory.table.time")}</TableHead>
+                  <TableHead>{t("page.stockHistory.table.product")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("page.stockHistory.table.before")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("page.stockHistory.table.change")}
+                  </TableHead>
+                  <TableHead className="text-right">{t("page.stockHistory.table.after")}</TableHead>
+                  <TableHead>{t("page.stockHistory.table.type")}</TableHead>
+                  <TableHead>{t("page.stockHistory.table.notes")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -273,7 +281,7 @@ const StockHistory = () => {
       {totalPages > 1 && (
         <div className="flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-xs text-muted-foreground">
-            Menampilkan 1-{Math.min(limit, histories.length)} dari {total} entries
+            {t("page.stockHistory.showing", { count: Math.min(limit, histories.length), total })}
           </p>
           <div className="flex items-center gap-1">
             <button

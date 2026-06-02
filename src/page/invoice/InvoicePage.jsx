@@ -1,39 +1,43 @@
-/* eslint-disable react/prop-types */
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Image, FileText, Share2 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 
-const cards = [
-  {
-    title: "Logo Invoice",
-    description: "Manage invoice logo",
-    icon: Image,
-    href: "/logo-invoice-list"
-  },
-  {
-    title: "Footer Invoice",
-    description: "Manage invoice footer",
-    icon: FileText,
-    href: "/footer-invoice-list"
-  },
-  {
-    title: "Social Media Invoice",
-    description: "Manage social media on invoice",
-    icon: Share2,
-    href: "/social-media-invoice-list"
-  }
-];
-
 const InvoicePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const cards = [
+    {
+      title: t("page.invoice.logo"),
+      description: t("page.invoice.logoDescription"),
+      icon: Image,
+      href: "/logo-invoice-list"
+    },
+    {
+      title: t("page.invoice.footer"),
+      description: t("page.invoice.footerDescription"),
+      icon: FileText,
+      href: "/footer-invoice-list"
+    },
+    {
+      title: t("page.invoice.socialMedia"),
+      description: t("page.invoice.socialMediaDescription"),
+      icon: Share2,
+      href: "/social-media-invoice-list"
+    }
+  ];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Invoice" }]}
-        title="Invoice Configuration"
-        description="Configure invoice settings including logo, footer, and social media."
+        breadcrumbs={[
+          { label: t("breadcrumb.home"), href: "/dashboard" },
+          { label: t("breadcrumb.invoice") }
+        ]}
+        title={t("page.invoice.title")}
+        description={t("page.invoice.description")}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -21,6 +21,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama diskon wajib diisi"),
@@ -34,6 +35,7 @@ const formSchema = z.object({
 });
 
 const AddDiscount = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -73,34 +75,34 @@ const AddDiscount = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/discount")}
           className="hover:text-foreground transition-colors">
-          Diskon
+          {t("breadcrumb.management")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Diskon</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Diskon</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah data diskon baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("breadcrumb.add")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.discount.add.description")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("breadcrumb.back")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {createMutation.isLoading ? t("button.saving") : t("button.save")}
           </Button>
         </div>
       </div>

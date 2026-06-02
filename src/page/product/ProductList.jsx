@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   Search,
@@ -26,6 +27,7 @@ import Modal from "@/components/organism/modal";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const ProductList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -79,11 +81,11 @@ const ProductList = () => {
 
   const deleteMutation = useMutation(deleteProduct, {
     onSuccess: () => {
-      toast.success("Success", { description: "Produk berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.product.toast.deleteSuccess") });
       queryClient.invalidateQueries(["products"]);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -124,26 +126,26 @@ const ProductList = () => {
     const stock = product.stock || product.quantity || 0;
     if (stock <= 0) {
       return {
-        label: "Habis",
+        label: t("page.product.status.outOfStock"),
         className: "bg-destructive/10 text-destructive border border-destructive/20"
       };
     }
     if (stock <= 10) {
       return {
-        label: "Low Stock",
+        label: t("page.product.status.lowStock"),
         className:
           "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
       };
     }
     if (product.isActive || product.status === "active") {
       return {
-        label: "Aktif",
+        label: t("common.active"),
         className:
           "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
       };
     }
     return {
-      label: "Tidak Aktif",
+      label: t("common.inactive"),
       className: "bg-muted text-muted-foreground border border-border"
     };
   };
@@ -163,7 +165,7 @@ const ProductList = () => {
             )
           }
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         {role === "super_admin" && locationParam && (
@@ -171,34 +173,32 @@ const ProductList = () => {
             <button
               onClick={() => navigate("/location-list")}
               className="hover:text-foreground transition-colors">
-              Kelola Toko
+              {t("sidebar.kelolaToko")}
             </button>
             <span className="text-xs">/</span>
           </>
         )}
-        <span className="text-primary font-semibold">Produk</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.product")}</span>
       </nav>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Produk</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kelola inventaris makanan dan minuman Anda secara real-time.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.product.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.product.list.description")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="gap-2">
             <Upload size={16} />
-            Impor
+            {t("page.product.button.import")}
           </Button>
           <Button variant="outline" className="gap-2">
             <Download size={16} />
-            Ekspor
+            {t("page.product.button.export")}
           </Button>
           <Button onClick={() => navigate("/add-product")} className="gap-2">
             <Plus size={18} />
-            Tambah Produk
+            {t("page.product.button.add")}
           </Button>
         </div>
       </div>
@@ -211,7 +211,7 @@ const ProductList = () => {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            placeholder="Cari nama produk atau SKU..."
+            placeholder={t("page.product.list.searchSku")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-10"
@@ -222,7 +222,7 @@ const ProductList = () => {
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-            <option value="">Semua Kategori</option>
+            <option value="">{t("common.all")} Kategori</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.name}>
                 {cat.name}
@@ -233,10 +233,10 @@ const ProductList = () => {
             value={sortFilter}
             onChange={(e) => setSortFilter(e.target.value)}
             className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-            <option value="">Urutkan: Terbaru</option>
-            <option value="price-asc">Harga: Rendah ke Tinggi</option>
-            <option value="price-desc">Harga: Tinggi ke Rendah</option>
-            <option value="stock-asc">Stok: Terendah</option>
+            <option value="">{t("page.product.list.filter.newest")}</option>
+            <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
+            <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
+            <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
           </select>
         </div>
       </div>
@@ -249,8 +249,8 @@ const ProductList = () => {
       ) : filteredProducts.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
           <Package size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">Tidak ada produk ditemukan</p>
-          <p className="text-sm mt-1">Coba ubah filter atau kata kunci pencarian Anda.</p>
+          <p className="text-lg font-medium">{t("page.product.list.empty")}</p>
+          <p className="text-sm mt-1">{t("page.product.list.emptyHint")}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -298,15 +298,19 @@ const ProductList = () => {
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
                     <Package size={14} />
                     <span>
-                      Stok: {stock} {product.unit || ""}
+                      {t("page.product.stockLabel")} {stock} {product.unit || ""}
                     </span>
                     {stock > 0 && stock <= 10 && (
                       <span className="flex items-center gap-1 text-destructive font-medium ml-1">
                         <AlertTriangle size={14} />
-                        Menipis
+                        {t("page.product.stockLow")}
                       </span>
                     )}
-                    {stock <= 0 && <span className="text-destructive font-medium ml-1">Habis</span>}
+                    {stock <= 0 && (
+                      <span className="text-destructive font-medium ml-1">
+                        {t("page.product.status.outOfStock")}
+                      </span>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -317,7 +321,7 @@ const ProductList = () => {
                       className="flex-1 gap-1.5 h-8 text-xs"
                       onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
                       <Edit size={14} />
-                      Edit
+                      {t("common.edit")}
                     </Button>
                     <Button
                       variant="outline"
@@ -325,7 +329,7 @@ const ProductList = () => {
                       className="flex-1 gap-1.5 h-8 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
                       onClick={() => handleDelete(product.id || product._id)}>
                       <Trash2 size={14} />
-                      Hapus
+                      {t("common.delete")}
                     </Button>
                   </div>
                 </div>
@@ -338,7 +342,10 @@ const ProductList = () => {
       {/* Pagination */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-2">
         <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, filteredProducts.length)} dari {total} produk
+          {t("page.product.list.pagination", {
+            count: Math.min(limit, filteredProducts.length),
+            total
+          })}
         </p>
         <div className="flex items-center gap-1">
           <button
@@ -375,17 +382,17 @@ const ProductList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Produk?"
-        confirmText="Ya, Hapus"
+        title={t("modal.deleteTitle")}
+        confirmText={t("modal.deleteConfirm")}
         onConfirm={confirmDelete}
       />
       <Modal
         type="confirm"
         open={noStoreModal}
         onOpenChange={setNoStoreModal}
-        title="Toko Belum Dibuat"
-        description="Belum ada toko yang terdaftar. Silakan tambah toko terlebih dahulu sebelum mengelola produk."
-        confirmText="Tambah Toko"
+        title={t("page.product.noStore.title")}
+        description={t("page.product.noStore.description")}
+        confirmText={t("page.product.noStore.button")}
         onConfirm={() => navigate("/add-location")}
       />
     </div>

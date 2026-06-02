@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Save, X, Plus, Trash2, Search as SearchIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { addPurchaseOrder } from "@/services/purchase-order";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllProduct } from "@/services/product";
@@ -15,6 +16,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const AddPurchaseOrder = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -91,30 +93,42 @@ const AddPurchaseOrder = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/purchase-order")}
           className="hover:text-foreground transition-colors">
-          Purchase Order
+          {t("page.purchaseOrder.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Buat PO</span>
+        <span className="text-primary font-semibold">{t("page.purchaseOrder.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Buat Purchase Order</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.purchaseOrder.add.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Buat pemesanan pembelian barang ke supplier.
+            {t("page.purchaseOrder.add.description")}
           </p>
         </div>
-        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-          <X size={18} />
-          Batal
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <X size={18} />
+            {t("breadcrumb.back")}
+          </Button>
+          <Button onClick={handleSubmit} disabled={createMutation.isLoading} className="gap-2">
+            <Save size={18} />
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
+          </Button>
+        </div>
       </div>
+      <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+        <X size={18} />
+        Batal
+      </Button>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import UploadPositionModal from "@/page/position/components/UploadPositionModal"
 import PageHeader from "@/components/ui/PageHeader";
 
 const PositionList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -48,11 +50,11 @@ const PositionList = () => {
 
   const deleteMutation = useMutation(deletePosition, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Posisi berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.position.toast.deleted") });
       queryClient.invalidateQueries(["positions"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -80,9 +82,9 @@ const PositionList = () => {
   return (
     <div className="space-y-8">
       <PageHeader
-        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Jabatan" }]}
-        title="Daftar Jabatan"
-        description="Kelola daftar jabatan, departemen, dan informasi posisi karyawan Anda.">
+        breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.position") }]}
+        title={t("page.position.list.title")}
+        description={t("page.position.list.description")}>
         <Button
           variant="outline"
           disabled={isDownloadingTemplate}
@@ -94,11 +96,15 @@ const PositionList = () => {
             setIsDownloadingTemplate(true);
             try {
               await downloadPositionTemplate();
-              toast.success("Berhasil", { description: "Template berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.position.toast.templateDownloaded")
+              });
             } catch (err) {
-              toast.error("Gagal", {
+              toast.error(t("common.error"), {
                 description:
-                  err?.response?.data?.message || err.message || "Gagal download template"
+                  err?.response?.data?.message ||
+                  err.message ||
+                  t("page.position.toast.templateDownloadFailed")
               });
             } finally {
               setIsDownloadingTemplate(false);
@@ -109,7 +115,9 @@ const PositionList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
           )}
-          {isDownloadingTemplate ? "Download..." : "Download Template"}
+          {isDownloadingTemplate
+            ? t("common.downloading")
+            : t("page.position.button.downloadTemplate")}
         </Button>
         <Button
           variant="outline"
@@ -118,10 +126,15 @@ const PositionList = () => {
             setIsDownloadingData(true);
             try {
               await downloadPositionExcel();
-              toast.success("Berhasil", { description: "Data berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.position.toast.dataDownloaded")
+              });
             } catch (err) {
-              toast.error("Gagal", {
-                description: err?.response?.data?.message || err.message || "Gagal download data"
+              toast.error(t("common.error"), {
+                description:
+                  err?.response?.data?.message ||
+                  err.message ||
+                  t("page.position.toast.dataDownloadFailed")
               });
             } finally {
               setIsDownloadingData(false);
@@ -132,16 +145,16 @@ const PositionList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">download</span>
           )}
-          {isDownloadingData ? "Download..." : "Download Data"}
+          {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
         <Button variant="default" onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
-          Upload Excel
+          {t("page.position.button.uploadExcel")}
         </Button>
         <Button variant="default" onClick={() => navigate("/add-position")} className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
-          Tambah Jabatan
+          {t("page.position.button.add")}
         </Button>
       </PageHeader>
 
@@ -149,12 +162,12 @@ const PositionList = () => {
         <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Total Jabatan
+              {t("page.position.stats.total")}
             </p>
             <h3 className="text-2xl font-bold text-foreground">{total.toLocaleString()}</h3>
             <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">work</span>
-              Semua jabatan terdaftar
+              {t("page.position.stats.totalSub")}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
@@ -168,12 +181,13 @@ const PositionList = () => {
         <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Jabatan Aktif
+              {t("page.position.stats.active")}
             </p>
             <h3 className="text-2xl font-bold text-foreground">{activeCount.toLocaleString()}</h3>
             <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              {total > 0 ? Math.round((activeCount / total) * 100) : 0}% Tingkat Keaktifan
+              {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
+              {t("page.position.stats.activeSub")}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
@@ -187,12 +201,12 @@ const PositionList = () => {
         <div className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-              Jabatan Nonaktif
+              {t("page.position.stats.inactive")}
             </p>
             <h3 className="text-2xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
             <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
               <span className="material-symbols-outlined text-sm">cancel</span>
-              Perlu perhatian
+              {t("page.position.stats.inactiveSub")}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-red-700 dark:bg-red-950 flex items-center justify-center">
@@ -208,13 +222,15 @@ const PositionList = () => {
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">Tampilkan:</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t("page.position.list.show")}:
+            </span>
             <select
               value={limit}
               className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-              <option value={10}>10 Baris</option>
-              <option value={25}>25 Baris</option>
-              <option value={50}>50 Baris</option>
+              <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
+              <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
+              <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
             </select>
           </div>
           <div className="relative">
@@ -222,7 +238,7 @@ const PositionList = () => {
               search
             </span>
             <input
-              placeholder="Cari jabatan..."
+              placeholder={t("page.position.list.search")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -243,19 +259,19 @@ const PositionList = () => {
               <thead>
                 <tr className="bg-muted/10 border-b border-border">
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                    No
+                    {t("page.position.table.no")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nama Jabatan
+                    {t("page.position.table.name")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Departemen
+                    {t("page.position.table.department")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.position.table.description")}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -264,7 +280,7 @@ const PositionList = () => {
                   <tr>
                     <td colSpan={5} className="px-5 py-12 text-center text-muted-foreground">
                       <span className="material-symbols-outlined text-4xl block mb-2">badge</span>
-                      Tidak ada jabatan ditemukan
+                      {t("page.position.list.empty")}
                     </td>
                   </tr>
                 ) : (
@@ -300,19 +316,19 @@ const PositionList = () => {
                           <button
                             onClick={() => navigate(`/detail-position?positionID=${position.id}`)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title="Lihat Detail">
+                            title={t("common.view")}>
                             <span className="material-symbols-outlined text-lg">visibility</span>
                           </button>
                           <button
                             onClick={() => navigate(`/edit-position?id=${position.id}`)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title="Edit">
+                            title={t("common.edit")}>
                             <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
                           <button
                             onClick={() => handleDelete(position)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-                            title="Hapus">
+                            title={t("common.delete")}>
                             <span className="material-symbols-outlined text-lg">delete</span>
                           </button>
                         </div>
@@ -327,7 +343,7 @@ const PositionList = () => {
 
         <div className="p-4 border-t border-border flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            Menampilkan {positions.length} dari {total} data
+            {t("page.position.list.showing", { count: positions.length, total })}
           </p>
           <div className="flex items-center gap-1">
             <button
@@ -375,8 +391,8 @@ const PositionList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`Hapus ${deleteTarget?.name || "Posisi"}?`}
-        confirmText="Ya, Hapus"
+        title={t("modal.confirmDeletePosition", { name: deleteTarget?.name || "" })}
+        confirmText={t("common.confirmDelete")}
         onConfirm={confirmDelete}
       />
       <UploadPositionModal
@@ -387,24 +403,26 @@ const PositionList = () => {
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">
           <span className="material-symbols-outlined opacity-80">lightbulb</span>
-          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+            {t("page.position.list.tips")}
+          </h4>
         </div>
         <ul className="space-y-2">
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Pastikan setiap jabatan memiliki deskripsi tugas yang jelas.</span>
+            <span>{t("page.position.list.tip1")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Hubungkan jabatan dengan departemen yang sesuai.</span>
+            <span>{t("page.position.list.tip2")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Gunakan status aktif/nonaktif untuk mengelola akses jabatan.</span>
+            <span>{t("page.position.list.tip3")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Download template posisi untuk menambahkan data secara massal.</span>
+            <span>{t("page.position.list.tip4")}</span>
           </li>
         </ul>
       </div>
@@ -413,9 +431,9 @@ const PositionList = () => {
         type="confirm"
         open={noDepartmentModal}
         onOpenChange={setNoDepartmentModal}
-        title="Departemen Belum Diisi"
-        description="Belum ada data departemen. Silakan tambah departemen terlebih dahulu sebelum mendownload template posisi."
-        confirmText="Tambah Departemen"
+        title={t("page.position.modal.noDepartment.title")}
+        description={t("page.position.modal.noDepartment.description")}
+        confirmText={t("page.position.button.addDepartment")}
         onConfirm={() => navigate("/add-department")}
       />
     </div>

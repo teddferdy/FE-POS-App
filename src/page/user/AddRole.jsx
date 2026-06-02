@@ -1,5 +1,5 @@
-/* eslint-disable react/no-unescaped-entities */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -47,6 +47,7 @@ const initialPermissions = modules.reduce((acc, mod) => {
 }, {});
 
 const AddRole = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
@@ -63,7 +64,7 @@ const AddRole = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -91,7 +92,9 @@ const AddRole = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Validation", { description: "Nama role wajib diisi" });
+      toast.error(t("common.error"), {
+        description: t("page.user.addRole.validationNameRequired")
+      });
       return;
     }
     setIsSubmitting(true);
@@ -104,31 +107,31 @@ const AddRole = () => {
         <button
           onClick={() => navigate("/user-list")}
           className="hover:text-primary transition-colors">
-          Kelola Admin
+          {t("page.user.adminList.title")}
         </button>
         <span className="material-symbols-outlined text-base">chevron_right</span>
         <button
           onClick={() => navigate("/global-setting")}
           className="hover:text-primary transition-colors">
-          Pengaturan Sistem
+          {t("page.user.addRole.systemSettings")}
         </button>
         <span className="material-symbols-outlined text-base">chevron_right</span>
-        <span className="text-foreground font-bold">Tambah Role Baru</span>
+        <span className="text-foreground font-bold">{t("page.user.addRole.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Tambah Role Baru</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Definisikan tanggung jawab dan izin akses untuk tingkat otoritas baru.
-          </p>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.user.addRole.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.user.addRole.description")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)}>
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            Simpan Role
+            {t("page.user.button.save")}
           </Button>
         </div>
       </div>
@@ -138,29 +141,31 @@ const AddRole = () => {
           <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
             <div className="flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-primary">info</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.user.addRole.roleInfo")}
+              </h3>
             </div>
             <div className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Role
+                  {t("page.user.addRole.roleName")}
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  placeholder="Contoh: Cashier, Inventory Manager"
+                  placeholder={t("page.user.addRole.roleNamePlaceholder")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Deskripsi Role
+                  {t("page.user.addRole.roleDescription")}
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                  placeholder="Jelaskan cakupan tugas role ini..."
+                  placeholder={t("page.user.addRole.roleDescriptionPlaceholder")}
                   rows={5}
                 />
               </div>
@@ -168,11 +173,11 @@ const AddRole = () => {
           </div>
 
           <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
-            <h4 className="text-base font-semibold text-primary mb-2">Panduan Izin</h4>
+            <h4 className="text-base font-semibold text-primary mb-2">
+              {t("page.user.addRole.permissionGuide")}
+            </h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Izin 'Create' memungkinkan pengguna menambahkan data baru. 'Read' untuk melihat data.
-              'Update' untuk mengubah data yang ada, dan 'Delete' untuk menghapus record secara
-              permanen.
+              {t("page.user.addRole.permissionGuideDesc")}
             </p>
           </div>
         </div>
@@ -182,7 +187,9 @@ const AddRole = () => {
             <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">rule</span>
-                <h3 className="text-base font-semibold text-foreground">Matriks Hak Akses</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.user.addRole.accessMatrix")}
+                </h3>
               </div>
               <label className="flex items-center gap-2 cursor-pointer select-none group">
                 <input
@@ -192,7 +199,7 @@ const AddRole = () => {
                   className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
                 />
                 <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                  Pilih Semua Hak Akses
+                  {t("page.user.addRole.selectAll")}
                 </span>
               </label>
             </div>
@@ -202,19 +209,19 @@ const AddRole = () => {
                 <thead>
                   <tr className="bg-muted/20">
                     <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Modul Sistem
+                      {t("page.user.addRole.moduleSystem")}
                     </th>
                     <th className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                      Create
+                      {t("page.user.addRole.create")}
                     </th>
                     <th className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                      Read
+                      {t("page.user.addRole.read")}
                     </th>
                     <th className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                      Update
+                      {t("page.user.addRole.update")}
                     </th>
                     <th className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                      Delete
+                      {t("page.user.addRole.delete")}
                     </th>
                   </tr>
                 </thead>
@@ -255,28 +262,28 @@ const AddRole = () => {
 
             <div className="p-4 bg-muted/20 text-right border-t border-border">
               <p className="text-xs text-muted-foreground italic">
-                * Perubahan hak akses akan segera berlaku bagi pengguna dengan role ini.
+                {t("page.user.addRole.changesNote")}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title={t("common.success")}
         onConfirm={() => navigate("/add-role")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("modal.cancelTitle")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/global-setting")}
       />
     </div>

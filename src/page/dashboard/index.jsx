@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import {
@@ -56,6 +57,7 @@ const fallbackChart = [
 const Dashboard = () => {
   const [cookie] = useCookies();
   const store = cookie?.store;
+  const { t } = useTranslation();
 
   const { data: dashData, isLoading } = useQuery(
     ["dashboard-summary", store],
@@ -70,41 +72,41 @@ const Dashboard = () => {
   const members = d.members || {};
   const summaryCards = [
     {
-      label: "Pendapatan",
+      label: t("page.dashboard.revenue"),
       value: formatCurrencyRupiah(revenue.total || 0),
-      trend: revenue.trend || "+0% vs kemarin",
+      trend: revenue.trend || t("page.dashboard.trendVsYesterday"),
       trendUp: (revenue.trend || "").includes("+"),
       icon: DollarSign,
       color: "text-primary"
     },
     {
-      label: "Pesanan",
+      label: t("page.dashboard.orderCount"),
       value: String(orders.total || d.totalOrders || 0),
-      trend: orders.trend || "+0% mingguan",
+      trend: orders.trend || t("page.dashboard.trendWeekly"),
       trendUp: (orders.trend || "").includes("+"),
       icon: ShoppingCart,
       color: "text-primary"
     },
     {
-      label: "Produk Aktif",
+      label: t("page.dashboard.activeProducts"),
       value: String(d.activeProducts || d.totalProducts || 0),
-      trend: d.productTrend || `${d.activeProducts || 0} item`,
+      trend: d.productTrend || `${d.activeProducts || 0} ${t("page.dashboard.items")}`,
       trendUp: true,
       icon: Package,
       color: "text-primary"
     },
     {
-      label: "Member",
+      label: t("page.dashboard.memberCount"),
       value: String(members.total || d.totalMembers || 0),
-      trend: members.trend || "+0% loyalitas",
+      trend: members.trend || t("page.dashboard.trendLoyalty"),
       trendUp: (members.trend || "").includes("+"),
       icon: Users,
       color: "text-primary"
     },
     {
-      label: "Stok Menipis",
+      label: t("page.dashboard.lowStock"),
       value: String(d.lowStock || d.lowStockCount || 0),
-      trend: d.lowStock ? "Segera restok" : "Aman",
+      trend: d.lowStock ? t("page.dashboard.restockNow") : t("page.dashboard.safe"),
       trendUp: !d.lowStock,
       icon: AlertTriangle,
       color: "text-destructive",
@@ -155,13 +157,15 @@ const Dashboard = () => {
               <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-border">
                 <div>
                   <h3 className="text-base font-semibold text-foreground">
-                    Tren Pendapatan Mingguan
+                    {t("page.dashboard.chartTitle")}
                   </h3>
-                  <p className="text-sm text-muted-foreground">Laporan 7 hari terakhir</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.dashboard.chartSubtitle")}
+                  </p>
                 </div>
                 <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                   <Download size={14} />
-                  Unduh Report
+                  {t("page.dashboard.downloadReport")}
                 </button>
               </div>
               <div className="p-5 h-[280px]">
@@ -204,13 +208,17 @@ const Dashboard = () => {
 
             <div className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
               <div className="p-5 border-b border-border">
-                <h3 className="text-base font-semibold text-foreground">Best Selling</h3>
-                <p className="text-sm text-muted-foreground">Top Produk Terlaris</p>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.dashboard.bestSelling")}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.dashboard.bestSellingSubtitle")}
+                </p>
               </div>
               <div className="divide-y divide-border">
                 {bestSelling.length === 0 ? (
                   <div className="p-5 text-sm text-muted-foreground text-center">
-                    Belum ada data
+                    {t("page.dashboard.noData")}
                   </div>
                 ) : (
                   bestSelling.map((item, i) => {
@@ -244,24 +252,42 @@ const Dashboard = () => {
           <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-semibold text-foreground">Recent Orders</h3>
-                <p className="text-sm text-muted-foreground">Pesanan terbaru hari ini</p>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.dashboard.recentOrders")}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.dashboard.recentOrdersSubtitle")}
+                </p>
               </div>
               <button className="text-sm font-semibold text-primary hover:underline">
-                Lihat Semua
+                {t("page.dashboard.viewAll")}
               </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 text-muted-foreground">
-                    <th className="text-left px-5 py-3 font-medium">ID Pesanan</th>
-                    <th className="text-left px-5 py-3 font-medium">Meja</th>
-                    <th className="text-left px-5 py-3 font-medium">Pelanggan</th>
-                    <th className="text-left px-5 py-3 font-medium">Total</th>
-                    <th className="text-left px-5 py-3 font-medium">Status</th>
-                    <th className="text-left px-5 py-3 font-medium">Waktu</th>
-                    <th className="text-left px-5 py-3 font-medium">Aksi</th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.orderId")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.table")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.customer")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.total")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.status")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.time")}
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium">
+                      {t("page.dashboard.table.action")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -270,7 +296,7 @@ const Dashboard = () => {
                       <td
                         colSpan={7}
                         className="px-5 py-8 text-center text-sm text-muted-foreground">
-                        Belum ada pesanan hari ini
+                        {t("page.dashboard.noOrders")}
                       </td>
                     </tr>
                   ) : (

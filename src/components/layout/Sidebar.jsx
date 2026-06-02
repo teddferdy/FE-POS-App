@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, LogOut, LifeBuoy, PanelLeftClose, PanelLeft } from "lucide-react";
 import { sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuUser } from "@/utils/sidebar-menu";
 
 const Sidebar = ({ collapsed, onToggle }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
@@ -88,7 +90,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
                 collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               }`}>
-              {item.title}
+              {t(item.i18nKey) || item.title}
             </span>
           </button>
         );
@@ -118,7 +120,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
                 collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               }`}>
-              {item.title}
+              {t(item.i18nKey) || item.title}
             </span>
             <span
               className={`ml-auto shrink-0 transition-all duration-200 ${
@@ -155,7 +157,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
             collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
           }`}>
-          {item.title}
+          {t(item.i18nKey) || item.title}
         </span>
       </button>
     );
@@ -206,7 +208,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${
               collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
             }`}>
-            Logout
+            {t("header.logout")}
           </span>
         </button>
       </div>

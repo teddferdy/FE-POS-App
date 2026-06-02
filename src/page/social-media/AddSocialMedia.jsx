@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { addInvoiceSocialMedia } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 
 const AddSocialMedia = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const store = cookie?.store;
@@ -31,7 +33,7 @@ const AddSocialMedia = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -39,11 +41,13 @@ const AddSocialMedia = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!platformName.trim()) {
-      toast.error("Failed", { description: "Platform name is required" });
+      toast.error(t("common.error"), {
+        description: t("page.socialMedia.validation.platformNameRequired")
+      });
       return;
     }
     if (!url.trim()) {
-      toast.error("Failed", { description: "URL is required" });
+      toast.error(t("common.error"), { description: t("page.socialMedia.validation.urlRequired") });
       return;
     }
     setIsSubmitting(true);
@@ -60,15 +64,15 @@ const AddSocialMedia = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Social Media Invoice", href: "/social-media-invoice-list" },
-          { label: "Add Social Media" }
+          { label: t("breadcrumb.home"), href: "/dashboard" },
+          { label: t("page.socialMedia.list.title"), href: "/social-media-invoice-list" },
+          { label: t("page.socialMedia.add.title") }
         ]}
-        title="Add Social Media"
-        description="Add a new social media link for invoices.">
+        title={t("page.socialMedia.add.title")}
+        description={t("page.socialMedia.add.description")}>
         <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Back to List
+          {t("page.socialMedia.button.backToList")}
         </Button>
       </PageHeader>
 
@@ -78,45 +82,46 @@ const AddSocialMedia = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  Store
+                  {t("page.socialMedia.form.store")}
                 </label>
                 <Input value={store || ""} disabled className="bg-muted/50" />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  Platform Name <span className="text-destructive">*</span>
+                  {t("page.socialMedia.form.platformName")}{" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <Input
                   value={platformName}
                   onChange={(e) => setPlatformName(e.target.value)}
-                  placeholder="e.g. Instagram, Facebook, Twitter"
+                  placeholder={t("page.socialMedia.form.platformNamePlaceholder")}
                 />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  URL <span className="text-destructive">*</span>
+                  {t("page.socialMedia.form.url")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="e.g. https://instagram.com/yourstore"
+                  placeholder={t("page.socialMedia.form.urlPlaceholder")}
                 />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  Icon
+                  {t("page.socialMedia.form.icon")}
                 </label>
                 <Input
                   value={icon}
                   onChange={(e) => setIcon(e.target.value)}
-                  placeholder="e.g. instagram, facebook, twitter (Material Symbol name)"
+                  placeholder={t("page.socialMedia.form.iconPlaceholder")}
                 />
                 {icon && (
                   <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Preview:</span>
+                    <span>{t("page.socialMedia.form.preview")}</span>
                     <span className="material-symbols-outlined text-primary">{icon}</span>
                   </div>
                 )}
@@ -124,7 +129,7 @@ const AddSocialMedia = () => {
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  Active
+                  {t("page.socialMedia.form.active")}
                 </label>
                 <div className="flex items-center gap-3">
                   <button
@@ -141,7 +146,7 @@ const AddSocialMedia = () => {
                   </button>
                   <span
                     className={`text-sm font-medium ${isActive ? "text-green-600" : "text-muted-foreground"}`}>
-                    {isActive ? "Active" : "Inactive"}
+                    {isActive ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
               </div>
@@ -149,31 +154,31 @@ const AddSocialMedia = () => {
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                Save
+                {t("common.save")}
               </Button>
             </div>
           </form>
         </Card>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Saving..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Social Media Added"
+        title={t("page.socialMedia.add.successTitle")}
         onConfirm={() => navigate("/social-media-invoice-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Discard Changes?"
-        confirmText="Yes, Discard"
+        title={t("modal.discardTitle")}
+        confirmText={t("modal.discardConfirm")}
         onConfirm={() => navigate("/social-media-invoice-list")}
       />
     </div>

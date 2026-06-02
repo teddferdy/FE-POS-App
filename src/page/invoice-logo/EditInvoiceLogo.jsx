@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Save, X } from "lucide-react";
 import { getAllInvoiceLogo, editInvoiceLogo } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const EditInvoiceLogo = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -43,11 +45,13 @@ const EditInvoiceLogo = () => {
 
   const mutation = useMutation(editInvoiceLogo, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Logo berhasil diperbarui" });
+      toast.success(t("common.success"), { description: t("page.invoiceLogo.toast.updated") });
       navigate("/logo-invoice-list");
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || "Gagal memperbarui logo");
+      toast.error(
+        err?.response?.data?.message || err?.message || t("page.invoiceLogo.toast.updateError")
+      );
     }
   });
 
@@ -61,7 +65,7 @@ const EditInvoiceLogo = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name) return toast.error("Nama logo wajib diisi");
+    if (!name) return toast.error(t("page.invoiceLogo.validation.nameRequired"));
 
     const formData = new FormData();
     formData.append("name", name);
@@ -73,7 +77,7 @@ const EditInvoiceLogo = () => {
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID logo tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.invoiceLogo.idNotFound")}</p>
       </div>
     );
   }
@@ -89,7 +93,7 @@ const EditInvoiceLogo = () => {
   if (!logoItem) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Logo tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.invoiceLogo.notFound")}</p>
       </div>
     );
   }
@@ -100,27 +104,29 @@ const EditInvoiceLogo = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/logo-invoice-list")}
           className="hover:text-foreground transition-colors">
-          Logo Invoice
+          {t("page.invoiceLogo.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Logo</span>
+        <span className="text-primary font-semibold">{t("page.invoiceLogo.edit.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Logo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit logo invoice.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.invoiceLogo.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.invoiceLogo.edit.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
@@ -128,7 +134,7 @@ const EditInvoiceLogo = () => {
             disabled={mutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {mutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {mutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -137,16 +143,16 @@ const EditInvoiceLogo = () => {
         <form id="edit-logo-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium block">
-              Nama Logo <span className="text-destructive">*</span>
+              {t("page.invoiceLogo.form.name")} <span className="text-destructive">*</span>
             </label>
             <Input
-              placeholder="Masukkan nama logo"
+              placeholder={t("page.invoiceLogo.form.namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium block">Gambar Logo</label>
+            <label className="text-sm font-medium block">{t("page.invoiceLogo.form.image")}</label>
             <Input type="file" accept="image/*" onChange={handleImageChange} />
             {(preview || currentImage) && (
               <div className="mt-2 w-32 h-32 rounded-lg overflow-hidden border border-border">
@@ -165,9 +171,9 @@ const EditInvoiceLogo = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.invoiceLogo.cancelModal.title")}
+        description={t("page.invoiceLogo.cancelModal.description")}
+        confirmText={t("page.invoiceLogo.cancelModal.confirm")}
         onConfirm={() => navigate("/logo-invoice-list")}
       />
     </div>

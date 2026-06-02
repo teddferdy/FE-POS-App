@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { addShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ const formSchema = z.object({
 });
 
 const AddShift = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -60,34 +62,34 @@ const AddShift = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/shift")}
           className="hover:text-foreground transition-colors">
-          Shift
+          {t("page.shift.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Shift</span>
+        <span className="text-primary font-semibold">{t("page.shift.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Shift</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah data shift baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.shift.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("breadcrumb.back")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>

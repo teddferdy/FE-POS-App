@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,7 @@ const taxTypes = [
 ];
 
 const AddTaxConfig = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -50,8 +52,9 @@ const AddTaxConfig = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal menambahkan pajak"
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message || err.message || t("page.taxConfig.toast.addFailed")
       });
     }
   });
@@ -66,34 +69,36 @@ const AddTaxConfig = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/tax-list")}
           className="hover:text-foreground transition-colors">
-          Pajak
+          {t("breadcrumb.tax")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Pajak</span>
+        <span className="text-primary font-semibold">{t("page.taxConfig.add.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Pajak</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah konfigurasi tarif pajak baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.taxConfig.add.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -108,9 +113,9 @@ const AddTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Pajak <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Contoh: PPN 11%" {...field} />
+                    <Input placeholder={t("page.taxConfig.form.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -121,7 +126,7 @@ const AddTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tipe Pajak <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.type")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <select
                       value={field.value}
@@ -143,9 +148,15 @@ const AddTaxConfig = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tarif (%) <span className="text-destructive">*</span>
+                      {t("page.taxConfig.form.rate")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input type="number" min="0" step="0.01" placeholder="Contoh: 11" {...field} />
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder={t("page.taxConfig.form.ratePlaceholder")}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -155,11 +166,11 @@ const AddTaxConfig = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>{t("common.status")}</FormLabel>
                     <div className="flex items-center gap-3 h-10">
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
                       <span className="text-sm text-muted-foreground">
-                        {field.value ? "Aktif" : "Tidak Aktif"}
+                        {field.value ? t("common.active") : t("common.inactive")}
                       </span>
                     </div>
                     <FormMessage />
@@ -172,8 +183,12 @@ const AddTaxConfig = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
-                  <Textarea placeholder="Deskripsi pajak" rows={3} {...field} />
+                  <FormLabel>{t("page.taxConfig.form.description")}</FormLabel>
+                  <Textarea
+                    placeholder={t("page.taxConfig.form.descriptionPlaceholder")}
+                    rows={3}
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -186,18 +201,18 @@ const AddTaxConfig = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/tax-list")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Pajak berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("common.success")}
+        description={t("page.taxConfig.toast.addSuccess")}
+        confirmText={t("modal.backToList")}
         onConfirm={() => navigate("/tax-list")}
       />
     </div>

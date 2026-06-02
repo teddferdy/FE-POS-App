@@ -1,25 +1,71 @@
 /* eslint-disable react/prop-types */
-import React, {
-  useState
-  // useEffect
-} from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useCookies } from "react-cookie";
+import React, { useState, useEffect } from "react";
+import { useCookies } from "react-cookie";
+import { useQuery } from "react-query";
+import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { getAllLocation } from "@/services/location";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { TipsCard } from "@/components/ui/tips-card";
+
+const tipsKeys = {
+  "/product-list": ["tips.product", "tips.product2", "tips.product3"],
+  "/add-product": ["tips.product", "tips.product2", "tips.product3"],
+  "/edit-product": ["tips.product", "tips.product2", "tips.product3"],
+  "/category-list": ["tips.category", "tips.category2"],
+  "/supplier": ["tips.supplier", "tips.supplier2"],
+  "/member-list": ["tips.member", "tips.member2"],
+  "/member-tier": ["tips.memberTier", "tips.memberTier2"],
+  "/discount-list": ["tips.discount", "tips.discount2"],
+  "/type-payment-list": ["tips.payment", "tips.payment2"],
+  "/shift-list": ["tips.shift", "tips.shift2"],
+  "/purchase-order": ["tips.purchaseOrder", "tips.purchaseOrder2"],
+  "/stock-opname": ["tips.stockOpname", "tips.stockOpname2"],
+  "/stock-history": ["tips.stockHistory", "tips.stockHistory2"],
+  "/low-stock": ["tips.lowStock", "tips.lowStock2"],
+  "/expense-category": ["tips.expense", "tips.expense2"],
+  "/expense": ["tips.expense", "tips.expense2"],
+  "/employee-list": ["tips.employee", "tips.employee2"],
+  "/department-list": ["tips.department", "tips.department2"],
+  "/position-list": ["tips.position", "tips.position2"],
+  "/table-list": ["tips.table"],
+  "/tax-list": ["tips.tax", "tips.tax2"],
+  "/price-list-template": ["tips.priceList", "tips.priceList2"],
+  "/location-list": ["tips.location", "tips.location2"],
+  "/user-list": ["tips.user", "tips.user2"],
+  "/report/sales": ["tips.report", "tips.report2"],
+  "/best-selling": ["tips.report", "tips.report2"],
+  "/invoice-page": ["tips.invoice", "tips.invoice2", "tips.invoice3"],
+  "/cashier": ["tips.cashier", "tips.cashier2", "tips.cashier3"],
+  "/dashboard": ["tips.dashboard", "tips.dashboard2"]
+};
 
 const DashboardLayout = ({ children }) => {
+  const { t } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  // const [cookie] = useCookies();
-  // const navigate = useNavigate();
+  const [cookie, setCookie] = useCookies();
+  const location = useLocation();
 
-  // useEffect(() => {
-  //   const token = cookie?.token;
-  //   if (!token) {
-  //     navigate("/");
-  //   }
-  // }, [cookie, navigate]);
+  const user = cookie?.user;
+  const role = user?.role || user?.roleType || "";
+
+  const { data: locationsData } = useQuery(["dashboard-locations"], getAllLocation, {
+    enabled: role === "super_admin" && !cookie?.activeStore
+  });
+  const locations = locationsData?.data || [];
+
+  useEffect(() => {
+    if (role === "super_admin" && locations.length > 0 && !cookie?.activeStore) {
+      const first = locations[0];
+      const firstId = first.id || first._id;
+      const firstName = first.name || first.storeName || "";
+      setCookie("activeStore", firstId, { path: "/" });
+      setCookie("activeStoreName", firstName, { path: "/" });
+      setCookie("user", { ...user, store: firstId, storeName: firstName }, { path: "/" });
+    }
+  }, [locations]);
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);
@@ -28,6 +74,10 @@ const DashboardLayout = ({ children }) => {
   const handleMobileMenuToggle = () => {
     setMobileSidebarOpen((prev) => !prev);
   };
+
+  const currentPath = location.pathname;
+  const matchedKeys = Object.entries(tipsKeys).find(([path]) => currentPath.startsWith(path));
+  const tips = matchedKeys?.[1]?.map((key) => t(key));
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,7 +102,14 @@ const DashboardLayout = ({ children }) => {
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
         <Header onMenuToggle={handleMobileMenuToggle} />
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="p-4 lg:p-6">
+          {children}
+          {tips && (
+            <div className="mt-6">
+              <TipsCard title="Tips" variant="default" tips={tips} />
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

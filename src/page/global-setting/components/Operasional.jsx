@@ -1,16 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock, ChevronDown } from "lucide-react";
-
-const days = [
-  { id: "senin", label: "Senin" },
-  { id: "selasa", label: "Selasa" },
-  { id: "rabu", label: "Rabu" },
-  { id: "kamis", label: "Kamis" },
-  { id: "jumat", label: "Jumat" },
-  { id: "sabtu", label: "Sabtu" },
-  { id: "minggu", label: "Minggu" }
-];
 
 const Toggle = ({ checked, onChange }) => (
   <label className="relative inline-flex items-center cursor-pointer">
@@ -20,6 +11,16 @@ const Toggle = ({ checked, onChange }) => (
 );
 
 const Operasional = () => {
+  const { t } = useTranslation();
+  const days = [
+    { id: "senin", label: t("page.globalSetting.operational.day.monday") },
+    { id: "selasa", label: t("page.globalSetting.operational.day.tuesday") },
+    { id: "rabu", label: t("page.globalSetting.operational.day.wednesday") },
+    { id: "kamis", label: t("page.globalSetting.operational.day.thursday") },
+    { id: "jumat", label: t("page.globalSetting.operational.day.friday") },
+    { id: "sabtu", label: t("page.globalSetting.operational.day.saturday") },
+    { id: "minggu", label: t("page.globalSetting.operational.day.sunday") }
+  ];
   const [showAllDays, setShowAllDays] = useState(false);
   const displayedDays = showAllDays ? days : days.slice(0, 2);
 
@@ -31,20 +32,26 @@ const Operasional = () => {
             <span className="material-symbols-outlined text-sm">chevron_right</span>
             <span className="text-primary font-semibold">Kelola Role</span>
           </nav> */}
-        <h2 className="text-2xl font-bold">Operasional</h2>
-        <p className="text-sm text-muted-foreground max-w-2xl">Jam Operasional Toko</p>
+        <h2 className="text-2xl font-bold">{t("page.globalSetting.operational.title")}</h2>
+        <p className="text-sm text-muted-foreground max-w-2xl">
+          {t("page.globalSetting.operational.description")}
+        </p>
       </div>
       <section className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Clock className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
             <div>
-              <h3 className="text-lg font-semibold">Jam Buka/Tutup</h3>
-              <p className="text-sm text-muted-foreground">Atur jadwal operasional toko mingguan</p>
+              <h3 className="text-lg font-semibold">
+                {t("page.globalSetting.operational.openCloseHours")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t("page.globalSetting.operational.scheduleDescription")}
+              </p>
             </div>
           </div>
           <button className="bg-primary text-primary-foreground px-6 py-2 rounded-lg text-sm transition-all active:scale-95 shadow-md">
-            Simpan Perubahan
+            {t("page.globalSetting.operational.saveChanges")}
           </button>
         </div>
         <div className="space-y-2">
@@ -68,7 +75,7 @@ const Operasional = () => {
                   />
                 </div>
                 <div className="col-span-1 text-center text-sm font-medium">
-                  {isMinggu ? "-" : "s/d"}
+                  {isMinggu ? "-" : t("page.globalSetting.operational.to")}
                 </div>
                 <div className="col-span-3">
                   <input
@@ -83,7 +90,9 @@ const Operasional = () => {
                 <div className="col-span-3 flex justify-end items-center gap-2">
                   <span
                     className={`text-sm ${isMinggu ? "text-destructive" : "text-muted-foreground"}`}>
-                    {isMinggu ? "Tutup" : "Buka"}
+                    {isMinggu
+                      ? t("page.globalSetting.operational.closed")
+                      : t("page.globalSetting.operational.open")}
                   </span>
                   <Toggle checked={!isMinggu} onChange={() => {}} />
                 </div>
@@ -99,7 +108,9 @@ const Operasional = () => {
               size={16}
               className={`transition-transform ${showAllDays ? "rotate-180" : ""}`}
             />
-            {showAllDays ? "Sembunyikan" : "Tampilkan Semua Hari"}
+            {showAllDays
+              ? t("page.globalSetting.operational.hide")
+              : t("page.globalSetting.operational.showAllDays")}
           </button>
         </div>
       </section>

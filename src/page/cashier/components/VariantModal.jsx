@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { Button } from "@/components/ui/button";
 
 const VariantModal = ({ product, onConfirm, onClose }) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState({});
 
   const options = product.options || [];
@@ -30,7 +32,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
 
   const groupedLabels = {};
   options.forEach((g) => {
-    groupedLabels[g.id || g.name] = g.name || "Varian";
+    groupedLabels[g.id || g.name] = g.name || t("page.cashier.variant.groupName");
   });
 
   const allSelected = options.every((g) => {
@@ -65,7 +67,8 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
               <p className="text-2xl font-bold text-primary">{formatCurrencyRupiah(totalPrice)}</p>
               {extraPrice > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Base {formatCurrencyRupiah(basePrice)} + varian {formatCurrencyRupiah(extraPrice)}
+                  {t("page.cashier.variant.basePrice")} {formatCurrencyRupiah(basePrice)} +{" "}
+                  {t("page.cashier.variant.variantPrice")} {formatCurrencyRupiah(extraPrice)}
                 </p>
               )}
             </div>
@@ -73,14 +76,17 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
 
           {options.map((group) => {
             const gid = group.id || group.name;
-            const groupName = group.name || "Varian";
+            const groupName = group.name || t("page.cashier.variant.groupName");
             const isMultiple = group.isMultiple;
             const groupOptions = group.options || group.option || [];
 
             return (
               <div key={gid}>
                 <p className="text-sm font-medium mb-2">
-                  {groupName} {isMultiple ? "(bisa pilih banyak)" : "(pilih satu)"}
+                  {groupName}{" "}
+                  {isMultiple
+                    ? t("page.cashier.variant.multiple")
+                    : t("page.cashier.variant.single")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {groupOptions.map((opt) => {
@@ -109,10 +115,10 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
 
         <div className="px-5 py-4 border-t border-border flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button onClick={() => onConfirm(product, selectedVariants)} disabled={!allSelected}>
-            Tambahkan {formatCurrencyRupiah(totalPrice)}
+            {t("page.cashier.variant.add")} {formatCurrencyRupiah(totalPrice)}
           </Button>
         </div>
       </div>

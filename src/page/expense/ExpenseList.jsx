@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { useTranslation } from "react-i18next";
 
 const ExpenseList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const [page, setPage] = useState(1);
@@ -79,20 +81,20 @@ const ExpenseList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Biaya</span>
+        <span className="text-primary font-semibold">{t("page.expense.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Biaya</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola data pengeluaran bisnis Anda.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.list.description")}</p>
         </div>
         <Button onClick={() => navigate("/add-expense")} className="gap-2">
           <Plus size={18} />
-          Tambah Biaya
+          {t("page.expense.button.add")}
         </Button>
       </div>
 
@@ -117,7 +119,7 @@ const ExpenseList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari biaya..."
+          placeholder={t("page.expense.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -138,22 +140,22 @@ const ExpenseList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.expense.table.description")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Kategori
+                    {t("page.expense.table.category")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Jumlah
+                    {t("page.expense.table.amount")}
                   </th>
                   <th className="text-center px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.expense.table.status")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tanggal
+                    {t("page.expense.table.date")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("page.expense.table.actions")}
                   </th>
                 </tr>
               </thead>

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -33,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 
 const DetailEmployee = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const employeeID = searchParams.get("employeeID");
@@ -48,16 +50,16 @@ const DetailEmployee = () => {
   const statusActive = employee.statusActive === true;
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label="Memuat data karyawan..." />;
+    return <Loading fullscreen size="lg" label={t("page.employee.detail.loading")} />;
   }
 
   if (!employeeID || !employee.id) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <span className="material-symbols-outlined text-6xl text-muted-foreground">badge</span>
-        <p className="text-muted-foreground">Karyawan tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.employee.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/employee-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -146,10 +148,10 @@ const DetailEmployee = () => {
         <button
           onClick={() => navigate("/employee-list")}
           className="font-medium hover:text-primary transition-colors">
-          Kelola Karyawan
+          {t("breadcrumb.employee")}
         </button>
         <span className="text-xs">/</span>
-        <span className="font-semibold text-foreground">Detail Karyawan</span>
+        <span className="font-semibold text-foreground">{t("page.employee.detail.title")}</span>
       </nav>
 
       <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
@@ -188,11 +190,13 @@ const DetailEmployee = () => {
                   ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
                   : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
               }`}>
-              {statusActive ? "Active" : "Non-aktif"}
+              {statusActive ? t("common.active") : t("common.inactive")}
             </span>
           </div>
           <p className="text-muted-foreground">
-            {employee.position || employee.positionData?.name || "Posisi tidak ditentukan"}
+            {employee.position ||
+              employee.positionData?.name ||
+              t("page.employee.detail.positionUndefined")}
             <span className="mx-2">&bull;</span>
             ID: {employee.employeeID || "-"}
           </p>
@@ -206,7 +210,9 @@ const DetailEmployee = () => {
             {employee.startDate && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Calendar size={14} />
-                <span>Bergabung {formatDate(employee.startDate)}</span>
+                <span>
+                  {t("page.employee.detail.joined", { date: formatDate(employee.startDate) })}
+                </span>
               </div>
             )}
           </div>
@@ -217,7 +223,7 @@ const DetailEmployee = () => {
             className="gap-2"
             onClick={() => navigate(`/edit-employee?id=${employee.id}`)}>
             <Edit size={16} />
-            Edit Profil
+            {t("page.employee.detail.editProfile")}
           </Button>
         </div>
       </div>
@@ -226,13 +232,13 @@ const DetailEmployee = () => {
         <div className="col-span-12 lg:col-span-4 space-y-6">
           <div className="bg-card rounded-xl shadow-sm border border-border p-5">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-base font-semibold">Informasi Dasar</h4>
+              <h4 className="text-base font-semibold">{t("page.employee.detail.basicInfo")}</h4>
               <User size={16} className="text-muted-foreground" />
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Email
+                  {t("page.employee.form.email")}
                 </p>
                 <p className="text-sm text-foreground flex items-center gap-2">
                   <Mail size={14} className="text-muted-foreground shrink-0" />
@@ -241,7 +247,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Nomor Telepon
+                  {t("page.employee.form.phone")}
                 </p>
                 <p className="text-sm text-foreground flex items-center gap-2">
                   <Phone size={14} className="text-muted-foreground shrink-0" />
@@ -250,7 +256,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Alamat
+                  {t("page.employee.form.address")}
                 </p>
                 <p className="text-sm text-foreground flex items-start gap-2">
                   <MapPin size={14} className="text-muted-foreground shrink-0 mt-0.5" />
@@ -259,13 +265,13 @@ const DetailEmployee = () => {
               </div>
               <div className="pt-3 border-t border-border">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Departemen
+                  {t("page.employee.form.department")}
                 </p>
                 <p className="text-sm text-foreground">{employee.department || "-"}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Jenis Kelamin
+                  {t("page.employee.form.gender")}
                 </p>
                 <p className="text-sm text-foreground">{employee.gender || "-"}</p>
               </div>
@@ -274,13 +280,13 @@ const DetailEmployee = () => {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-5">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-base font-semibold">Akun & Akses</h4>
+              <h4 className="text-base font-semibold">{t("page.employee.detail.accountAccess")}</h4>
               <Shield size={16} className="text-muted-foreground" />
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Username
+                  {t("page.employee.form.username")}
                 </p>
                 <p className="text-sm text-foreground flex items-center gap-2">
                   <User size={14} className="text-muted-foreground shrink-0" />
@@ -289,7 +295,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Role
+                  {t("page.employee.form.role")}
                 </p>
                 <p className="text-sm text-foreground flex items-center gap-2">
                   <Shield size={14} className="text-muted-foreground shrink-0" />
@@ -298,7 +304,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Tipe User
+                  {t("page.employee.detail.userType")}
                 </p>
                 <p className="text-sm text-foreground">{employee.userType || "-"}</p>
               </div>
@@ -308,11 +314,11 @@ const DetailEmployee = () => {
 
         <div className="col-span-12 lg:col-span-8 space-y-6">
           <div className="bg-card rounded-xl shadow-sm border border-border p-5">
-            <h4 className="text-base font-semibold mb-4">Informasi Pekerjaan</h4>
+            <h4 className="text-base font-semibold mb-4">{t("page.employee.detail.jobInfo")}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  ID Karyawan
+                  {t("page.employee.table.id")}
                 </p>
                 <p className="text-sm font-mono font-bold text-primary">
                   {employee.employeeID || "-"}
@@ -320,7 +326,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Jabatan
+                  {t("page.employee.table.position")}
                 </p>
                 <p className="text-sm text-foreground">
                   {employee.positionData?.name || employee.position || "-"}
@@ -328,31 +334,31 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Penempatan
+                  {t("page.employee.detail.placement")}
                 </p>
                 <p className="text-sm text-foreground">{employee.storeData?.name || "-"}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Tipe Kerja
+                  {t("page.employee.detail.employmentType")}
                 </p>
                 <p className="text-sm text-foreground">
                   {employee.employmentType
                     ? employee.employmentType === "full-time"
-                      ? "Full Time"
+                      ? t("page.employee.detail.employmentTypeFullTime")
                       : employee.employmentType === "part-time"
-                        ? "Part Time"
+                        ? t("page.employee.detail.employmentTypePartTime")
                         : employee.employmentType === "contract"
-                          ? "Kontrak"
+                          ? t("page.employee.detail.employmentTypeContract")
                           : employee.employmentType === "internship"
-                            ? "Magang"
+                            ? t("page.employee.detail.employmentTypeInternship")
                             : employee.employmentType
                     : "-"}
                 </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Shift
+                  {t("page.employee.form.shift")}
                 </p>
                 <p className="text-sm text-foreground">
                   {employee.shiftData?.shiftName || employee.shift || "-"}
@@ -360,7 +366,7 @@ const DetailEmployee = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Tanggal Mulai Kerja
+                  {t("page.employee.detail.startDate")}
                 </p>
                 <p className="text-sm text-foreground">{formatDate(employee.startDate)}</p>
               </div>
@@ -369,8 +375,8 @@ const DetailEmployee = () => {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                       {employee.employmentType === "internship"
-                        ? "Durasi Magang"
-                        : "Durasi Kontrak"}
+                        ? t("page.employee.detail.internshipDuration")
+                        : t("page.employee.detail.contractDuration")}
                     </p>
                     <p className="text-sm text-foreground">
                       {employee.contractDuration
@@ -389,7 +395,7 @@ const DetailEmployee = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                      Tanggal Berakhir
+                      {t("page.employee.detail.endDate")}
                     </p>
                     <p className="text-sm text-foreground">{formatDate(employee.endDate)}</p>
                   </div>
@@ -401,14 +407,18 @@ const DetailEmployee = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Tempat Lahir</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">
+                  {t("page.employee.detail.placeOfBirth")}
+                </p>
                 <p className="text-lg font-bold text-foreground">{employee.placeOfBirth || "-"}</p>
               </div>
               <MapPin className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
             </div>
             <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Tanggal Lahir</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">
+                  {t("page.employee.detail.dateOfBirth")}
+                </p>
                 <p className="text-lg font-bold text-foreground">
                   {formatDate(employee.dateOfBirth)}
                 </p>
@@ -417,13 +427,15 @@ const DetailEmployee = () => {
             </div>
             <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Status</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">
+                  {t("common.status")}
+                </p>
                 <p
                   className={`text-lg font-bold flex items-center gap-1 ${
                     statusActive ? "text-green-600" : "text-red-600"
                   }`}>
                   {statusActive ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                  {statusActive ? "Aktif" : "Non-aktif"}
+                  {statusActive ? t("common.active") : t("common.inactive")}
                 </p>
               </div>
               <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
@@ -434,7 +446,9 @@ const DetailEmployee = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border p-5">
               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
                 <span className="material-symbols-outlined text-primary">description</span>
-                <h4 className="text-base font-semibold text-foreground">Dokumen</h4>
+                <h4 className="text-base font-semibold text-foreground">
+                  {t("page.employee.detail.documents")}
+                </h4>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {documents.map((doc, index) => (
@@ -454,14 +468,14 @@ const DetailEmployee = () => {
                       type="button"
                       onClick={() => handleShow(doc.fileUrl)}
                       className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                      title="Lihat">
+                      title={t("common.view")}>
                       <Eye size={16} />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDownload(doc.fileUrl, doc.fileName || "dokumen")}
                       className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                      title="Download">
+                      title={t("page.employee.detail.download")}>
                       <Download size={16} />
                     </button>
                   </div>
@@ -471,24 +485,24 @@ const DetailEmployee = () => {
           )}
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-5">
-            <h4 className="text-base font-semibold mb-4">Informasi Sistem</h4>
+            <h4 className="text-base font-semibold mb-4">{t("page.employee.detail.systemInfo")}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Dibuat Pada
+                  {t("page.employee.detail.createdAt")}
                 </p>
                 <p className="text-sm text-foreground">{formatDate(employee.createdAt)}</p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Diperbarui Pada
+                  {t("page.employee.detail.updatedAt")}
                 </p>
                 <p className="text-sm text-foreground">{formatDate(employee.updatedAt)}</p>
               </div>
               {employee.deletedAt && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Dihapus Pada
+                    {t("page.employee.detail.deletedAt")}
                   </p>
                   <p className="text-sm text-foreground">{formatDate(employee.deletedAt)}</p>
                 </div>

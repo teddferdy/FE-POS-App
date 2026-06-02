@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import PengaturanToko from "./components/PengaturanToko";
 import Operasional from "./components/Operasional";
@@ -7,15 +8,14 @@ import KonfigurasiGlobal from "./components/KonfigurasiGlobal";
 import KelolaRole from "./components/KelolaRole";
 
 const GlobalSetting = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("pengaturan-toko");
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Pengaturan Sistem</h2>
-        <p className="text-sm text-muted-foreground">
-          Konfigurasi parameter global dan preferensi operasional Kinetic Ledger.
-        </p>
+        <h2 className="text-2xl font-bold">{t("page.globalSetting.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("page.globalSetting.description")}</p>
       </div>
 
       <div className="flex gap-2 border-b border-border overflow-x-auto">
@@ -26,7 +26,7 @@ const GlobalSetting = () => {
               : "border-b-2 border-transparent text-muted-foreground hover:text-primary"
           }`}
           onClick={() => setActiveTab("pengaturan-toko")}>
-          Pengaturan Toko
+          {t("page.globalSetting.tab.storeSettings")}
         </button>
         <button
           className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
@@ -35,7 +35,7 @@ const GlobalSetting = () => {
               : "border-b-2 border-transparent text-muted-foreground hover:text-primary"
           }`}
           onClick={() => setActiveTab("operasional")}>
-          Operasional
+          {t("page.globalSetting.tab.operational")}
         </button>
         <button
           className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
@@ -44,7 +44,7 @@ const GlobalSetting = () => {
               : "border-b-2 border-transparent text-muted-foreground hover:text-primary"
           }`}
           onClick={() => setActiveTab("branding")}>
-          Branding
+          {t("page.globalSetting.tab.branding")}
         </button>
         <button
           className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
@@ -53,7 +53,7 @@ const GlobalSetting = () => {
               : "border-b-2 border-transparent text-muted-foreground hover:text-primary"
           }`}
           onClick={() => setActiveTab("konfigurasi-global")}>
-          Konfigurasi Global
+          {t("page.globalSetting.tab.globalConfig")}
         </button>
         <button
           className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
@@ -62,7 +62,7 @@ const GlobalSetting = () => {
               : "border-b-2 border-transparent text-muted-foreground hover:text-primary"
           }`}
           onClick={() => setActiveTab("kelola-role")}>
-          Kelola Role
+          {t("page.globalSetting.tab.roleManagement")}
         </button>
       </div>
 

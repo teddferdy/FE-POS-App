@@ -16,6 +16,7 @@ import * as XLSX from "xlsx";
 
 import { Button } from "@/components/ui/button";
 import { uploadStockOpnameExcel } from "@/services/stock";
+import { useTranslation } from "react-i18next";
 
 const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -41,7 +42,7 @@ const parseExcelFile = (file) =>
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
         resolve(json);
       } catch (err) {
-        reject(new Error("Gagal membaca file Excel"));
+        reject(new Error("Failed to read Excel file"));
       }
     };
     reader.onerror = () => reject(new Error("Gagal membaca file"));
@@ -71,6 +72,7 @@ const mapRow = (row) => {
 };
 
 const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, auditDate }) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -169,8 +171,12 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
                 <FileSpreadsheet size={22} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Import Excel</h2>
-                <p className="text-sm text-muted-foreground">Unggah file Excel stock opname</p>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {t("page.stockOpname.uploadExcel.title")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.stockOpname.uploadExcel.description")}
+                </p>
               </div>
             </div>
             <button
@@ -209,10 +215,12 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     {dragOver
-                      ? "Lepaskan file di sini"
-                      : "Tarik & lepas file Excel, atau klik untuk pilih"}
+                      ? t("page.stockOpname.uploadExcel.dropHere")
+                      : t("page.stockOpname.uploadExcel.dragAndDrop")}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Format: .xlsx, .xls, .csv</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("page.stockOpname.uploadExcel.format")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -242,30 +250,30 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
             {parseError && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal membaca file. Pastikan format Excel benar.
+                {t("page.stockOpname.uploadExcel.parseError")}
               </div>
             )}
 
             {uploadStatus === "success" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <CheckCircle2 size={18} />
-                File berhasil diupload dan diproses
+                {t("page.stockOpname.uploadExcel.uploadSuccess")}
               </div>
             )}
             {uploadStatus === "error" && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} />
-                Gagal mengupload file. Silakan coba lagi.
+                {t("page.stockOpname.uploadExcel.uploadError")}
               </div>
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button variant="outline" onClick={handleClose}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button variant="outline" disabled={!file} onClick={handlePreview} className="gap-2">
                 <Eye size={16} />
-                Preview
+                {t("page.stockOpname.uploadExcel.preview")}
               </Button>
               <Button
                 disabled={!file || uploading}
@@ -274,12 +282,12 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
                 {uploading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Mengupload...
+                    {t("page.stockOpname.uploadExcel.uploading")}
                   </>
                 ) : (
                   <>
                     <Database size={16} />
-                    Upload Langsung
+                    {t("page.stockOpname.uploadExcel.uploadDirect")}
                   </>
                 )}
               </Button>

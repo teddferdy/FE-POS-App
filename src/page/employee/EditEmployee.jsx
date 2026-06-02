@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CloudUpload,
   X,
@@ -40,6 +41,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import PageHeader from "@/components/ui/PageHeader";
 
 const EditEmployee = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -271,7 +273,7 @@ const EditEmployee = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -367,7 +369,7 @@ const EditEmployee = () => {
 
   const onSubmit = (values) => {
     if (documents.length === 0 && existingDocuments.length === 0) {
-      toast.error("Gagal", { description: "Dokumen karyawan wajib diupload minimal 1 file" });
+      toast.error(t("common.error"), { description: t("page.employee.edit.documentRequired") });
       setIsSubmitting(false);
       return;
     }
@@ -396,16 +398,16 @@ const EditEmployee = () => {
   };
 
   if (isEmployeeLoading) {
-    return <Loading fullscreen size="lg" label="Memuat data karyawan..." />;
+    return <Loading fullscreen size="lg" label={t("page.employee.edit.loading")} />;
   }
 
   if (!employeeId || !employee.id) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <span className="material-symbols-outlined text-6xl text-muted-foreground">badge</span>
-        <p className="text-muted-foreground">Karyawan tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.employee.edit.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/employee-list")}>
-          Kembali
+          {t("common.cancel")}
         </Button>
       </div>
     );
@@ -415,13 +417,16 @@ const EditEmployee = () => {
     <div>
       <PageHeader
         breadcrumbs={[
-          { label: "Manajemen SDM" },
-          { label: "Kelola Karyawan", href: "/employee-list" },
-          { label: "Detail Karyawan", href: `/detail-employee?employeeID=${employee.employeeID}` },
-          { label: "Edit Karyawan" }
+          { label: t("breadcrumb.hrm") },
+          { label: t("breadcrumb.employee"), href: "/employee-list" },
+          {
+            label: t("breadcrumb.detail"),
+            href: `/detail-employee?employeeID=${employee.employeeID}`
+          },
+          { label: t("breadcrumb.edit") }
         ]}
-        title="Edit Karyawan"
-        description="Perbarui data karyawan yang sudah ada."
+        title={t("page.employee.edit.title")}
+        description={t("page.employee.edit.description")}
       />
 
       <Form {...form}>
@@ -432,13 +437,15 @@ const EditEmployee = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">person</span>
-                  <h4 className="text-base font-semibold text-foreground">Informasi Pribadi</h4>
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.employee.edit.personalInfo")}
+                  </h4>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="flex flex-col items-center gap-3">
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Foto
+                      {t("page.employee.edit.photo")}
                     </label>
 
                     <input
@@ -468,11 +475,15 @@ const EditEmployee = () => {
                       ) : (
                         <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-4">
                           <CloudUpload size={36} className="mb-2" />
-                          <span className="text-xs font-semibold text-center">Upload Foto</span>
+                          <span className="text-xs font-semibold text-center">
+                            {t("page.employee.edit.uploadPhoto")}
+                          </span>
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">JPG, PNG. Maks 2MB.</p>
+                    <p className="text-xs text-muted-foreground text-center">
+                      {t("page.employee.edit.photoHint")}
+                    </p>
                   </div>
 
                   <div className="md:col-span-2 space-y-5">
@@ -483,9 +494,13 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Nama Lengkap <span className="text-destructive">*</span>
+                              {t("page.employee.form.fullName")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input {...field} placeholder="Contoh: Budi Santoso" />
+                            <Input
+                              {...field}
+                              placeholder={t("page.employee.form.fullNamePlaceholder")}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -496,9 +511,14 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Email <span className="text-destructive">*</span>
+                              {t("page.employee.form.email")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input {...field} type="email" placeholder="email@domain.com" />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder={t("page.employee.form.emailPlaceholder")}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -511,12 +531,13 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Nomor Telepon <span className="text-destructive">*</span>
+                              {t("page.employee.form.phone")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Input
                               {...field}
                               type="tel"
-                              placeholder="0812-xxxx-xxxx"
+                              placeholder={t("page.employee.form.phonePlaceholder")}
                               onChange={(e) => {
                                 const value = e.target.value.replace(/\D/g, "").slice(0, 14);
                                 field.onChange(value);
@@ -532,11 +553,14 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Jenis Kelamin <span className="text-destructive">*</span>
+                              {t("page.employee.form.gender")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Pilih" />
+                                <SelectValue
+                                  placeholder={t("page.employee.form.selectPlaceholder")}
+                                />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="Laki-laki">Laki-laki</SelectItem>
@@ -555,9 +579,13 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Tempat Lahir <span className="text-destructive">*</span>
+                              {t("page.employee.form.placeOfBirth")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
-                            <Input {...field} placeholder="Contoh: Jakarta" />
+                            <Input
+                              {...field}
+                              placeholder={t("page.employee.form.placeOfBirthPlaceholder")}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -568,7 +596,8 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Tanggal Lahir <span className="text-destructive">*</span>
+                              {t("page.employee.form.dateOfBirth")}{" "}
+                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <DatePicker
                               date={field.value ? new Date(field.value) : undefined}
@@ -585,13 +614,14 @@ const EditEmployee = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Alamat <span className="text-destructive">*</span>
+                            {t("page.employee.form.address")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Textarea
                             {...field}
                             rows={3}
                             className="resize-none"
-                            placeholder="Alamat lengkap"
+                            placeholder={t("page.employee.form.addressPlaceholder")}
                           />
                           <FormMessage />
                         </FormItem>
@@ -605,7 +635,9 @@ const EditEmployee = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">work</span>
-                  <h4 className="text-base font-semibold text-foreground">Informasi Pekerjaan</h4>
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.employee.edit.jobInfo")}
+                  </h4>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -615,13 +647,14 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          ID Karyawan <span className="text-destructive">*</span>
+                          {t("page.employee.form.employeeId")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           {...field}
                           disabled
                           className="font-mono bg-muted/50"
-                          placeholder="ID Karyawan"
+                          placeholder={t("page.employee.form.employeeIdPlaceholder")}
                         />
                         <FormMessage />
                       </FormItem>
@@ -633,7 +666,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Department
+                          {t("page.employee.form.department")}
                         </FormLabel>
                         {departments.length === 0 ? (
                           <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -642,10 +675,10 @@ const EditEmployee = () => {
                             </span>
                             <div className="text-center">
                               <p className="text-sm font-medium text-foreground">
-                                Belum ada departemen
+                                {t("page.employee.edit.noDepartments")}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Tambah departemen terlebih dahulu
+                                {t("page.employee.edit.addDepartmentFirst")}
                               </p>
                             </div>
                             <Button
@@ -655,7 +688,7 @@ const EditEmployee = () => {
                               onClick={() => navigate("/add-department")}
                               className="gap-2">
                               <span className="material-symbols-outlined text-base">add</span>
-                              Tambah Departemen
+                              {t("page.employee.edit.addDepartment")}
                             </Button>
                           </div>
                         ) : (
@@ -663,7 +696,9 @@ const EditEmployee = () => {
                             <div className="flex-1">
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Pilih Departemen" />
+                                  <SelectValue
+                                    placeholder={t("page.employee.form.departmentPlaceholder")}
+                                  />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {departments.map((d) => (
@@ -680,7 +715,7 @@ const EditEmployee = () => {
                               size="icon"
                               className="shrink-0"
                               onClick={() => navigate("/add-department")}
-                              title="Tambah Departemen Baru">
+                              title={t("page.employee.edit.addDepartmentNew")}>
                               <span className="material-symbols-outlined text-base">add</span>
                             </Button>
                           </div>
@@ -695,7 +730,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Jabatan
+                          {t("page.employee.table.position")}
                         </FormLabel>
                         {positions.length === 0 ? (
                           <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -704,10 +739,10 @@ const EditEmployee = () => {
                             </span>
                             <div className="text-center">
                               <p className="text-sm font-medium text-foreground">
-                                Belum ada jabatan
+                                {t("page.employee.edit.noPositions")}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Tambah jabatan terlebih dahulu
+                                {t("page.employee.edit.addPositionFirst")}
                               </p>
                             </div>
                             <Button
@@ -717,7 +752,7 @@ const EditEmployee = () => {
                               onClick={() => navigate("/add-position")}
                               className="gap-2">
                               <span className="material-symbols-outlined text-base">add</span>
-                              Tambah Jabatan
+                              {t("page.employee.edit.addPosition")}
                             </Button>
                           </div>
                         ) : (
@@ -730,7 +765,7 @@ const EditEmployee = () => {
                                 }))}
                                 value={field.value || ""}
                                 onChange={field.onChange}
-                                placeholder="Pilih Jabatan"
+                                placeholder={t("page.employee.form.positionPlaceholder")}
                               />
                             </div>
                             <Button
@@ -739,7 +774,7 @@ const EditEmployee = () => {
                               size="icon"
                               className="shrink-0"
                               onClick={() => navigate("/add-position")}
-                              title="Tambah Jabatan Baru">
+                              title={t("page.employee.edit.addPositionNew")}>
                               <span className="material-symbols-outlined text-base">add</span>
                             </Button>
                           </div>
@@ -754,7 +789,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Penempatan Toko / Cabang
+                          {t("page.employee.form.store")}
                         </FormLabel>
                         {locations.length === 0 ? (
                           <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -763,10 +798,10 @@ const EditEmployee = () => {
                             </span>
                             <div className="text-center">
                               <p className="text-sm font-medium text-foreground">
-                                Belum ada cabang
+                                {t("page.employee.edit.noStores")}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Tambah cabang terlebih dahulu
+                                {t("page.employee.edit.addStoreFirst")}
                               </p>
                             </div>
                             <Button
@@ -776,7 +811,7 @@ const EditEmployee = () => {
                               onClick={() => navigate("/add-location")}
                               className="gap-2">
                               <span className="material-symbols-outlined text-base">add</span>
-                              Tambah Cabang
+                              {t("page.employee.edit.addStore")}
                             </Button>
                           </div>
                         ) : (
@@ -789,8 +824,8 @@ const EditEmployee = () => {
                                 }))}
                                 value={field.value || ""}
                                 onChange={field.onChange}
-                                placeholder="Pilih Cabang"
-                                searchPlaceholder="Cari cabang..."
+                                placeholder={t("page.employee.form.storePlaceholder")}
+                                searchPlaceholder={t("page.employee.form.storeSearchPlaceholder")}
                               />
                             </div>
                             <Button
@@ -799,7 +834,7 @@ const EditEmployee = () => {
                               size="icon"
                               className="shrink-0"
                               onClick={() => navigate("/add-location")}
-                              title="Tambah Cabang Baru">
+                              title={t("page.employee.edit.addStoreNew")}>
                               <span className="material-symbols-outlined text-base">add</span>
                             </Button>
                           </div>
@@ -814,17 +849,27 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Tipe Kerja
+                          {t("page.employee.detail.employmentType")}
                         </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Pilih Tipe" />
+                            <SelectValue
+                              placeholder={t("page.employee.form.employmentTypePlaceholder")}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="full-time">Full Time</SelectItem>
-                            <SelectItem value="part-time">Part Time</SelectItem>
-                            <SelectItem value="contract">Kontrak</SelectItem>
-                            <SelectItem value="internship">Magang</SelectItem>
+                            <SelectItem value="full-time">
+                              {t("page.employee.detail.employmentTypeFullTime")}
+                            </SelectItem>
+                            <SelectItem value="part-time">
+                              {t("page.employee.detail.employmentTypePartTime")}
+                            </SelectItem>
+                            <SelectItem value="contract">
+                              {t("page.employee.detail.employmentTypeContract")}
+                            </SelectItem>
+                            <SelectItem value="internship">
+                              {t("page.employee.detail.employmentTypeInternship")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -837,7 +882,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Shift
+                          {t("page.employee.form.shift")}
                         </FormLabel>
                         <Combobox
                           options={(shifts || []).map((s) => ({
@@ -846,7 +891,11 @@ const EditEmployee = () => {
                           }))}
                           value={field.value || ""}
                           onChange={field.onChange}
-                          placeholder={selectedStore ? "Pilih Shift" : "Pilih cabang dulu"}
+                          placeholder={
+                            selectedStore
+                              ? t("page.employee.form.shiftPlaceholder")
+                              : t("page.employee.form.shiftSelectStoreFirst")
+                          }
                           disabled={!selectedStore}
                         />
                         <FormMessage />
@@ -859,7 +908,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Tanggal Mulai Kerja
+                          {t("page.employee.detail.startDate")}
                         </FormLabel>
                         <DatePicker
                           date={field.value ? new Date(field.value) : undefined}
@@ -877,11 +926,15 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {employmentType === "internship" ? "Durasi Magang" : "Durasi Kontrak"}
+                              {employmentType === "internship"
+                                ? t("page.employee.detail.internshipDuration")
+                                : t("page.employee.detail.contractDuration")}
                             </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <SelectTrigger>
-                                <SelectValue placeholder="Pilih Durasi" />
+                                <SelectValue
+                                  placeholder={t("page.employee.form.durationPlaceholder")}
+                                />
                               </SelectTrigger>
                               <SelectContent>
                                 {contractDurations.map((d) => (
@@ -901,14 +954,14 @@ const EditEmployee = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              Tanggal Berakhir
+                              {t("page.employee.detail.endDate")}
                             </FormLabel>
                             <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
                               {field.value
                                 ? format(new Date(field.value), "dd MMM yyyy")
                                 : contractDuration && startDate
-                                  ? "Pilih durasi kontrak terlebih dahulu"
-                                  : "Pilih tanggal mulai & durasi"}
+                                  ? t("page.employee.form.selectDurationFirst")
+                                  : t("page.employee.form.selectStartDateAndDuration")}
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -940,12 +993,13 @@ const EditEmployee = () => {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-foreground">
-                                Status {field.value ? "Aktif" : "Nonaktif"}
+                                {t("common.status")}{" "}
+                                {field.value ? t("common.active") : t("common.inactive")}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {field.value
-                                  ? "Karyawan ini aktif dan dapat ditugaskan"
-                                  : "Karyawan ini tidak aktif"}
+                                  ? t("page.employee.edit.statusActiveDesc")
+                                  : t("page.employee.edit.statusInactiveDesc")}
                               </p>
                             </div>
                           </div>
@@ -961,7 +1015,9 @@ const EditEmployee = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">payments</span>
-                  <h4 className="text-base font-semibold text-foreground">Penggajian</h4>
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.employee.edit.payroll")}
+                  </h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <FormField
@@ -970,7 +1026,7 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Gaji Bulanan
+                          {t("page.employee.form.monthlySalary")}
                         </FormLabel>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
@@ -993,7 +1049,7 @@ const EditEmployee = () => {
                   />
                   <FormItem>
                     <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Gaji Harian
+                      {t("page.employee.form.dailySalary")}
                     </FormLabel>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
@@ -1003,11 +1059,11 @@ const EditEmployee = () => {
                         value={dailySalary ? dailySalary.toLocaleString("id-ID") : ""}
                         readOnly
                         className="pl-10 bg-muted/50 text-muted-foreground"
-                        placeholder="Otomatis terhitung"
+                        placeholder={t("page.employee.form.dailySalaryPlaceholder")}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Berdasarkan {daysInMonth} hari (1 - {daysInMonth}) bulan ini
+                      {t("page.employee.form.dailySalaryHint", { days: daysInMonth })}
                     </p>
                   </FormItem>
                 </div>
@@ -1017,7 +1073,9 @@ const EditEmployee = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">lock</span>
-                  <h4 className="text-base font-semibold text-foreground">Akun &amp; Hak Akses</h4>
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.employee.edit.accountAccess")}
+                  </h4>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1027,9 +1085,13 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Username <span className="text-destructive">*</span>
+                          {t("page.employee.form.username")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input {...field} placeholder="Username unik untuk login" />
+                        <Input
+                          {...field}
+                          placeholder={t("page.employee.form.usernamePlaceholder")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1040,14 +1102,14 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Password
+                          {t("page.employee.form.password")}
                         </FormLabel>
                         <div className="relative">
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
                             className="pr-10"
-                            placeholder="Kosongkan jika tidak diubah"
+                            placeholder={t("page.employee.form.passwordPlaceholder")}
                           />
                           <button
                             type="button"
@@ -1059,7 +1121,7 @@ const EditEmployee = () => {
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Kosongkan jika tidak ingin mengubah password.
+                          {t("page.employee.form.passwordHint")}
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -1071,11 +1133,11 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Pilih Peran (Role)
+                          {t("page.employee.form.roleSelect")}
                         </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Default: User" />
+                            <SelectValue placeholder={t("page.employee.form.rolePlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">Super Admin</SelectItem>
@@ -1094,9 +1156,12 @@ const EditEmployee = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Permission Tambahan
+                          {t("page.employee.form.accessMenu")}
                         </FormLabel>
-                        <Input {...field} placeholder="Opsional: export_laporan, dsb." />
+                        <Input
+                          {...field}
+                          placeholder={t("page.employee.form.accessMenuPlaceholder")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1108,7 +1173,9 @@ const EditEmployee = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                   <span className="material-symbols-outlined text-primary">description</span>
-                  <h4 className="text-base font-semibold text-foreground">Dokumen Karyawan</h4>
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.employee.edit.documents")}
+                  </h4>
                 </div>
 
                 <input
@@ -1128,17 +1195,17 @@ const EditEmployee = () => {
                       className="text-muted-foreground group-hover:text-primary transition-colors mb-2"
                     />
                     <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                      Klik untuk upload dokumen
+                      {t("page.employee.edit.uploadDocument")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      PDF, DOC, XLS, JPG, PNG — multiple file
+                      {t("page.employee.edit.documentTypes")}
                     </p>
                   </div>
 
                   {existingDocuments.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Dokumen Tersimpan
+                        {t("page.employee.edit.savedDocuments")}
                       </p>
                       {existingDocuments.map((doc, index) => (
                         <div
@@ -1174,7 +1241,7 @@ const EditEmployee = () => {
                   {documents.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Dokumen Baru
+                        {t("page.employee.edit.newDocuments")}
                       </p>
                       {documents.map((doc, index) => (
                         <div
@@ -1190,7 +1257,7 @@ const EditEmployee = () => {
                             type="button"
                             onClick={() => handlePreviewDocument(doc)}
                             className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                            title="Lihat file">
+                            title={t("common.view")}>
                             <Eye size={16} />
                           </button>
                           <button
@@ -1214,30 +1281,30 @@ const EditEmployee = () => {
                   <span className="material-symbols-outlined text-3xl text-primary mb-3">
                     badge
                   </span>
-                  <h3 className="text-base font-semibold text-primary mb-2">Panduan Pengisian</h3>
+                  <h3 className="text-base font-semibold text-primary mb-2">
+                    {t("page.employee.edit.guidance")}
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Pastikan data yang dimasukkan sesuai dengan dokumen resmi karyawan.
+                    {t("page.employee.edit.guidanceDescription")}
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3 text-sm text-foreground">
                       <span className="material-symbols-outlined text-primary text-base">
                         check_circle
                       </span>
-                      <span>
-                        Field dengan tanda <span className="text-destructive">*</span> wajib diisi.
-                      </span>
+                      <span>{t("page.employee.edit.guidanceRequired")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-foreground">
                       <span className="material-symbols-outlined text-primary text-base">
                         check_circle
                       </span>
-                      <span>Kosongkan password jika tidak ingin mengubahnya.</span>
+                      <span>{t("page.employee.edit.guidancePassword")}</span>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-foreground">
                       <span className="material-symbols-outlined text-primary text-base">
                         check_circle
                       </span>
-                      <span>Role default adalah User jika tidak dipilih.</span>
+                      <span>{t("page.employee.edit.guidanceRole")}</span>
                     </li>
                   </ul>
                 </div>
@@ -1257,11 +1324,11 @@ const EditEmployee = () => {
                   className="w-full sm:w-auto"
                   onClick={() => setCancelModal(true)}>
                   <span className="material-symbols-outlined text-lg">arrow_back</span>
-                  Batal
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
                   <span className="material-symbols-outlined text-lg">save</span>
-                  Simpan Perubahan
+                  {t("page.employee.edit.saveChanges")}
                 </Button>
               </div>
             </div>
@@ -1269,22 +1336,22 @@ const EditEmployee = () => {
         </form>
       </Form>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Karyawan Berhasil Diperbarui"
-        description="Data karyawan telah berhasil diperbarui."
+        title={t("page.employee.edit.successTitle")}
+        description={t("page.employee.edit.successDescription")}
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.employee.edit.cancelTitle")}
+        confirmText={t("common.confirm")}
         onConfirm={() => navigate("/employee-list")}
       />
     </div>

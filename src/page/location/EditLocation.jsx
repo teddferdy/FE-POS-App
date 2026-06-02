@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import {
   Save,
   MapPin,
@@ -73,6 +74,7 @@ const categoryOptions = [
 ];
 
 const EditLocation = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -459,15 +461,23 @@ const EditLocation = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard-super-admin" },
-          { label: "Kelola Toko", href: "/location-list" },
-          { label: "Edit Toko" }
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.location.list.title"),
+            href: "/location-list",
+            i18nKey: "page.location.list.title"
+          },
+          { label: t("page.location.edit.title"), i18nKey: "page.location.edit.title" }
         ]}
-        title="Edit Lokasi Toko"
-        description="Perbarui informasi detail unit toko.">
+        title={t("page.location.edit.title")}
+        description={t("page.location.edit.description")}>
         <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          Kembali ke Daftar
+          {t("breadcrumb.back")}
         </Button>
       </PageHeader>
 

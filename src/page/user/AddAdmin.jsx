@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const AddAdmin = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
@@ -42,7 +44,7 @@ const AddAdmin = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -55,7 +57,7 @@ const AddAdmin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password || !form.role) {
-      toast.error("Validation", { description: "Harap isi semua field yang wajib" });
+      toast.error(t("common.error"), { description: t("page.user.addAdmin.validationRequired") });
       return;
     }
     setIsSubmitting(true);
@@ -67,32 +69,31 @@ const AddAdmin = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Manajemen</span>
+            <span>{t("breadcrumb.management")}</span>
             <span>/</span>
             <button
               onClick={() => navigate("/user-list")}
               className="hover:text-primary transition-colors">
-              Kelola Admin
+              {t("page.user.adminList.title")}
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Registrasi Admin Baru</span>
+            <span className="text-primary font-semibold">{t("page.user.addAdmin.title")}</span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Registrasi Admin Baru
+            {t("page.user.addAdmin.title")}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Lengkapi informasi di bawah ini untuk menambahkan hak akses administrator baru ke
-            sistem.
+            {t("page.user.addAdmin.description")}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <span className="material-symbols-outlined text-lg">arrow_back</span>
-            Back
+            {t("page.user.button.back")}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
             <span className="material-symbols-outlined text-lg">save</span>
-            Simpan Admin
+            {t("page.user.button.save")}
           </Button>
         </div>
       </div>
@@ -103,19 +104,19 @@ const AddAdmin = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Lengkap
+                  {t("page.user.form.name")}
                 </label>
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
-                  placeholder="Contoh: Budi Santoso"
+                  placeholder={t("page.user.form.namePlaceholder")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Alamat Email
+                  {t("page.user.form.email")}
                 </label>
                 <input
                   name="email"
@@ -123,12 +124,12 @@ const AddAdmin = () => {
                   value={form.email}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
-                  placeholder="email@domain.com"
+                  placeholder={t("page.user.form.emailPlaceholder")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Password Akun
+                  {t("page.user.form.password")}
                 </label>
                 <div className="relative">
                   <input
@@ -137,7 +138,7 @@ const AddAdmin = () => {
                     value={form.password}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm pr-10"
-                    placeholder="••••••••"
+                    placeholder={t("page.user.form.passwordPlaceholder")}
                   />
                   <button
                     type="button"
@@ -151,7 +152,7 @@ const AddAdmin = () => {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nomor Telepon
+                  {t("page.user.form.phone")}
                 </label>
                 <input
                   name="phoneNumber"
@@ -159,12 +160,12 @@ const AddAdmin = () => {
                   value={form.phoneNumber}
                   onChange={handleChange}
                   className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
-                  placeholder="0812-xxxx-xxxx"
+                  placeholder={t("page.user.form.phonePlaceholder")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Pilih Toko / Cabang
+                  {t("page.user.form.location")}
                 </label>
                 <div className="relative">
                   <select
@@ -172,13 +173,13 @@ const AddAdmin = () => {
                     value={form.locationId}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all appearance-none bg-background text-sm">
-                    <option value="">Pilih Lokasi Penugasan</option>
+                    <option value="">{t("page.user.form.locationPlaceholder")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id || loc._id} value={loc.id || loc._id}>
                         {loc.name}
                       </option>
                     ))}
-                    <option value="all">Semua Cabang (Global)</option>
+                    <option value="all">{t("page.user.form.locationAll")}</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                     expand_more
@@ -187,7 +188,7 @@ const AddAdmin = () => {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Pilih Peran (Role)
+                  {t("page.user.form.role")}
                 </label>
                 <div className="relative">
                   <select
@@ -195,7 +196,7 @@ const AddAdmin = () => {
                     value={form.role}
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all appearance-none bg-background text-sm">
-                    <option value="">Tentukan Level Akses</option>
+                    <option value="">{t("page.user.form.rolePlaceholder")}</option>
                     {roles.map((role) => (
                       <option key={role.id || role._id} value={role.name || role.role}>
                         {(role.name || role.role)
@@ -217,10 +218,11 @@ const AddAdmin = () => {
                   info
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Konfirmasi Email</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("page.user.addAdmin.emailConfirmation")}
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    Sistem akan mengirimkan email instruksi aktivasi kepada admin baru setelah form
-                    ini disimpan.
+                    {t("page.user.addAdmin.emailConfirmationDesc")}
                   </p>
                 </div>
               </div>
@@ -231,23 +233,24 @@ const AddAdmin = () => {
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
           <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
             <div className="relative z-10">
-              <h3 className="text-base font-semibold text-primary mb-2">Panduan Hak Akses</h3>
+              <h3 className="text-base font-semibold text-primary mb-2">
+                {t("page.user.addAdmin.accessGuide")}
+              </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Pastikan role yang diberikan sesuai dengan tanggung jawab operasional karyawan di
-                lapangan.
+                {t("page.user.addAdmin.accessGuideDesc")}
               </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-3 text-sm text-foreground">
                   <span className="material-symbols-outlined text-primary">verified_user</span>
-                  <span>Super Admin: Akses penuh seluruh sistem.</span>
+                  <span>{t("page.user.addAdmin.superAdminRole")}</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-foreground">
                   <span className="material-symbols-outlined text-primary">analytics</span>
-                  <span>Finance: Laporan penjualan & pajak.</span>
+                  <span>{t("page.user.addAdmin.financeRole")}</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-foreground">
                   <span className="material-symbols-outlined text-primary">inventory_2</span>
-                  <span>Inventory: Manajemen stok & supplier.</span>
+                  <span>{t("page.user.addAdmin.inventoryRole")}</span>
                 </li>
               </ul>
             </div>
@@ -264,32 +267,31 @@ const AddAdmin = () => {
             </div>
             <div className="p-4">
               <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
-                Keamanan Data
+                {t("page.user.addAdmin.dataSecurity")}
               </p>
               <p className="text-sm text-muted-foreground">
-                Seluruh data administrator dienkripsi menggunakan standar industri AES-256 untuk
-                menjamin kerahasiaan informasi perusahaan.
+                {t("page.user.addAdmin.dataSecurityDesc")}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title={t("common.success")}
         onConfirm={() => navigate("/user-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("modal.cancelTitle")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/user-list")}
       />
     </div>

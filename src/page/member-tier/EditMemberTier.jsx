@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Star,
   Award,
@@ -31,6 +32,7 @@ const colors = [
 ];
 
 const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     tierName: tier.name || "",
     minPoints: tier.minPoints ? parseInt(tier.minPoints.replace(/[^\d]/g, "")) || 0 : 0,
@@ -95,16 +97,18 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
             />
           </div>
           <div>
-            <h2 className="font-headline-lg text-headline-lg text-on-surface">Edit Member Tier</h2>
+            <h2 className="font-headline-lg text-headline-lg text-on-surface">
+              {t("page.memberTier.edit.title")}
+            </h2>
             <p className="font-body-md text-on-surface-variant">
-              {formData.tierName || "Tier"} — Konfigurasi tingkatan member
+              {t("page.memberTier.edit.description", { tierName: formData.tierName || "Tier" })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-md">
           <span
             className={`font-label-md font-bold ${formData.isActive ? "text-[#006c49]" : "text-error"}`}>
-            {formData.isActive ? "Active" : "Inactive"}
+            {formData.isActive ? t("common.active") : t("common.inactive")}
           </span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -126,26 +130,32 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
         {/* General Information */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Informasi Dasar</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.edit.basicInfo")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Konfigurasi poin minimal dan diskon untuk tier ini.
+              {t("page.memberTier.edit.basicInfoDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-lg">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Tier Name</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.edit.tierName")}
+                </label>
                 <input
                   type="text"
                   value={formData.tierName}
                   onChange={(e) => handleInputChange("tierName", e.target.value)}
                   disabled={!formData.isActive}
                   className="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 outline-none border-primary/50 transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Contoh: Gold Member"
+                  placeholder={t("page.memberTier.edit.tierNamePlaceholder")}
                 />
               </div>
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Minimum Points</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.edit.minPoints")}
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -166,7 +176,9 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
                 </div>
               </div>
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Potongan Harga (%)</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.edit.discountPercent")}
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -195,15 +207,19 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
         {/* Visual Identity */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Identitas Visual</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.edit.visualIdentity")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Ikon dan warna badge untuk tier ini.
+              {t("page.memberTier.edit.visualIdentityDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-lg">
             <div className="flex flex-wrap gap-xl">
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Pilih Icon Badge</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.edit.selectIcon")}
+                </label>
                 <div className="flex gap-sm">
                   {icons.map((icon) => {
                     const Icon = icon.component;
@@ -226,7 +242,9 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
               </div>
 
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Badge Color</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.edit.badgeColor")}
+                </label>
                 <div className="flex gap-sm">
                   {colors.map((color) => {
                     const isSelected = formData.selectedColor === color.value;
@@ -261,7 +279,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
               </div>
               <div>
                 <p className="font-label-md text-on-surface-variant uppercase tracking-widest">
-                  Preview Badge
+                  {t("page.memberTier.edit.previewBadge")}
                 </p>
                 <h4 className="font-headline-md text-on-surface">
                   {formData.tierName || "Gold Member"}
@@ -283,9 +301,11 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
         {/* Benefits */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Benefits & Perks</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.edit.benefits")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Daftar keuntungan yang didapatkan oleh member pada tingkatan ini.
+              {t("page.memberTier.edit.benefitsDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-md">
@@ -305,7 +325,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
                       onChange={(e) => handlePerkChange(perk.id, e.target.value)}
                       disabled={!formData.isActive}
                       className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="Masukkan benefit..."
+                      placeholder={t("page.memberTier.edit.perkPlaceholder")}
                     />
                   </div>
                   <button
@@ -323,7 +343,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
               disabled={!formData.isActive}
               className="flex items-center gap-sm px-lg py-2 rounded-lg border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary transition-all active:scale-[0.98] w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-outline">
               <Plus size={20} />
-              <span className="font-label-md">Tambah Benefit Lainnya</span>
+              <span className="font-label-md">{t("page.memberTier.edit.addBenefit")}</span>
             </button>
           </div>
         </div>
@@ -335,20 +355,20 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
           onClick={handleDelete}
           className="px-lg py-3 rounded-lg font-label-md border border-error text-error hover:bg-error/5 transition-all active:scale-95 flex items-center gap-sm">
           <Trash2 size={18} />
-          Hapus Tier
+          {t("page.memberTier.edit.deleteTier")}
         </button>
         <div className="flex items-center gap-md">
           <button
             onClick={onClose}
             className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            Batal
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!formData.isActive}
             className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed">
             <Save size={20} />
-            Update Tier
+            {t("page.memberTier.edit.updateTier")}
           </button>
         </div>
       </div>

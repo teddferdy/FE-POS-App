@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { getAllUsers } from "@/services/user";
@@ -6,25 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 
-const statusConfig = {
-  active: {
-    dot: "bg-green-500",
-    bg: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
-    label: "Active"
-  },
-  inactive: {
-    dot: "bg-muted-foreground",
-    bg: "bg-muted text-muted-foreground border border-border",
-    label: "Inactive"
-  },
-  pending: {
-    dot: "bg-amber-500",
-    bg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800",
-    label: "Pending"
-  }
-};
+const getStatus = (user, t) => {
+  const statusConfig = {
+    active: {
+      dot: "bg-green-500",
+      bg: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+      label: t("common.active")
+    },
+    inactive: {
+      dot: "bg-muted-foreground",
+      bg: "bg-muted text-muted-foreground border border-border",
+      label: t("common.inactive")
+    },
+    pending: {
+      dot: "bg-amber-500",
+      bg: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800",
+      label: t("common.pending")
+    }
+  };
 
-const getStatus = (user) => {
   if (user.status === "pending" || user.isActive === null) return statusConfig.pending;
   if (user.isActive || user.status === "active") return statusConfig.active;
   return statusConfig.inactive;
@@ -71,6 +72,7 @@ const avatarBg = (name) => {
 };
 
 const AdminList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -89,25 +91,25 @@ const AdminList = () => {
   const stats = [
     {
       icon: "groups",
-      label: "Total Admin",
+      label: t("page.user.adminList.statsTotal"),
       value: data?.stats?.total || total || 0,
-      badge: "+4 bulan ini",
+      badge: t("page.user.adminList.statsTotalBadge"),
       iconBg: "bg-blue-100 dark:bg-blue-900/40",
       iconColor: "text-blue-700 dark:text-blue-300"
     },
     {
       icon: "verified_user",
-      label: "Admin Aktif",
+      label: t("page.user.adminList.statsActive"),
       value: data?.stats?.active || 0,
-      badge: `${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}% Aktif`,
+      badge: `${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`,
       iconBg: "bg-green-100 dark:bg-green-900/40",
       iconColor: "text-green-700 dark:text-green-300"
     },
     {
       icon: "pending_actions",
-      label: "Menunggu Aktivasi",
+      label: t("page.user.adminList.statsPending"),
       value: data?.stats?.pending || 0,
-      badge: "Perlu Tindakan",
+      badge: t("page.user.adminList.statsPendingBadge"),
       iconBg: "bg-red-100",
       iconColor: "text-red-700"
     }
@@ -118,27 +120,29 @@ const AdminList = () => {
       <div className="flex justify-between items-end">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Manajemen</span>
+            <span>{t("breadcrumb.management")}</span>
             <span>/</span>
-            <span className="text-primary font-semibold">Kelola Admin</span>
+            <span className="text-primary font-semibold">{t("page.user.adminList.title")}</span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Administrasi Sistem</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.user.adminList.pageTitle")}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Atur hak akses dan profil administrator di seluruh cabang toko.
+            {t("page.user.adminList.description")}
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* 
           <Button variant="outline" onClick={() => navigate("/role-management")} className="gap-2">
             <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
-            Manajemen Role
+            {t("page.user.adminList.roleManagement")}
           </Button>
           */}
           <Button
             onClick={() => navigate("/add-user")}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
             <span className="material-symbols-outlined text-lg">person_add</span>
-            Tambah Admin Baru
+            {t("page.user.button.add")}
           </Button>
         </div>
       </div>
@@ -164,14 +168,16 @@ const AdminList = () => {
 
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
-          <h4 className="text-base font-semibold text-foreground">Daftar Administrator</h4>
+          <h4 className="text-base font-semibold text-foreground">
+            {t("page.user.adminList.tableTitle")}
+          </h4>
           <div className="flex gap-3">
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
                 search
               </span>
               <Input
-                placeholder="Cari admin atau toko..."
+                placeholder={t("page.user.adminList.search")}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -182,11 +188,11 @@ const AdminList = () => {
             </div>
             <Button variant="outline" size="sm" className="gap-2 h-9">
               <span className="material-symbols-outlined text-base">filter_list</span>
-              Filter
+              {t("page.user.adminList.filter")}
             </Button>
             <Button variant="outline" size="sm" className="gap-2 h-9">
               <span className="material-symbols-outlined text-base">download</span>
-              Ekspor CSV
+              {t("page.user.adminList.exportCsv")}
             </Button>
           </div>
         </div>
@@ -201,19 +207,19 @@ const AdminList = () => {
               <thead>
                 <tr className="bg-muted/10">
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Nama Admin
+                    {t("page.user.adminList.tableAdmin")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Toko Ditugaskan
+                    {t("page.user.adminList.tableStore")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Peran
+                    {t("page.user.adminList.tableRole")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Status
+                    {t("common.status")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    Aksi
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -224,12 +230,12 @@ const AdminList = () => {
                       <span className="material-symbols-outlined text-4xl block mb-2">
                         admin_panel_settings
                       </span>
-                      Tidak ada administrator ditemukan
+                      {t("page.user.adminList.empty")}
                     </td>
                   </tr>
                 ) : (
                   users.map((user) => {
-                    const status = getStatus(user);
+                    const status = getStatus(user, t);
                     const role = user.role || user.type || "admin";
                     return (
                       <tr
@@ -279,7 +285,7 @@ const AdminList = () => {
                                 variant="outline"
                                 size="sm"
                                 className="h-8 text-xs gap-1 bg-primary text-primary-foreground hover:brightness-110 border-0">
-                                Aktifkan
+                                {t("page.user.adminList.activate")}
                               </Button>
                               <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
                                 <span className="material-symbols-outlined text-lg">close</span>
@@ -307,7 +313,7 @@ const AdminList = () => {
 
         <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
           <span className="text-xs text-muted-foreground">
-            Menampilkan {users.length} dari {total} Administrator
+            {t("page.user.adminList.showing", { count: users.length, total })}
           </span>
           <div className="flex gap-1">
             <button
@@ -354,13 +360,14 @@ const AdminList = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 relative overflow-hidden group">
           <div className="relative z-10 max-w-md">
-            <h5 className="text-xl font-semibold text-foreground mb-3">Keamanan Administrator</h5>
+            <h5 className="text-xl font-semibold text-foreground mb-3">
+              {t("page.user.adminList.securityTitle")}
+            </h5>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Selalu pastikan verifikasi 2-faktor aktif untuk semua akun administrator dengan akses
-              ke laporan global. Anda dapat meninjau log aktivitas admin di modul Pengaturan Sistem.
+              {t("page.user.adminList.securityDesc")}
             </p>
             <Button variant="link" className="gap-2 p-0 h-auto text-primary font-semibold">
-              Pelajari Protokol Keamanan
+              {t("page.user.adminList.learnSecurity")}
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
             </Button>
           </div>
@@ -374,14 +381,13 @@ const AdminList = () => {
         <div className="lg:col-span-2 p-8 rounded-2xl bg-foreground text-background border border-border flex flex-col justify-between">
           <div>
             <span className="material-symbols-outlined text-4xl mb-4 opacity-80">auto_awesome</span>
-            <h5 className="text-lg font-semibold mb-2">Bantuan Cepat</h5>
+            <h5 className="text-lg font-semibold mb-2">{t("page.user.adminList.quickHelp")}</h5>
             <p className="text-sm opacity-70 leading-snug">
-              Butuh bantuan dalam mengelola izin akses karyawan? Tim support kami tersedia 24/7
-              untuk membantu integrasi POS antar cabang.
+              {t("page.user.adminList.quickHelpDesc")}
             </p>
           </div>
           <button className="mt-6 w-full py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm font-semibold">
-            Hubungi Customer Success
+            {t("page.user.adminList.contactSuccess")}
           </button>
         </div>
       </div>

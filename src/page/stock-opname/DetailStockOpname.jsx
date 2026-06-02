@@ -5,6 +5,7 @@ import { getStockOpnameById } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { useTranslation } from "react-i18next";
 
 const statusColors = {
   draft:
@@ -15,13 +16,8 @@ const statusColors = {
     "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
 };
 
-const statusLabels = {
-  draft: "Draft",
-  completed: "Completed",
-  cancelled: "Cancelled"
-};
-
 const DetailStockOpname = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
@@ -38,14 +34,14 @@ const DetailStockOpname = () => {
   const store = opname?.store || {};
   const canEdit = opname?.status === "draft";
 
-  if (isLoading) return <Loading fullscreen size="lg" label="Memuat data..." />;
+  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
 
   if (!opname) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-muted-foreground">Data tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("common.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/stock-opname")}>
-          Kembali
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -59,46 +55,48 @@ const DetailStockOpname = () => {
             <button
               onClick={() => navigate("/stock-opname")}
               className="hover:text-foreground transition-colors">
-              Stock Opname
+              {t("breadcrumb.stockOpname")}
             </button>
             <span>/</span>
             <span className="text-primary font-semibold">{opname.auditId || `#${opname.id}`}</span>
           </nav>
-          <h1 className="text-2xl font-bold tracking-tight">Detail Stock Opname</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("page.stockOpname.detail.title")}
+          </h1>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            ID Audit
+            {t("page.stockOpname.detail.auditId")}
           </p>
           <p className="text-lg font-bold text-foreground font-mono">{opname.auditId || "-"}</p>
         </Card>
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Status
+            {t("common.status")}
           </p>
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-tight ${statusColors[opname.status] || statusColors.draft}`}>
-            {statusLabels[opname.status] || opname.status}
+            {t(`page.stockOpname.status.${opname.status}`) || opname.status}
           </span>
         </Card>
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Toko / Lokasi
+            {t("page.stockOpname.detail.store")}
           </p>
           <p className="text-lg font-bold text-foreground">{store.name || "-"}</p>
         </Card>
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Auditor
+            {t("page.stockOpname.detail.auditor")}
           </p>
           <p className="text-lg font-bold text-foreground">{opname.auditor || "-"}</p>
         </Card>
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Tanggal Audit
+            {t("page.stockOpname.detail.auditDate")}
           </p>
           <p className="text-lg font-bold text-foreground">
             {opname.auditDate
@@ -112,7 +110,7 @@ const DetailStockOpname = () => {
         </Card>
         <Card className="p-5 shadow-sm border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Catatan
+            {t("page.stockOpname.detail.notes")}
           </p>
           <p className="text-lg font-bold text-foreground">{opname.notes || "-"}</p>
         </Card>
@@ -120,44 +118,46 @@ const DetailStockOpname = () => {
 
       <Card className="overflow-hidden shadow-sm border-border">
         <div className="px-5 py-4 border-b border-border bg-muted/20">
-          <h3 className="font-semibold text-foreground">Items Stock Opname ({items.length})</h3>
+          <h3 className="font-semibold text-foreground">
+            {t("page.stockOpname.detail.itemsTitle", { count: items.length })}
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/40 border-b">
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  No
+                  {t("page.stockOpname.table.no")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Kode Barang
+                  {t("page.stockOpname.table.kodeBarang")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Nama Barang
+                  {t("page.stockOpname.table.namaBarang")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Satuan
+                  {t("page.stockOpname.table.satuan")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Stok Awal
+                  {t("page.stockOpname.table.stokAwal")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Barang Masuk
+                  {t("page.stockOpname.table.barangMasuk")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Barang Keluar
+                  {t("page.stockOpname.table.barangKeluar")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Persd. Akhir
+                  {t("page.stockOpname.table.persdAkhir")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Stock Fisik
+                  {t("page.stockOpname.table.stockFisik")}
                 </th>
                 <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Selisih
+                  {t("page.stockOpname.table.selisih")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                  Keterangan
+                  {t("page.stockOpname.table.keterangan")}
                 </th>
               </tr>
             </thead>
@@ -165,7 +165,7 @@ const DetailStockOpname = () => {
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">
-                    Tidak ada item
+                    {t("page.stockOpname.detail.noItems")}
                   </td>
                 </tr>
               ) : (
@@ -220,11 +220,13 @@ const DetailStockOpname = () => {
 
       <div className="flex items-center justify-between pt-2">
         <Button variant="outline" onClick={() => navigate("/stock-opname")}>
-          Kembali
+          {t("common.back")}
         </Button>
         {canEdit && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>Edit</Button>
+            <Button onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+              {t("common.edit")}
+            </Button>
           </div>
         )}
       </div>

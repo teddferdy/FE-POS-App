@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   getAllCategoryTable,
   deleteCategory,
@@ -51,6 +52,7 @@ const formatDate = (dateStr) => {
 };
 
 const CategoryList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -79,11 +81,11 @@ const CategoryList = () => {
 
   const deleteMutation = useMutation(deleteCategory, {
     onSuccess: () => {
-      toast.success("Success", { description: "Kategori berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.category.toast.deleteSuccess") });
       queryClient.invalidateQueries(["categories"]);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -129,15 +131,15 @@ const CategoryList = () => {
   const stats = [
     {
       icon: "category",
-      label: "Total Kategori",
+      label: t("page.category.list.statsTotal"),
       value: statsTotal,
-      badge: `${categories.length} ditampilkan`,
+      badge: t("page.category.list.statsTotalBadge", { count: categories.length }),
       iconBg: "bg-primary/10",
       iconColor: "text-primary"
     },
     {
       icon: "check_circle",
-      label: "Kategori Aktif",
+      label: t("page.category.list.statsActive"),
       value: activeCount,
       badge: `${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`,
       iconBg: "bg-green-100 dark:bg-green-900/40",
@@ -145,7 +147,7 @@ const CategoryList = () => {
     },
     {
       icon: "cancel",
-      label: "Kategori Nonaktif",
+      label: t("page.category.list.statsInactive"),
       value: inactiveCount,
       badge: `${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`,
       iconBg: "bg-red-100 dark:bg-red-900/40",
@@ -157,9 +159,9 @@ const CategoryList = () => {
   return (
     <div className="space-y-8">
       <PageHeader
-        breadcrumbs={[{ label: "Admin Console" }, { label: "Kelola Kategori" }]}
-        title="Daftar Kategori"
-        description="Kelola pengelompokan produk dan inventaris toko Anda.">
+        breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
+        title={t("page.category.list.title")}
+        description={t("page.category.list.description")}>
         <Button
           variant="outline"
           disabled={isDownloadingTemplate}
@@ -167,11 +169,15 @@ const CategoryList = () => {
             setIsDownloadingTemplate(true);
             try {
               await downloadTemplate();
-              toast.success("Berhasil", { description: "Template berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.category.toast.templateSuccess")
+              });
             } catch (err) {
-              toast.error("Gagal", {
+              toast.error(t("common.error"), {
                 description:
-                  err?.response?.data?.message || err.message || "Gagal download template"
+                  err?.response?.data?.message ||
+                  err.message ||
+                  t("page.category.toast.templateError")
               });
             } finally {
               setIsDownloadingTemplate(false);
@@ -182,7 +188,9 @@ const CategoryList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
           )}
-          {isDownloadingTemplate ? "Download..." : "Download Template"}
+          {isDownloadingTemplate
+            ? t("page.category.button.downloading")
+            : t("page.category.button.downloadTemplate")}
         </Button>
         <Button
           variant="outline"
@@ -191,10 +199,13 @@ const CategoryList = () => {
             setIsDownloadingData(true);
             try {
               await downloadExcel();
-              toast.success("Berhasil", { description: "Data berhasil di-download" });
+              toast.success(t("common.success"), {
+                description: t("page.category.toast.dataSuccess")
+              });
             } catch (err) {
-              toast.error("Gagal", {
-                description: err?.response?.data?.message || err.message || "Gagal download data"
+              toast.error(t("common.error"), {
+                description:
+                  err?.response?.data?.message || err.message || t("page.category.toast.dataError")
               });
             } finally {
               setIsDownloadingData(false);
@@ -205,16 +216,18 @@ const CategoryList = () => {
           ) : (
             <span className="material-symbols-outlined text-lg mr-1">download</span>
           )}
-          {isDownloadingData ? "Download..." : "Download Data"}
+          {isDownloadingData
+            ? t("page.category.button.downloading")
+            : t("page.category.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
         <Button variant="default" onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
-          Upload Excel
+          {t("page.category.button.upload")}
         </Button>
         <Button onClick={() => navigate("/add-category")} className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
-          Tambah Kategori Baru
+          {t("page.category.button.add")}
         </Button>
       </PageHeader>
 
@@ -249,14 +262,16 @@ const CategoryList = () => {
 
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-muted/30">
-          <h4 className="text-base font-semibold text-foreground">Semua Kategori</h4>
+          <h4 className="text-base font-semibold text-foreground">
+            {t("page.category.list.sectionTitle")}
+          </h4>
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
                 search
               </span>
               <Input
-                placeholder="Cari kategori..."
+                placeholder={t("page.category.list.search")}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -272,9 +287,9 @@ const CategoryList = () => {
                 setPage(1);
               }}
               className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-              <option value="">Semua Status</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Nonaktif</option>
+              <option value="">{t("page.category.list.statusAll")}</option>
+              <option value="active">{t("common.active")}</option>
+              <option value="inactive">{t("common.inactive")}</option>
             </select>
             <Button
               variant="outline"
@@ -282,7 +297,7 @@ const CategoryList = () => {
               className="gap-2 h-9"
               onClick={() => setStatusFilter("")}>
               <span className="material-symbols-outlined text-base">filter_list</span>
-              Filter
+              {t("page.category.button.filter")}
             </Button>
           </div>
         </div>
@@ -294,7 +309,7 @@ const CategoryList = () => {
         ) : filtered.length === 0 ? (
           <div className="px-6 py-12 text-center text-muted-foreground">
             <span className="material-symbols-outlined text-4xl block mb-2">category</span>
-            Tidak ada kategori ditemukan
+            {t("page.category.list.empty")}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -302,25 +317,25 @@ const CategoryList = () => {
               <thead>
                 <tr className="bg-muted/10">
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    ID Kategori
+                    {t("page.category.table.id")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Nama Kategori
+                    {t("page.category.table.name")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Jumlah Produk
+                    {t("page.category.table.productCount")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Status
+                    {t("page.category.table.status")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Tanggal Dibuat
+                    {t("page.category.table.createdDate")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Diperbarui
+                    {t("page.category.table.updatedDate")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    Actions
+                    {t("page.category.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -377,7 +392,7 @@ const CategoryList = () => {
                                 : "bg-red-500 dark:bg-red-400"
                             }`}
                           />
-                          {isActive ? "Aktif" : "Nonaktif"}
+                          {isActive ? t("common.active") : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
@@ -391,13 +406,13 @@ const CategoryList = () => {
                           <button
                             onClick={() => navigate(`/detail-category?id=${cat.id || cat._id}`)}
                             className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title="Detail">
+                            title={t("common.view")}>
                             <span className="material-symbols-outlined text-lg">visibility</span>
                           </button>
                           <button
                             onClick={() => navigate(`/edit-category?id=${cat.id || cat._id}`)}
                             className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title="Edit">
+                            title={t("common.edit")}>
                             <span className="material-symbols-outlined text-lg">edit</span>
                           </button>
                           <button
@@ -417,7 +432,7 @@ const CategoryList = () => {
 
         <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
           <span className="text-xs text-muted-foreground">
-            Menampilkan {filtered.length} dari {total} kategori
+            {t("page.category.list.showing", { count: filtered.length, total })}
           </span>
           <div className="flex gap-1">
             <button
@@ -464,26 +479,26 @@ const CategoryList = () => {
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">
           <span className="material-symbols-outlined opacity-80">lightbulb</span>
-          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+            {t("page.category.tips.title")}
+          </h4>
         </div>
         <ul className="space-y-2">
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>
-              Gunakan nama kategori yang singkat dan jelas untuk memudahkan pencarian produk.
-            </span>
+            <span>{t("page.category.tips.1")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Atur status kategori untuk mengontrol visibilitas di toko.</span>
+            <span>{t("page.category.tips.2")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Manfaatkan ikon untuk mempermudah identifikasi kategori oleh pelanggan.</span>
+            <span>{t("page.category.tips.3")}</span>
           </li>
           <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
             <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>Download template untuk menambahkan banyak kategori sekaligus.</span>
+            <span>{t("page.category.tips.4")}</span>
           </li>
         </ul>
       </div>
@@ -492,8 +507,8 @@ const CategoryList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Kategori?"
-        confirmText="Ya, Hapus"
+        title={t("page.category.modal.deleteTitle")}
+        confirmText={t("page.category.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
       <UploadCategoryModal

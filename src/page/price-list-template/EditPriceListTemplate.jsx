@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama template wajib diisi"),
@@ -23,6 +24,7 @@ const formSchema = z.object({
 });
 
 const EditPriceListTemplate = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const templateId = searchParams.get("id");
@@ -61,8 +63,11 @@ const EditPriceListTemplate = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengupdate template"
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message ||
+          err.message ||
+          t("page.priceListTemplate.toast.updateError")
       });
     }
   });
@@ -92,7 +97,7 @@ const EditPriceListTemplate = () => {
   if (!templateId) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID template tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.priceListTemplate.edit.notFound")}</p>
       </div>
     );
   }
@@ -111,33 +116,37 @@ const EditPriceListTemplate = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/price-list-template")}
           className="hover:text-foreground transition-colors">
-          Template Harga
+          {t("breadcrumb.priceListTemplate")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Template</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.editPriceListTemplate")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Template Harga</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit template tingkatan harga.</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.priceListTemplate.edit.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.priceListTemplate.edit.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} /> Batal
+            <X size={18} /> {t("common.cancel")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {updateMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -153,9 +162,13 @@ const EditPriceListTemplate = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Nama Template <span className="text-destructive">*</span>
+                        {t("page.priceListTemplate.form.name")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
-                      <Input placeholder="Contoh: Harga Retail" {...field} />
+                      <Input
+                        placeholder={t("page.priceListTemplate.form.namePlaceholder")}
+                        {...field}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -165,8 +178,12 @@ const EditPriceListTemplate = () => {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deskripsi</FormLabel>
-                      <Textarea placeholder="Deskripsi template" rows={3} {...field} />
+                      <FormLabel>{t("page.priceListTemplate.form.description")}</FormLabel>
+                      <Textarea
+                        placeholder={t("page.priceListTemplate.form.descriptionPlaceholder")}
+                        rows={3}
+                        {...field}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -179,7 +196,7 @@ const EditPriceListTemplate = () => {
                       <div className="flex items-center gap-3">
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
                         <span className="text-sm text-muted-foreground">
-                          {field.value ? "Aktif" : "Tidak Aktif"}
+                          {field.value ? t("common.active") : t("common.inactive")}
                         </span>
                       </div>
                       <FormMessage />
@@ -193,9 +210,11 @@ const EditPriceListTemplate = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
               <div>
-                <h3 className="text-base font-semibold text-foreground">Tingkatan Harga</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.priceListTemplate.form.priceTier")}
+                </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Definisikan nama tingkatan yang akan muncul di produk
+                  {t("page.priceListTemplate.form.priceTierDescription")}
                 </p>
               </div>
             </div>
@@ -203,14 +222,14 @@ const EditPriceListTemplate = () => {
               {tiers.map((tier) => (
                 <div key={tier.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-3">
                   <Input
-                    placeholder="Nama tingkat (contoh: Grosir)"
+                    placeholder={t("page.priceListTemplate.form.tierNamePlaceholder")}
                     value={tier.name}
                     onChange={(e) => updateTier(tier.id, "name", e.target.value)}
                     className="h-9 text-sm flex-1"
                   />
                   <Input
                     type="number"
-                    placeholder="Urutan"
+                    placeholder={t("page.priceListTemplate.form.sortOrderPlaceholder")}
                     value={tier.sortOrder ?? ""}
                     onChange={(e) => updateTier(tier.id, "sortOrder", Number(e.target.value))}
                     className="h-9 text-sm w-20"
@@ -228,7 +247,7 @@ const EditPriceListTemplate = () => {
                 </div>
               ))}
               <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addTier}>
-                <Plus size={15} /> Tambah Tingkatan
+                <Plus size={15} /> {t("page.priceListTemplate.button.addTier")}
               </Button>
             </div>
           </Card>
@@ -239,18 +258,18 @@ const EditPriceListTemplate = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.priceListTemplate.modal.cancelTitle")}
+        description={t("page.priceListTemplate.modal.cancelDescription")}
+        confirmText={t("page.priceListTemplate.modal.confirmCancel")}
         onConfirm={() => navigate("/price-list-template")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Template harga berhasil diupdate."
-        confirmText="Kembali ke Daftar"
+        title={t("common.success")}
+        description={t("page.priceListTemplate.modal.updateSuccess")}
+        confirmText={t("page.priceListTemplate.modal.backToList")}
         onConfirm={() => navigate("/price-list-template")}
       />
     </div>

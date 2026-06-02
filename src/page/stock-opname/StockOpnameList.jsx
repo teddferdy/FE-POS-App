@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   Search,
@@ -17,12 +18,7 @@ import {
   X
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getStockOpname,
-  deleteStockOpname,
-  exportStockOpnameExcel,
-  exportStockOpnameByIds
-} from "@/services/stock";
+import { getStockOpname, deleteStockOpname, exportStockOpnameByIds } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -49,6 +45,7 @@ const statusColors = {
 };
 
 const StockOpnameList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -253,36 +250,15 @@ const StockOpnameList = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Riwayat Pemeriksaan Stok</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.stockOpname.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola dan pantau hasil rekonsiliasi stok gudang secara real-time.
+            {t("page.stockOpname.list.description")}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            className="shrink-0 gap-2"
-            onClick={() => {
-              if (total === 0) {
-                setNoDataModal(true);
-                return;
-              }
-              exportStockOpnameExcel()
-                .then(() => toast.success("Berhasil", { description: "Data berhasil diexport" }))
-                .catch((err) => {
-                  toast.error("Gagal", {
-                    description: err?.response?.data?.message || err.message || "Gagal export data"
-                  });
-                });
-            }}>
-            <FileDown size={16} />
-            Export Excel
-          </Button>
-          <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
-            <Plus size={16} />
-            Tambah Stock Opname Baru
-          </Button>
-        </div>
+        <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
+          <Plus size={16} />
+          Tambah Stock Opname Baru
+        </Button>
       </div>
 
       {/* Stats Cards */}

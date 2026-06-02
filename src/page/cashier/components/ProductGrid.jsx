@@ -7,6 +7,7 @@ import { Loading } from "@/components/ui/loading";
 import { getAllCategoryActive } from "@/services/category";
 import { lookupBarcode } from "@/services/product";
 import { orderList } from "@/state/order-list";
+import { useTranslation } from "react-i18next";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import VariantModal from "./VariantModal";
 
@@ -21,6 +22,7 @@ const ProductGrid = ({
   onCategoryChange,
   store
 }) => {
+  const { t } = useTranslation();
   const cart = orderList();
   const barcodeRef = useRef(null);
   const [variantProduct, setVariantProduct] = useState(null);
@@ -65,7 +67,7 @@ const ProductGrid = ({
     } else {
       cart.addingProduct({
         id: product.id || product._id,
-        name: product.nameProduct || product.name || "Produk",
+        name: product.nameProduct || product.name || t("page.cashier.product.defaultName"),
         price,
         count: 1,
         totalPrice: price,
@@ -111,7 +113,7 @@ const ProductGrid = ({
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Cari produk..."
+              placeholder={t("page.cashier.search")}
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-9 text-sm"
@@ -124,7 +126,7 @@ const ProductGrid = ({
             />
             <Input
               ref={barcodeRef}
-              placeholder="Scan barcode"
+              placeholder={t("page.cashier.barcode")}
               value={barcode}
               onChange={(e) => onBarcodeChange(e.target.value)}
               onKeyDown={(e) => {
@@ -144,7 +146,7 @@ const ProductGrid = ({
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border text-muted-foreground hover:bg-accent"
             }`}>
-            Semua
+            {t("common.all")}
           </button>
           {categories.map((cat) => (
             <button
@@ -167,14 +169,15 @@ const ProductGrid = ({
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <Package size={48} className="mb-2 opacity-30" />
-            <p className="text-sm">Produk tidak ditemukan</p>
+            <p className="text-sm">{t("page.cashier.product.notFound")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
             {products.map((product) => {
               const pid = product.id || product._id;
               const imageUrl = product.image || (product.images && product.images[0]) || null;
-              const productName = product.nameProduct || product.name || "Produk";
+              const productName =
+                product.nameProduct || product.name || t("page.cashier.product.defaultName");
               const productPrice = Number(product.price || product.harga || 0);
               const stock = product.stock ?? product.quantity ?? null;
               const hasOptions = product.options && product.options.length > 0;
@@ -199,14 +202,14 @@ const ProductGrid = ({
                     {stock !== null && stock <= 0 && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <span className="text-white text-xs font-semibold bg-red-600 px-2 py-0.5 rounded">
-                          Habis
+                          {t("page.cashier.product.outOfStock")}
                         </span>
                       </div>
                     )}
                     {hasOptions && (
                       <div className="absolute top-1.5 right-1.5">
                         <span className="text-[10px] font-medium bg-amber-500 text-white px-1.5 py-0.5 rounded">
-                          Varian
+                          {t("page.cashier.product.variant")}
                         </span>
                       </div>
                     )}
@@ -219,7 +222,9 @@ const ProductGrid = ({
                       {formatCurrencyRupiah(productPrice)}
                     </p>
                     {stock !== null && (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Stok: {stock}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {t("page.cashier.product.stock")}: {stock}
+                      </p>
                     )}
                   </div>
                 </button>

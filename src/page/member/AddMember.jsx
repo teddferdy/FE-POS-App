@@ -7,6 +7,7 @@ import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const defaultTiers = [
   { name: "silver", label: "Silver Member", description: "Default tier untuk member baru." },
@@ -15,6 +16,7 @@ const defaultTiers = [
 ];
 
 const AddMember = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -70,29 +72,29 @@ const AddMember = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Dashboard</span>
+            <span>{t("breadcrumb.home")}</span>
             <span>/</span>
             <button
               onClick={() => navigate("/member-list")}
               className="hover:text-primary transition-colors">
-              Kelola Pelanggan
+              {t("breadcrumb.management")}
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Tambah Member Baru</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Tambah Member Baru</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Daftarkan pelanggan baru ke dalam program loyalitas Kinetic Ledger.
-          </p>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("breadcrumb.add")}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <span className="material-symbols-outlined text-lg">arrow_back</span>
-            Batal
+            {t("breadcrumb.back")}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
             <span className="material-symbols-outlined text-lg">save</span>
-            Simpan Member
+            {t("page.member.button.save")}
           </Button>
         </div>
       </div>
@@ -103,7 +105,9 @@ const AddMember = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border p-6">
               <div className="flex items-center gap-2 mb-6 text-primary">
                 <span className="material-symbols-outlined">person</span>
-                <h3 className="text-base font-semibold text-foreground">Informasi Pribadi</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.member.form.personalInfo")}
+                </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1.5">

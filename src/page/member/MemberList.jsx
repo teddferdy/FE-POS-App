@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const levelConfig = {
   platinum: {
@@ -58,6 +59,7 @@ const avatarBg = (name) => {
 };
 
 const MemberList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -109,21 +111,23 @@ const MemberList = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Kelola Pelanggan</span>
+          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
+            <span>{t("breadcrumb.home")}</span>
             <span>/</span>
-            <span className="text-primary font-semibold">Daftar Member</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
+            <span>/</span>
+            <span className="text-primary font-semibold">{t("page.member.list.title")}</span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Daftar Member</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kelola data dan poin membership pelanggan
-          </p>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.member.list.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.member.list.description")}</p>
         </div>
         <Button
           onClick={() => navigate("/add-member")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">person_add</span>
-          Tambah Member Baru
+          {t("breadcrumb.add")}
         </Button>
       </div>
 
@@ -132,7 +136,7 @@ const MemberList = () => {
           <div className="flex flex-col gap-4">
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-                Filter Level Membership
+                {t("page.member.list.filter")}
               </label>
               <div className="flex gap-2 flex-wrap">
                 {["", "platinum", "gold", "silver"].map((level) => (
@@ -154,15 +158,15 @@ const MemberList = () => {
             </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-                Urutkan Berdasarkan
+                {t("page.member.list.sort")}
               </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 w-full max-w-xs">
-                <option value="terbaru">Terbaru Bergabung</option>
-                <option value="poin">Poin Terbanyak</option>
-                <option value="nama">Nama (A-Z)</option>
+                <option value="terbaru">{t("page.member.list.sortNewest")}</option>
+                <option value="poin">{t("page.member.list.sortPoints")}</option>
+                <option value="nama">{t("page.member.list.sortName")}</option>
               </select>
             </div>
           </div>
@@ -171,12 +175,12 @@ const MemberList = () => {
         <div className="lg:col-span-4 bg-primary text-primary-foreground p-6 rounded-xl shadow-md flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
-              Total Member Terdaftar
+              {t("page.member.list.totalMembers")}
             </p>
             <p className="text-4xl font-bold leading-tight mt-1">{total.toLocaleString()}</p>
             <p className="text-xs font-semibold mt-2 flex items-center gap-1 text-secondary-foreground">
               <span className="material-symbols-outlined text-sm">trending_up</span>
-              +12% Bulan ini
+              {t("page.member.list.growth")}
             </p>
           </div>
           <span className="material-symbols-outlined text-5xl opacity-20">group</span>
@@ -185,13 +189,13 @@ const MemberList = () => {
 
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
-          <h4 className="text-base font-semibold text-foreground">Daftar Member</h4>
+          <h4 className="text-base font-semibold text-foreground">{t("page.member.list.title")}</h4>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
               search
             </span>
             <Input
-              placeholder="Cari Member (ID, Nama, No. HP)..."
+              placeholder={t("page.member.list.search")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -212,22 +216,22 @@ const MemberList = () => {
               <thead>
                 <tr className="bg-muted/10">
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Member ID
+                    {t("page.member.table.id")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Nama
+                    {t("page.member.table.name")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    No. Telepon
+                    {t("page.member.table.phone")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Total Poin
+                    {t("page.member.table.points")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Level
+                    {t("page.member.table.level")}
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    Aksi
+                    {t("page.member.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -236,7 +240,7 @@ const MemberList = () => {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                       <span className="material-symbols-outlined text-4xl block mb-2">groups</span>
-                      Tidak ada member ditemukan
+                      {t("page.member.list.empty")}
                     </td>
                   </tr>
                 ) : (
@@ -312,7 +316,10 @@ const MemberList = () => {
 
         <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
           <span className="text-xs text-muted-foreground">
-            Menampilkan {filteredMembers.length} dari {total.toLocaleString()} Member
+            {t("page.member.list.showing", {
+              count: filteredMembers.length,
+              total: total.toLocaleString()
+            })}
           </span>
           <div className="flex gap-1">
             <button
@@ -360,7 +367,7 @@ const MemberList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`Hapus ${deleteTarget?.name || "Data"}?`}
+        title={t("modal.confirmDelete")}
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
       />

@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const ExpenseCategoryList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -52,22 +54,24 @@ const ExpenseCategoryList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Kategori Biaya</span>
+        <span className="text-primary font-semibold">{t("page.expenseCategory.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Kategori Biaya</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.expenseCategory.list.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola kategori biaya untuk pengeluaran bisnis Anda.
+            {t("page.expenseCategory.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-expense-category")} className="gap-2">
           <Plus size={18} />
-          Tambah Kategori
+          {t("page.expenseCategory.button.add")}
         </Button>
       </div>
 
@@ -84,7 +88,7 @@ const ExpenseCategoryList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari kategori..."
+          placeholder={t("page.expenseCategory.list.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9 h-10"

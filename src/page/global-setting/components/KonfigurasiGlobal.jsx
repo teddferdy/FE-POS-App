@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Cog, Banknote, Wallet, RefreshCw, Award } from "lucide-react";
 
 const Toggle = ({ checked, onChange }) => (
@@ -9,37 +10,37 @@ const Toggle = ({ checked, onChange }) => (
   </label>
 );
 
-const items = [
-  {
-    id: "multi-currency",
-    icon: Banknote,
-    title: "Multi-Currency",
-    desc: "Izinkan transaksi dengan mata uang asing",
-    defaultChecked: false
-  },
-  {
-    id: "pajak",
-    icon: Wallet,
-    title: "Pengaturan Pajak (PPN)",
-    desc: "Hitung pajak otomatis pada invoice",
-    defaultChecked: true
-  },
-  {
-    id: "stok",
-    icon: RefreshCw,
-    title: "Update Stok Otomatis",
-    desc: "Kurangi stok saat transaksi sukses",
-    defaultChecked: true
-  }
-];
-
 const KonfigurasiGlobal = () => {
+  const { t } = useTranslation();
+  const items = [
+    {
+      id: "multi-currency",
+      icon: Banknote,
+      title: t("page.globalSetting.globalConfig.multiCurrency"),
+      desc: t("page.globalSetting.globalConfig.multiCurrencyDesc"),
+      defaultChecked: false
+    },
+    {
+      id: "pajak",
+      icon: Wallet,
+      title: t("page.globalSetting.globalConfig.taxSettings"),
+      desc: t("page.globalSetting.globalConfig.taxSettingsDesc"),
+      defaultChecked: true
+    },
+    {
+      id: "stok",
+      icon: RefreshCw,
+      title: t("page.globalSetting.globalConfig.autoStockUpdate"),
+      desc: t("page.globalSetting.globalConfig.autoStockUpdateDesc"),
+      defaultChecked: true
+    }
+  ];
   return (
     <div className="space-y-6">
       <section className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <div className="flex items-center gap-4 mb-6">
           <Cog className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
-          <h3 className="text-lg font-semibold">Konfigurasi Global</h3>
+          <h3 className="text-lg font-semibold">{t("page.globalSetting.globalConfig.title")}</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {items.map((item) => {
@@ -63,8 +64,12 @@ const KonfigurasiGlobal = () => {
             <div className="flex gap-4 items-center flex-1">
               <Award className="text-muted-foreground" size={20} />
               <div>
-                <p className="text-sm font-medium">Rasio Konversi Poin</p>
-                <p className="text-xs text-muted-foreground">Nilai Rp1 = Berapa Poin?</p>
+                <p className="text-sm font-medium">
+                  {t("page.globalSetting.globalConfig.pointConversion")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.globalSetting.globalConfig.pointConversionDesc")}
+                </p>
               </div>
             </div>
             <div className="w-24">
@@ -80,10 +85,10 @@ const KonfigurasiGlobal = () => {
 
       <div className="flex items-center justify-end gap-4">
         <button className="px-6 py-3 rounded-lg text-sm border border-border hover:bg-muted transition-colors">
-          Reset ke Default
+          {t("page.globalSetting.globalConfig.resetDefault")}
         </button>
         <button className="px-8 py-3 rounded-lg text-sm bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-95">
-          Simpan Perubahan
+          {t("page.globalSetting.globalConfig.saveChanges")}
         </button>
       </div>
     </div>

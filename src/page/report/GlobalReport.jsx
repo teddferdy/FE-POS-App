@@ -3,15 +3,16 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getSalesReport, getDailySummary } from "@/services/report";
 import { getListTableBestSellingList } from "@/services/overview";
 import { getDataCurrentYear } from "@/services/chart";
 import { Loading } from "@/components/ui/loading";
 
 const tabs = [
-  { key: "sales", label: "Global Sales Analytic", icon: "analytics" },
-  { key: "best-seller", label: "Best Seller Global", icon: "inventory" },
-  { key: "export", label: "Export Center", icon: "download" }
+  { key: "sales", icon: "analytics" },
+  { key: "best-seller", icon: "inventory" },
+  { key: "export", icon: "download" }
 ];
 
 const formatCurrency = (value) => {
@@ -156,10 +157,12 @@ const exportHistory = [
     iconColor: "text-green-600",
     name: "sales_global_q3_2023.xlsx",
     type: "Penjualan",
+    typeKey: "sales",
     date: "Oct 24, 2023",
     time: "14:20",
     size: "2.4 MB",
     status: "Ready",
+    statusKey: "ready",
     statusBg: "bg-secondary-container/20",
     statusColor: "text-on-secondary-container"
   },
@@ -168,10 +171,12 @@ const exportHistory = [
     iconColor: "text-red-600",
     name: "stock_audit_jakarta_sept.pdf",
     type: "Stok",
+    typeKey: "stock",
     date: "Oct 23, 2023",
     time: "09:15",
     size: "15.8 MB",
     status: "Ready",
+    statusKey: "ready",
     statusBg: "bg-secondary-container/20",
     statusColor: "text-on-secondary-container"
   },
@@ -180,10 +185,12 @@ const exportHistory = [
     iconColor: "text-on-surface-variant",
     name: "customer_loyalty_dump.csv",
     type: "Pelanggan",
+    typeKey: "customer",
     date: "Oct 21, 2023",
     time: "18:45",
     size: "840 KB",
     status: "Expired",
+    statusKey: "expired",
     statusBg: "bg-surface-container-high",
     statusColor: "text-on-surface-variant",
     expired: true
@@ -193,10 +200,12 @@ const exportHistory = [
     iconColor: "text-amber-600",
     name: "employee_performance_h2.xlsx",
     type: "Karyawan",
+    typeKey: "employee",
     date: "Oct 20, 2023",
     time: "11:30",
     size: "1.1 MB",
     status: "Processing",
+    statusKey: "processing",
     statusBg: "",
     statusColor: "text-primary",
     processing: true
@@ -204,19 +213,20 @@ const exportHistory = [
 ];
 
 const reportTypes = [
-  { icon: "payments", label: "Penjualan" },
-  { icon: "inventory_2", label: "Stok" },
-  { icon: "group", label: "Pelanggan" },
-  { icon: "badge", label: "Karyawan" }
+  { icon: "payments", label: "Penjualan", key: "sales" },
+  { icon: "inventory_2", label: "Stok", key: "stock" },
+  { icon: "group", label: "Pelanggan", key: "customer" },
+  { icon: "badge", label: "Karyawan", key: "employee" }
 ];
 
 const periods = [
-  { label: "Today", dateLabel: "June 01 - June 30, 2024" },
-  { label: "Weekly", dateLabel: "June 01 - June 30, 2024" },
-  { label: "Monthly", dateLabel: "June 01 - June 30, 2024" }
+  { label: "Today", dateLabel: "page.report.sales.today" },
+  { label: "Weekly", dateLabel: "page.report.sales.weekly" },
+  { label: "Monthly", dateLabel: "page.report.sales.monthly" }
 ];
 
 const GlobalReport = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -228,10 +238,10 @@ const GlobalReport = () => {
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Laporan Global</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Analytics dan laporan menyeluruh seluruh jaringan toko
-          </p>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.report.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.report.description")}</p>
         </div>
       </div>
 
@@ -246,26 +256,26 @@ const GlobalReport = () => {
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}>
             <span className="material-symbols-outlined text-lg">{tab.icon}</span>
-            {tab.label}
+            {t(`page.report.tab.${tab.key}`)}
           </button>
         ))}
       </div>
 
-      {activeTab === "sales" && <GlobalSalesTab period={salesPeriod} setPeriod={setSalesPeriod} />}
-      {activeTab === "best-seller" && <BestSellerTab />}
-      {activeTab === "export" && <ExportTab />}
+      {activeTab === "sales" && (
+        <GlobalSalesTab t={t} period={salesPeriod} setPeriod={setSalesPeriod} />
+      )}
+      {activeTab === "best-seller" && <BestSellerTab t={t} />}
+      {activeTab === "export" && <ExportTab t={t} />}
     </div>
   );
 };
 
-const GlobalSalesTab = ({ period, setPeriod }) => (
+const GlobalSalesTab = ({ t, period, setPeriod }) => (
   <div className="space-y-6">
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Global Sales Analytics</h3>
-        <p className="text-sm text-muted-foreground">
-          Real-time performance metrics across all registered store locations.
-        </p>
+        <h3 className="text-lg font-semibold text-foreground">{t("page.report.sales.title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("page.report.sales.description")}</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="bg-card border border-border rounded-lg p-1 flex">
@@ -278,17 +288,19 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}>
-              {p.label}
+              {t(`page.report.sales.${p.label.toLowerCase()}`)}
             </button>
           ))}
         </div>
         <button className="flex items-center gap-1 px-3 py-1.5 border border-border rounded-lg text-xs font-semibold text-foreground bg-card hover:bg-muted transition-all">
           <span className="material-symbols-outlined text-sm">filter_list</span>
-          Store Category
+          {t("page.report.sales.storeCategory")}
         </button>
         <button className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold shadow-sm hover:opacity-90 transition-all">
           <span className="material-symbols-outlined text-sm">calendar_today</span>
-          {period === "Today" ? "Today" : `June 01 - June 30, 2024`}
+          {period === "Today"
+            ? t("page.report.sales.today")
+            : t("page.report.sales.dateRangePlaceholder")}
         </button>
       </div>
     </div>
@@ -299,7 +311,7 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
           icon: "payments",
           iconBg: "bg-primary-fixed",
           iconColor: "text-primary",
-          label: "Total Global Sales",
+          labelKey: "page.report.sales.kpi.totalSales",
           value: "Rp 4.28B",
           trend: "+12.4%",
           trendColor: "text-secondary",
@@ -309,7 +321,7 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
           icon: "receipt_long",
           iconBg: "bg-secondary-container",
           iconColor: "text-on-secondary-container",
-          label: "Avg. Transaction",
+          labelKey: "page.report.sales.kpi.avgTransaction",
           value: "Rp 312.4K",
           trend: "+3.1%",
           trendColor: "text-secondary",
@@ -319,7 +331,7 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
           icon: "group",
           iconBg: "bg-tertiary-fixed",
           iconColor: "text-tertiary",
-          label: "Total Customers",
+          labelKey: "page.report.sales.kpi.totalCustomers",
           value: formatNumber(14208),
           trend: "-0.8%",
           trendColor: "text-error",
@@ -329,14 +341,16 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
           icon: "storefront",
           iconBg: "bg-primary-container/10",
           iconColor: "text-primary",
-          label: "Total Outlets",
+          labelKey: "page.report.sales.kpi.totalOutlets",
           value: "42 / 45",
-          trend: "Active",
+          trendKey: "common.active",
           trendColor: "text-on-secondary-container",
           trendIcon: ""
         }
       ].map((kpi) => (
-        <div key={kpi.label} className="bg-card p-4 rounded-xl border border-border shadow-sm">
+        <div
+          key={kpi.labelKey || kpi.label}
+          className="bg-card p-4 rounded-xl border border-border shadow-sm">
           <div className="flex justify-between items-start mb-3">
             <div className={`p-2 ${kpi.iconBg} rounded-lg`}>
               <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
@@ -344,17 +358,17 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
             {kpi.trendIcon && (
               <span className={`flex items-center gap-1 text-xs font-semibold ${kpi.trendColor}`}>
                 <span className="material-symbols-outlined text-sm">{kpi.trendIcon}</span>
-                {kpi.trend}
+                {kpi.trendKey ? t(kpi.trendKey) : kpi.trend}
               </span>
             )}
             {!kpi.trendIcon && (
               <span className="px-2 py-0.5 bg-secondary-container/20 text-on-secondary-container rounded text-xs font-semibold">
-                {kpi.trend}
+                {kpi.trendKey ? t(kpi.trendKey) : kpi.trend}
               </span>
             )}
           </div>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            {kpi.label}
+            {t(kpi.labelKey)}
           </p>
           <p className="text-xl font-bold text-foreground">{kpi.value}</p>
         </div>
@@ -364,17 +378,23 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
     <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-base font-semibold text-foreground">Revenue Trend</h3>
-          <p className="text-sm text-muted-foreground">Daily comparison across all regions</p>
+          <h3 className="text-base font-semibold text-foreground">
+            {t("page.report.sales.revenueTrend")}
+          </h3>
+          <p className="text-sm text-muted-foreground">{t("page.report.sales.revenueTrendDesc")}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-primary" />
-            <span className="text-xs text-muted-foreground">This Month</span>
+            <span className="text-xs text-muted-foreground">
+              {t("page.report.sales.thisMonth")}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-border" />
-            <span className="text-xs text-muted-foreground">Last Month</span>
+            <span className="text-xs text-muted-foreground">
+              {t("page.report.sales.lastMonth")}
+            </span>
           </div>
         </div>
       </div>
@@ -401,9 +421,11 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
 
     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-        <h3 className="text-base font-semibold text-foreground">Store Performance Comparison</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          {t("page.report.sales.storePerformance")}
+        </h3>
         <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
-          View Detailed Report
+          {t("page.report.sales.viewDetailedReport")}
           <span className="material-symbols-outlined text-sm">chevron_right</span>
         </button>
       </div>
@@ -412,19 +434,19 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
           <thead>
             <tr className="bg-muted/30">
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Store Name
+                {t("page.report.sales.table.storeName")}
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Location
+                {t("page.report.sales.table.location")}
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                Total Sales
+                {t("page.report.sales.table.totalSales")}
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                Transactions
+                {t("page.report.sales.table.transactions")}
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                Target Status
+                {t("page.report.sales.table.targetStatus")}
               </th>
               <th className="px-6 py-3" />
             </tr>
@@ -469,7 +491,7 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
         </table>
       </div>
       <div className="px-6 py-3 border-t border-border flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">Showing 4 of 42 stores</p>
+        <p className="text-xs text-muted-foreground">{t("page.report.sales.showingStores")}</p>
         <div className="flex gap-1">
           <button
             className="p-1 border border-border rounded hover:bg-muted transition-all disabled:opacity-50"
@@ -485,43 +507,49 @@ const GlobalSalesTab = ({ period, setPeriod }) => (
   </div>
 );
 
-const BestSellerTab = () => (
+const BestSellerTab = ({ t }) => (
   <div className="space-y-6">
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Best Sellers Global</h3>
-        <p className="text-sm text-muted-foreground">
-          Analisis produk dengan performa terbaik di seluruh jaringan toko.
-        </p>
+        <h3 className="text-lg font-semibold text-foreground">
+          {t("page.report.bestSeller.title")}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t("page.report.bestSeller.description")}</p>
       </div>
       <div className="flex flex-wrap gap-2 items-end">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-muted-foreground">Pilih Cabang</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            {t("page.report.bestSeller.selectBranch")}
+          </label>
           <select className="bg-card border border-border rounded-lg text-sm py-1.5 px-3 focus:ring-2 focus:ring-primary/20">
-            <option>Semua Toko</option>
+            <option>{t("page.report.bestSeller.allStores")}</option>
             <option>Jakarta Selatan</option>
             <option>Surabaya Hub</option>
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-muted-foreground">Rentang Waktu</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            {t("page.report.bestSeller.timeRange")}
+          </label>
           <select className="bg-card border border-border rounded-lg text-sm py-1.5 px-3 focus:ring-2 focus:ring-primary/20">
-            <option>30 Hari Terakhir</option>
-            <option>Kuartal Ini</option>
-            <option>Tahun Ini</option>
+            <option>{t("page.report.bestSeller.last30Days")}</option>
+            <option>{t("page.report.bestSeller.thisQuarter")}</option>
+            <option>{t("page.report.bestSeller.thisYear")}</option>
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-muted-foreground">Kategori</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            {t("page.report.bestSeller.category")}
+          </label>
           <select className="bg-card border border-border rounded-lg text-sm py-1.5 px-3 focus:ring-2 focus:ring-primary/20">
-            <option>Semua Kategori</option>
+            <option>{t("page.report.bestSeller.allCategories")}</option>
             <option>Electronics</option>
             <option>F&B Essentials</option>
           </select>
         </div>
         <button className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1 hover:opacity-90 transition-all">
           <span className="material-symbols-outlined text-sm">filter_list</span>
-          Terapkan
+          {t("page.report.bestSeller.apply")}
         </button>
       </div>
     </div>
@@ -531,7 +559,7 @@ const BestSellerTab = () => (
         {
           icon: "shopping_bag",
           iconColor: "text-primary",
-          label: "Unit Terjual",
+          labelKey: "page.report.bestSeller.kpi.unitsSold",
           value: formatNumber(128492),
           trend: "+12.4% vs bln lalu",
           trendIcon: "trending_up",
@@ -540,7 +568,7 @@ const BestSellerTab = () => (
         {
           icon: "payments",
           iconColor: "text-secondary",
-          label: "Pendapatan Produk",
+          labelKey: "page.report.bestSeller.kpi.productRevenue",
           value: "Rp 4.2B",
           trend: "+8.1% vs bln lalu",
           trendIcon: "trending_up",
@@ -549,7 +577,7 @@ const BestSellerTab = () => (
         {
           icon: "inventory_2",
           iconColor: "text-tertiary",
-          label: "Produk Aktif",
+          labelKey: "page.report.bestSeller.kpi.activeProducts",
           value: formatNumber(1240),
           trend: "Stabilitas ketersediaan 98%",
           trendIcon: "",
@@ -558,16 +586,16 @@ const BestSellerTab = () => (
         {
           icon: "assignment_return",
           iconColor: "text-error",
-          label: "Rasio Pengembalian",
+          labelKey: "page.report.bestSeller.kpi.returnRate",
           value: "0.82%",
           trend: "-0.1% penurunan",
           trendIcon: "trending_down",
           trendColor: "text-on-error-container"
         }
       ].map((kpi) => (
-        <div key={kpi.label} className="bg-card p-4 rounded-xl border border-border shadow-sm">
+        <div key={kpi.labelKey} className="bg-card p-4 rounded-xl border border-border shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold text-muted-foreground">{kpi.label}</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t(kpi.labelKey)}</span>
             <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
           </div>
           <p className="text-xl font-bold text-foreground">{kpi.value}</p>
@@ -584,9 +612,11 @@ const BestSellerTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-base font-semibold text-foreground">Visualisasi Top 10 Produk</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            {t("page.report.bestSeller.top10Visualization")}
+          </h3>
           <button className="text-primary text-xs font-semibold hover:underline">
-            Lihat Semua
+            {t("page.report.bestSeller.viewAll")}
           </button>
         </div>
         <div className="space-y-4">
@@ -613,7 +643,7 @@ const BestSellerTab = () => (
         </div>
         <div className="relative z-10">
           <span className="bg-secondary/20 text-secondary-fixed border border-secondary/30 px-3 py-1 rounded-full text-xs font-semibold mb-4 inline-block">
-            Product Spotlight
+            {t("page.report.bestSeller.productSpotlight")}
           </span>
           <h4 className="text-lg font-semibold mb-2">Artisan Coffee Blend</h4>
           <p className="text-sm text-background/70 mb-6">
@@ -621,24 +651,30 @@ const BestSellerTab = () => (
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/5 p-3 rounded-lg">
-              <p className="text-[10px] text-background/60 uppercase tracking-widest">Share</p>
+              <p className="text-[10px] text-background/60 uppercase tracking-widest">
+                {t("page.report.bestSeller.share")}
+              </p>
               <p className="text-lg font-bold">18%</p>
             </div>
             <div className="bg-white/5 p-3 rounded-lg">
-              <p className="text-[10px] text-background/60 uppercase tracking-widest">Status</p>
-              <p className="text-lg font-bold">Lead</p>
+              <p className="text-[10px] text-background/60 uppercase tracking-widest">
+                {t("common.status")}
+              </p>
+              <p className="text-lg font-bold">{t("page.report.bestSeller.lead")}</p>
             </div>
           </div>
         </div>
         <button className="mt-6 w-full bg-primary text-primary-foreground py-3 rounded-lg text-sm font-semibold hover:opacity-90 transition-all relative z-10">
-          Lihat Analisis Mendalam
+          {t("page.report.bestSeller.viewDeepAnalysis")}
         </button>
       </div>
     </div>
 
     <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-        <h3 className="text-base font-semibold text-foreground">Tabel Detail Performa Produk</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          {t("page.report.bestSeller.productPerformanceTable")}
+        </h3>
         <div className="flex gap-2">
           <button className="p-1.5 border border-border rounded-lg hover:bg-muted transition-all">
             <span className="material-symbols-outlined text-lg">file_download</span>
@@ -653,25 +689,25 @@ const BestSellerTab = () => (
           <thead>
             <tr className="bg-muted/30 border-b border-border">
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                PERINGKAT
+                {t("page.report.bestSeller.table.rank")}
               </th>
               <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                NAMA PRODUK
+                {t("page.report.bestSeller.table.productName")}
               </th>
               <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                SKU
+                {t("page.report.bestSeller.table.sku")}
               </th>
               <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                TOTAL TERJUAL
+                {t("page.report.bestSeller.table.totalSold")}
               </th>
               <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                KONTRIBUSI
+                {t("page.report.bestSeller.table.revenue")}
               </th>
               <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                TREN
+                {t("page.report.bestSeller.table.trend")}
               </th>
               <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                AKSI
+                {t("page.report.bestSeller.table.actions")}
               </th>
             </tr>
           </thead>
@@ -717,7 +753,7 @@ const BestSellerTab = () => (
         </table>
       </div>
       <div className="px-6 py-3 border-t border-border flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">Menampilkan 1-10 dari 1,240 produk</p>
+        <p className="text-xs text-muted-foreground">{t("page.report.bestSeller.table.showing")}</p>
         <div className="flex gap-1">
           <button className="px-2 py-1 border border-border rounded hover:bg-muted transition-all">
             <span className="material-symbols-outlined text-lg">chevron_left</span>
@@ -740,17 +776,15 @@ const BestSellerTab = () => (
   </div>
 );
 
-const ExportTab = () => {
+const ExportTab = ({ t }) => {
   const [reportType, setReportType] = useState("Penjualan");
   const [fileFormat, setFileFormat] = useState("xlsx");
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Export Center</h3>
-        <p className="text-sm text-muted-foreground">
-          Configure and download enterprise-wide reporting data.
-        </p>
+        <h3 className="text-lg font-semibold text-foreground">{t("page.report.export.title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("page.report.export.description")}</p>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
@@ -759,12 +793,14 @@ const ExportTab = () => {
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <span className="material-symbols-outlined text-primary">tune</span>
             </div>
-            <h3 className="text-base font-semibold text-foreground">Export Configuration</h3>
+            <h3 className="text-base font-semibold text-foreground">
+              {t("page.report.export.exportConfiguration")}
+            </h3>
           </div>
           <div className="space-y-6">
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">
-                1. Select Report Type
+                {t("page.report.export.selectReportType")}
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {reportTypes.map((rt) => (
@@ -789,7 +825,9 @@ const ExportTab = () => {
                       }`}>
                       {rt.icon}
                     </span>
-                    <span className="text-xs font-semibold text-foreground">{rt.label}</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {t(`page.report.export.reportType.${rt.key}`)}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -797,27 +835,31 @@ const ExportTab = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">Date Range</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  {t("page.report.export.dateRange")}
+                </label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                     calendar_today
                   </span>
                   <select className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary/20 appearance-none">
-                    <option>Last 30 Days</option>
-                    <option>Custom Range</option>
-                    <option>Year to Date</option>
-                    <option>Last Quarter</option>
+                    <option>{t("page.report.export.last30Days")}</option>
+                    <option>{t("page.report.export.customRange")}</option>
+                    <option>{t("page.report.export.yearToDate")}</option>
+                    <option>{t("page.report.export.lastQuarter")}</option>
                   </select>
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">Store Context</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  {t("page.report.export.storeContext")}
+                </label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                     storefront
                   </span>
                   <select className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:ring-2 focus:ring-primary/20 appearance-none">
-                    <option>All Stores (Global)</option>
+                    <option>{t("page.report.export.allStores")}</option>
                     <option>Jakarta Central Hub</option>
                     <option>Surabaya Distribution</option>
                   </select>
@@ -827,13 +869,13 @@ const ExportTab = () => {
 
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">
-                3. File Format
+                {t("page.report.export.fileFormat")}
               </label>
               <div className="flex flex-wrap gap-3">
                 {[
-                  { key: "xlsx", icon: "description", label: "XLSX (Excel)" },
-                  { key: "csv", icon: "csv", label: "CSV (Raw)" },
-                  { key: "pdf", icon: "picture_as_pdf", label: "PDF (Report)" }
+                  { key: "xlsx", icon: "description", labelKey: "page.report.export.format.xlsx" },
+                  { key: "csv", icon: "csv", labelKey: "page.report.export.format.csv" },
+                  { key: "pdf", icon: "picture_as_pdf", labelKey: "page.report.export.format.pdf" }
                 ].map((fmt) => (
                   <button
                     key={fmt.key}
@@ -844,7 +886,7 @@ const ExportTab = () => {
                         : "border-border text-muted-foreground hover:border-primary"
                     }`}>
                     <span className="material-symbols-outlined">{fmt.icon}</span>
-                    {fmt.label}
+                    {t(fmt.labelKey)}
                   </button>
                 ))}
               </div>
@@ -853,7 +895,7 @@ const ExportTab = () => {
             <div className="pt-4 flex justify-end">
               <button className="bg-primary hover:opacity-90 text-primary-foreground px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-3 transition-all shadow-md">
                 <span className="material-symbols-outlined">cloud_download</span>
-                Generate & Export Data
+                {t("page.report.export.generateExport")}
               </button>
             </div>
           </div>
@@ -862,17 +904,20 @@ const ExportTab = () => {
         <section className="col-span-12 lg:col-span-4 flex flex-col gap-4">
           <div className="bg-foreground text-background p-6 rounded-xl shadow-lg relative overflow-hidden">
             <div className="relative z-10">
-              <h4 className="text-base font-semibold mb-2">Storage Usage</h4>
+              <h4 className="text-base font-semibold mb-2">
+                {t("page.report.export.storageUsage")}
+              </h4>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-extrabold text-primary-fixed-dim">74%</span>
-                <span className="text-sm text-background/60">of 5GB quota</span>
+                <span className="text-sm text-background/60">
+                  {t("page.report.export.ofQuota")}
+                </span>
               </div>
               <div className="w-full h-2 bg-white/10 rounded-full mt-4">
                 <div className="w-3/4 h-full bg-primary-fixed rounded-full shadow-[0_0_8px_rgba(216,226,255,0.5)]" />
               </div>
               <p className="mt-4 text-xs text-background/70 leading-relaxed">
-                Tip: System cleans up export files older than 30 days automatically to maintain
-                performance.
+                {t("page.report.export.storageTip")}
               </p>
             </div>
             <div className="absolute -right-8 -bottom-8 opacity-10">
@@ -906,9 +951,11 @@ const ExportTab = () => {
 
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-          <h3 className="text-base font-semibold text-foreground">Recent Export History</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            {t("page.report.export.recentExports")}
+          </h3>
           <button className="text-primary text-xs font-semibold hover:underline">
-            View All Activities
+            {t("page.report.export.viewAllActivities")}
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -916,22 +963,22 @@ const ExportTab = () => {
             <thead>
               <tr className="bg-muted/30 border-b border-border">
                 <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  FILE NAME
+                  {t("page.report.export.table.fileName")}
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  TYPE
+                  {t("page.report.export.table.type")}
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  DATE GENERATED
+                  {t("page.report.export.table.dateGenerated")}
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  SIZE
+                  {t("page.report.export.table.size")}
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  STATUS
+                  {t("page.report.export.table.status")}
                 </th>
                 <th className="text-right px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  ACTION
+                  {t("page.report.export.table.action")}
                 </th>
               </tr>
             </thead>
@@ -948,7 +995,9 @@ const ExportTab = () => {
                       <span className="text-sm font-medium text-foreground">{file.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-3 text-sm text-muted-foreground">{file.type}</td>
+                  <td className="px-6 py-3 text-sm text-muted-foreground">
+                    {t(`page.report.export.reportType.${file.typeKey}`)}
+                  </td>
                   <td className="px-6 py-3 text-sm text-muted-foreground">
                     {file.date} &bull; {file.time}
                   </td>
@@ -959,13 +1008,13 @@ const ExportTab = () => {
                         <div className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                         <span
                           className={`text-xs font-bold uppercase tracking-wider ${file.statusColor}`}>
-                          {file.status}
+                          {t(`page.report.export.status.${file.statusKey}`)}
                         </span>
                       </div>
                     ) : (
                       <span
                         className={`px-2 py-0.5 rounded-full ${file.statusBg} ${file.statusColor} text-[10px] font-bold uppercase tracking-wider`}>
-                        {file.status}
+                        {t(`page.report.export.status.${file.statusKey}`)}
                       </span>
                     )}
                   </td>
@@ -999,33 +1048,33 @@ const ExportTab = () => {
             icon: "bar_chart",
             iconBg: "bg-white",
             iconColor: "text-primary",
-            label: "Exports This Month",
+            labelKey: "page.report.export.stats.exportsThisMonth",
             value: "128 Files"
           },
           {
             icon: "check_circle",
             iconBg: "bg-white",
             iconColor: "text-on-secondary-container",
-            label: "Success Rate",
+            labelKey: "page.report.export.stats.successRate",
             value: "99.8%"
           },
           {
             icon: "schedule",
             iconBg: "bg-white",
             iconColor: "text-on-tertiary-container",
-            label: "Avg. Generation Time",
+            labelKey: "page.report.export.stats.avgGenerationTime",
             value: "12.4s"
           }
         ].map((stat) => (
           <div
-            key={stat.label}
+            key={stat.labelKey}
             className="bg-muted/50 p-4 rounded-xl border border-border flex items-center gap-3">
             <div
               className={`w-12 h-12 rounded-full ${stat.iconBg} flex items-center justify-center shadow-sm`}>
               <span className={`material-symbols-outlined ${stat.iconColor}`}>{stat.icon}</span>
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground">{stat.label}</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t(stat.labelKey)}</p>
               <p className="text-lg font-bold text-foreground">{stat.value}</p>
             </div>
           </div>

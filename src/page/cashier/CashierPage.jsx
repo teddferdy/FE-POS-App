@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { ShoppingCart, X, Package } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { orderList } from "@/state/order-list";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,11 @@ import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 
 const CashierPage = () => {
+  const { t } = useTranslation();
   const [cookie] = useCookies();
   const store = cookie?.store;
-  const cashierName = cookie?.name || "Kasir";
-  const storeName = cookie?.store_name || "Toko";
+  const cashierName = cookie?.name || t("page.cashier.cashierName");
+  const storeName = cookie?.store_name || t("page.cashier.storeName");
 
   const [search, setSearch] = useState("");
   const [barcode, setBarcode] = useState("");
@@ -124,7 +126,9 @@ const CashierPage = () => {
               showCartMobile ? "relative ml-auto" : ""
             } w-full max-w-md lg:max-w-none bg-card flex flex-col h-full`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border lg:hidden">
-              <h2 className="font-semibold">Pesanan ({totalItems})</h2>
+              <h2 className="font-semibold">
+                {t("page.cashier.orderCount", { count: totalItems })}
+              </h2>
               <Button variant="ghost" size="icon" onClick={() => setShowCartMobile(false)}>
                 <X size={18} />
               </Button>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import AddMemberTier from "./AddMemberTier";
 import EditMemberTier from "./EditMemberTier";
+import { useTranslation } from "react-i18next";
 
 const initialTiers = [
   {
@@ -69,6 +70,7 @@ const initialTiers = [
 ];
 
 const MemberTier = () => {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTier, setEditingTier] = useState(null);
@@ -163,9 +165,9 @@ const MemberTier = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold">Member Tier Management</h2>
+              <h2 className="text-2xl font-bold">{t("page.memberTier.list.title")}</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Configure customer loyalty levels and benefit structures.
+                {t("page.memberTier.list.description")}
               </p>
             </div>
             <button

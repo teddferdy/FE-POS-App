@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const DiscountList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -70,22 +72,22 @@ const DiscountList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Diskon</span>
+        <span className="text-primary font-semibold">{t("page.discount.list.title")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Diskon</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.discount.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola data diskon untuk produk Anda.
+            {t("page.discount.list.description")}
           </p>
         </div>
         <Button onClick={() => navigate("/add-discount")} className="gap-2">
           <Plus size={18} />
-          Tambah Diskon
+          {t("page.discount.button.add")}
         </Button>
       </div>
 
@@ -110,7 +112,7 @@ const DiscountList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari diskon..."
+          placeholder={t("page.discount.list.search")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -131,22 +133,22 @@ const DiscountList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Diskon
+                    {t("page.discount.table.name")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tipe
+                    {t("page.discount.table.type")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nilai
+                    {t("page.discount.table.value")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.discount.table.status")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Masa Berlaku
+                    {t("page.discount.table.validity")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
+                    {t("page.discount.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -155,7 +157,7 @@ const DiscountList = () => {
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                       <Gift size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada diskon ditemukan</p>
+                      <p>{t("page.discount.list.empty")}</p>
                     </td>
                   </tr>
                 ) : (

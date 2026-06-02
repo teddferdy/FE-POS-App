@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const EditInvoiceFooter = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -59,8 +61,11 @@ const EditInvoiceFooter = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengupdate footer"
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message ||
+          err.message ||
+          t("page.invoiceFooter.edit.errorDescription")
       });
     }
   });
@@ -68,11 +73,15 @@ const EditInvoiceFooter = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Validasi", { description: "Nama footer wajib diisi" });
+      toast.error(t("common.validation"), {
+        description: t("page.invoiceFooter.validation.nameRequired")
+      });
       return;
     }
     if (!content.trim()) {
-      toast.error("Validasi", { description: "Konten footer wajib diisi" });
+      toast.error(t("common.validation"), {
+        description: t("page.invoiceFooter.validation.contentRequired")
+      });
       return;
     }
     updateMutation.mutate({
@@ -87,7 +96,7 @@ const EditInvoiceFooter = () => {
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID footer tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.invoiceFooter.edit.idNotFound")}</p>
       </div>
     );
   }
@@ -103,7 +112,7 @@ const EditInvoiceFooter = () => {
   if (!footerItem) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Footer tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.invoiceFooter.edit.notFound")}</p>
       </div>
     );
   }
@@ -114,31 +123,37 @@ const EditInvoiceFooter = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/footer-invoice-list")}
           className="hover:text-foreground transition-colors">
-          Footer Invoice
+          {t("page.invoiceFooter.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Footer</span>
+        <span className="text-primary font-semibold">
+          {t("page.invoiceFooter.edit.breadcrumb")}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Footer Invoice</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit data footer invoice.</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.invoiceFooter.edit.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.invoiceFooter.edit.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={updateMutation.isLoading} className="gap-2">
             <Save size={18} />
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {updateMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -148,27 +163,29 @@ const EditInvoiceFooter = () => {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                Nama Footer <span className="text-destructive">*</span>
+                {t("page.invoiceFooter.form.name")} <span className="text-destructive">*</span>
               </label>
               <Input
-                placeholder="Masukkan nama footer"
+                placeholder={t("page.invoiceFooter.form.namePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                Konten <span className="text-destructive">*</span>
+                {t("page.invoiceFooter.form.content")} <span className="text-destructive">*</span>
               </label>
               <Textarea
-                placeholder="Masukkan konten footer (HTML / teks)"
+                placeholder={t("page.invoiceFooter.form.contentPlaceholder")}
                 rows={8}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
             </div>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium block">Status Aktif</label>
+              <label className="text-sm font-medium block">
+                {t("page.invoiceFooter.form.isActive")}
+              </label>
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
           </div>
@@ -179,18 +196,18 @@ const EditInvoiceFooter = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.invoiceFooter.cancelModal.title")}
+        description={t("page.invoiceFooter.cancelModal.description")}
+        confirmText={t("page.invoiceFooter.cancelModal.confirmText")}
         onConfirm={() => navigate("/footer-invoice-list")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Footer invoice berhasil diupdate."
-        confirmText="Kembali ke Daftar"
+        title={t("page.invoiceFooter.successModal.title")}
+        description={t("page.invoiceFooter.edit.successDescription")}
+        confirmText={t("page.invoiceFooter.successModal.confirmText")}
         onConfirm={() => navigate("/footer-invoice-list")}
       />
     </div>

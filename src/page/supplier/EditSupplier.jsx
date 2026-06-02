@@ -19,6 +19,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama supplier wajib diisi"),
@@ -29,6 +30,7 @@ const formSchema = z.object({
 });
 
 const EditSupplier = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const supplierId = searchParams.get("id");
@@ -71,8 +73,9 @@ const EditSupplier = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengupdate supplier"
+      toast.error(t("common.error"), {
+        description:
+          err?.response?.data?.message || err.message || t("page.supplier.toast.updateError")
       });
     }
   });
@@ -84,7 +87,7 @@ const EditSupplier = () => {
   if (!supplierId) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID supplier tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.supplier.edit.notFound")}</p>
       </div>
     );
   }
@@ -103,34 +106,36 @@ const EditSupplier = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/supplier")}
           className="hover:text-foreground transition-colors">
-          Supplier
+          {t("breadcrumb.supplier")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Supplier</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.editSupplier")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Supplier</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit data pemasok barang.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.supplier.edit.description")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {updateMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       </div>
@@ -145,9 +150,9 @@ const EditSupplier = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Supplier <span className="text-destructive">*</span>
+                      {t("page.supplier.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama supplier" {...field} />
+                    <Input placeholder={t("page.supplier.form.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -157,8 +162,11 @@ const EditSupplier = () => {
                 name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kontak Person</FormLabel>
-                    <Input placeholder="Nama kontak person" {...field} />
+                    <FormLabel>{t("page.supplier.form.contactPerson")}</FormLabel>
+                    <Input
+                      placeholder={t("page.supplier.form.contactPersonPlaceholder")}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -168,8 +176,8 @@ const EditSupplier = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telepon</FormLabel>
-                    <Input placeholder="Nomor telepon" {...field} />
+                    <FormLabel>{t("page.supplier.form.phone")}</FormLabel>
+                    <Input placeholder={t("page.supplier.form.phonePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -179,8 +187,8 @@ const EditSupplier = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <Input placeholder="email@supplier.com" {...field} />
+                    <FormLabel>{t("page.supplier.form.email")}</FormLabel>
+                    <Input placeholder={t("page.supplier.form.emailPlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -191,8 +199,12 @@ const EditSupplier = () => {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alamat</FormLabel>
-                  <Textarea placeholder="Alamat lengkap supplier" rows={3} {...field} />
+                  <FormLabel>{t("page.supplier.form.address")}</FormLabel>
+                  <Textarea
+                    placeholder={t("page.supplier.form.addressPlaceholder")}
+                    rows={3}
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -205,18 +217,18 @@ const EditSupplier = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.supplier.modal.cancelTitle")}
+        description={t("page.supplier.modal.cancelDescription")}
+        confirmText={t("page.supplier.modal.confirmCancel")}
         onConfirm={() => navigate("/supplier")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Supplier berhasil diupdate."
-        confirmText="Kembali ke Daftar"
+        title={t("common.success")}
+        description={t("page.supplier.modal.updateSuccess")}
+        confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
       />
     </div>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   getAllSocialMedia,
@@ -18,6 +19,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 
 const SocialMediaRegularList = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const store = cookie?.user?.store;
@@ -38,33 +40,37 @@ const SocialMediaRegularList = () => {
 
   const addMutation = useMutation(addSocialMedia, {
     onSuccess: () => {
-      toast.success("Success", { description: "Social media added successfully" });
+      toast.success(t("common.success"), { description: t("page.socialMediaRegular.toast.added") });
       queryClient.invalidateQueries(["social-media-regular"]);
       closeForm();
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const editMutation = useMutation(editSocialMedia, {
     onSuccess: () => {
-      toast.success("Success", { description: "Social media updated successfully" });
+      toast.success(t("common.success"), {
+        description: t("page.socialMediaRegular.toast.updated")
+      });
       queryClient.invalidateQueries(["social-media-regular"]);
       closeForm();
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const deleteMutation = useMutation(deleteSocialMedia, {
     onSuccess: () => {
-      toast.success("Success", { description: "Social media deleted successfully" });
+      toast.success(t("common.success"), {
+        description: t("page.socialMediaRegular.toast.deleted")
+      });
       queryClient.invalidateQueries(["social-media-regular"]);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -106,7 +112,9 @@ const SocialMediaRegularList = () => {
 
   const handleSave = () => {
     if (!formData.platform.trim() || !formData.url.trim()) {
-      toast.error("Validation", { description: "Platform and URL are required" });
+      toast.error(t("common.error"), {
+        description: t("page.socialMediaRegular.validation.required")
+      });
       return;
     }
     const payload = {
@@ -131,12 +139,15 @@ const SocialMediaRegularList = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Social Media" }]}
-        title="Social Media"
-        description="Manage social media profiles.">
+        breadcrumbs={[
+          { label: t("breadcrumb.home"), href: "/dashboard" },
+          { label: t("page.socialMediaRegular.list.title") }
+        ]}
+        title={t("page.socialMediaRegular.list.title")}
+        description={t("page.socialMediaRegular.list.description")}>
         <Button onClick={openAdd} className="shrink-0">
           <Plus size={18} />
-          Add Social Media
+          {t("page.socialMediaRegular.button.add")}
         </Button>
       </PageHeader>
 
@@ -148,7 +159,7 @@ const SocialMediaRegularList = () => {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Search by platform or URL..."
+              placeholder={t("page.socialMediaRegular.list.search")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -169,16 +180,16 @@ const SocialMediaRegularList = () => {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground">
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Platform
+                    {t("page.socialMediaRegular.table.platform")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    URL / Profile
+                    {t("page.socialMediaRegular.table.url")}
                   </th>
                   <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
+                    {t("page.socialMediaRegular.table.status")}
                   </th>
                   <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Actions
+                    {t("page.socialMediaRegular.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -186,7 +197,7 @@ const SocialMediaRegularList = () => {
                 {paginatedItems.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                      No social media found
+                      {t("page.socialMediaRegular.list.empty")}
                     </td>
                   </tr>
                 ) : (
@@ -211,7 +222,7 @@ const SocialMediaRegularList = () => {
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
                           }`}>
-                          {item.isActive ? "Active" : "Inactive"}
+                          {item.isActive ? t("common.active") : t("common.inactive")}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -242,7 +253,7 @@ const SocialMediaRegularList = () => {
 
         <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-xs text-muted-foreground">
-            Showing {paginatedItems.length} of {total} items
+            {t("page.socialMediaRegular.list.showing", { count: paginatedItems.length, total })}
           </p>
           <div className="flex items-center gap-1">
             <button
@@ -282,24 +293,30 @@ const SocialMediaRegularList = () => {
         onOpenChange={(o) => {
           if (!o) closeForm();
         }}
-        title={editTarget ? "Edit Social Media" : "Add Social Media"}
-        confirmText="Save"
+        title={
+          editTarget
+            ? t("page.socialMediaRegular.form.titleEdit")
+            : t("page.socialMediaRegular.form.titleAdd")
+        }
+        confirmText={t("common.save")}
         onConfirm={handleSave}>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Platform</label>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.socialMediaRegular.form.platform")}
+            </label>
             <Input
-              placeholder="e.g. Instagram, Facebook"
+              placeholder={t("page.socialMediaRegular.form.platformPlaceholder")}
               value={formData.platform}
               onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
             />
           </div>
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">
-              URL / Profile
+              {t("page.socialMediaRegular.form.url")}
             </label>
             <Input
-              placeholder="e.g. https://instagram.com/..."
+              placeholder={t("page.socialMediaRegular.form.urlPlaceholder")}
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
             />
@@ -311,8 +328,8 @@ const SocialMediaRegularList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Delete Social Media?"
-        confirmText="Yes, Delete"
+        title={t("page.socialMediaRegular.delete.title")}
+        confirmText={t("page.socialMediaRegular.delete.confirm")}
         onConfirm={confirmDelete}
       />
     </div>

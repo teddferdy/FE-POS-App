@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ReceiptText,
   Image,
@@ -39,6 +40,7 @@ const Toggle = ({ checked, onChange, size = "md" }) => (
 );
 
 const PengaturanToko = () => {
+  const { t } = useTranslation();
   const [socialEnabled, setSocialEnabled] = useState({});
   const [previewEnabled, setPreviewEnabled] = useState({
     header: true,
@@ -55,12 +57,16 @@ const PengaturanToko = () => {
           <section className="bg-card rounded-xl border border-border p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-6">
               <ReceiptText className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
-              <h3 className="text-lg font-semibold">Invoice & Struk</h3>
+              <h3 className="text-lg font-semibold">
+                {t("page.globalSetting.storeSettings.invoiceReceipt")}
+              </h3>
             </div>
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-muted-foreground">Header Struk</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    {t("page.globalSetting.storeSettings.receiptHeader")}
+                  </label>
                   <Toggle
                     checked={previewEnabled.header}
                     onChange={() => setPreviewEnabled((p) => ({ ...p, header: !p.header }))}
@@ -71,12 +77,14 @@ const PengaturanToko = () => {
                   type="text"
                   defaultValue="PT. KINETIC LEDGER INDONESIA"
                   disabled={!previewEnabled.header}
-                  placeholder="Nama PT / Toko"
+                  placeholder={t("page.globalSetting.storeSettings.companyNamePlaceholder")}
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-muted-foreground">Alamat Toko</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    {t("page.globalSetting.storeSettings.storeAddress")}
+                  </label>
                   <Toggle
                     checked={previewEnabled.alamat}
                     onChange={() => setPreviewEnabled((p) => ({ ...p, alamat: !p.alamat }))}
@@ -87,12 +95,14 @@ const PengaturanToko = () => {
                   rows={2}
                   defaultValue="Jl. Jenderal Sudirman No. 123\nJakarta Selatan"
                   disabled={!previewEnabled.alamat}
-                  placeholder="Alamat lengkap toko"
+                  placeholder={t("page.globalSetting.storeSettings.addressPlaceholder")}
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-muted-foreground">Footer Struk</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    {t("page.globalSetting.storeSettings.receiptFooter")}
+                  </label>
                   <Toggle
                     checked={previewEnabled.footer}
                     onChange={() => setPreviewEnabled((p) => ({ ...p, footer: !p.footer }))}
@@ -103,11 +113,13 @@ const PengaturanToko = () => {
                   rows={3}
                   defaultValue="Terima kasih telah berbelanja! Silakan simpan struk ini sebagai bukti transaksi yang sah."
                   disabled={!previewEnabled.footer}
-                  placeholder="Pesan footer"
+                  placeholder={t("page.globalSetting.storeSettings.footerPlaceholder")}
                 />
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <span className="text-sm font-medium">Tampilkan Logo di Struk</span>
+                <span className="text-sm font-medium">
+                  {t("page.globalSetting.storeSettings.showLogoOnReceipt")}
+                </span>
                 <Toggle
                   checked={previewEnabled.logo}
                   onChange={() => setPreviewEnabled((p) => ({ ...p, logo: !p.logo }))}
@@ -119,12 +131,18 @@ const PengaturanToko = () => {
           <section className="bg-card rounded-xl border border-border p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-4">
               <Image className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
-              <h3 className="text-lg font-semibold">Logo Toko</h3>
+              <h3 className="text-lg font-semibold">
+                {t("page.globalSetting.storeSettings.storeLogo")}
+              </h3>
             </div>
             <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-muted transition-colors cursor-pointer">
               <CloudUpload className="text-4xl text-muted-foreground mb-4" />
-              <p className="text-sm font-medium">Klik untuk unggah atau drag-and-drop</p>
-              <p className="text-xs text-muted-foreground">PNG, JPG up to 2MB (Min. 512x512px)</p>
+              <p className="text-sm font-medium">
+                {t("page.globalSetting.storeSettings.uploadLabel")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("page.globalSetting.storeSettings.uploadHint")}
+              </p>
             </div>
             <div className="mt-4 flex items-center gap-4 p-4 bg-muted rounded-lg">
               <img
@@ -134,7 +152,9 @@ const PengaturanToko = () => {
               />
               <div className="flex-1">
                 <p className="text-sm font-medium">logo_utama_2024.png</p>
-                <p className="text-xs text-muted-foreground">124 KB &bull; Uploaded 2 days ago</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.globalSetting.storeSettings.fileInfo")}
+                </p>
               </div>
               <button className="text-destructive hover:bg-destructive/10 p-2 rounded-full transition-colors">
                 <Delete size={20} />
@@ -147,14 +167,18 @@ const PengaturanToko = () => {
               <div className="flex items-center gap-4">
                 <Share2 className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
                 <div>
-                  <h3 className="text-lg font-semibold">Media Sosial</h3>
+                  <h3 className="text-lg font-semibold">
+                    {t("page.globalSetting.storeSettings.socialMedia")}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Hubungkan akun media sosial toko Anda
+                    {t("page.globalSetting.storeSettings.socialMediaDesc")}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Tampilkan di Struk</span>
+                <span className="text-sm font-medium">
+                  {t("page.globalSetting.storeSettings.showOnReceipt")}
+                </span>
                 <Toggle
                   checked={previewEnabled.sosial}
                   onChange={() => setPreviewEnabled((p) => ({ ...p, sosial: !p.sosial }))}
@@ -207,16 +231,20 @@ const PengaturanToko = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <Wallet className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
-                <h3 className="text-lg font-semibold">Pajak (PPN)</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("page.globalSetting.storeSettings.tax")}
+                </h3>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Aktifkan PPN</span>
+                <span className="text-sm font-medium">
+                  {t("page.globalSetting.storeSettings.enableTax")}
+                </span>
                 <Toggle checked={true} onChange={() => {}} />
               </div>
             </div>
             <div className="max-w-xs">
               <label className="block text-sm font-medium text-muted-foreground mb-2">
-                Persentase Pajak (%)
+                {t("page.globalSetting.storeSettings.taxPercentage")}
               </label>
               <div className="relative">
                 <input
@@ -236,7 +264,9 @@ const PengaturanToko = () => {
           <section className="bg-card rounded-xl border border-border p-6 shadow-sm h-full sticky top-20">
             <div className="flex items-center gap-4 mb-4">
               <Eye className="text-primary p-2 bg-primary/10 rounded-lg" size={20} />
-              <h3 className="text-lg font-semibold">Preview Invoice</h3>
+              <h3 className="text-lg font-semibold">
+                {t("page.globalSetting.storeSettings.invoicePreview")}
+              </h3>
             </div>
             <div className="bg-muted p-4 rounded-lg flex justify-center items-start min-h-[600px]">
               <div className="bg-card w-full max-w-[280px] shadow-md p-6 font-mono text-[11px] text-card-foreground">
@@ -324,17 +354,17 @@ const PengaturanToko = () => {
               </div>
             </div>
             <p className="mt-3 text-xs text-muted-foreground text-center italic">
-              *Tampilan di atas adalah simulasi struk cetak standar (58mm)
+              {t("page.globalSetting.storeSettings.previewNote")}
             </p>
           </section>
         </div>
       </div>
       <div className="flex items-center justify-end gap-4">
         <button className="px-6 py-3 rounded-lg text-sm border border-border hover:bg-muted transition-colors">
-          Reset ke Default
+          {t("page.globalSetting.storeSettings.resetDefault")}
         </button>
         <button className="px-8 py-3 rounded-lg text-sm bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-95">
-          Simpan Semua Pengaturan
+          {t("page.globalSetting.storeSettings.saveAllSettings")}
         </button>
       </div>
     </div>

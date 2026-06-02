@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save } from "lucide-react";
 
 const icons = [
@@ -20,6 +21,7 @@ const colors = [
 ];
 
 const AddMemberTier = ({ onClose, onSave }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     tierName: "",
     minPoints: "",
@@ -76,13 +78,17 @@ const AddMemberTier = ({ onClose, onSave }) => {
       {/* Header */}
       <div className="px-xl py-lg border-b border-outline-variant/20 flex items-center justify-between">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface">Tambah Member Tier</h2>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface">
+            {t("page.memberTier.add.title")}
+          </h2>
           <p className="font-body-md text-on-surface-variant">
-            Konfigurasi tingkatan member baru untuk program loyalitas.
+            {t("page.memberTier.add.description")}
           </p>
         </div>
         <div className="flex items-center gap-md">
-          <span className="font-label-md text-on-surface-variant">Status Tier</span>
+          <span className="font-label-md text-on-surface-variant">
+            {t("page.memberTier.add.tierStatus")}
+          </span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -98,7 +104,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
           </label>
           <span
             className={`font-label-md font-bold ${formData.isActive ? "text-[#006c49]" : "text-error"}`}>
-            {formData.isActive ? "Active" : "Inactive"}
+            {formData.isActive ? t("common.active") : t("common.inactive")}
           </span>
         </div>
       </div>
@@ -108,26 +114,32 @@ const AddMemberTier = ({ onClose, onSave }) => {
         {/* General Information Section */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Informasi Dasar</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.add.basicInfo")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Identitas utama dari tier yang akan dibuat.
+              {t("page.memberTier.add.basicInfoDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-lg">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Tier Name</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.add.tierName")}
+                </label>
                 <input
                   type="text"
                   value={formData.tierName}
                   onChange={(e) => handleInputChange("tierName", e.target.value)}
                   disabled={!formData.isActive}
                   className="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 outline-none border-primary/50 transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Contoh: Gold Member"
+                  placeholder={t("page.memberTier.add.tierNamePlaceholder")}
                 />
               </div>
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Minimum Points</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.add.minPoints")}
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -148,7 +160,9 @@ const AddMemberTier = ({ onClose, onSave }) => {
                 </div>
               </div>
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Potongan Harga (%)</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.add.discountPercent")}
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -177,16 +191,20 @@ const AddMemberTier = ({ onClose, onSave }) => {
         {/* Visual Identity Section */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Identitas Visual</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.add.visualIdentity")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Badge dan warna yang akan merepresentasikan tier ini di aplikasi.
+              {t("page.memberTier.add.visualIdentityDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-lg">
             <div className="flex flex-wrap gap-xl">
               {/* Badge Icon Picker */}
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Pilih Icon Badge</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.add.selectIcon")}
+                </label>
                 <div className="flex gap-sm">
                   {icons.map((icon) => {
                     const Icon = icon.component;
@@ -210,7 +228,9 @@ const AddMemberTier = ({ onClose, onSave }) => {
 
               {/* Badge Color Picker */}
               <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">Badge Color</label>
+                <label className="font-label-md text-on-surface-variant">
+                  {t("page.memberTier.add.badgeColor")}
+                </label>
                 <div className="flex gap-sm">
                   {colors.map((color) => {
                     const isSelected = formData.selectedColor === color.value;
@@ -245,7 +265,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
               </div>
               <div>
                 <p className="font-label-md text-on-surface-variant uppercase tracking-widest">
-                  Preview Badge
+                  {t("page.memberTier.add.previewBadge")}
                 </p>
                 <h4 className="font-headline-md text-on-surface">
                   {formData.tierName || "Gold Member"}
@@ -267,9 +287,11 @@ const AddMemberTier = ({ onClose, onSave }) => {
         {/* Benefits & Perks Section */}
         <div className="grid grid-cols-12 gap-xl">
           <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">Benefits & Perks</h3>
+            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+              {t("page.memberTier.add.benefits")}
+            </h3>
             <p className="font-body-md text-on-surface-variant">
-              Daftar keuntungan yang didapatkan oleh member pada tingkatan ini.
+              {t("page.memberTier.add.benefitsDesc")}
             </p>
           </div>
           <div className="col-span-12 lg:col-span-8 space-y-md">
@@ -289,7 +311,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
                       onChange={(e) => handlePerkChange(perk.id, e.target.value)}
                       disabled={!formData.isActive}
                       className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="Masukkan benefit..."
+                      placeholder={t("page.memberTier.add.perkPlaceholder")}
                     />
                   </div>
                   <button
@@ -307,7 +329,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
               disabled={!formData.isActive}
               className="flex items-center gap-sm px-lg py-2 rounded-lg border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary transition-all active:scale-[0.98] w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-outline">
               <Plus size={20} />
-              <span className="font-label-md">Tambah Benefit Lainnya</span>
+              <span className="font-label-md">{t("page.memberTier.add.addBenefit")}</span>
             </button>
           </div>
         </div>
@@ -319,20 +341,20 @@ const AddMemberTier = ({ onClose, onSave }) => {
           <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
           </svg>
-          <p className="font-label-md">Pastikan semua data sudah benar sebelum menyimpan.</p>
+          <p className="font-label-md">{t("page.memberTier.add.footerHint")}</p>
         </div>
         <div className="flex items-center gap-md">
           <button
             onClick={onClose}
             className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            Batal
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!formData.isActive}
             className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary">
             <Save size={20} />
-            Simpan Tier
+            {t("page.memberTier.add.saveTier")}
           </button>
         </div>
       </div>
@@ -354,8 +376,8 @@ const AddMemberTier = ({ onClose, onSave }) => {
             </svg>
           </div>
           <div>
-            <p className="font-title-lg text-title-lg">Tier Berhasil Disimpan</p>
-            <p className="font-body-md opacity-80">Member tier baru telah ditambahkan ke sistem.</p>
+            <p className="font-title-lg text-title-lg">{t("page.memberTier.add.toastSuccess")}</p>
+            <p className="font-body-md opacity-80">{t("page.memberTier.add.toastDescription")}</p>
           </div>
         </div>
       </div>

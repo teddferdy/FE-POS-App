@@ -20,6 +20,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
@@ -30,6 +31,7 @@ const formSchema = z.object({
 });
 
 const AddExpense = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -69,22 +71,22 @@ const AddExpense = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/expense")}
           className="hover:text-foreground transition-colors">
-          Biaya
+          {t("breadcrumb.management")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah Biaya</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tambah Biaya</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tambah data pengeluaran baru.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
