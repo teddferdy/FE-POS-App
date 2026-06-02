@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { I18nextProvider } from "react-i18next";
 // import { CookiesProvider } from "react-cookie";
 import i18n from "./i18n";
+import { SocketProvider } from "@/services/socket";
 
 const queryClient = new QueryClient();
 
@@ -18,9 +19,11 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <Toaster position="top-center" expand={false} />
-        {/* <LoadingProvider> */}
-        <App />
-        {/* </LoadingProvider> */}
+        <SocketProvider>
+          {/* <LoadingProvider> */}
+          <App />
+          {/* </LoadingProvider> */}
+        </SocketProvider>
       </I18nextProvider>
     </QueryClientProvider>
     {/* </CookiesProvider> */}
