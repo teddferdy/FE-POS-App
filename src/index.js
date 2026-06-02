@@ -10,6 +10,12 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "./i18n";
 import { SocketProvider } from "@/services/socket";
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

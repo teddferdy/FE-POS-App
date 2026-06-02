@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
 import { setAuthExpiredCallback } from "@/services";
 
+// Offline
+import OfflineIndicator from "./components/organism/OfflineIndicator";
+
 // Auth
 import LoginPage from "./page/auth/login";
 import Register from "./page/auth/register";
@@ -149,6 +152,7 @@ function App() {
 
   return (
     <React.Fragment>
+      <OfflineIndicator />
       <BrowserRouter>
         <Routes>
           {/* Auth */}
