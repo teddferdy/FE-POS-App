@@ -1,6 +1,12 @@
 import { axiosInstance } from ".";
 
-export const getAllMember = async ({ page = 1, limit = 10, nameMember = "", phoneNumber = "", store } = {}) => {
+export const getAllMember = async ({
+  page = 1,
+  limit = 10,
+  nameMember = "",
+  phoneNumber = "",
+  store
+} = {}) => {
   const { data, status } = await axiosInstance.get("/member/get-member", {
     params: { page, limit, nameMember, phoneNumber, store }
   });

@@ -13,18 +13,13 @@ export const addMemberTier = async (payload) => {
 };
 
 export const editMemberTier = async (payload) => {
-  const { data, status } = await axiosInstance.put(
-    `/member-tier/edit/${payload.id}`,
-    payload
-  );
+  const { data, status } = await axiosInstance.put(`/member-tier/edit/${payload.id}`, payload);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
 export const deleteMemberTier = async (payload) => {
-  const { data, status } = await axiosInstance.delete(
-    `/member-tier/delete/${payload.id}`
-  );
+  const { data, status } = await axiosInstance.delete(`/member-tier/delete/${payload.id}`);
   if (status !== 200) throw Error(data?.error);
   return data;
 };

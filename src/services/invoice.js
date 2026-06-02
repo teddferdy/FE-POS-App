@@ -195,3 +195,9 @@ export const sendInvoiceEmail = async (payload) => {
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
+
+export const sendInvoiceWA = sendInvoiceWhatsApp;
+export const getAllInvoiceFooterByActive = getInvoiceFooterByActive;
+export const getAllInvoiceLogo = getAllInvoiceLogos;
+export const activateOrNotActiveInvoiceLogo = activateInvoiceLogo;
+export const activateOrNotActiveInvoiceSocialMedia = activateInvoiceSocialMedia;

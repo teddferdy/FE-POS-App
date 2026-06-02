@@ -41,7 +41,7 @@ export const deleteLocation = async (payload) => {
   return data;
 };
 
-export const getLocationDetail = async ({ id }) => {
+const _getLocationDetail = async ({ id }) => {
   const { data, status } = await axiosInstance.get(`/location/get-location-detail/${id}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
@@ -52,3 +52,6 @@ export const generateLocationId = async () => {
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
+
+export const getLocationDetail = _getLocationDetail;
+export const getLocationById = _getLocationDetail;

@@ -29,9 +29,8 @@ const OfflineIndicator = () => {
         textAlign: "center",
         padding: "8px 16px",
         fontSize: 14,
-        fontWeight: 600,
-      }}
-    >
+        fontWeight: 600
+      }}>
       Anda sedang offline — data akan disinkronkan saat koneksi kembali
     </div>
   );
