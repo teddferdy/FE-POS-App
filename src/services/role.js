@@ -27,9 +27,33 @@ export const editRole = async (payload) => {
 };
 
 export const deleteRole = async (payload) => {
-  const { data, status } = await axiosInstance.delete(`/role/edit-role/${payload.id}`, {
+  const { data, status } = await axiosInstance.delete(`/role/delete-role/${payload.id}`, {
     data: payload
   });
   if (status !== 200) throw Error(data?.error);
+  return data;
+};
+
+export const getRoleById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/role/get-role-by-id/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const updateUserRole = async (payload) => {
+  const { data, status } = await axiosInstance.put("/role/update-user-role", payload);
+  if (status !== 200) throw Error(`${data?.message || data?.error}`);
+  return data;
+};
+
+export const getUsersByRole = async () => {
+  const { data, status } = await axiosInstance.get("/role/get-users-by-role");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const updateAccessMenu = async (payload) => {
+  const { data, status } = await axiosInstance.put("/role/update-access-menu", payload);
+  if (status !== 200) throw Error(`${data?.message || data?.error}`);
   return data;
 };

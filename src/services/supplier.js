@@ -31,3 +31,38 @@ export const getSupplierById = async (payload) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+const downloadBlob = async (url, filename) => {
+  const { data, status } = await axiosInstance.get(url, {
+    responseType: "arraybuffer"
+  });
+  if (status !== 200) throw new Error("Download failed");
+  const blob = new Blob([data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};
+
+export const downloadSupplierTemplate = async () => {
+  return downloadBlob("/supplier/template", `template-supplier.xlsx`);
+};
+
+export const downloadSupplierExcel = async () => {
+  return downloadBlob("/supplier/download", `${Date.now()}-suppliers.xlsx`);
+};
+
+export const uploadSupplierExcel = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data, status } = await axiosInstance.post("/supplier/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};

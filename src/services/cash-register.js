@@ -7,7 +7,7 @@ export const openCashRegister = async (payload) => {
 };
 
 export const closeCashRegister = async (id, payload) => {
-  const { data, status } = await axiosInstance.post(`/cash-register/${id}/close`, payload);
+  const { data, status } = await axiosInstance.put(`/cash-register/close/${id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };

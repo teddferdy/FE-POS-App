@@ -9,7 +9,7 @@ export const getAllDiscountByLocationAndActive = async ({
   const { data, status } = await axiosInstance.get(
     `/discount/get-discount-by-location?store=${location}&page=${page}&limit=${limit}&status=${statusDiscount}`
   );
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 
@@ -17,13 +17,13 @@ export const getAllDiscount = async ({ location, page, limit, statusDiscount }) 
   const { data, status } = await axiosInstance.get(
     `/discount/get-discount?store=${location}&page=${page}&limit=${limit}&status=${statusDiscount}`
   );
-  if (status !== 200) throw Error(`${data.message}`);
+  if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 
 export const addDiscount = async (payload) => {
   const { data, status } = await axiosInstance.post("/discount/add-new-discount", payload);
-  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
 
@@ -32,7 +32,7 @@ export const editDiscount = async (payload) => {
     `/discount/edit-discount/${payload.id}`,
     payload
   );
-  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
   return data;
 };
 
@@ -40,6 +40,44 @@ export const deleteDiscount = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/discount/delete-discount/${payload.id}`, {
     data: payload
   });
-  if (status !== 200) throw Error(data?.error);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(`${data?.error}`);
+  return data;
+};
+
+const downloadBlob = async (url, filename) => {
+  const { data, status } = await axiosInstance.get(url, {
+    responseType: "arraybuffer"
+  });
+
+  if (status !== 200) throw new Error("Download failed");
+
+  const blob = new Blob([data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};
+
+export const downloadDiscountTemplate = async () => {
+  return downloadBlob("/discount/template", `template-diskon.xlsx`);
+};
+
+export const downloadDiscountExcel = async () => {
+  return downloadBlob("/discount/download", `${Date.now()}-discounts.xlsx`);
+};
+
+export const uploadDiscountExcel = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data, status } = await axiosInstance.post("/discount/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };

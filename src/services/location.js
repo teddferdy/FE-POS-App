@@ -60,7 +60,23 @@ export const deleteLocation = async (payload) => {
 };
 
 export const generateLocationId = async () => {
-  const { data, status } = await axiosInstance.get("/location/generate-id");
-  if (status !== 200) throw Error(`${data.message}`);
+  const { data, status } = await axiosInstance.get("/generate-id");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const editLocation = async (payload) => {
+  console.log("PAYLOAD =>", payload);
+
+  const { data, status } = await axiosInstance.put(`/edit-location`, payload);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
+  return data;
+};
+
+export const deleteLocation = async (payload) => {
+  const { data, status } = await axiosInstance.delete(`/delete-location`, {
+    data: payload
+  });
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(`${data?.message}`);
   return data;
 };
