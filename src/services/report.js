@@ -23,3 +23,11 @@ export const getProfitLoss = async (payload) => {
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
+
+export const getCashFlow = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/report/cash-flow?store=${payload?.location || ""}&startDate=${payload?.startDate || ""}&endDate=${payload?.endDate || ""}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};

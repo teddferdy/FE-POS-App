@@ -49,3 +49,29 @@ export const approveExpense = async (id) => {
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };
+
+export const getExpenseById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/expense/get-by-id/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getExpenseSummary = async (payload) => {
+  const { data, status } = await axiosInstance.get(
+    `/expense/get-summary?store=${payload?.location || ""}&startDate=${payload?.startDate || ""}&endDate=${payload?.endDate || ""}`
+  );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const deleteExpense = async (id) => {
+  const { data, status } = await axiosInstance.delete(`/expense/delete/${id}`);
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
+  return data;
+};
+
+export const rejectExpense = async (id) => {
+  const { data, status } = await axiosInstance.put(`/expense/reject/${id}`);
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
