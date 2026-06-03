@@ -35,8 +35,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
     ]
   });
 
-  const [showToast, setShowToast] = useState(false);
-
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -64,11 +62,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
   };
 
   const handleSave = () => {
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      if (onSave) onSave(formData);
-    }, 1500);
+    if (onSave) onSave(formData);
   };
 
   const IconComponent = icons.find((i) => i.name === formData.selectedIcon)?.component || Star;
@@ -343,20 +337,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
             <p className="text-xs text-muted-foreground leading-relaxed">
               {t("page.memberTier.add.footerHint")}
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Success Toast */}
-      <div
-        className={`fixed bottom-xl right-xl z-[100] transform transition-all duration-500 ${
-          showToast ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
-        }`}>
-        <div className="bg-primary text-primary-foreground px-6 py-4 rounded-xl shadow-xl flex items-center gap-3">
-          <CheckCircle size={20} />
-          <div>
-            <p className="text-sm font-bold">{t("page.memberTier.add.toastSuccess")}</p>
-            <p className="text-xs opacity-80">{t("page.memberTier.add.toastDescription")}</p>
           </div>
         </div>
       </div>

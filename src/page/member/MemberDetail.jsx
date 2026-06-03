@@ -183,7 +183,7 @@ const MemberDetail = () => {
           </h2>
         </div>
         <Button
-          onClick={() => navigate(`/add-member?id=${id}`)}
+          onClick={() => navigate(`/edit-member?id=${id}`)}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">edit</span>
           Edit Member

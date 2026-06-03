@@ -23,3 +23,17 @@ export const deleteMemberTier = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const getMemberTierByPoints = async (points) => {
+  const { data, status } = await axiosInstance.get("/member-tier/get-by-points", {
+    params: { points }
+  });
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const updateAllMemberTiers = async () => {
+  const { data, status } = await axiosInstance.post("/member-tier/update-members");
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};

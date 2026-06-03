@@ -14,7 +14,7 @@ export const getAllMember = async ({
   return data;
 };
 
-export const getMemberById = async (id, store) => {
+export const getMemberById = async ({ id, store } = {}) => {
   const { data, status } = await axiosInstance.get(`/member/get-member/${id}`, {
     params: { store }
   });
@@ -34,7 +34,7 @@ export const editMember = async (payload) => {
   return data;
 };
 
-export const deleteMember = async (id, store) => {
+export const deleteMember = async ({ id, store } = {}) => {
   const { data, status } = await axiosInstance.delete(`/member/delete-member/${id}`, {
     params: { store }
   });
@@ -42,8 +42,11 @@ export const deleteMember = async (id, store) => {
   return data;
 };
 
-export const addMemberPoints = async (id, payload) => {
-  const { data, status } = await axiosInstance.post(`/pos/member/${id}/add-points`, payload);
+export const addMemberPoints = async (phoneNumber, payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/member/edit-point-member/${phoneNumber}`,
+    payload
+  );
   if (status !== 200 && status !== 201) throw Error(`${data.message}`);
   return data;
 };

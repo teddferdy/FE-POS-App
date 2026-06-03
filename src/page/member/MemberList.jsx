@@ -289,6 +289,7 @@ const MemberList = () => {
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
+                              onClick={() => navigate(`/edit-member?id=${member.id || member._id}`)}
                               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                               title="Edit Member">
                               <span className="material-symbols-outlined text-lg">edit</span>

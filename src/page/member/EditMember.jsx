@@ -1,40 +1,55 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-import { addMember } from "@/services/member";
+import { getMemberById, editMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
-const AddMember = () => {
+const EditMember = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const [cookie] = useCookies(["user"]);
   const user = cookie?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phoneNumber: "",
-    birthDate: "",
-    gender: "male",
-    address: "",
-    tier: "",
-    initialPoints: 0
-  });
+
+  const { data: memberData, isLoading: memberLoading } = useQuery(
+    ["member-detail", id],
+    () => getMemberById({ id }),
+    { enabled: !!id }
+  );
+
+  const member = memberData?.data || memberData?.member || memberData;
 
   const { data: tiersData } = useQuery(["member-tiers-all"], () => getAllMemberTier(), {
     staleTime: 5 * 60 * 1000
   });
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
-  const createMutation = useMutation(addMember, {
+  const [form, setForm] = useState(null);
+
+  if (member && !form) {
+    setForm({
+      id: member.id || member._id,
+      name: member.name || "",
+      email: member.email || "",
+      phoneNumber: member.phoneNumber || member.phone || "",
+      birthDate: member.birthDate || "",
+      gender: member.gender || "male",
+      address: member.address || "",
+      tier: member.tier || ""
+    });
+  }
+
+  const editMutation = useMutation(editMember, {
     onSuccess: () => {
       setIsSubmitting(false);
       setSuccessModal(true);
@@ -59,7 +74,8 @@ const AddMember = () => {
       return;
     }
     setIsSubmitting(true);
-    createMutation.mutate({
+    editMutation.mutate({
+      id: form.id,
       nameMember: form.name,
       phoneNumber: form.phoneNumber,
       email: form.email,
@@ -67,11 +83,17 @@ const AddMember = () => {
       gender: form.gender,
       address: form.address,
       tier: form.tier,
-      point: form.initialPoints,
-      store: user?.store,
-      createdBy: user?.id
+      store: user?.store
     });
   };
+
+  if (memberLoading || !form) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -86,12 +108,12 @@ const AddMember = () => {
               {t("breadcrumb.management")}
             </button>
             <span>/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
+            <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("breadcrumb.add")}
+            {t("breadcrumb.edit")}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.member.edit.description")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
@@ -263,32 +285,12 @@ const AddMember = () => {
               </div>
             </div>
 
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <div className="flex items-center gap-2 mb-6 text-primary">
-                <span className="material-symbols-outlined">stars</span>
-                <h3 className="text-base font-semibold text-foreground">Initial Points</h3>
-              </div>
-              <div className="bg-muted rounded-xl p-4 text-center">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  Saldo Awal
-                </p>
-                <p className="text-4xl font-bold text-primary">
-                  0 <span className="text-sm font-semibold text-muted-foreground">PTS</span>
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-                Poin member dimulai dari 0 dan akan bertambah secara otomatis saat pelanggan
-                melakukan transaksi pembelian produk.
-              </p>
-            </div>
-
             <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
               <span className="material-symbols-outlined text-secondary mt-0.5 text-base">
                 info
               </span>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Pastikan data email dan nomor telepon sudah benar. Sistem akan mengirimkan link
-                aktivasi otomatis ke pelanggan.
+                Perbarui data member sesuai kebutuhan. Poin dan riwayat transaksi tidak terpengaruh.
               </p>
             </div>
           </div>
@@ -303,7 +305,7 @@ const AddMember = () => {
             </div>
           </div>
           <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
-            Proses Pendaftaran
+            Simpan Perubahan
           </Button>
         </div>
       </form>
@@ -314,7 +316,7 @@ const AddMember = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title="Data Berhasil Diperbarui"
         onConfirm={() => navigate("/member-list")}
       />
       <Modal
@@ -329,4 +331,4 @@ const AddMember = () => {
   );
 };
 
-export default AddMember;
+export default EditMember;
