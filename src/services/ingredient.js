@@ -7,7 +7,9 @@ export const getAllIngredients = async ({ store, page = 1, limit = 10, search = 
   params.append("limit", limit);
   if (search) params.append("search", search);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(`/ingredient/get-all${query ? `?${query}` : ""}`);
+  const { data, status } = await axiosInstance.get(
+    `/ingredient/get-all${query ? `?${query}` : ""}`
+  );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

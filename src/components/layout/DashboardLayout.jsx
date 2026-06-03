@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { getAllLocation } from "@/services/location";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import CommandPalette from "./CommandPalette";
 import { TipsCard } from "@/components/ui/tips-card";
 
 const tipsKeys = {
@@ -45,6 +46,7 @@ const DashboardLayout = ({ children }) => {
   const { t } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cookie, setCookie] = useCookies();
   const location = useLocation();
 
@@ -66,6 +68,23 @@ const DashboardLayout = ({ children }) => {
       setCookie("user", { ...user, store: firstId, storeName: firstName }, { path: "/" });
     }
   }, [locations]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.tagName === "SELECT"
+      )
+        return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsPaletteOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => !prev);
@@ -101,7 +120,10 @@ const DashboardLayout = ({ children }) => {
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
-        <Header onMenuToggle={handleMobileMenuToggle} />
+        <Header
+          onMenuToggle={handleMobileMenuToggle}
+          onOpenPalette={() => setIsPaletteOpen(true)}
+        />
         <main className="p-4 lg:p-6">
           {children}
           {tips && (
@@ -111,6 +133,9 @@ const DashboardLayout = ({ children }) => {
           )}
         </main>
       </div>
+
+      {/* Command Palette - above everything */}
+      <CommandPalette open={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
     </div>
   );
 };

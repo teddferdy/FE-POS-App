@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, LogOut, LifeBuoy, PanelLeftClose, PanelLeft } from "lucide-react";
 import { sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuUser } from "@/utils/sidebar-menu";
+import { filterMenuByPermission } from "@/utils/permission";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
@@ -16,9 +17,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const user = cookie?.user;
   const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
 
-  let menuItems = sidebarMenuUser;
-  if (role === "super_admin") menuItems = sidebarMenuSuperAdmin;
-  else if (role === "admin") menuItems = sidebarMenuAdmin;
+  let baseMenu = sidebarMenuUser;
+  if (role === "super_admin") baseMenu = sidebarMenuSuperAdmin;
+  else if (role === "admin") baseMenu = sidebarMenuAdmin;
+
+  const menuItems = filterMenuByPermission(baseMenu, user);
 
   useEffect(() => {
     if (!collapsed) {

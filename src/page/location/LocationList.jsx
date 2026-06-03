@@ -58,6 +58,7 @@ const LocationList = () => {
   const locations = data?.data || data?.locations || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const categories = data?.categories || [];
 
   // const stats = [
   //   {
@@ -116,11 +117,6 @@ const LocationList = () => {
           ? loc.isActive || loc.status === "active"
           : !(loc.isActive || loc.status === "active");
       if (!matchesStatus) return false;
-    }
-
-    // Category filter
-    if (categoryFilter !== "all") {
-      if (loc.category !== categoryFilter) return false;
     }
 
     return true;
@@ -266,10 +262,11 @@ const LocationList = () => {
                 }}
                 className="h-9 px-3 rounded-md border border-input bg-background text-sm">
                 <option value="all">{t("common.all")}</option>
-                <option value="Main Branch">{t("page.location.category.mainBranch")}</option>
-                <option value="Branch">{t("page.location.category.branch")}</option>
-                <option value="Warehouse">{t("page.location.category.warehouse")}</option>
-                <option value="Office">{t("page.location.category.office")}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
             <Button

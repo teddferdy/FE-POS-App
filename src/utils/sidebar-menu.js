@@ -21,7 +21,8 @@ import {
   Receipt,
   ClipboardList,
   Award,
-  TriangleAlert
+  TriangleAlert,
+  Shield
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -202,6 +203,13 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.templateHarga",
         href: "/price-list-template",
         icon: TrendingUp,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Manajemen Role & Izin",
+        i18nKey: "sidebar.roleManagement",
+        href: "/role-management",
+        icon: Shield,
         actions: ["add", "edit", "view", "delete"]
       }
     ],

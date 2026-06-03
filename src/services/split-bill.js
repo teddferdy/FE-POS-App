@@ -19,7 +19,9 @@ export const paySplitBill = async (id, payload) => {
 };
 
 export const cancelSplitBill = async (id, payload) => {
-  const { data, status } = await axiosInstance.delete(`/split-bill/cancel/${id}`, { data: payload });
+  const { data, status } = await axiosInstance.delete(`/split-bill/cancel/${id}`, {
+    data: payload
+  });
   if (status !== 200 && status !== 204) throw Error(`${data?.message}`);
   return data;
 };

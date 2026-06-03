@@ -11,9 +11,7 @@ export const getAuditLogs = async (payload = {}) => {
   if (payload.endDate) params.append("endDate", payload.endDate);
   if (payload.location) params.append("store", payload.location);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(
-    `/audit-log${query ? `?${query}` : ""}`
-  );
+  const { data, status } = await axiosInstance.get(`/audit-log${query ? `?${query}` : ""}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

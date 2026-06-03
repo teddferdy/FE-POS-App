@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import React from "react";
 import { Lightbulb, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 

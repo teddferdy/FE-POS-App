@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,6 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 
 // Dashboard
 import Dashboard from "./page/dashboard";
-import GlobalSetting from "./page/global-setting";
 
 // Location
 import LocationList from "./page/location/LocationList";
@@ -29,6 +27,12 @@ import StoreGeospatial from "./page/location/StoreGeospatial";
 
 // Invoice
 import InvoicePage from "./page/invoice/InvoicePage";
+// import InvoiceLogoList from "./page/invoice-logo/InvoiceLogoList";
+// import AddInvoiceLogo from "./page/invoice-logo/AddInvoiceLogo";
+// import EditInvoiceLogo from "./page/invoice-logo/EditInvoiceLogo";
+// import AddInvoiceFooter from "./page/invoice-footer/AddInvoiceFooter";
+// import EditInvoiceFooter from "./page/invoice-footer/EditInvoiceFooter";
+// import SocialMediaList from "./page/social-media/SocialMediaList";
 
 // Product
 import ProductList from "./page/product/ProductList";
@@ -55,6 +59,8 @@ import MemberTier from "./page/member-tier";
 // Report
 import GlobalReport from "./page/report/GlobalReport";
 import AddRole from "./page/user/AddRole";
+import RoleManagement from "./page/role/RoleManagement";
+import EditRole from "./page/role/EditRole";
 import AddMemberTier from "./page/member-tier/AddMemberTier";
 
 // Employee
@@ -203,6 +209,8 @@ function App() {
           <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
           <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
           <Route path="/add-role" element={withLayout(<AddRole />)} />
+          <Route path="/edit-role/:id" element={withLayout(<EditRole />)} />
+          <Route path="/role-management" element={withLayout(<RoleManagement />)} />
           <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
           <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
 
@@ -213,9 +221,15 @@ function App() {
           <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
 
           <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
-
-          {/* Global Setting Routes */}
-          <Route path="/global-setting" element={withLayout(<GlobalSetting />)} />
+          {/* <Route path="/logo-invoice-list" element={withLayout(<InvoiceLogoList />)} />
+          <Route path="/add-logo-invoice" element={withLayout(<AddInvoiceLogo />)} />
+          <Route path="/edit-logo-invoice" element={withLayout(<EditInvoiceLogo />)} /> */}
+          {/* <Route path="/footer-invoice-list" element={withLayout(<AddInvoiceFooter />)} />
+          <Route path="/add-footer-invoice" element={withLayout(<AddInvoiceFooter />)} /> */}
+          {/* <Route path="/edit-footer-invoice" element={withLayout(<EditInvoiceFooter />)} /> */}
+          {/* <Route path="/social-media-invoice-list" element={withLayout(<SocialMediaList />)} />
+          <Route path="/add-social-media-invoice" element={withLayout(<SocialMediaList />)} />
+          <Route path="/edit-social-media-invoice" element={withLayout(<SocialMediaList />)} /> */}
 
           <Route path="/position-list" element={withLayout(<PositionList />)} />
           <Route path="/add-position" element={withLayout(<AddPosition />)} />

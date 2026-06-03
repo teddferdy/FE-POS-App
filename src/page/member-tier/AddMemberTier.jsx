@@ -1,8 +1,8 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save } from "lucide-react";
+import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -30,8 +30,8 @@ const AddMemberTier = ({ onClose, onSave }) => {
     selectedIcon: "star",
     selectedColor: "#f59e0b",
     perks: [
-      { id: 1, text: "Diskon 10% Semua Item" },
-      { id: 2, text: "Akses Eksklusif Produk Baru" }
+      { id: 1, text: "" },
+      { id: 2, text: "" }
     ]
   });
 
@@ -74,57 +74,41 @@ const AddMemberTier = ({ onClose, onSave }) => {
   const IconComponent = icons.find((i) => i.name === formData.selectedIcon)?.component || Star;
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
-      {/* Header */}
-      <div className="px-xl py-lg border-b border-outline-variant/20 flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
             {t("page.memberTier.add.title")}
           </h2>
-          <p className="font-body-md text-on-surface-variant">
+          <p className="text-sm text-muted-foreground mt-1">
             {t("page.memberTier.add.description")}
           </p>
         </div>
-        <div className="flex items-center gap-md">
-          <span className="font-label-md text-on-surface-variant">
-            {t("page.memberTier.add.tierStatus")}
-          </span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isActive}
-              onChange={(e) => handleInputChange("isActive", e.target.checked)}
-              className="sr-only peer"
-            />
-            <div
-              className={`w-11 h-6 rounded-full peer-focus:outline-none peer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                formData.isActive ? "bg-[#006c49]" : "bg-error"
-              } peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white`}
-            />
-          </label>
-          <span
-            className={`font-label-md font-bold ${formData.isActive ? "text-[#006c49]" : "text-error"}`}>
-            {formData.isActive ? t("common.active") : t("common.inactive")}
-          </span>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={onClose} className="gap-2">
+            <X size={18} />
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={handleSave} disabled={!formData.isActive} className="gap-2">
+            <Save size={18} />
+            {t("page.memberTier.add.saveTier")}
+          </Button>
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className="p-xl space-y-xl">
-        {/* General Information Section */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.add.basicInfo")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.add.basicInfoDesc")}
-            </p>
-          </div>
-          <div className="col-span-12 lg:col-span-8 space-y-lg">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+          {/* Basic Information */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-2 mb-6 text-primary">
+              <span className="material-symbols-outlined">info</span>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.add.basicInfo")}
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.memberTier.add.tierName")}
                 </label>
                 <input
@@ -132,12 +116,12 @@ const AddMemberTier = ({ onClose, onSave }) => {
                   value={formData.tierName}
                   onChange={(e) => handleInputChange("tierName", e.target.value)}
                   disabled={!formData.isActive}
-                  className="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 outline-none border-primary/50 transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50"
                   placeholder={t("page.memberTier.add.tierNamePlaceholder")}
                 />
               </div>
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.memberTier.add.minPoints")}
                 </label>
                 <div className="relative">
@@ -151,16 +135,16 @@ const AddMemberTier = ({ onClose, onSave }) => {
                       )
                     }
                     disabled={!formData.isActive}
-                    className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
                     placeholder="0"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     PTS
                   </span>
                 </div>
               </div>
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.memberTier.add.discountPercent")}
                 </label>
                 <div className="relative">
@@ -174,38 +158,31 @@ const AddMemberTier = ({ onClose, onSave }) => {
                       )
                     }
                     disabled={!formData.isActive}
-                    className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
                     placeholder="0"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     %
                   </span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <hr className="border-outline-variant/20" />
-
-        {/* Visual Identity Section */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.add.visualIdentity")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.add.visualIdentityDesc")}
-            </p>
-          </div>
-          <div className="col-span-12 lg:col-span-8 space-y-lg">
-            <div className="flex flex-wrap gap-xl">
-              {/* Badge Icon Picker */}
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
+          {/* Visual Identity */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-2 mb-6 text-primary">
+              <span className="material-symbols-outlined">palette</span>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.add.visualIdentity")}
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-8">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.memberTier.add.selectIcon")}
                 </label>
-                <div className="flex gap-sm">
+                <div className="flex gap-2">
                   {icons.map((icon) => {
                     const Icon = icon.component;
                     const isSelected = formData.selectedIcon === icon.name;
@@ -214,24 +191,23 @@ const AddMemberTier = ({ onClose, onSave }) => {
                         key={icon.name}
                         disabled={!formData.isActive}
                         onClick={() => handleInputChange("selectedIcon", icon.name)}
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                        className={`w-11 h-11 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 ${
                           isSelected
-                            ? "bg-surface-container-low border-2 border-primary text-primary"
-                            : "bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
+                            ? "bg-primary/10 border-2 border-primary text-primary"
+                            : "bg-background border border-border text-muted-foreground hover:bg-accent"
                         }`}>
-                        <Icon size={24} style={icon.fill ? { fill: "currentColor" } : {}} />
+                        <Icon size={22} style={icon.fill ? { fill: "currentColor" } : {}} />
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Badge Color Picker */}
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("page.memberTier.add.badgeColor")}
                 </label>
-                <div className="flex gap-sm">
+                <div className="flex gap-2">
                   {colors.map((color) => {
                     const isSelected = formData.selectedColor === color.value;
                     return (
@@ -239,20 +215,100 @@ const AddMemberTier = ({ onClose, onSave }) => {
                         key={color.name}
                         disabled={!formData.isActive}
                         onClick={() => handleInputChange("selectedColor", color.value)}
-                        className={`w-8 h-8 rounded-full border-4 border-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                        className={`w-8 h-8 rounded-full transition-all disabled:opacity-40 ${
                           color.tailwind
-                        } ${isSelected ? "ring-2 ring-primary scale-110" : "ring-1 ring-outline-variant"}`}
+                        } ${isSelected ? "ring-2 ring-primary ring-offset-2 scale-110" : "ring-1 ring-border"}`}
                       />
                     );
                   })}
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Preview Card */}
-            <div className="bg-surface-container-low rounded-xl p-lg border border-outline-variant/30 flex items-center gap-lg max-w-sm">
+          {/* Benefits & Perks */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-2 mb-6 text-primary">
+              <span className="material-symbols-outlined">stars</span>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.add.benefits")}
+              </h3>
+            </div>
+            <div className="space-y-3" id="perks-list">
+              {formData.perks.map((perk) => (
+                <div key={perk.id} className="flex items-center gap-2 group">
+                  <div className="flex-1 relative">
+                    <CheckCircle
+                      size={16}
+                      className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                        perk.text.trim() ? "text-secondary" : "text-muted-foreground"
+                      }`}
+                    />
+                    <input
+                      type="text"
+                      value={perk.text}
+                      onChange={(e) => handlePerkChange(perk.id, e.target.value)}
+                      disabled={!formData.isActive}
+                      className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2.5 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all text-sm disabled:opacity-50"
+                      placeholder={t("page.memberTier.add.perkPlaceholder")}
+                    />
+                  </div>
+                  <button
+                    onClick={() => removePerk(perk.id)}
+                    disabled={!formData.isActive}
+                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                    <Delete size={18} />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addPerk}
+                disabled={!formData.isActive}
+                className="flex items-center gap-2 w-full py-2.5 rounded-lg border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-all justify-center disabled:opacity-40 text-sm font-semibold">
+                <Plus size={18} />
+                {t("page.memberTier.add.addBenefit")}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          {/* Status Toggle */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-2 mb-6 text-primary">
+              <span className="material-symbols-outlined">toggle_on</span>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.add.tierStatus")}
+              </h3>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">
+                {formData.isActive ? t("common.active") : t("common.inactive")}
+              </span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => handleInputChange("isActive", e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+              </label>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+            <div className="flex items-center gap-2 mb-6 text-primary relative">
+              <span className="material-symbols-outlined">visibility</span>
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.add.previewBadge")}
+              </h3>
+            </div>
+            <div className="bg-muted/30 rounded-xl p-5 border border-border relative flex items-center gap-4">
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
                 style={{
                   backgroundColor: formData.selectedColor,
                   boxShadow: `0 8px 16px ${formData.selectedColor}20`
@@ -264,13 +320,13 @@ const AddMemberTier = ({ onClose, onSave }) => {
                 />
               </div>
               <div>
-                <p className="font-label-md text-on-surface-variant uppercase tracking-widest">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
                   {t("page.memberTier.add.previewBadge")}
                 </p>
-                <h4 className="font-headline-md text-on-surface">
+                <h4 className="text-lg font-bold text-foreground">
                   {formData.tierName || "Gold Member"}
                 </h4>
-                <p className="font-body-md text-on-surface-variant">
+                <p className="text-xs text-muted-foreground">
                   Mulai dari{" "}
                   {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
                     "id-ID"
@@ -280,82 +336,14 @@ const AddMemberTier = ({ onClose, onSave }) => {
               </div>
             </div>
           </div>
-        </div>
 
-        <hr className="border-outline-variant/20" />
-
-        {/* Benefits & Perks Section */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.add.benefits")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.add.benefitsDesc")}
+          {/* Info Card */}
+          <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
+            <span className="material-symbols-outlined text-secondary mt-0.5 text-base">info</span>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t("page.memberTier.add.footerHint")}
             </p>
           </div>
-          <div className="col-span-12 lg:col-span-8 space-y-md">
-            <div className="space-y-sm" id="perks-list">
-              {formData.perks.map((perk) => (
-                <div key={perk.id} className="flex items-center gap-sm group">
-                  <div className="flex-1 relative">
-                    <CheckCircle
-                      size={18}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                        perk.text.trim() ? "text-[#006c49]" : "text-outline"
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      value={perk.text}
-                      onChange={(e) => handlePerkChange(perk.id, e.target.value)}
-                      disabled={!formData.isActive}
-                      className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder={t("page.memberTier.add.perkPlaceholder")}
-                    />
-                  </div>
-                  <button
-                    onClick={() => removePerk(perk.id)}
-                    disabled={!formData.isActive}
-                    className="p-3 text-outline hover:text-error hover:bg-error/5 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed">
-                    <Delete size={20} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={addPerk}
-              disabled={!formData.isActive}
-              className="flex items-center gap-sm px-lg py-2 rounded-lg border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary transition-all active:scale-[0.98] w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-outline">
-              <Plus size={20} />
-              <span className="font-label-md">{t("page.memberTier.add.addBenefit")}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Actions */}
-      <div className="px-xl py-lg bg-surface-container-low/50 border-t border-outline-variant/20 flex justify-between items-center">
-        <div className="flex items-center gap-sm text-outline">
-          <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-          </svg>
-          <p className="font-label-md">{t("page.memberTier.add.footerHint")}</p>
-        </div>
-        <div className="flex items-center gap-md">
-          <button
-            onClick={onClose}
-            className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            {t("common.cancel")}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!formData.isActive}
-            className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary">
-            <Save size={20} />
-            {t("page.memberTier.add.saveTier")}
-          </button>
         </div>
       </div>
 
@@ -364,20 +352,11 @@ const AddMemberTier = ({ onClose, onSave }) => {
         className={`fixed bottom-xl right-xl z-[100] transform transition-all duration-500 ${
           showToast ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
         }`}>
-        <div className="bg-secondary-container text-on-secondary-container px-lg py-md rounded-xl shadow-xl flex items-center gap-md">
-          <div className="bg-[#006c49] text-white p-1 rounded-full">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
+        <div className="bg-primary text-primary-foreground px-6 py-4 rounded-xl shadow-xl flex items-center gap-3">
+          <CheckCircle size={20} />
           <div>
-            <p className="font-title-lg text-title-lg">{t("page.memberTier.add.toastSuccess")}</p>
-            <p className="font-body-md opacity-80">{t("page.memberTier.add.toastDescription")}</p>
+            <p className="text-sm font-bold">{t("page.memberTier.add.toastSuccess")}</p>
+            <p className="text-xs opacity-80">{t("page.memberTier.add.toastDescription")}</p>
           </div>
         </div>
       </div>

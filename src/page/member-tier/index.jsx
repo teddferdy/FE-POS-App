@@ -2,19 +2,20 @@ import React, { useState } from "react";
 import {
   Award,
   Plus,
-  Filter,
-  Download,
   Edit,
   Delete,
   Eye,
   RefreshCw,
   Users,
   TrendingUp,
-  ArrowLeft
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import AddMemberTier from "./AddMemberTier";
 import EditMemberTier from "./EditMemberTier";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 
 const initialTiers = [
   {
@@ -163,19 +164,32 @@ const MemberTier = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-end">
             <div>
-              <h2 className="text-2xl font-bold">{t("page.memberTier.list.title")}</h2>
+              <nav
+                className="flex gap-2 mb-2 text-sm text-muted-foreground"
+                aria-label="breadcrumb">
+                <span>{t("breadcrumb.home")}</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
+                <span>/</span>
+                <span className="text-primary font-semibold">
+                  {t("page.memberTier.list.title")}
+                </span>
+              </nav>
+              <h2 className="text-2xl font-bold text-foreground tracking-tight">
+                {t("page.memberTier.list.title")}
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {t("page.memberTier.list.description")}
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-sm">
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
               <Plus size={18} />
-              <span className="font-medium">Tambah Tier Baru</span>
-            </button>
+              {t("breadcrumb.add")}
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -188,10 +202,13 @@ const MemberTier = () => {
                   <Award size={16} /> +2
                 </span>
               </div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Total Tiers
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("page.memberTier.list.totalTiers")}
               </p>
-              <h3 className="text-xl font-bold mt-1">4 Active</h3>
+              <h3 className="text-xl font-bold mt-1">
+                {tiers.filter((t) => t.status === "active").length}{" "}
+                {t("page.memberTier.list.active")}
+              </h3>
               <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary w-2/3" />
               </div>
@@ -205,12 +222,16 @@ const MemberTier = () => {
                   <TrendingUp size={16} /> 12.5%
                 </span>
               </div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Total Members
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("page.memberTier.list.totalMembers")}
               </p>
-              <h3 className="text-xl font-bold mt-1">18,492</h3>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Across all active tiers in ecosystem
+              <h3 className="text-xl font-bold mt-1">
+                {tiers
+                  .reduce((sum, t) => sum + (parseInt(t.members?.replace(/,/g, "")) || 0), 0)
+                  .toLocaleString()}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-2">
+                {t("page.memberTier.list.acrossTiers")}
               </p>
             </div>
             <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
@@ -218,148 +239,179 @@ const MemberTier = () => {
                 <div className="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
                   <TrendingUp size={24} />
                 </div>
-                <span className="text-tertiary font-mono">PLATINUM</span>
+                <span className="text-tertiary font-mono">
+                  {tiers.length > 0 ? tiers[0].name?.toUpperCase() : "-"}
+                </span>
               </div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Highest Tier Growth
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("page.memberTier.list.highestGrowth")}
               </p>
-              <h3 className="text-xl font-bold mt-1">+420 Members</h3>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Platinum conversions this month
+              <h3 className="text-xl font-bold mt-1">
+                +
+                {tiers
+                  .reduce((sum, t) => sum + (parseInt(t.members?.replace(/,/g, "")) || 0), 0)
+                  .toLocaleString()}{" "}
+                {t("page.memberTier.list.members")}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-2">
+                {t("page.memberTier.list.conversions")}
               </p>
             </div>
           </div>
 
           <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-            <div className="px-5 py-4 border-b border-border flex justify-between items-center bg-muted/30">
-              <h4 className="text-base font-semibold">Tier Hierarchy & Rules</h4>
-              <div className="flex items-center gap-3">
-                <button className="text-xs font-medium text-primary flex items-center gap-1 hover:underline">
-                  <Filter size={16} /> Filter
-                </button>
-                <button className="text-xs font-medium text-primary flex items-center gap-1 hover:underline">
-                  <Download size={16} /> Export
-                </button>
-              </div>
+            <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
+              <h4 className="text-base font-semibold text-foreground">
+                {t("page.memberTier.list.tableTitle")}
+              </h4>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-muted/10">
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      ID
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.id")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Tier Name
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.name")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Min. Points
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.minPoints")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Discount
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.discount")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Benefit Summary
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.benefits")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Members
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.members")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border">
-                      Status
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      {t("page.memberTier.table.status")}
                     </th>
-                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground border-b border-border text-right">
-                      Actions
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
+                      {t("page.memberTier.table.actions")}
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/10">
+                <tbody className="divide-y divide-border">
                   {paginatedTiers.map((tier) => (
-                    <tr key={tier.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-5 py-4 font-mono text-sm text-muted-foreground">
+                    <tr key={tier.id} className="hover:bg-muted/20 transition-colors group">
+                      <td className="px-6 py-4 font-mono text-sm text-muted-foreground">
                         {tier.id}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-2 h-8 rounded-full"
                             style={{ backgroundColor: tier.color }}
                           />
-                          <span className="font-medium">{tier.name}</span>
+                          <span className="font-semibold text-foreground">{tier.name}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-4 font-mono text-sm">{tier.minPoints}</td>
-                      <td className="px-5 py-4 font-mono text-sm text-primary font-semibold">
+                      <td className="px-6 py-4 font-mono text-sm text-foreground">
+                        {tier.minPoints}
+                      </td>
+                      <td className="px-6 py-4 font-mono text-sm text-primary font-semibold">
                         {tier.discount}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {tier.benefits.map((benefit, idx) => (
                             <span
                               key={idx}
-                              className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-bold text-primary">
+                              className="bg-primary/10 px-2 py-0.5 rounded text-[10px] font-bold text-primary">
                               {benefit}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="px-5 py-4 font-mono text-sm">{tier.members}</td>
-                      <td className="px-5 py-4">{statusBadge(tier.status)}</td>
-                      <td className="px-5 py-4 text-right space-x-2">
-                        {tier.status === "inactive" ? (
-                          <>
-                            <button className="w-8 h-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
-                              <Eye size={20} />
-                            </button>
-                            <button className="w-8 h-8 rounded-full text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-all">
-                              <RefreshCw size={20} />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button className="w-8 h-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
-                              <Edit size={20} onClick={() => setEditingTier(tier)} />
-                            </button>
-                            <button className="w-8 h-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
-                              <Delete size={20} />
-                            </button>
-                          </>
-                        )}
+                      <td className="px-6 py-4 font-mono text-sm text-foreground">
+                        {tier.members}
+                      </td>
+                      <td className="px-6 py-4">{statusBadge(tier.status)}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {tier.status === "inactive" ? (
+                            <>
+                              <button
+                                className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                title="View">
+                                <Eye size={18} />
+                              </button>
+                              <button
+                                className="p-1.5 text-muted-foreground hover:text-secondary hover:bg-secondary/10 rounded-lg transition-all"
+                                title="Activate">
+                                <RefreshCw size={18} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => setEditingTier(tier)}
+                                className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                                title="Edit">
+                                <Edit size={18} />
+                              </button>
+                              <button
+                                className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                                title="Delete">
+                                <Delete size={18} />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="px-5 py-4 bg-muted/10 flex justify-between items-center border-t border-border">
-              <p className="text-xs text-muted-foreground">
-                Showing {paginatedTiers.length} of {tiers.length} tiers available
-              </p>
-              <div className="flex items-center gap-1">
+            <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
+              <span className="text-xs text-muted-foreground">
+                {t("page.memberTier.list.showing", {
+                  count: paginatedTiers.length,
+                  total: tiers.length
+                })}
+              </span>
+              <div className="flex gap-1">
                 <button
-                  className="px-3 py-1 border border-border rounded-lg text-xs opacity-50 cursor-not-allowed"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}>
-                  Previous
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage <= 1}
+                  className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
+                  <ChevronLeft size={18} />
                 </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => (
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
                     <button
-                      key={i}
-                      className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                        currentPage === i + 1
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors ${
+                        currentPage === pageNum
                           ? "bg-primary text-primary-foreground"
-                          : "border border-border hover:bg-muted text-muted-foreground"
-                      }`}
-                      onClick={() => setCurrentPage(i + 1)}>
-                      {i + 1}
+                          : "hover:bg-muted text-muted-foreground"
+                      }`}>
+                      {pageNum}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
+                {totalPages > 5 && (
+                  <>
+                    <span className="px-2 py-2 text-muted-foreground text-sm">...</span>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="w-10 h-10 rounded-lg hover:bg-muted text-muted-foreground text-sm font-semibold transition-colors">
+                      {totalPages}
+                    </button>
+                  </>
+                )}
                 <button
-                  className="px-3 py-1 border border-border rounded-lg text-xs hover:bg-muted transition-all"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}>
-                  Next
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage >= totalPages}
+                  className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
+                  <ChevronRight size={18} />
                 </button>
               </div>
             </div>

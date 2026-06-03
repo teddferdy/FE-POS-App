@@ -16,7 +16,7 @@ function getDB() {
         if (!db.objectStoreNames.contains("syncQueue")) {
           db.createObjectStore("syncQueue", {
             keyPath: "id",
-            autoIncrement: true,
+            autoIncrement: true
           });
         }
       };
@@ -78,7 +78,7 @@ export const addToSyncQueue = async (operation) => {
     tx.objectStore("syncQueue").add({
       ...operation,
       timestamp: Date.now(),
-      retries: 0,
+      retries: 0
     });
     await new Promise((resolve, reject) => {
       tx.oncomplete = resolve;
@@ -131,7 +131,7 @@ export const syncOfflineData = async () => {
       const response = await fetch(item.url, {
         method: item.method,
         headers: item.headers || { "Content-Type": "application/json" },
-        body: item.body ? JSON.stringify(item.body) : undefined,
+        body: item.body ? JSON.stringify(item.body) : undefined
       });
 
       if (response.ok) {

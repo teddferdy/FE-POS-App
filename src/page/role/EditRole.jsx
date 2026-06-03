@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { addRole } from "@/services/role";
+import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import { buildAccessMenuPayload } from "@/utils/permission";
+import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -61,39 +61,65 @@ const allActionTypes = [
   "update-status"
 ];
 
-const buildInitialPermissions = (groups) => {
+const buildInitialPermissions = (groups, existingAccessMenu = {}) => {
   const perms = {};
   groups.forEach((g) => {
     g.items.forEach((item) => {
       const key = item.href;
+      const existing = existingAccessMenu[key] || {};
       perms[key] = {};
       allActionTypes.forEach((a) => {
-        perms[key][a] = item.actions?.includes(a) ? false : null;
+        if (!item.actions?.includes(a)) {
+          perms[key][a] = null;
+        } else if (existing[a] !== undefined) {
+          perms[key][a] = !!existing[a];
+        } else {
+          perms[key][a] = false;
+        }
       });
     });
   });
   return perms;
 };
 
-const AddRole = () => {
+const EditRole = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { id } = useParams();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [permissions, setPermissions] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
-  const [permissions, setPermissions] = useState(() => buildInitialPermissions(groups));
 
-  const createMutation = useMutation(addRole, {
+  const { data: roleData, isLoading: isLoadingRole } = useQuery(
+    ["role-by-id", id],
+    () => getRoleById(id),
+    {
+      enabled: !!id,
+      onSuccess: (res) => {
+        const role = res?.data || res;
+        if (role) {
+          setName(role.name || "");
+          setDescription(role.description || "");
+          const existingPerms = parseAccessMenuToPermissions(role.accessMenu);
+          setPermissions(buildInitialPermissions(groups, existingPerms));
+        }
+      }
+    }
+  );
+
+  const editMutation = useMutation(editRole, {
     onSuccess: () => {
       queryClient.invalidateQueries(["roles-all"]);
       queryClient.invalidateQueries(["roles-table"]);
+      queryClient.invalidateQueries(["role-by-id", id]);
       setIsSubmitting(false);
       setSuccessModal(true);
     },
@@ -149,11 +175,12 @@ const AddRole = () => {
 
     const accessMenu = buildAccessMenuPayload(permissions);
     const user = cookie?.user;
-    createMutation.mutate({
+    editMutation.mutate({
+      id: Number(id),
       name: name.trim(),
       description: description.trim(),
-      status: true,
-      createdBy: user?.id || user?.userId || null,
+      status: roleData?.data?.status ?? true,
+      modifiedBy: user?.id || user?.userId || null,
       accessMenu
     });
   };
@@ -161,6 +188,14 @@ const AddRole = () => {
   const toggleGroup = (idx) => {
     setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
+
+  if (isLoadingRole) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -171,14 +206,14 @@ const AddRole = () => {
           Manajemen Role & Izin
         </button>
         <ChevronRight size={14} />
-        <span className="text-foreground font-bold">Tambah Role Baru</span>
+        <span className="text-foreground font-bold">Edit Role</span>
       </nav>
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Tambah Role Baru</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Role: {name}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Buat role baru dan atur hak akses untuk setiap menu sistem
+            Ubah informasi role dan atur hak akses untuk setiap menu sistem
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -186,7 +221,7 @@ const AddRole = () => {
             {t("common.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            Simpan Role
+            Simpan Perubahan
           </Button>
         </div>
       </div>
@@ -358,7 +393,7 @@ const AddRole = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Role Berhasil Dibuat"
+        title="Role Berhasil Diperbarui"
         onConfirm={() => navigate("/role-management")}
       />
       <Modal
@@ -373,4 +408,4 @@ const AddRole = () => {
   );
 };
 
-export default AddRole;
+export default EditRole;

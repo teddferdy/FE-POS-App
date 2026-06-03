@@ -22,6 +22,8 @@ import {
   Building2,
   Globe,
   Mail,
+  Plus,
+  Trash2,
   Search,
   UserPlus
 } from "lucide-react";
@@ -217,6 +219,19 @@ const AddLocation = () => {
   });
 
   const [showOperasional, setShowOperasional] = useState(false);
+  const [showSocialMedia, setShowSocialMedia] = useState(false);
+  const [socialLinks, setSocialLinks] = useState([]);
+
+  const addSocialRow = () => setSocialLinks([...socialLinks, { platform: "", account: "" }]);
+  const updateSocial = (idx, field, val) => {
+    const updated = [...socialLinks];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setSocialLinks(updated);
+  };
+  const removeSocial = (idx) => {
+    if (socialLinks.length <= 1) return;
+    setSocialLinks(socialLinks.filter((_, i) => i !== idx));
+  };
 
   const updateOpeningHours = (dayId, field, value) => {
     const currentHours = form.getValues("openingHours") || [];
@@ -289,7 +304,8 @@ const AddLocation = () => {
         lat: latitude,
         lng: longitude
       },
-      openingHours: openingHoursFormatted
+      openingHours: openingHoursFormatted,
+      socialMedia: socialLinks.filter((s) => s.platform && s.account)
     };
 
     if (isEdit) {
@@ -910,6 +926,63 @@ const AddLocation = () => {
                         );
                       })}
                     </div>
+                  </div>
+                )}
+
+                {/* Social Media */}
+                <div
+                  className="flex items-center justify-between bg-muted/30 p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setShowSocialMedia(!showSocialMedia)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600/10 text-blue-600 rounded-lg flex items-center justify-center">
+                      <Globe size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Sosial Media</p>
+                      <p className="text-xs text-muted-foreground">
+                        Tambahkan akun media sosial untuk ditampilkan di invoice
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    size={20}
+                    className={`text-muted-foreground transition-transform ${showSocialMedia ? "rotate-180" : ""}`}
+                  />
+                </div>
+
+                {showSocialMedia && (
+                  <div className="border border-border rounded-lg p-4 bg-muted/20 space-y-3">
+                    {socialLinks.map((link, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          placeholder="Platform (IG, FB, WA)"
+                          value={link.platform}
+                          onChange={(e) => updateSocial(idx, "platform", e.target.value)}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="Akun / URL"
+                          value={link.account}
+                          onChange={(e) => updateSocial(idx, "account", e.target.value)}
+                          className="flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSocial(idx)}
+                          className="p-2 text-muted-foreground hover:text-destructive transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addSocialRow}
+                      className="gap-1">
+                      <Plus size={14} />
+                      Tambah Sosial Media
+                    </Button>
                   </div>
                 )}
               </div>

@@ -9,12 +9,6 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
-const defaultTiers = [
-  { name: "silver", label: "Silver Member", description: "Default tier untuk member baru." },
-  { name: "gold", label: "Gold Member", description: "Benefit cashback 5% dan poin 2x." },
-  { name: "platinum", label: "Platinum Member", description: "VVIP access & exclusive rewards." }
-];
-
 const AddMember = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -28,7 +22,7 @@ const AddMember = () => {
     birthDate: "",
     gender: "male",
     address: "",
-    tier: "silver",
+    tier: "",
     initialPoints: 0
   });
 
@@ -52,7 +46,7 @@ const AddMember = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(value) : value }));
   };
 
   const handleSubmit = (e) => {
@@ -64,8 +58,6 @@ const AddMember = () => {
     setIsSubmitting(true);
     createMutation.mutate(form);
   };
-
-  const tierList = tiers.length > 0 ? tiers : defaultTiers;
 
   return (
     <div>
@@ -218,43 +210,42 @@ const AddMember = () => {
                 <h3 className="text-base font-semibold text-foreground">Membership Tier</h3>
               </div>
               <div className="space-y-3 relative">
-                {tierList.map((tier) => {
-                  const tierName = (tier.name || tier).toLowerCase();
-                  const tierLabel =
-                    tier.label || tier.name.charAt(0).toUpperCase() + tier.name.slice(1);
-                  const tierDesc = tier.description || "";
-                  const isGoldOrPlat = tierName === "gold" || tierName === "platinum";
-                  return (
+                {tiers.length === 0 ? (
+                  <div className="text-center py-6">
+                    <span className="material-symbols-outlined text-3xl text-muted-foreground block mb-2">
+                      military_tech
+                    </span>
+                    <p className="text-sm text-muted-foreground">Belum ada tier member.</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Buat tier terlebih dahulu di halaman Member Tier.
+                    </p>
+                  </div>
+                ) : (
+                  tiers.map((tier) => (
                     <label
-                      key={tierName}
+                      key={tier.id}
                       className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        form.tier === tierName
+                        form.tier === tier.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:bg-accent"
                       }`}>
                       <input
                         type="radio"
                         name="tier"
-                        value={tierName}
-                        checked={form.tier === tierName}
+                        value={tier.id}
+                        checked={form.tier === tier.id}
                         onChange={handleChange}
                         className="mt-1 text-primary focus:ring-primary"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-foreground">{tierLabel}</p>
-                        {tierDesc && <p className="text-xs text-muted-foreground">{tierDesc}</p>}
+                        <p className="text-sm font-semibold text-foreground">{tier.name}</p>
                       </div>
-                      <span
-                        className="material-symbols-outlined text-outline"
-                        style={{
-                          color: isGoldOrPlat ? "var(--tertiary)" : undefined,
-                          fontVariationSettings: isGoldOrPlat ? "'FILL' 1" : "'FILL' 0"
-                        }}>
+                      <span className="material-symbols-outlined text-outline">
                         workspace_premium
                       </span>
                     </label>
-                  );
-                })}
+                  ))
+                )}
               </div>
             </div>
 

@@ -8,9 +8,7 @@ export const getAllCurrencies = async (payload = {}) => {
   if (payload.status !== undefined) params.append("status", payload.status);
   if (payload.location) params.append("store", payload.location);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(
-    `/currency${query ? `?${query}` : ""}`
-  );
+  const { data, status } = await axiosInstance.get(`/currency${query ? `?${query}` : ""}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
