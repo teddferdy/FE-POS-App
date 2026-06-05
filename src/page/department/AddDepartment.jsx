@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import Modal from "@/components/organism/modal";
 
 const AddDepartment = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const AddDepartment = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [draftModal, setDraftModal] = useState(false);
   const [errors, setErrors] = useState({});
 
   const createMutation = useMutation(addDepartment, {
@@ -38,13 +40,13 @@ const AddDepartment = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!validate()) return;
     createMutation.mutate({
       name: name.trim(),
       description: description.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -68,7 +70,7 @@ const AddDepartment = () => {
         <p className="text-sm text-muted-foreground mt-1">{t("page.department.add.description")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
@@ -135,7 +137,7 @@ const AddDepartment = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
           <Button
             type="button"
             variant="outline"
@@ -144,15 +146,40 @@ const AddDepartment = () => {
             <span className="material-symbols-outlined text-lg">close</span>
             {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={createMutation.isLoading}
-            className="gap-2 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.department.button.save")}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={createMutation.isLoading}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              type="submit"
+              disabled={createMutation.isLoading}
+              className="gap-2 shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.department.button.save")}
+            </Button>
+          </div>
         </div>
       </form>
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          createMutation.mutate({
+            name: name.trim(),
+            description: description.trim(),
+            status: "draft"
+          });
+        }}
+      />
     </div>
   );
 };

@@ -334,6 +334,7 @@ const EditCategory = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -367,7 +368,7 @@ const EditCategory = () => {
     form.reset({
       name: category.name || "",
       description: category.description || "",
-      isActive: category.status ?? category.isActive ?? true
+      isActive: category.status === "active"
     });
     if (category.image) {
       setSelectedIcon(category.image.startsWith("http") ? "" : category.image);
@@ -402,12 +403,12 @@ const EditCategory = () => {
     e.target.value = "";
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("name", values.name);
     payload.append("description", values.description || "");
-    payload.append("isActive", values.isActive);
+    payload.append("status", saveAsDraft ? "draft" : values.isActive ? "active" : "inactive");
     if (selectedIcon) {
       payload.append("image", selectedIcon);
     } else if (selectedImage) {
@@ -451,10 +452,18 @@ const EditCategory = () => {
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           {t("page.category.button.back")}
         </Button>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="gap-2">
-          <span className="material-symbols-outlined text-lg">save</span>
-          {t("page.category.button.saveChanges")}
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+            disabled={isSubmitting}
+            className="gap-2">
+            <span className="material-symbols-outlined text-lg">save</span>
+            {t("page.category.button.saveChanges")}
+          </Button>
+        </div>
       </PageHeader>
 
       <Form {...form}>
@@ -687,9 +696,19 @@ const EditCategory = () => {
             <Button variant="outline" onClick={() => setCancelModal(true)}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
-              {t("page.category.button.saveChanges")}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => form.handleSubmit((v) => onSubmit(v, true))()}
+                disabled={isSubmitting}>
+                Simpan sebagai Draft
+              </Button>
+              <Button
+                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                disabled={isSubmitting}>
+                {t("page.category.button.saveChanges")}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
@@ -829,6 +848,19 @@ const EditCategory = () => {
         title={t("page.category.modal.cancelTitle")}
         confirmText={t("page.category.modal.confirmCancel")}
         onConfirm={() => navigate("/category-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

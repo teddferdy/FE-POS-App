@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import Modal from "@/components/organism/modal";
 
 const EditPosition = () => {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ const EditPosition = () => {
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [errors, setErrors] = useState({});
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: allPositionsData, isLoading: positionsLoading } = useQuery(
     ["positions-all"],
@@ -51,7 +53,7 @@ const EditPosition = () => {
       setDepartment(position.department || "");
       setDescription(position.description || "");
 
-      setIsActive(position.isActive ?? true);
+      setIsActive(position.status === "active");
     }
   }, [position]);
 
@@ -76,7 +78,7 @@ const EditPosition = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!validate()) return;
     editMutation.mutate({
@@ -84,7 +86,7 @@ const EditPosition = () => {
       name: name.trim(),
       department,
       description: description.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -275,15 +277,43 @@ const EditPosition = () => {
             <span className="material-symbols-outlined text-lg">close</span>
             {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={editMutation.isLoading}
-            className="gap-2 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.position.button.saveChanges")}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={editMutation.isLoading}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              type="submit"
+              disabled={editMutation.isLoading}
+              className="gap-2 shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.position.button.saveChanges")}
+            </Button>
+          </div>
         </div>
       </form>
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          editMutation.mutate({
+            id: positionId,
+            name: name.trim(),
+            department,
+            description: description.trim(),
+            status: "draft"
+          });
+        }}
+      />
 
       <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
         <span className="material-symbols-outlined text-tertiary shrink-0">info</span>

@@ -35,6 +35,7 @@ const AddExpense = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
   const categories = categoriesData?.data || categoriesData || [];
@@ -61,8 +62,8 @@ const AddExpense = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    createMutation.mutate(values);
+  const onSubmit = (values, saveAsDraft = false) => {
+    createMutation.mutate({ ...values, status: saveAsDraft ? "draft" : "active" });
   };
 
   return (
@@ -83,24 +84,9 @@ const AddExpense = () => {
         <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            Batal
-          </Button>
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={createMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
       </div>
 
       <Card className="p-6">
@@ -195,6 +181,27 @@ const AddExpense = () => {
                 </FormItem>
               )}
             />
+            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                <X size={18} />
+                Batal
+              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={createMutation.isLoading}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button
+                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
+                  <Save size={18} />
+                  {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </Card>
@@ -216,6 +223,19 @@ const AddExpense = () => {
         description="Biaya berhasil ditambahkan."
         confirmText="Kembali ke Daftar"
         onConfirm={() => navigate("/expense")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

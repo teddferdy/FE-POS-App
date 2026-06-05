@@ -3,13 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Sofa } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Sofa } from "lucide-react";
 import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
-
+import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
@@ -87,6 +86,48 @@ const TableList = () => {
     else saveMutation.mutate(payload);
   };
 
+  const columns = [
+    {
+      header: t("page.table.table.name"),
+      render: (row) => row.name || row.number || `${t("page.table.table.name")} ${row.id}`
+    },
+    {
+      header: t("page.table.table.capacity"),
+      render: (row) => t("page.table.table.capacityValue", { capacity: row.capacity || "-" })
+    },
+    {
+      header: t("common.status"),
+      render: (row) => (
+        <span
+          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[row.status] || statusColors.available}`}>
+          {t(`page.table.status.${row.status || "available"}`)}
+        </span>
+      )
+    },
+    {
+      header: t("common.actions"),
+      align: "right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => openEdit(row)}>
+            <Edit size={15} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive"
+            onClick={() => setDeleteTarget(row)}>
+            <Trash2 size={15} />
+          </Button>
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -147,112 +188,14 @@ const TableList = () => {
         />
       </div>
 
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.table.table.name")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.table.table.capacity")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("common.status")}
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("common.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {tables.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                      <Sofa size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>{t("page.table.list.empty")}</p>
-                    </td>
-                  </tr>
-                ) : (
-                  tables.map((table, idx) => (
-                    <tr
-                      key={table.id || table._id || idx}
-                      className="hover:bg-accent/30 transition-colors">
-                      <td className="px-4 py-4 font-medium text-foreground">
-                        {table.name || table.number || `${t("page.table.table.name")} ${table.id}`}
-                      </td>
-                      <td className="px-4 py-4">
-                        {t("page.table.table.capacityValue", { capacity: table.capacity || "-" })}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span
-                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[table.status] || statusColors.available}`}>
-                          {t(`page.table.status.${table.status || "available"}`)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() => openEdit(table)}>
-                            <Edit size={15} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => setDeleteTarget(table)}>
-                            <Trash2 size={15} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-xs text-muted-foreground">
-          {t("page.table.list.showing", { count: Math.min(limit, tables.length), total })}
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const p = i + 1;
-            return (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${page === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
-                {p}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={tables}
+        isLoading={isLoading}
+        emptyIcon={Sofa}
+        emptyMessage={t("page.table.list.empty")}
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+      />
 
       <Modal
         type="form"

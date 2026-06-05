@@ -1,8 +1,13 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "react-query";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { addMemberTier } from "@/services/member-tier";
+import Modal from "@/components/organism/modal";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -20,8 +25,11 @@ const colors = [
   { name: "rose", value: "#f43f5e", tailwind: "bg-rose-500" }
 ];
 
-const AddMemberTier = ({ onClose, onSave }) => {
+const AddMemberTier = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [formData, setFormData] = useState({
     tierName: "",
     minPoints: "",
@@ -33,6 +41,19 @@ const AddMemberTier = ({ onClose, onSave }) => {
       { id: 1, text: "" },
       { id: 2, text: "" }
     ]
+  });
+
+  const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
+
+  const createMutation = useMutation(addMemberTier, {
+    onSuccess: () => {
+      toast.success("Berhasil", { description: "Tier berhasil ditambahkan" });
+      queryClient.invalidateQueries(["member-tiers"]);
+      navigate("/member-tier");
+    },
+    onError: (err) =>
+      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
   });
 
   const handleInputChange = (field, value) => {
@@ -61,38 +82,43 @@ const AddMemberTier = ({ onClose, onSave }) => {
     }));
   };
 
-  const handleSave = () => {
-    if (onSave) onSave(formData);
+  const handleSave = (saveAsDraft = false) => {
+    createMutation.mutate({
+      name: formData.tierName,
+      minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
+      discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
+      benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
+      status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
+      color: formData.selectedColor
+    });
   };
 
   const IconComponent = icons.find((i) => i.name === formData.selectedIcon)?.component || Star;
 
   return (
-    <div className="space-y-6">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("page.memberTier.add.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.memberTier.add.description")}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={onClose} className="gap-2">
-            <X size={18} />
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave} disabled={!formData.isActive} className="gap-2">
-            <Save size={18} />
-            {t("page.memberTier.add.saveTier")}
-          </Button>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
+          <span>{t("breadcrumb.home")}</span>
+          <span>/</span>
+          <span>{t("breadcrumb.management")}</span>
+          <span>/</span>
+          <button
+            onClick={() => navigate("/member-tier")}
+            className="hover:text-primary transition-colors">
+            {t("page.memberTier.list.title")}
+          </button>
+          <span>/</span>
+          <span className="text-primary font-semibold">{t("page.memberTier.add.title")}</span>
+        </nav>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">
+          {t("page.memberTier.add.title")}
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.memberTier.add.description")}</p>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-          {/* Basic Information */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-2 mb-6 text-primary">
               <span className="material-symbols-outlined">info</span>
@@ -163,7 +189,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
             </div>
           </div>
 
-          {/* Visual Identity */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-2 mb-6 text-primary">
               <span className="material-symbols-outlined">palette</span>
@@ -220,7 +245,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
             </div>
           </div>
 
-          {/* Benefits & Perks */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-2 mb-6 text-primary">
               <span className="material-symbols-outlined">stars</span>
@@ -235,7 +259,7 @@ const AddMemberTier = ({ onClose, onSave }) => {
                     <CheckCircle
                       size={16}
                       className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                        perk.text.trim() ? "text-secondary" : "text-muted-foreground"
+                        perk.text.trim() ? "text-green-600" : "text-muted-foreground"
                       }`}
                     />
                     <input
@@ -267,7 +291,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
         </div>
 
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          {/* Status Toggle */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-2 mb-6 text-primary">
               <span className="material-symbols-outlined">toggle_on</span>
@@ -275,23 +298,41 @@ const AddMemberTier = ({ onClose, onSave }) => {
                 {t("page.memberTier.add.tierStatus")}
               </h3>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {formData.isActive ? t("common.active") : t("common.inactive")}
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => handleInputChange("isActive", e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
-              </label>
+            <div
+              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                formData.isActive
+                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+              }`}>
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    formData.isActive
+                      ? "bg-green-600 text-white"
+                      : "bg-destructive/10 text-destructive"
+                  }`}>
+                  <span className="material-symbols-outlined text-lg">
+                    {formData.isActive ? "check" : "close"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {formData.isActive ? t("common.active") : t("common.inactive")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.isActive
+                      ? "Tier ini aktif dan dapat digunakan."
+                      : "Tier ini tidak aktif."}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={formData.isActive}
+                onCheckedChange={(checked) => handleInputChange("isActive", checked)}
+              />
             </div>
           </div>
 
-          {/* Preview */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
             <div className="flex items-center gap-2 mb-6 text-primary relative">
@@ -331,7 +372,6 @@ const AddMemberTier = ({ onClose, onSave }) => {
             </div>
           </div>
 
-          {/* Info Card */}
           <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
             <span className="material-symbols-outlined text-secondary mt-0.5 text-base">info</span>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -340,6 +380,57 @@ const AddMemberTier = ({ onClose, onSave }) => {
           </div>
         </div>
       </div>
+
+      <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <X size={18} />
+          {t("common.cancel")}
+        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={createMutation.isLoading}>
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => handleSave(false)}
+            disabled={createMutation.isLoading}
+            className="gap-2 shadow-lg shadow-primary/20">
+            <Save size={18} />
+            {t("page.memberTier.add.saveTier")}
+          </Button>
+        </div>
+      </div>
+
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title={t("page.memberTier.add.cancelTitle")}
+        description={t("page.memberTier.add.cancelDesc")}
+        confirmText={t("page.memberTier.add.cancelConfirm")}
+        onConfirm={() => navigate("/member-tier")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          createMutation.mutate({
+            name: formData.tierName,
+            minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
+            discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
+            benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
+            status: "draft",
+            color: formData.selectedColor
+          });
+        }}
+      />
     </div>
   );
 };

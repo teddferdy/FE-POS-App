@@ -50,6 +50,7 @@ const AddEmployee = () => {
   const [documents, setDocuments] = useState([]);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const { t } = useTranslation();
 
   const formSchema = useMemo(() => {
@@ -271,14 +272,17 @@ const AddEmployee = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (documents.length === 0) {
       toast.error("Gagal", { description: "Dokumen karyawan wajib diupload minimal 1 file" });
       setIsSubmitting(false);
       return;
     }
     setIsSubmitting(true);
-    const payload = { ...values };
+    const payload = {
+      ...values,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
+    };
     if (imageFile) {
       payload.image = imageFile;
     }
@@ -1101,7 +1105,7 @@ const AddEmployee = () => {
             </div>
 
             <div className="col-span-12">
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1110,10 +1114,19 @@ const AddEmployee = () => {
                   <span className="material-symbols-outlined text-lg">arrow_back</span>
                   Batal
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                  <span className="material-symbols-outlined text-lg">save</span>
-                  Simpan Karyawan
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={isSubmitting}>
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
+                    <span className="material-symbols-outlined text-lg">save</span>
+                    Simpan Karyawan
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1136,6 +1149,19 @@ const AddEmployee = () => {
         title="Batalkan Perubahan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/employee-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

@@ -105,7 +105,7 @@ const DetailProduct = () => {
     );
   }
 
-  const isActive = product.status ?? true;
+  const isActive = product.status === "active";
   const stock = product.stock || 0;
   const minStock = product.minStock || 0;
   const isLowStock = stock > 0 && stock <= minStock;

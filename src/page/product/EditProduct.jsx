@@ -71,6 +71,7 @@ const EditProduct = () => {
   const role = user?.roleType || "";
   const productId = searchParams.get("id");
 
+  const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -221,7 +222,7 @@ const EditProduct = () => {
         unit: product.unit || "pcs",
         point: product.point ?? "",
         preparationTime: product.preparationTime ?? "15",
-        status: product.status ?? true,
+        status: product.status === "active" || product.status === true,
         isAvailable: product.isAvailable ?? true
       });
       if (product.isOption && product.options) {
@@ -377,7 +378,7 @@ const EditProduct = () => {
     setPriceTiers((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("id", productId);
@@ -398,7 +399,7 @@ const EditProduct = () => {
     if (values.point) payload.append("point", values.point);
     if (values.preparationTime) payload.append("preparationTime", values.preparationTime);
     if (values.description) payload.append("description", values.description);
-    payload.append("status", values.status);
+    payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
     payload.append("isOption", !!isOption);
     payload.append("hasModifiers", !!hasModifiers);
@@ -1217,10 +1218,25 @@ const EditProduct = () => {
                   {t("page.product.form.next")} <ChevronRight size={18} />
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
-                  {isSubmitting ? <Loading size="sm" className="text-white" /> : <Save size={18} />}
-                  {t("page.product.form.saveEdit")}
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={isSubmitting}
+                    className="gap-2 shadow-md">
+                    <Save size={18} />
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
+                    {isSubmitting ? (
+                      <Loading size="sm" className="text-white" />
+                    ) : (
+                      <Save size={18} />
+                    )}
+                    {t("page.product.form.saveEdit")}
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -1246,6 +1262,21 @@ const EditProduct = () => {
         cancelText={t("page.product.form.cancelBack")}
         onConfirm={() => navigate("/product-list")}
       />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
+      />
+
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.savingEdit")} />}
     </div>
   );

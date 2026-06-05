@@ -26,6 +26,7 @@ const AddAdmin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000
@@ -54,14 +55,14 @@ const AddAdmin = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password || !form.role) {
       toast.error(t("common.error"), { description: t("page.user.addAdmin.validationRequired") });
       return;
     }
     setIsSubmitting(true);
-    createMutation.mutate(form);
+    createMutation.mutate({ ...form, status: saveAsDraft ? "draft" : "active" });
   };
 
   return (
@@ -86,21 +87,11 @@ const AddAdmin = () => {
             {t("page.user.addAdmin.description")}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            {t("page.user.button.back")}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.user.button.save")}
-          </Button>
-        </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 bg-card rounded-xl shadow-sm border border-border p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -277,6 +268,27 @@ const AddAdmin = () => {
         </div>
       </div>
 
+      <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          {t("page.user.button.back")}
+        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={isSubmitting}
+            className="gap-2">
+            <span className="material-symbols-outlined text-lg">save</span>
+            Simpan sebagai Draft
+          </Button>
+          <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
+            <span className="material-symbols-outlined text-lg">save</span>
+            {t("page.user.button.save")}
+          </Button>
+        </div>
+      </div>
+
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
@@ -293,6 +305,19 @@ const AddAdmin = () => {
         title={t("modal.cancelTitle")}
         confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/user-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          setIsSubmitting(true);
+          createMutation.mutate({ ...form, status: "draft" });
+        }}
       />
     </div>
   );

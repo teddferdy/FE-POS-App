@@ -1,0 +1,302 @@
+/* eslint-disable react/prop-types */
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight, HelpCircle, ChevronDown } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useTourStore } from "@/state/tour";
+import { superAdminSteps } from "./steps";
+
+const SpotlightOverlay = ({ target, stepIndex }) => {
+  const [rect, setRect] = useState(null);
+
+  const update = useCallback(() => {
+    if (!target) {
+      setRect(null);
+      return;
+    }
+    const el = document.querySelector(target);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        setRect({
+          top: r.top,
+          left: r.left,
+          width: r.width,
+          height: r.height
+        });
+      }
+    }
+  }, [target]);
+
+  useEffect(() => {
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [update]);
+
+  if (!rect) return null;
+
+  const P = 12;
+
+  return (
+    <motion.div
+      key={stepIndex}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[60] pointer-events-none">
+      {/* Top strip */}
+      <div
+        className="absolute left-0 right-0 bg-black/50 pointer-events-auto"
+        style={{ top: 0, height: Math.max(0, rect.top - P) }}
+      />
+      {/* Bottom strip */}
+      <div
+        className="absolute left-0 right-0 bg-black/50 pointer-events-auto"
+        style={{ top: rect.top + rect.height + P, bottom: 0 }}
+      />
+      {/* Left strip */}
+      <div
+        className="absolute bg-black/50 pointer-events-auto"
+        style={{
+          top: rect.top - P,
+          left: 0,
+          width: Math.max(0, rect.left - P),
+          height: rect.height + P * 2
+        }}
+      />
+      {/* Right strip */}
+      <div
+        className="absolute bg-black/50 pointer-events-auto"
+        style={{
+          top: rect.top - P,
+          right: 0,
+          width: `calc(100% - ${rect.left + rect.width + P}px)`,
+          height: rect.height + P * 2
+        }}
+      />
+      {/* Spotlight border glow */}
+      <div
+        className="absolute rounded-lg pointer-events-none"
+        style={{
+          top: rect.top - P - 1,
+          left: rect.left - P - 1,
+          width: rect.width + P * 2 + 2,
+          height: rect.height + P * 2 + 2,
+          boxShadow: "0 0 0 2px hsl(var(--primary)), 0 0 20px hsla(var(--primary), 0.4)"
+        }}
+      />
+    </motion.div>
+  );
+};
+
+const panelVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 50, scale: 0.95 }
+};
+
+const fabVariants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: { scale: 1, opacity: 1 },
+  exit: { scale: 0, opacity: 0 }
+};
+
+const SuperAdminTour = () => {
+  const [cookie] = useCookies();
+  const navigate = useNavigate();
+  const user = cookie?.user;
+  const role = user?.role || user?.roleType || user?.type || user?.userType;
+  const isSuperAdmin = role === "super_admin";
+
+  const {
+    isActive,
+    currentStep,
+    isMinimized,
+    startTour,
+    nextStep,
+    prevStep,
+    endTour,
+    toggleMinimized
+  } = useTourStore();
+
+  const step = superAdminSteps[currentStep];
+  const totalSteps = superAdminSteps.length;
+  const isFirst = currentStep === 0;
+  const isLast = currentStep === totalSteps - 1;
+  const Icon = step?.icon;
+  const hasSpotlight = !!step?.target;
+
+  const handleNext = () => {
+    const nextIdx = currentStep + 1;
+    const nextStepData = superAdminSteps[nextIdx];
+    nextStep();
+    if (nextStepData?.page) {
+      navigate(nextStepData.page);
+    }
+  };
+
+  const handlePrev = () => {
+    const prevIdx = currentStep - 1;
+    const prevStepData = superAdminSteps[prevIdx];
+    prevStep();
+    if (prevStepData?.page) {
+      navigate(prevStepData.page);
+    }
+  };
+
+  const handleStart = () => {
+    startTour();
+    const firstStepData = superAdminSteps[0];
+    if (firstStepData?.page) {
+      navigate(firstStepData.page);
+    }
+  };
+
+  const handleFinish = () => {
+    endTour();
+  };
+
+  if (!isSuperAdmin) return null;
+
+  return (
+    <>
+      {/* Spotlight overlay */}
+      <AnimatePresence>
+        {isActive && !isMinimized && hasSpotlight && (
+          <SpotlightOverlay
+            key={`spotlight-${currentStep}`}
+            target={step.target}
+            stepIndex={currentStep}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating help button */}
+      <AnimatePresence>
+        {(!isActive || isMinimized) && (
+          <motion.button
+            key="fab"
+            variants={fabVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            onClick={isActive ? toggleMinimized : handleStart}
+            className="fixed bottom-6 right-6 z-[70] p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+            title="Panduan Super Admin">
+            <HelpCircle size={22} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Tour panel */}
+      <AnimatePresence>
+        {isActive && !isMinimized && step && (
+          <motion.div
+            key="panel"
+            variants={panelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="fixed bottom-6 right-6 z-[70] w-[340px] sm:w-[380px]">
+            <Card className="shadow-2xl border border-primary/20 overflow-hidden bg-background">
+              {/* Progress bar */}
+              <div className="h-1 bg-muted">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${((currentStep + 1) / totalSteps) * 100}%`
+                  }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                <span className="text-xs font-medium text-muted-foreground tracking-wide">
+                  Langkah {currentStep + 1} dari {totalSteps}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={toggleMinimized}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    title="Minimalkan">
+                    <ChevronDown size={16} />
+                  </button>
+                  <button
+                    onClick={handleFinish}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    title="Tutup">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-5 pb-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+                      <Icon size={22} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-base leading-tight mb-1.5 text-foreground">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-5 pb-4 pt-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isFirst}
+                  onClick={handlePrev}
+                  className="gap-1 text-xs">
+                  <ChevronLeft size={14} />
+                  Sebelumnya
+                </Button>
+
+                {isLast ? (
+                  <Button size="sm" onClick={handleFinish} className="gap-1 text-xs">
+                    Selesai
+                  </Button>
+                ) : (
+                  <Button size="sm" onClick={handleNext} className="gap-1 text-xs">
+                    {step.action || "Lanjut"}
+                    <ChevronRight size={14} />
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+export default SuperAdminTour;

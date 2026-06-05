@@ -124,7 +124,9 @@ const Dashboard = () => {
         <Loading />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div
+            data-tour="dashboard-stats"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {summaryCards.map((card) => {
               const Icon = card.icon;
               return (
@@ -153,7 +155,9 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+            <div
+              data-tour="dashboard-chart"
+              className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
               <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-border">
                 <div>
                   <h3 className="text-base font-semibold text-foreground">
@@ -249,7 +253,9 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+          <div
+            data-tour="dashboard-orders"
+            className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-foreground">

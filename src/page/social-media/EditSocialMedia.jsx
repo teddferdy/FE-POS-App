@@ -27,6 +27,7 @@ const EditSocialMedia = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data, isLoading } = useQuery(
     ["social-media-invoice", store],
@@ -42,7 +43,7 @@ const EditSocialMedia = () => {
       setPlatformName(item.platformName || "");
       setUrl(item.url || "");
       setIcon(item.icon || "");
-      setIsActive(item.isActive ?? true);
+      setIsActive(item.status === "active");
     }
   }, [item]);
 
@@ -57,7 +58,7 @@ const EditSocialMedia = () => {
     }
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!platformName.trim()) {
       toast.error(t("common.error"), {
@@ -76,7 +77,7 @@ const EditSocialMedia = () => {
       platformName: platformName.trim(),
       url: url.trim(),
       icon: icon.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -208,7 +209,10 @@ const EditSocialMedia = () => {
               <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+                Simpan sebagai Draft
+              </Button>
+              <Button type="submit" onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
                 {t("page.socialMedia.button.saveChanges")}
               </Button>
             </div>
@@ -232,6 +236,19 @@ const EditSocialMedia = () => {
         title={t("modal.discardTitle")}
         confirmText={t("modal.discardConfirm")}
         onConfirm={() => navigate("/social-media-invoice-list")}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(new Event("submit"), true);
+        }}
       />
     </div>
   );

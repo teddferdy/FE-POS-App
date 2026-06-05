@@ -8,7 +8,7 @@ import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
@@ -47,6 +47,50 @@ const ExpenseCategoryList = () => {
       setDeleteTarget(null);
     }
   };
+
+  const columns = [
+    {
+      header: "Nama Kategori",
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+            <Tag size={14} />
+          </div>
+          <span className="font-medium text-foreground">{row.name || "-"}</span>
+        </div>
+      )
+    },
+    {
+      header: "Deskripsi",
+      render: (row) => (
+        <span className="text-sm text-muted-foreground max-w-[300px] truncate block">
+          {row.description || "-"}
+        </span>
+      )
+    },
+    {
+      header: "Aksi",
+      align: "right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => navigate(`/edit-expense-category?id=${row.id || row._id}`)}>
+            <Edit size={15} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive"
+            onClick={() => handleDelete(row)}>
+            <Trash2 size={15} />
+          </Button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-6">
@@ -95,79 +139,13 @@ const ExpenseCategoryList = () => {
         />
       </div>
 
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Nama Kategori
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Deskripsi
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-muted-foreground">
-                      <Tag size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada kategori biaya ditemukan</p>
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((cat, index) => (
-                    <tr
-                      key={cat.id || cat._id || index}
-                      className="hover:bg-accent/30 transition-colors">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                            <Tag size={14} />
-                          </div>
-                          <span className="font-medium text-foreground">{cat.name || "-"}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-muted-foreground max-w-[300px] truncate">
-                        {cat.description || "-"}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() =>
-                              navigate(`/edit-expense-category?id=${cat.id || cat._id}`)
-                            }>
-                            <Edit size={15} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => handleDelete(cat)}>
-                            <Trash2 size={15} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        emptyIcon={Tag}
+        emptyMessage="Tidak ada kategori biaya ditemukan"
+      />
 
       <Modal
         type="confirm"

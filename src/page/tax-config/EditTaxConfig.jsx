@@ -38,6 +38,7 @@ const EditTaxConfig = () => {
   const taxId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: taxData, isLoading } = useQuery(
     ["tax-config-detail", taxId],
@@ -65,7 +66,7 @@ const EditTaxConfig = () => {
         type: tax.type || "PPN",
         rate: tax.rate || 0,
         description: tax.description || "",
-        isActive: tax.isActive ?? tax.status ?? true
+        isActive: tax.status === "active"
       });
     }
   }, [tax, form]);
@@ -82,8 +83,13 @@ const EditTaxConfig = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    updateMutation.mutate({ id: taxId, ...values });
+  const onSubmit = (values, saveAsDraft = false) => {
+    const { isActive, ...rest } = values;
+    updateMutation.mutate({
+      id: taxId,
+      ...rest,
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
+    });
   };
 
   if (!taxId) {
@@ -127,13 +133,21 @@ const EditTaxConfig = () => {
             {t("page.taxConfig.edit.description")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
             {t("common.cancel")}
           </Button>
           <Button
-            onClick={form.handleSubmit(onSubmit)}
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={updateMutation.isLoading}
+            className="gap-2">
+            <Save size={18} />
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
@@ -253,6 +267,19 @@ const EditTaxConfig = () => {
         description={t("page.taxConfig.toast.updateSuccess")}
         confirmText={t("modal.backToList")}
         onConfirm={() => navigate("/tax-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

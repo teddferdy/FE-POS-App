@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
@@ -16,14 +17,17 @@ import {
   Building2,
   Settings,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  LifeBuoy
 } from "lucide-react";
 import { translationSelect } from "@/state/translation";
 import { getAllLocation } from "@/services/location";
 import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
+import { getUnreadCount } from "@/services/notification";
 import CommandPalette from "./CommandPalette";
+import { useTourStore } from "@/state/tour";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -199,20 +203,10 @@ const NotificationBell = () => {
   const navigate = useNavigate();
   const { newNotification } = useSocket() || {};
   const queryClient = useQueryClient();
-
-  const { data: unreadData } = useQuery(
-    ["unread-notif-count"],
-    () => axiosInstance.get("/notification/unread").then((r) => r.data),
-    { refetchInterval: 120000, staleTime: 60000 }
-  );
-
-  useEffect(() => {
-    if (newNotification) {
-      queryClient.invalidateQueries(["unread-notif-count"]);
-    }
-  }, [newNotification, queryClient]);
-
-  const unreadCount = unreadData?.data?.unreadCount || 0;
+  const { data: unreadData } = useQuery("unread-notifications", getUnreadCount, {
+    refetchInterval: 30000
+  });
+  const unreadCount = unreadData?.data?.count || unreadData?.count || 0;
 
   return (
     <button
@@ -261,6 +255,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const { translation, updateTranslation } = translationSelect();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const { startTour } = useTourStore();
   const location = useLocation();
   const showStoreSelector = !globalPages.some((p) => location.pathname.startsWith(p));
 
@@ -330,6 +325,14 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Sun size={16} className="hidden dark:block sm:size-[18px]" />
             <Moon size={16} className="block dark:hidden sm:size-[18px]" />
+          </button>
+
+          {/* Tour Guide */}
+          <button
+            onClick={startTour}
+            className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            title="Panduan Super Admin">
+            <LifeBuoy size={16} className="sm:size-[18px]" />
           </button>
 
           {/* Notifications */}

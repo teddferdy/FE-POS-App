@@ -59,6 +59,7 @@ const EditEmployee = () => {
   const [deletedDocs, setDeletedDocs] = useState([]);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const formSchema = useMemo(() => {
     return z.object({
@@ -367,14 +368,18 @@ const EditEmployee = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (documents.length === 0 && existingDocuments.length === 0) {
       toast.error(t("common.error"), { description: t("page.employee.edit.documentRequired") });
       setIsSubmitting(false);
       return;
     }
     setIsSubmitting(true);
-    const payload = { ...values, id: employeeId };
+    const payload = {
+      ...values,
+      id: employeeId,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
+    };
     if (imageFile) {
       payload.image = imageFile;
     }
@@ -1326,10 +1331,19 @@ const EditEmployee = () => {
                   <span className="material-symbols-outlined text-lg">arrow_back</span>
                   {t("common.cancel")}
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                  <span className="material-symbols-outlined text-lg">save</span>
-                  {t("page.employee.edit.saveChanges")}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={isSubmitting}>
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
+                    <span className="material-symbols-outlined text-lg">save</span>
+                    {t("page.employee.edit.saveChanges")}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1353,6 +1367,19 @@ const EditEmployee = () => {
         title={t("page.employee.edit.cancelTitle")}
         confirmText={t("common.confirm")}
         onConfirm={() => navigate("/employee-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

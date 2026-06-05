@@ -6,7 +6,6 @@ import {
   Plus,
   Search,
   ChevronLeft,
-  ChevronRight,
   Eye,
   Edit,
   Trash2,
@@ -21,10 +20,8 @@ import { toast } from "sonner";
 import { getStockOpname, deleteStockOpname, exportStockOpnameByIds } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
-import { Checkbox } from "@/components/ui/checkbox";
 import Modal from "@/components/organism/modal";
+import DataTable from "@/components/ui/DataTable";
 
 const statusColors = {
   draft: {
@@ -87,24 +84,9 @@ const StockOpnameList = () => {
     return true;
   });
 
-  const allSelected = filteredItems.length > 0 && selectedItems.length === filteredItems.length;
-  const someSelected = selectedItems.length > 0 && !allSelected;
-
-  const toggleSelectAll = useCallback(() => {
-    if (allSelected) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(filteredItems.map((item) => item.id || item._id));
-    }
-  }, [allSelected, filteredItems]);
-
-  const toggleSelectItem = useCallback((id) => {
-    setSelectedItems((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
-  }, []);
-
-  const clearSelection = useCallback(() => {
+  useEffect(() => {
     setSelectedItems([]);
-  }, []);
+  }, [page, search, warehouseFilter, statusFilter]);
 
   const handleExportSelected = useCallback(() => {
     exportStockOpnameByIds(selectedItems)
@@ -112,18 +94,14 @@ const StockOpnameList = () => {
         toast.success("Berhasil", {
           description: `${selectedItems.length} data berhasil diexport`
         });
-        clearSelection();
+        setSelectedItems([]);
       })
       .catch((err) => {
         toast.error("Gagal", {
           description: err?.response?.data?.message || err.message || "Gagal export data"
         });
       });
-  }, [selectedItems, clearSelection]);
-
-  useEffect(() => {
-    clearSelection();
-  }, [page, search, warehouseFilter, statusFilter, clearSelection]);
+  }, [selectedItems]);
 
   const deleteMutation = useMutation(deleteStockOpname, {
     onSuccess: () => {
@@ -161,16 +139,14 @@ const StockOpnameList = () => {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => {
-                handleExportSelected();
-              }}
+              onClick={handleExportSelected}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               <FileDown size={14} />
               Export
             </button>
             <button
               onClick={() => {
-                clearSelection();
+                setSelectedItems([]);
                 if (toastIdRef.current) {
                   toast.dismiss(toastIdRef.current);
                   toastIdRef.current = null;
@@ -195,7 +171,7 @@ const StockOpnameList = () => {
         toastIdRef.current = null;
       }
     };
-  }, [selectedItems, handleExportSelected, clearSelection]);
+  }, [selectedItems, handleExportSelected]);
 
   const stats = [
     {
@@ -234,9 +210,100 @@ const StockOpnameList = () => {
     }
   ];
 
+  const columns = [
+    {
+      header: "Tanggal Audit",
+      render: (item) => (
+        <span className="font-mono text-xs text-foreground">{item.auditDate || "-"}</span>
+      )
+    },
+    {
+      header: "ID Audit",
+      render: (item) => (
+        <span className="text-xs font-bold text-primary">{item.auditId || "-"}</span>
+      )
+    },
+    {
+      header: "Lokasi Gudang",
+      render: (item) => (
+        <span className="text-sm font-medium text-foreground">{item.store?.name || "-"}</span>
+      )
+    },
+    {
+      header: "Auditor",
+      render: (item) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">
+            {item.auditor
+              ?.split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2) || "NA"}
+          </div>
+          <span className="text-sm text-foreground">{item.auditor || "-"}</span>
+        </div>
+      )
+    },
+    {
+      header: "Jumlah Barang",
+      render: (item) => (
+        <span className="text-sm font-mono text-foreground">{item.stats?.totalItems ?? "-"}</span>
+      )
+    },
+    {
+      header: "Status",
+      render: (item) => {
+        const status = item.status || "draft";
+        const statusStyle = statusColors[status] || statusColors.draft;
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusStyle.bg}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot} mr-1.5`} />
+            {statusStyle.label}
+          </span>
+        );
+      }
+    },
+    {
+      header: "Aksi",
+      align: "right",
+      render: (item) => {
+        const isDraft = item.status === "draft";
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/stock-opname/detail?id=${item.id || item._id}`)}>
+              <Eye size={15} />
+            </Button>
+            {isDraft && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-primary"
+                  onClick={() => navigate(`/add-stock-opname?id=${item.id || item._id}`)}>
+                  <Edit size={15} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive"
+                  onClick={() => setDeleteTarget(item.id || item._id)}>
+                  <Trash2 size={15} />
+                </Button>
+              </>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -247,7 +314,6 @@ const StockOpnameList = () => {
         <span className="text-primary font-semibold">Stock Opname</span>
       </nav>
 
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.stockOpname.list.title")}</h1>
@@ -261,7 +327,6 @@ const StockOpnameList = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
           <div
@@ -288,10 +353,24 @@ const StockOpnameList = () => {
         ))}
       </div>
 
-      {/* Table */}
-      <Card className="overflow-hidden">
-        {/* Filters */}
-        <div className="p-4 border-b border-border flex flex-col gap-3 bg-muted/30">
+      <DataTable
+        columns={columns}
+        data={filteredItems}
+        isLoading={isLoading}
+        emptyMessage="Tidak ada data stock opname"
+        emptyIcon={ClipboardList}
+        selectable
+        selectedIds={selectedItems}
+        onSelectionChange={setSelectedItems}
+        rowClassName={(row) => {
+          const status = row.status || "draft";
+          const classes = [];
+          if (selectedItems.includes(row.id || row._id)) classes.push("bg-primary/5");
+          if (status === "completed") classes.push("bg-green-50/50 dark:bg-green-950/10");
+          if (status === "cancelled") classes.push("bg-red-50/50 dark:bg-red-950/10");
+          return classes.join(" ");
+        }}
+        toolbar={
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="relative">
@@ -344,253 +423,14 @@ const StockOpnameList = () => {
               />
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Menampilkan 1-{Math.min(limit, filteredItems.length)} dari {total} hasil
-            </p>
-            <div className="flex items-center border border-border rounded-md overflow-hidden">
-              <button
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page <= 1}
-                className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30">
-                <ChevronLeft size={16} />
-              </button>
-              <div className="w-px h-5 bg-border" />
-              <button
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                disabled={page >= totalPages}
-                className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Table Body */}
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider w-12">
-                    <Checkbox
-                      checked={someSelected ? "indeterminate" : allSelected}
-                      onCheckedChange={toggleSelectAll}
-                      className="data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary"
-                    />
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tanggal Audit
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    ID Audit
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Lokasi Gudang
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Auditor
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Jumlah Barang
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredItems.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
-                      Tidak ada data stock opname
-                    </td>
-                  </tr>
-                ) : (
-                  filteredItems.map((item, index) => {
-                    const id = item.id || item._id;
-                    const status = item.status || "draft";
-                    const statusStyle = statusColors[status] || statusColors.draft;
-                    const isDraft = status === "draft";
-                    const isCompleted = status === "completed";
-                    const isChecked = selectedItems.includes(id);
-
-                    return (
-                      <tr
-                        key={id || index}
-                        className={`hover:bg-accent/30 transition-colors group ${
-                          isCompleted ? "bg-green-50/50 dark:bg-green-950/10" : ""
-                        } ${status === "cancelled" ? "bg-red-50/50 dark:bg-red-950/10" : ""} ${
-                          isChecked ? "bg-primary/5" : ""
-                        }`}>
-                        <td className="px-4 py-4">
-                          <Checkbox
-                            checked={isChecked}
-                            onCheckedChange={() => toggleSelectItem(id)}
-                          />
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="font-mono text-xs text-foreground">
-                            {item.auditDate || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="text-xs font-bold text-primary">
-                            {item.auditId || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="text-sm font-medium text-foreground">
-                            {item.store?.name || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">
-                              {item.auditor
-                                ?.split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .slice(0, 2) || "NA"}
-                            </div>
-                            <span className="text-sm text-foreground">{item.auditor || "-"}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-sm font-mono text-foreground">
-                          {item.stats?.totalItems ?? "-"}
-                        </td>
-                        <td className="px-4 py-4">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${statusStyle.bg}`}>
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot} mr-1.5`}
-                            />
-                            {statusStyle.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-primary"
-                              onClick={() =>
-                                navigate(`/stock-opname/detail?id=${item.id || item._id}`)
-                              }>
-                              <Eye size={15} />
-                            </Button>
-                            {isDraft && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-primary"
-                                onClick={() =>
-                                  navigate(`/add-stock-opname?id=${item.id || item._id}`)
-                                }>
-                                <Edit size={15} />
-                              </Button>
-                            )}
-                            {isDraft && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() => setDeleteTarget(item.id || item._id)}>
-                                <Trash2 size={15} />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination Footer */}
-        <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="flex items-center gap-3">
-            <p className="text-xs text-muted-foreground">Hasil per halaman:</p>
-            <select
-              className="bg-background border border-border rounded px-2 py-1 text-xs"
-              value={limit}
-              disabled>
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-            </select>
-          </div>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage(1)}
-              disabled={page <= 1}
-              className="w-8 h-8 flex items-center justify-center rounded text-xs text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
-              <ChevronLeft size={14} className="mr-0.5" />
-              <ChevronLeft size={14} className="-ml-2" />
-            </button>
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="w-8 h-8 flex items-center justify-center rounded text-xs text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
-              <ChevronLeft size={14} />
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-8 h-8 flex items-center justify-center rounded text-xs font-medium border transition-colors ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border hover:bg-accent text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <span className="w-8 h-8 flex items-center justify-center text-xs text-muted-foreground">
-                ...
-              </span>
-            )}
-            {totalPages > 5 && (
-              <button
-                onClick={() => setPage(totalPages)}
-                className={`w-8 h-8 flex items-center justify-center rounded text-xs font-medium border transition-colors ${
-                  page === totalPages
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border hover:bg-accent text-muted-foreground"
-                }`}>
-                {totalPages}
-              </button>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded text-xs text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
-              <ChevronRight size={14} />
-            </button>
-            <button
-              onClick={() => setPage(totalPages)}
-              disabled={page >= totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded text-xs text-muted-foreground hover:bg-accent disabled:opacity-30 transition-colors">
-              <ChevronRight size={14} className="mr-0.5" />
-              <ChevronRight size={14} className="-ml-2" />
-            </button>
-          </div>
-        </div>
-      </Card>
+        }
+        pagination={{
+          page,
+          totalPages,
+          total,
+          onPageChange: setPage
+        }}
+      />
 
       <Modal
         type="confirm"

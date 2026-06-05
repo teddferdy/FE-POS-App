@@ -85,6 +85,7 @@ const AddLocation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -282,7 +283,7 @@ const AddLocation = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (!isEdit && !imageFile) {
       toast.error("Gagal", { description: "Foto toko wajib diupload" });
       setIsSubmitting(false);
@@ -300,6 +301,7 @@ const AddLocation = () => {
       storeId: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
       coordinates: {
         lat: latitude,
         lng: longitude
@@ -990,25 +992,31 @@ const AddLocation = () => {
               {/* Right Column - Cards */}
               <div className="lg:col-span-1 space-y-6">
                 {/* Status Toggle */}
-                <div className="pt-2 flex items-center justify-between bg-muted/30 p-4 rounded-lg">
+                <div
+                  className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                    form.watch("isActive")
+                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                  }`}>
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         form.watch("isActive")
-                          ? "bg-green-600 text-secondary"
+                          ? "bg-green-600 text-white"
                           : "bg-destructive/10 text-destructive"
                       }`}>
-                      {form.watch("isActive") ? (
-                        <Check size={20} />
-                      ) : (
-                        <span className="text-lg font-bold">⏻</span>
-                      )}
+                      <span className="material-symbols-outlined text-lg">
+                        {form.watch("isActive") ? "check" : "close"}
+                      </span>
                     </div>
-
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Status Operasional</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {form.watch("isActive") ? "Aktif" : "Tidak Aktif"}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Tentukan apakah toko langsung aktif atau non-aktif.
+                        {form.watch("isActive")
+                          ? "Toko ini aktif dan dapat beroperasi."
+                          : "Toko ini tidak aktif."}
                       </p>
                     </div>
                   </div>
@@ -1016,9 +1024,7 @@ const AddLocation = () => {
                     control={form.control}
                     name="isActive"
                     render={({ field }) => (
-                      <div className="flex items-center gap-2">
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      </div>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     )}
                   />
                 </div>
@@ -1108,7 +1114,7 @@ const AddLocation = () => {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
               <Button
                 type="button"
                 variant="outline"
@@ -1116,10 +1122,19 @@ const AddLocation = () => {
                 onClick={() => setCancelModal(true)}>
                 Batal
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                <Save size={18} />
-                {isEdit ? "Simpan Perubahan" : "Simpan Lokasi"}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={isSubmitting}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
+                  <Save size={18} />
+                  {isEdit ? "Simpan Perubahan" : "Simpan Lokasi"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
@@ -1296,6 +1311,19 @@ const AddLocation = () => {
         title="Batalkan Perubahan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/location-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

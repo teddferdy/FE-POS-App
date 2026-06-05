@@ -175,6 +175,7 @@ const AddStockOpname = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noLocationModal, setNoLocationModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const [formMeta, setFormMeta] = useState({
     tanggalAudit: new Date(),
@@ -386,34 +387,6 @@ const AddStockOpname = () => {
       return false;
     }
     return true;
-  };
-
-  const handleSaveDraft = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setIsSubmitting(true);
-    try {
-      const payload = buildPayload();
-      if (id) {
-        // Edit mode
-        await updateStockOpname(id, payload);
-        toast.success(t("common.success"), {
-          description: t("page.stockOpname.toast.updateSuccess")
-        });
-      } else {
-        // Create mode
-        await addStockOpname(payload);
-        toast.success(t("common.success"), {
-          description: t("page.stockOpname.toast.saveDraftSuccess")
-        });
-      }
-      queryClient.invalidateQueries(["stockOpname"]);
-      navigate("/stock-opname");
-    } catch (err) {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleSaveComplete = async (e) => {
@@ -780,26 +753,28 @@ const AddStockOpname = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 pt-2">
+      <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
         <Button variant="outline" onClick={() => setCancelModal(true)} className="transition-all">
           <X size={16} className="mr-1" />
           {t("common.cancel")}
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleSaveDraft}
-          disabled={isSubmitting}
-          className="transition-all min-w-[140px]">
-          <Save size={16} className="mr-1" />
-          {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveDraft")}
-        </Button>
-        <Button
-          onClick={handleSaveComplete}
-          disabled={isSubmitting}
-          className="transition-all min-w-[140px]">
-          <Save size={16} className="mr-1" />
-          {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveComplete")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={isSubmitting}
+            className="transition-all min-w-[140px]">
+            <Save size={16} className="mr-1" />
+            {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveDraft")}
+          </Button>
+          <Button
+            onClick={handleSaveComplete}
+            disabled={isSubmitting}
+            className="transition-all min-w-[140px]">
+            <Save size={16} className="mr-1" />
+            {isSubmitting ? t("common.saving") : t("page.stockOpname.button.saveComplete")}
+          </Button>
+        </div>
       </div>
 
       {/* Loading */}
@@ -828,6 +803,38 @@ const AddStockOpname = () => {
         description={t("page.stockOpname.modal.noLocationDescription")}
         confirmText={t("page.stockOpname.modal.addLocation")}
         onConfirm={() => navigate("/add-location")}
+      />
+
+      {/* Draft Modal */}
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          setIsSubmitting(true);
+          const payload = buildPayload();
+          const saveFn = id ? updateStockOpname(id, payload) : addStockOpname(payload);
+          saveFn
+            .then(() => {
+              toast.success(t("common.success"), {
+                description: id
+                  ? t("page.stockOpname.toast.updateSuccess")
+                  : t("page.stockOpname.toast.saveDraftSuccess")
+              });
+              queryClient.invalidateQueries(["stockOpname"]);
+              navigate("/stock-opname");
+            })
+            .catch((err) => {
+              toast.error(t("common.error"), {
+                description: err?.response?.data?.message || err.message
+              });
+            })
+            .finally(() => setIsSubmitting(false));
+        }}
       />
 
       {/* Upload Excel Modal */}

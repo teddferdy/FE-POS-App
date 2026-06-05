@@ -25,6 +25,7 @@ const AddSocialMedia = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const addMutation = useMutation(addInvoiceSocialMedia, {
     onSuccess: () => {
@@ -37,7 +38,7 @@ const AddSocialMedia = () => {
     }
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!platformName.trim()) {
       toast.error(t("common.error"), {
@@ -55,7 +56,7 @@ const AddSocialMedia = () => {
       platformName: platformName.trim(),
       url: url.trim(),
       icon: icon.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -151,13 +152,24 @@ const AddSocialMedia = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
               <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {t("common.save")}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={isSubmitting}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button
+                  type="submit"
+                  onClick={(e) => handleSubmit(e, false)}
+                  disabled={isSubmitting}>
+                  {t("common.save")}
+                </Button>
+              </div>
             </div>
           </form>
         </Card>
@@ -179,6 +191,19 @@ const AddSocialMedia = () => {
         title={t("modal.discardTitle")}
         confirmText={t("modal.discardConfirm")}
         onConfirm={() => navigate("/social-media-invoice-list")}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(new Event("submit"), true);
+        }}
       />
     </div>
   );

@@ -12,10 +12,10 @@ import {
 import { getAllDepartment } from "@/services/department";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadPositionModal from "@/page/position/components/UploadPositionModal";
 import PageHeader from "@/components/ui/PageHeader";
+import DataTable from "@/components/ui/DataTable";
 
 const PositionList = () => {
   const { t } = useTranslation();
@@ -78,6 +78,77 @@ const PositionList = () => {
       setDeleteTarget(null);
     }
   };
+
+  const columns = [
+    {
+      header: t("page.position.table.no"),
+      render: (_, index) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
+        </span>
+      )
+    },
+    {
+      header: t("page.position.table.name"),
+      render: (position) => (
+        <span className="text-sm font-semibold text-primary">{position.name}</span>
+      )
+    },
+    {
+      header: t("page.position.table.department"),
+      render: (position) =>
+        position.department ? (
+          <span className="inline-block px-2 py-0.5 rounded bg-secondary-fixed/30 text-on-secondary-fixed-variant text-xs font-semibold">
+            {position.department}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">-</span>
+        )
+    },
+    {
+      header: t("page.position.table.description"),
+      render: (position) => (
+        <p className="text-sm text-muted-foreground max-w-xs truncate">
+          {position.description || "-"}
+        </p>
+      )
+    },
+    {
+      header: t("common.actions"),
+      align: "center",
+      render: (position) => (
+        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/detail-position?positionID=${position.id}`);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+            title={t("common.view")}>
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/edit-position?id=${position.id}`);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+            title={t("common.edit")}>
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(position);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
+            title={t("common.delete")}>
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -219,173 +290,45 @@ const PositionList = () => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {t("page.position.list.show")}:
-            </span>
-            <select
-              value={limit}
-              className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-              <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
-              <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
-              <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
-            </select>
+      <DataTable
+        columns={columns}
+        data={positions}
+        isLoading={isLoading}
+        emptyMessage={t("page.position.list.empty")}
+        toolbar={
+          <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-muted-foreground">
+                {t("page.position.list.show")}:
+              </span>
+              <select
+                value={limit}
+                className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
+                <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
+                <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
+              </select>
+            </div>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                search
+              </span>
+              <input
+                placeholder={t("page.position.list.search")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              />
+            </div>
           </div>
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-              search
-            </span>
-            <input
-              placeholder={t("page.position.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/10 border-b border-border">
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                    {t("page.position.table.no")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.position.table.name")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.position.table.department")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.position.table.description")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    {t("common.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {positions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-5 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">badge</span>
-                      {t("page.position.list.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  positions.map((position, index) => (
-                    <tr
-                      key={position.id}
-                      className="hover:bg-muted/20 transition-colors group cursor-pointer"
-                      onClick={() => navigate(`/detail-position?positionID=${position.id}`)}>
-                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
-                        {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-sm font-semibold text-primary">{position.name}</span>
-                      </td>
-                      <td className="px-5 py-3">
-                        {position.department ? (
-                          <span className="inline-block px-2 py-0.5 rounded bg-secondary-fixed/30 text-on-secondary-fixed-variant text-xs font-semibold">
-                            {position.department}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">-</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3">
-                        <p className="text-sm text-muted-foreground max-w-xs truncate">
-                          {position.description || "-"}
-                        </p>
-                      </td>
-                      <td className="px-5 py-3">
-                        <div
-                          className="flex items-center justify-center gap-1"
-                          onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => navigate(`/detail-position?positionID=${position.id}`)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title={t("common.view")}>
-                            <span className="material-symbols-outlined text-lg">visibility</span>
-                          </button>
-                          <button
-                            onClick={() => navigate(`/edit-position?id=${position.id}`)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title={t("common.edit")}>
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(position)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-                            title={t("common.delete")}>
-                            <span className="material-symbols-outlined text-lg">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            {t("page.position.list.showing", { count: positions.length, total })}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-all ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border hover:bg-muted text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="px-1 text-muted-foreground text-sm">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground text-sm font-semibold">
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+        rowClassName={() => "group"}
+        onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
+      />
 
       <Modal
         type="confirm"

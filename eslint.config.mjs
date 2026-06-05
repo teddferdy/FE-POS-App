@@ -9,6 +9,7 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     languageOptions: { globals: globals.browser },
+    settings: { react: { version: "detect" } },
     rules: {
       "react/react-in-jsx-scope": "off",
       "prettier/prettier": "error"

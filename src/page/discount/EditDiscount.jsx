@@ -40,6 +40,7 @@ const EditDiscount = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [cookie] = useCookies();
+  const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
 
@@ -81,7 +82,7 @@ const EditDiscount = () => {
         endDate: discountItem.endDate || "",
         minPurchase: discountItem.minPurchase ?? "",
         description: discountItem.description || "",
-        isActive: discountItem.isActive ?? true
+        isActive: discountItem.status === "active"
       });
     }
   }, [discountItem, form]);
@@ -97,8 +98,12 @@ const EditDiscount = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    updateMutation.mutate({ id, ...values });
+  const onSubmit = (values, saveAsDraft = false) => {
+    updateMutation.mutate({
+      id,
+      ...values,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
+    });
   };
 
   if (!id) {
@@ -148,13 +153,19 @@ const EditDiscount = () => {
           <h1 className="text-2xl font-bold text-foreground">Edit Diskon</h1>
           <p className="text-sm text-muted-foreground mt-1">Edit data diskon.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
             Batal
           </Button>
           <Button
-            onClick={form.handleSubmit(onSubmit)}
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={updateMutation.isLoading}>
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
@@ -309,6 +320,19 @@ const EditDiscount = () => {
         description="Diskon berhasil diupdate."
         confirmText="Kembali ke Daftar"
         onConfirm={() => navigate("/discount")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

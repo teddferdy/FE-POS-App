@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import Modal from "@/components/organism/modal";
 
 const AddPosition = () => {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ const AddPosition = () => {
   const [isActive, setIsActive] = useState(true);
 
   const [errors, setErrors] = useState({});
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
     staleTime: 5 * 60 * 1000
@@ -54,14 +56,14 @@ const AddPosition = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!validate()) return;
     createMutation.mutate({
       name: name.trim(),
       department,
       description: description.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -228,7 +230,7 @@ const AddPosition = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
           <Button
             type="button"
             variant="outline"
@@ -237,15 +239,42 @@ const AddPosition = () => {
             <span className="material-symbols-outlined text-lg">close</span>
             {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={createMutation.isLoading}
-            className="gap-2 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.position.button.save")}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={createMutation.isLoading}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              type="submit"
+              disabled={createMutation.isLoading}
+              className="gap-2 shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.position.button.save")}
+            </Button>
+          </div>
         </div>
       </form>
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          createMutation.mutate({
+            name: name.trim(),
+            department,
+            description: description.trim(),
+            status: "draft"
+          });
+        }}
+      />
     </div>
   );
 };

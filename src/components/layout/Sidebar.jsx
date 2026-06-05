@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ChevronDown, LogOut, LifeBuoy, PanelLeftClose, PanelLeft } from "lucide-react";
 import { sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuUser } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
+import SupportModal from "@/components/organism/SupportModal";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
@@ -13,6 +14,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const user = cookie?.user;
   const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
@@ -194,7 +196,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {/* Bottom */}
       <div className="mt-auto border-t border-border pt-3 flex flex-col gap-1">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group">
+        <button
+          onClick={() => setSupportOpen(true)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group">
           <LifeBuoy size={20} className="shrink-0" />
           <span
             className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${
@@ -203,6 +207,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             Support
           </span>
         </button>
+        <SupportModal open={supportOpen} onOpenChange={setSupportOpen} />
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors group">

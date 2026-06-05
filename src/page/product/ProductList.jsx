@@ -3,27 +3,15 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import {
-  Plus,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Edit,
-  Trash2,
-  Upload,
-  Download,
-  Package,
-  AlertTriangle
-} from "lucide-react";
+import { Plus, Search, Edit, Trash2, Upload, Download, Package } from "lucide-react";
 import { toast } from "sonner";
 import { getAllProductTable, deleteProduct } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const ProductList = () => {
@@ -150,8 +138,98 @@ const ProductList = () => {
     };
   };
 
+  const columns = [
+    {
+      header: t("page.product.table.image"),
+      render: (product) => {
+        const imageUrl = product.image || product.images?.[0];
+        return (
+          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
+            {imageUrl ? (
+              <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <Package size={16} className="text-muted-foreground" />
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      header: t("page.product.table.name"),
+      render: (product) => (
+        <div>
+          <p className="font-medium text-foreground text-sm">{product.name}</p>
+          <p className="text-xs text-muted-foreground font-mono">{product.sku || "-"}</p>
+        </div>
+      )
+    },
+    {
+      header: t("page.product.table.category"),
+      render: (product) => (
+        <span className="text-sm text-foreground">
+          {product.category || product.categoryId?.name || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.product.table.price"),
+      align: "right",
+      render: (product) => (
+        <span className="font-semibold text-foreground text-sm">
+          {formatCurrencyRupiah(product.price || product.harga || 0)}
+        </span>
+      )
+    },
+    {
+      header: t("page.product.table.stock"),
+      render: (product) => {
+        const stock = product.stock || product.quantity || 0;
+        return (
+          <span
+            className={`text-sm font-mono ${stock <= 0 ? "text-destructive font-semibold" : stock <= 10 ? "text-orange-600 font-semibold" : "text-foreground"}`}>
+            {stock} {product.unit || ""}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.product.table.status"),
+      render: (product) => {
+        const badge = getStatusBadge(product);
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
+            {badge.label}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("common.actions"),
+      align: "right",
+      render: (product) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
+            <Edit size={15} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive"
+            onClick={() => handleDelete(product.id || product._id)}>
+            <Trash2 size={15} />
+          </Button>
+        </div>
+      )
+    }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div data-tour="page-products" className="space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -203,7 +281,6 @@ const ProductList = () => {
         </div>
       </div>
 
-      {/* Filter & Search */}
       <div className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
         <div className="flex-1 w-full relative">
           <Search
@@ -241,142 +318,19 @@ const ProductList = () => {
         </div>
       </div>
 
-      {/* Product Grid */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loading />
-        </div>
-      ) : filteredProducts.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">
-          <Package size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">{t("page.product.list.empty")}</p>
-          <p className="text-sm mt-1">{t("page.product.list.emptyHint")}</p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredProducts.map((product) => {
-            const badge = getStatusBadge(product);
-            const stock = product.stock || product.quantity || 0;
-            const imageUrl = product.image || product.images?.[0];
-
-            return (
-              <Card
-                key={product.id || product._id}
-                className="overflow-hidden group hover:shadow-md transition-shadow">
-                {/* Image */}
-                <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <Package size={48} className="opacity-30" />
-                    </div>
-                  )}
-                  <div className="absolute top-3 right-3">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2 gap-2">
-                    <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <span className="font-semibold text-primary text-sm whitespace-nowrap">
-                      {formatCurrencyRupiah(product.price || product.harga || 0)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                    <Package size={14} />
-                    <span>
-                      {t("page.product.stockLabel")} {stock} {product.unit || ""}
-                    </span>
-                    {stock > 0 && stock <= 10 && (
-                      <span className="flex items-center gap-1 text-destructive font-medium ml-1">
-                        <AlertTriangle size={14} />
-                        {t("page.product.stockLow")}
-                      </span>
-                    )}
-                    {stock <= 0 && (
-                      <span className="text-destructive font-medium ml-1">
-                        {t("page.product.status.outOfStock")}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-3 border-t border-border">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1.5 h-8 text-xs"
-                      onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
-                      <Edit size={14} />
-                      {t("common.edit")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1.5 h-8 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
-                      onClick={() => handleDelete(product.id || product._id)}>
-                      <Trash2 size={14} />
-                      {t("common.delete")}
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Pagination */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-2">
-        <p className="text-xs text-muted-foreground">
-          {t("page.product.list.pagination", {
-            count: Math.min(limit, filteredProducts.length),
-            total
-          })}
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const pageNum = i + 1;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${
-                  page === pageNum
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:bg-accent"
-                }`}>
-                {pageNum}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredProducts}
+        isLoading={isLoading}
+        emptyMessage={t("page.product.list.empty")}
+        emptyIcon={Package}
+        pagination={{
+          page,
+          totalPages,
+          total,
+          onPageChange: setPage
+        }}
+      />
 
       <Modal
         type="confirm"

@@ -26,6 +26,7 @@ const AddPriceListTemplate = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [tiers, setTiers] = useState([{ id: Date.now(), name: "", price: 0 }]);
 
@@ -46,8 +47,13 @@ const AddPriceListTemplate = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    const payload = { ...values, tiers: tiers.map(({ name, price }) => ({ name, price })) };
+  const onSubmit = (values, saveAsDraft = false) => {
+    const payload = {
+      ...values,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
+      tiers: tiers.map(({ name, price }) => ({ name, price }))
+    };
+    delete payload.isActive;
     createMutation.mutate(payload);
   };
 
@@ -82,27 +88,13 @@ const AddPriceListTemplate = () => {
         <span className="text-primary font-semibold">{t("breadcrumb.addPriceListTemplate")}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.priceListTemplate.add.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.priceListTemplate.add.description")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} /> {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={createMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {createMutation.isLoading ? t("common.saving") : t("common.save")}
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">
+          {t("page.priceListTemplate.add.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {t("page.priceListTemplate.add.description")}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -147,16 +139,62 @@ const AddPriceListTemplate = () => {
                   name="isActive"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center gap-3">
+                      <div
+                        className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                          field.value
+                            ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                            : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                        }`}>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              field.value
+                                ? "bg-green-600 text-white"
+                                : "bg-destructive/10 text-destructive"
+                            }`}>
+                            <span className="material-symbols-outlined text-lg">
+                              {field.value ? "check" : "close"}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {field.value ? t("common.active") : t("common.inactive")}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {field.value
+                                ? "Template ini aktif dan dapat digunakan."
+                                : "Template ini tidak aktif."}
+                            </p>
+                          </div>
+                        </div>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        <span className="text-sm text-muted-foreground">
-                          {field.value ? t("common.active") : t("common.inactive")}
-                        </span>
                       </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                  <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                    <X size={18} /> {t("common.cancel")}
+                  </Button>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDraftModal(true)}
+                      disabled={createMutation.isLoading}
+                      className="gap-2">
+                      <Save size={18} />
+                      Simpan sebagai Draft
+                    </Button>
+                    <Button
+                      onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                      disabled={createMutation.isLoading}
+                      className="gap-2">
+                      <Save size={18} />
+                      {createMutation.isLoading ? t("common.saving") : t("common.save")}
+                    </Button>
+                  </div>
+                </div>
               </form>
             </Form>
           </Card>
@@ -255,6 +293,19 @@ const AddPriceListTemplate = () => {
         description={t("page.priceListTemplate.modal.addSuccess")}
         confirmText={t("page.priceListTemplate.modal.backToList")}
         onConfirm={() => navigate("/price-list-template")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

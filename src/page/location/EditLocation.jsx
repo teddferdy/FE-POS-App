@@ -84,6 +84,7 @@ const EditLocation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
@@ -326,7 +327,7 @@ const EditLocation = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (!imageFile && (!existingImage || imageRemoved)) {
       toast.error("Gagal", { description: "Foto toko wajib diupload" });
       setIsSubmitting(false);
@@ -344,6 +345,7 @@ const EditLocation = () => {
       storeId: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
       coordinates: {
         lat: latitude,
         lng: longitude
@@ -1194,10 +1196,19 @@ const EditLocation = () => {
                 onClick={() => setCancelModal(true)}>
                 Batal
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                <Save size={18} />
-                Simpan Perubahan
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={isSubmitting}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
+                  <Save size={18} />
+                  Simpan Perubahan
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
@@ -1374,6 +1385,19 @@ const EditLocation = () => {
         title="Batalkan Perubahan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/location-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

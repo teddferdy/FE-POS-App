@@ -12,10 +12,10 @@ import {
 } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadCategoryModal from "@/page/category/components/UploadCategoryModal";
 import PageHeader from "@/components/ui/PageHeader";
+import DataTable from "@/components/ui/DataTable";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -93,7 +93,6 @@ const CategoryList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
-  // Extract stats from BE response if available, otherwise calculate from current page data
   const statsFromBE = data?.stats || {};
   const hasBEStats =
     statsFromBE.total !== undefined ||
@@ -153,6 +152,117 @@ const CategoryList = () => {
       iconBg: "bg-red-100 dark:bg-red-900/40",
       iconColor: "text-red-700 dark:text-red-300",
       danger: true
+    }
+  ];
+
+  const columns = [
+    {
+      header: t("page.category.table.id"),
+      render: (cat) => (
+        <span className="font-mono text-sm text-foreground">
+          {cat.code || cat.idCategory || `#CAT-${String(cat.id || cat._id).padStart(3, "0")}`}
+        </span>
+      )
+    },
+    {
+      header: t("page.category.table.name"),
+      render: (cat) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+            {cat.image ? (
+              cat.image.startsWith("http") ? (
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-primary">{cat.image}</span>
+              )
+            ) : (
+              <span className="material-symbols-outlined text-primary">
+                {getCategoryIcon(cat.name)}
+              </span>
+            )}
+          </div>
+          <span className="text-sm font-semibold text-foreground">{cat.name}</span>
+        </div>
+      )
+    },
+    {
+      header: t("page.category.table.productCount"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.productCount || cat.totalProduct || 0} Item
+        </span>
+      )
+    },
+    {
+      header: t("page.category.table.status"),
+      render: (cat) => {
+        const isActive = cat.status || cat.isActive;
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+              isActive
+                ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+            }`}>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isActive ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"
+              }`}
+            />
+            {isActive ? t("common.active") : t("common.inactive")}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.category.table.createdDate"),
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.createdAt)}</span>
+      )
+    },
+    {
+      header: t("page.category.table.updatedDate"),
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
+      )
+    },
+    {
+      header: t("page.category.table.actions"),
+      align: "right",
+      render: (cat) => (
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/detail-category?id=${cat.id || cat._id}`);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title={t("common.view")}>
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/edit-category?id=${cat.id || cat._id}`);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title={t("common.edit")}>
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(cat.id || cat._id);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      )
     }
   ];
 
@@ -260,221 +370,56 @@ const CategoryList = () => {
         ))}
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="px-6 py-5 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-muted/30">
-          <h4 className="text-base font-semibold text-foreground">
-            {t("page.category.list.sectionTitle")}
-          </h4>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                search
-              </span>
-              <Input
-                placeholder={t("page.category.list.search")}
-                value={search}
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        emptyMessage={t("page.category.list.empty")}
+        toolbar={
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+            <h4 className="text-base font-semibold text-foreground">
+              {t("page.category.list.sectionTitle")}
+            </h4>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                  search
+                </span>
+                <Input
+                  placeholder={t("page.category.list.search")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+              <select
+                value={statusFilter}
                 onChange={(e) => {
-                  setSearch(e.target.value);
+                  setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="pl-9 h-9 text-sm"
-              />
+                className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                <option value="">{t("page.category.list.statusAll")}</option>
+                <option value="active">{t("common.active")}</option>
+                <option value="inactive">{t("common.inactive")}</option>
+              </select>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9"
+                onClick={() => setStatusFilter("")}>
+                <span className="material-symbols-outlined text-base">filter_list</span>
+                {t("page.category.button.filter")}
+              </Button>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-              <option value="">{t("page.category.list.statusAll")}</option>
-              <option value="active">{t("common.active")}</option>
-              <option value="inactive">{t("common.inactive")}</option>
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 h-9"
-              onClick={() => setStatusFilter("")}>
-              <span className="material-symbols-outlined text-base">filter_list</span>
-              {t("page.category.button.filter")}
-            </Button>
           </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="px-6 py-12 text-center text-muted-foreground">
-            <span className="material-symbols-outlined text-4xl block mb-2">category</span>
-            {t("page.category.list.empty")}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/10">
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.id")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.name")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.productCount")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.status")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.createdDate")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.category.table.updatedDate")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    {t("page.category.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((cat) => {
-                  const isActive = cat.status || cat.isActive;
-                  return (
-                    <tr
-                      key={cat.id || cat._id}
-                      className="hover:bg-muted/20 transition-colors group">
-                      <td className="px-6 py-4 font-mono text-sm text-foreground">
-                        {cat.code ||
-                          cat.idCategory ||
-                          `#CAT-${String(cat.id || cat._id).padStart(3, "0")}`}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                            {cat.image ? (
-                              cat.image.startsWith("http") ? (
-                                <img
-                                  src={cat.image}
-                                  alt={cat.name}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              ) : (
-                                <span className="material-symbols-outlined text-primary">
-                                  {cat.image}
-                                </span>
-                              )
-                            ) : (
-                              <span className="material-symbols-outlined text-primary">
-                                {getCategoryIcon(cat.name)}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-sm font-semibold text-foreground">{cat.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {cat.productCount || cat.totalProduct || 0} Item
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                            isActive
-                              ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                              : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
-                          }`}>
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              isActive
-                                ? "bg-green-500 dark:bg-green-400"
-                                : "bg-red-500 dark:bg-red-400"
-                            }`}
-                          />
-                          {isActive ? t("common.active") : t("common.inactive")}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
-                        {formatDate(cat.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
-                        {formatDate(cat.updatedAt)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => navigate(`/detail-category?id=${cat.id || cat._id}`)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title={t("common.view")}>
-                            <span className="material-symbols-outlined text-lg">visibility</span>
-                          </button>
-                          <button
-                            onClick={() => navigate(`/edit-category?id=${cat.id || cat._id}`)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title={t("common.edit")}>
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(cat.id || cat._id)}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-                            <span className="material-symbols-outlined text-lg">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
-          <span className="text-xs text-muted-foreground">
-            {t("page.category.list.showing", { count: filtered.length, total })}
-          </span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="px-2 py-2 text-muted-foreground text-sm">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className="w-10 h-10 rounded-lg hover:bg-muted text-muted-foreground text-sm font-semibold transition-colors">
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+        rowClassName={() => "group"}
+      />
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

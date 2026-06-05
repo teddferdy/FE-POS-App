@@ -28,6 +28,7 @@ const AddSupplier = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -52,8 +53,8 @@ const AddSupplier = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    createMutation.mutate(values);
+  const onSubmit = (values, saveAsDraft = false) => {
+    createMutation.mutate({ ...values, status: saveAsDraft ? "draft" : "active" });
   };
 
   return (
@@ -74,24 +75,9 @@ const AddSupplier = () => {
         <span className="text-primary font-semibold">{t("page.supplier.add.title")}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={createMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {createMutation.isLoading ? t("common.saving") : t("common.save")}
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.add.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
       </div>
 
       <Card className="p-6">
@@ -163,6 +149,29 @@ const AddSupplier = () => {
                 </FormItem>
               )}
             />
+            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                <X size={18} />
+                {t("common.cancel")}
+              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
+                  <Save size={18} />
+                  Simpan sebagai Draft
+                </Button>
+                <Button
+                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
+                  <Save size={18} />
+                  {createMutation.isLoading ? t("common.saving") : t("common.save")}
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </Card>
@@ -184,6 +193,19 @@ const AddSupplier = () => {
         description={t("page.supplier.toast.addSuccess")}
         confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

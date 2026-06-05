@@ -14,6 +14,7 @@ import {
   Save,
   Lightbulb
 } from "lucide-react";
+import Modal from "@/components/organism/modal";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -42,6 +43,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
     selectedColor: tier.color || "#f59e0b",
     perks: (tier.benefits || []).map((text, i) => ({ id: i + 1, text }))
   });
+  const [draftModal, setDraftModal] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -69,8 +71,8 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
     }));
   };
 
-  const handleSave = () => {
-    if (onSave) onSave(formData);
+  const handleSave = (saveAsDraft = false) => {
+    if (onSave) onSave({ ...formData, saveAsDraft });
   };
 
   const handleDelete = () => {
@@ -364,7 +366,13 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
             {t("common.cancel")}
           </button>
           <button
-            onClick={handleSave}
+            onClick={() => setDraftModal(true)}
+            disabled={!formData.isActive}
+            className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
+            Simpan sebagai Draft
+          </button>
+          <button
+            onClick={() => handleSave(false)}
             disabled={!formData.isActive}
             className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed">
             <Save size={20} />
@@ -372,6 +380,19 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
           </button>
         </div>
       </div>
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          if (onSave) onSave({ ...formData, saveAsDraft: true });
+        }}
+      />
     </div>
   );
 };

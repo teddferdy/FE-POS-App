@@ -18,6 +18,7 @@ const AddMember = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -52,7 +53,7 @@ const AddMember = () => {
     setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(value) : value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!form.name || !form.phoneNumber) {
       toast.error("Validasi", { description: "Nama dan nomor telepon wajib diisi" });
@@ -69,7 +70,8 @@ const AddMember = () => {
       tier: form.tier,
       point: form.initialPoints,
       store: user?.store,
-      createdBy: user?.id
+      createdBy: user?.id,
+      status: saveAsDraft ? "draft" : "active"
     });
   };
 
@@ -92,16 +94,6 @@ const AddMember = () => {
             {t("breadcrumb.add")}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            {t("breadcrumb.back")}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.member.button.save")}
-          </Button>
         </div>
       </div>
 
@@ -294,17 +286,24 @@ const AddMember = () => {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end items-center gap-6 bg-card border border-border rounded-xl p-4">
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Status Sistem</p>
-            <div className="flex items-center justify-end gap-1">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-xs font-bold text-foreground">Data Terenkripsi</span>
-            </div>
-          </div>
-          <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
-            Proses Pendaftaran
+        <div className="flex justify-between items-center gap-4 mt-8 bg-card border border-border rounded-xl p-4">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            {t("breadcrumb.back")}
           </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={isSubmitting}>
+              Simpan sebagai Draft
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="gap-2">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.member.button.save")}
+            </Button>
+          </div>
         </div>
       </form>
 
@@ -324,6 +323,31 @@ const AddMember = () => {
         title="Batalkan Perubahan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/member-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          setIsSubmitting(true);
+          createMutation.mutate({
+            nameMember: form.name,
+            phoneNumber: form.phoneNumber,
+            email: form.email,
+            birthDate: form.birthDate,
+            gender: form.gender,
+            address: form.address,
+            tier: form.tier,
+            point: form.initialPoints,
+            store: user?.store,
+            createdBy: user?.id,
+            status: "draft"
+          });
+        }}
       />
     </div>
   );

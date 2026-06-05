@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Search, Plus, PackageOpen } from "lucide-react";
+import { Plus, PackageOpen } from "lucide-react";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
 
 const defaultLevel = {
@@ -95,6 +95,98 @@ const MemberList = () => {
       setDeleteTarget(null);
     }
   };
+
+  const columns = [
+    {
+      header: t("page.member.table.id"),
+      render: (member) => (
+        <span className="text-sm font-mono font-bold text-primary">
+          {member.memberId || member.code || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.member.table.name"),
+      render: (member) => (
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-8 h-8 rounded-full ${avatarBg(member.name)} flex items-center justify-center text-xs font-bold`}>
+            {getInitials(member.name)}
+          </div>
+          <span className="text-sm font-semibold text-foreground">{member.name}</span>
+        </div>
+      )
+    },
+    {
+      header: t("page.member.table.phone"),
+      render: (member) => (
+        <span className="text-sm text-muted-foreground">
+          {member.phone || member.phoneNumber || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.member.table.points"),
+      render: (member) => (
+        <span className="text-sm font-mono font-semibold text-foreground">
+          {(member.points ?? member.totalPoints ?? 0).toLocaleString()}
+        </span>
+      )
+    },
+    {
+      header: t("page.member.table.level"),
+      render: (member) => {
+        const matchedTier = tiers.find((t) => Number(t.id) === Number(member.tier));
+        const tierName = matchedTier?.name || "-";
+        const levelStyle = matchedTier
+          ? { bg: "bg-primary/10 text-primary border border-primary/20", icon: "stars" }
+          : defaultLevel;
+        return (
+          <span
+            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${levelStyle.bg}`}>
+            <span
+              className="material-symbols-outlined text-sm"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
+              {levelStyle.icon}
+            </span>
+            {tierName}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.member.table.actions"),
+      align: "right",
+      render: (member) => (
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/edit-member?id=${member.id || member._id}`);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title="Edit Member">
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
+            title="Kelola Poin">
+            <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(member);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+            title="Hapus Member">
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -185,187 +277,35 @@ const MemberList = () => {
         )}
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
-          <h4 className="text-base font-semibold text-foreground">{t("page.member.list.title")}</h4>
-          <div className="relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder={t("page.member.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-9 w-72 text-sm"
-            />
+      <DataTable
+        columns={columns}
+        data={filteredMembers}
+        isLoading={isLoading}
+        emptyMessage={t("page.member.list.empty")}
+        toolbar={
+          <div className="flex items-center justify-between w-full">
+            <h4 className="text-base font-semibold text-foreground">
+              {t("page.member.list.title")}
+            </h4>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                search
+              </span>
+              <Input
+                placeholder={t("page.member.list.search")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 h-9 w-72 text-sm"
+              />
+            </div>
           </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/10">
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.member.table.id")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.member.table.name")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.member.table.phone")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.member.table.points")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.member.table.level")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    {t("page.member.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredMembers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">groups</span>
-                      {t("page.member.list.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMembers.map((member) => {
-                    const matchedTier = tiers.find((t) => Number(t.id) === Number(member.tier));
-                    const tierName = matchedTier?.name || "-";
-                    const levelStyle = matchedTier
-                      ? { bg: "bg-primary/10 text-primary border border-primary/20", icon: "stars" }
-                      : defaultLevel;
-                    return (
-                      <tr
-                        key={member.id || member._id}
-                        className="hover:bg-muted/20 transition-colors group">
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-mono font-bold text-primary">
-                            {member.memberId || member.code || "-"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-full ${avatarBg(member.name)} flex items-center justify-center text-xs font-bold`}>
-                              {getInitials(member.name)}
-                            </div>
-                            <span className="text-sm font-semibold text-foreground">
-                              {member.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {member.phone || member.phoneNumber || "-"}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground">
-                          {(member.points ?? member.totalPoints ?? 0).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${levelStyle.bg}`}>
-                            <span
-                              className="material-symbols-outlined text-sm"
-                              style={{ fontVariationSettings: "'FILL' 1" }}>
-                              {levelStyle.icon}
-                            </span>
-                            {tierName}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => navigate(`/edit-member?id=${member.id || member._id}`)}
-                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                              title="Edit Member">
-                              <span className="material-symbols-outlined text-lg">edit</span>
-                            </button>
-                            <button
-                              className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
-                              title="Kelola Poin">
-                              <span className="material-symbols-outlined text-lg">
-                                account_balance_wallet
-                              </span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(member)}
-                              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                              title="Hapus Member">
-                              <span className="material-symbols-outlined text-lg">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
-          <span className="text-xs text-muted-foreground">
-            {t("page.member.list.showing", {
-              count: filteredMembers.length,
-              total: total.toLocaleString()
-            })}
-          </span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="px-2 py-2 text-muted-foreground text-sm">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className="w-10 h-10 rounded-lg hover:bg-muted text-muted-foreground text-sm font-semibold transition-colors">
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+        rowClassName={() => "group"}
+      />
 
       <Modal
         type="confirm"

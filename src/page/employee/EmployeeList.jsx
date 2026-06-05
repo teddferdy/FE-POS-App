@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
 import { useTranslation } from "react-i18next";
+import DataTable from "@/components/ui/DataTable";
 
 const positionColors = {
   manager: "bg-primary-fixed text-on-primary-fixed",
@@ -79,8 +79,107 @@ const EmployeeList = () => {
     }
   };
 
+  const columns = [
+    {
+      header: "Foto",
+      render: (row) => (
+        <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border">
+          {row.image ? (
+            <img src={row.image} alt={row.fullName} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              <User size={16} />
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.id"),
+      render: (row) => (
+        <span className="text-sm font-mono font-bold text-primary">
+          {row.employeeID || row.code || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.employee.table.name"),
+      render: (row) => (
+        <div>
+          <p className="text-sm font-semibold text-foreground">{row.fullName}</p>
+          <p className="text-xs text-muted-foreground">{row.email}</p>
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.position"),
+      render: (row) => {
+        const position = row.positionData?.name || row.role || "staff";
+        return (
+          <span
+            className={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getPositionClass(position)}`}>
+            {position === "kasir" ? "Kasir" : position.charAt(0).toUpperCase() + position.slice(1)}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.employee.table.branch"),
+      render: (row) => (
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-muted-foreground text-base">
+            location_on
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {row.storeData?.name || "belum ada penempatan store"}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.status"),
+      align: "center",
+      render: (row) => (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
+            row.statusActive === true
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+          }`}>
+          {row.statusActive === true ? "Active" : "Inactive"}
+        </span>
+      )
+    },
+    {
+      header: t("page.employee.table.actions"),
+      align: "right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+            title="Lihat Detail">
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
+          <button
+            onClick={() => navigate(`/edit-employee?id=${row.id}`)}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+            title="Edit Karyawan">
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+            title="Hapus Karyawan">
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      )
+    }
+  ];
+
   return (
-    <div className="space-y-8">
+    <div data-tour="page-employees" className="space-y-8">
       <PageHeader
         breadcrumbs={[
           { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
@@ -147,243 +246,68 @@ const EmployeeList = () => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-5 border-b border-border flex flex-wrap gap-4 items-center justify-between bg-muted/30">
-          <div className="flex flex-wrap gap-4 items-center flex-grow">
-            <div className="relative min-w-[260px]">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                search
-              </span>
-              <Input
-                placeholder="Cari nama, ID, atau email..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 h-9 w-full text-sm"
-              />
+      <DataTable
+        columns={columns}
+        data={employees}
+        isLoading={isLoading}
+        emptyMessage="Tidak ada karyawan ditemukan"
+        toolbar={
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex flex-wrap gap-4 items-center flex-grow">
+              <div className="relative min-w-[260px]">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                  search
+                </span>
+                <Input
+                  placeholder="Cari nama, ID, atau email..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 h-9 w-full text-sm"
+                />
+              </div>
+              <div className="flex gap-3">
+                <select
+                  value={locationFilter}
+                  onChange={(e) => {
+                    setLocationFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="">Semua Toko/Cabang</option>
+                  {locationData?.map((loc) => (
+                    <option key={loc.id} value={loc.id.replace("loc-", "")}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={positionFilter}
+                  onChange={(e) => {
+                    setPositionFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="">Semua Jabatan</option>
+                  <option value="manager">Manager</option>
+                  <option value="kasir">Kasir</option>
+                  <option value="admin">Admin</option>
+                  <option value="staff">Staff</option>
+                  <option value="supervisor">Supervisor</option>
+                </select>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <select
-                value={locationFilter}
-                onChange={(e) => {
-                  setLocationFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">Semua Toko/Cabang</option>
-                {locationData?.map((loc) => (
-                  <option key={loc.id} value={loc.id.replace("loc-", "")}>
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={positionFilter}
-                onChange={(e) => {
-                  setPositionFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">Semua Jabatan</option>
-                <option value="manager">Manager</option>
-                <option value="kasir">Kasir</option>
-                <option value="admin">Admin</option>
-                <option value="staff">Staff</option>
-                <option value="supervisor">Supervisor</option>
-              </select>
-            </div>
+            <Button variant="outline" size="sm" className="gap-2 h-9">
+              <span className="material-symbols-outlined text-base">tune</span>
+              Advanced Filters
+            </Button>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 h-9">
-            <span className="material-symbols-outlined text-base">tune</span>
-            Advanced Filters
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/10">
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Foto
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.employee.table.id")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.employee.table.name")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.employee.table.position")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    {t("page.employee.table.branch")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-center">
-                    {t("page.employee.table.status")}
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
-                    {t("page.employee.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {employees.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">badge</span>
-                      Tidak ada karyawan ditemukan
-                    </td>
-                  </tr>
-                ) : (
-                  employees.map((employee) => {
-                    const position = employee.positionData?.name || employee.role || "staff";
-                    return (
-                      <tr
-                        key={employee.id || employee._id}
-                        className="hover:bg-muted/20 transition-colors group">
-                        <td className="px-6 py-4">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border">
-                            {employee.image ? (
-                              <img
-                                src={employee.image}
-                                alt={employee.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                <User size={16} />
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-mono font-bold text-primary">
-                            {employee.employeeID || employee.code || "-"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">
-                                {employee.fullName}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{employee.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getPositionClass(position)}`}>
-                            {position === "kasir"
-                              ? "Kasir"
-                              : position.charAt(0).toUpperCase() + position.slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-muted-foreground text-base">
-                              location_on
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {employee.storeData?.name || "belum ada penempatan store"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
-                              employee.statusActive === true
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
-                            }`}>
-                            {employee.statusActive === true ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1">
-                            <button
-                              onClick={() =>
-                                navigate(`/detail-employee?employeeID=${employee.employeeID}`)
-                              }
-                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                              title="Lihat Detail">
-                              <span className="material-symbols-outlined text-lg">visibility</span>
-                            </button>
-                            <button
-                              onClick={() => navigate(`/edit-employee?id=${employee.id}`)}
-                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                              title="Edit Karyawan">
-                              <span className="material-symbols-outlined text-lg">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(employee)}
-                              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                              title="Hapus Karyawan">
-                              <span className="material-symbols-outlined text-lg">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-muted/10">
-          <span className="text-xs text-muted-foreground">
-            Menampilkan {employees.length} dari {total.toLocaleString()} Karyawan
-          </span>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="px-2 py-2 text-muted-foreground text-sm">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className="w-10 h-10 rounded-lg hover:bg-muted text-muted-foreground text-sm font-semibold transition-colors">
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30 transition-colors">
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+        rowClassName={() => "group"}
+      />
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

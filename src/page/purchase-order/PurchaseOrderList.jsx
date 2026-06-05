@@ -6,8 +6,6 @@ import { toast } from "sonner";
 import {
   Plus,
   Search,
-  ChevronLeft,
-  ChevronRight,
   Package,
   Clock,
   CheckCircle2,
@@ -24,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import DataTable from "@/components/ui/DataTable";
 
 const statusMap = {
   pending: {
@@ -93,6 +91,91 @@ const PurchaseOrderList = () => {
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
+  const columns = [
+    {
+      header: "No. PO",
+      render: (po) => (
+        <span className="font-medium text-foreground">
+          {po.poNumber || po.code || `PO-${po.id}`}
+        </span>
+      )
+    },
+    {
+      header: "Supplier",
+      render: (po) => po.supplier?.name || po.supplierName || "-"
+    },
+    {
+      header: "Tanggal",
+      render: (po) => (
+        <span className="text-muted-foreground">
+          {po.date || po.createdAt
+            ? new Date(po.date || po.createdAt).toLocaleDateString("id-ID")
+            : "-"}
+        </span>
+      )
+    },
+    {
+      header: "Status",
+      render: (po) => {
+        const st = statusMap[po.status] || statusMap.pending;
+        return (
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${st.class}`}>
+            {po.status === "received" ? (
+              <CheckCircle2 size={12} />
+            ) : po.status === "cancelled" ? (
+              <XCircle size={12} />
+            ) : (
+              <Clock size={12} />
+            )}
+            {st.label}
+          </span>
+        );
+      }
+    },
+    {
+      header: "Total",
+      align: "right",
+      render: (po) => (
+        <span className="font-medium">
+          {po.total ? `Rp ${Number(po.total).toLocaleString("id-ID")}` : "-"}
+        </span>
+      )
+    },
+    {
+      header: "Aksi",
+      align: "right",
+      render: (po) => (
+        <div className="flex items-center justify-end gap-1">
+          {po.status === "pending" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600"
+              onClick={() => receiveMutation.mutate(po.id)}
+              title="Terima PO">
+              <RefreshCw size={15} />
+            </Button>
+          )}
+          {po.status === "received" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-amber-600"
+              onClick={() => {
+                setReturPo(po);
+                setReturReason("");
+                setReturModal(true);
+              }}
+              title="Retur PO">
+              <Undo2 size={15} />
+            </Button>
+          )}
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -155,144 +238,14 @@ const PurchaseOrderList = () => {
         />
       </div>
 
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    No. PO
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Supplier
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Tanggal
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                      <Package size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Belum ada purchase order</p>
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((po, index) => {
-                    const st = statusMap[po.status] || statusMap.pending;
-                    return (
-                      <tr
-                        key={po.id || po._id || index}
-                        className="hover:bg-accent/30 transition-colors">
-                        <td className="px-4 py-4 font-medium text-foreground">
-                          {po.poNumber || po.code || `PO-${po.id}`}
-                        </td>
-                        <td className="px-4 py-4">{po.supplier?.name || po.supplierName || "-"}</td>
-                        <td className="px-4 py-4 text-muted-foreground">
-                          {po.date || po.createdAt
-                            ? new Date(po.date || po.createdAt).toLocaleDateString("id-ID")
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${st.class}`}>
-                            {po.status === "received" ? (
-                              <CheckCircle2 size={12} />
-                            ) : po.status === "cancelled" ? (
-                              <XCircle size={12} />
-                            ) : (
-                              <Clock size={12} />
-                            )}
-                            {st.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-right font-medium">
-                          {po.total ? `Rp ${Number(po.total).toLocaleString("id-ID")}` : "-"}
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {po.status === "pending" && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-green-600"
-                                onClick={() => receiveMutation.mutate(po.id)}
-                                title="Terima PO">
-                                <RefreshCw size={15} />
-                              </Button>
-                            )}
-                            {po.status === "received" && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-amber-600"
-                                onClick={() => {
-                                  setReturPo(po);
-                                  setReturReason("");
-                                  setReturModal(true);
-                                }}
-                                title="Retur PO">
-                                <Undo2 size={15} />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, orders.length)} dari {total} PO
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const p = i + 1;
-            return (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${page === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
-                {p}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={orders}
+        isLoading={isLoading}
+        emptyMessage="Belum ada purchase order"
+        emptyIcon={Package}
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+      />
 
       {returModal && returPo && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

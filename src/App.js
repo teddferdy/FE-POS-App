@@ -7,6 +7,9 @@ import { setAuthExpiredCallback } from "@/services";
 // Offline
 import OfflineIndicator from "./components/organism/OfflineIndicator";
 
+// Tour Guide
+import SuperAdminTour from "./components/organism/SuperAdminTour";
+
 // Auth
 import LoginPage from "./page/auth/login";
 import Register from "./page/auth/register";
@@ -161,6 +164,7 @@ function App() {
     <React.Fragment>
       <OfflineIndicator />
       <BrowserRouter>
+        <SuperAdminTour />
         <Routes>
           {/* Auth */}
           <Route path="/" element={<LoginPage />} />

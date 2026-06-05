@@ -128,14 +128,14 @@ const DetailPosition = () => {
                 <div>
                   <span
                     className={`inline-flex items-center gap-1 px-3 py-1 mt-1 rounded-full text-xs font-bold uppercase tracking-tight ${
-                      position.status
+                      position.status === "active"
                         ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
                         : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
                     }`}>
                     <span className="material-symbols-outlined text-sm">
-                      {position.status ? "check_circle" : "cancel"}
+                      {position.status === "active" ? "check_circle" : "cancel"}
                     </span>
-                    {position.status ? t("common.active") : t("common.inactive")}
+                    {position.status === "active" ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
               </div>

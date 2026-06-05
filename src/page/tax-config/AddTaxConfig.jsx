@@ -35,6 +35,7 @@ const AddTaxConfig = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -59,8 +60,12 @@ const AddTaxConfig = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    createMutation.mutate(values);
+  const onSubmit = (values, saveAsDraft = false) => {
+    const { isActive, ...rest } = values;
+    createMutation.mutate({
+      ...rest,
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
+    });
   };
 
   return (
@@ -81,26 +86,9 @@ const AddTaxConfig = () => {
         <span className="text-primary font-semibold">{t("page.taxConfig.add.title")}</span>
       </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.add.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.taxConfig.add.description")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={createMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {createMutation.isLoading ? t("common.saving") : t("common.save")}
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.add.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.taxConfig.add.description")}</p>
       </div>
 
       <Card className="p-6">
@@ -166,12 +154,35 @@ const AddTaxConfig = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("common.status")}</FormLabel>
-                    <div className="flex items-center gap-3 h-10">
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            field.value
+                              ? "bg-green-600 text-white"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
+                          <span className="material-symbols-outlined text-lg">
+                            {field.value ? "check" : "close"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {field.value ? t("common.active") : t("common.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {field.value
+                              ? "Pajak ini aktif dan dapat digunakan."
+                              : "Pajak ini tidak aktif."}
+                          </p>
+                        </div>
+                      </div>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      <span className="text-sm text-muted-foreground">
-                        {field.value ? t("common.active") : t("common.inactive")}
-                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -193,6 +204,29 @@ const AddTaxConfig = () => {
                 </FormItem>
               )}
             />
+            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                <X size={18} />
+                {t("common.cancel")}
+              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
+                  <Save size={18} />
+                  Simpan sebagai Draft
+                </Button>
+                <Button
+                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                  disabled={createMutation.isLoading}
+                  className="gap-2">
+                  <Save size={18} />
+                  {createMutation.isLoading ? t("common.saving") : t("common.save")}
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </Card>
@@ -214,6 +248,19 @@ const AddTaxConfig = () => {
         description={t("page.taxConfig.toast.addSuccess")}
         confirmText={t("modal.backToList")}
         onConfirm={() => navigate("/tax-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

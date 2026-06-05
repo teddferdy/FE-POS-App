@@ -11,10 +11,10 @@ import {
 } from "@/services/department";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
 import PageHeader from "@/components/ui/PageHeader";
+import DataTable from "@/components/ui/DataTable";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -84,6 +84,96 @@ const DepartmentList = () => {
       setDeleteTarget(null);
     }
   };
+
+  const columns = [
+    {
+      header: t("page.department.table.no"),
+      render: (_, index) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.name"),
+      render: (department) => (
+        <span className="text-sm font-semibold text-primary">{department.name}</span>
+      )
+    },
+    {
+      header: t("page.department.table.description"),
+      render: (department) => (
+        <p className="text-sm text-muted-foreground max-w-xs truncate">
+          {department.description || "-"}
+        </p>
+      )
+    },
+    {
+      header: t("page.department.table.status"),
+      align: "center",
+      render: (department) => (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
+            department.status === "active"
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
+              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+          }`}>
+          {department.status === "active" ? t("common.active") : t("common.inactive")}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.createdDate"),
+      render: (department) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(department.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.updatedDate"),
+      render: (department) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(department.updatedAt)}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.actions"),
+      align: "center",
+      render: (department) => (
+        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/detail-department?id=${department.id}`);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+            title={t("common.view")}>
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/edit-department?id=${department.id}`);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+            title={t("common.edit")}>
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(department);
+            }}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
+            title={t("common.delete")}>
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -242,183 +332,44 @@ const DepartmentList = () => {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {t("page.department.list.showLabel")}
-            </span>
-            <select
-              value={limit}
-              className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-              <option value={10}>{t("page.department.list.show10")}</option>
-              <option value={25}>{t("page.department.list.show25")}</option>
-              <option value={50}>{t("page.department.list.show50")}</option>
-            </select>
+      <DataTable
+        columns={columns}
+        data={departments}
+        isLoading={isLoading}
+        emptyMessage={t("page.department.list.empty")}
+        toolbar={
+          <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-muted-foreground">
+                {t("page.department.list.showLabel")}
+              </span>
+              <select
+                value={limit}
+                className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                <option value={10}>{t("page.department.list.show10")}</option>
+                <option value={25}>{t("page.department.list.show25")}</option>
+                <option value={50}>{t("page.department.list.show50")}</option>
+              </select>
+            </div>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                search
+              </span>
+              <input
+                placeholder={t("page.department.list.search")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              />
+            </div>
           </div>
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-              search
-            </span>
-            <input
-              placeholder={t("page.department.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/10 border-b border-border">
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                    {t("page.department.table.no")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.table.name")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.table.description")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    {t("page.department.table.status")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.table.createdDate")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.table.updatedDate")}
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    {t("page.department.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {departments.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">domain</span>
-                      {t("page.department.list.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  departments.map((department, index) => (
-                    <tr key={department.id} className="hover:bg-muted/20 transition-colors group">
-                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
-                        {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-sm font-semibold text-primary">
-                          {department.name}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <p className="text-sm text-muted-foreground max-w-xs truncate">
-                          {department.description || "-"}
-                        </p>
-                      </td>
-                      <td className="px-5 py-3 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
-                            department.status
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-                              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-                          }`}>
-                          {department.status ? t("common.active") : t("common.inactive")}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
-                        {formatDate(department.createdAt)}
-                      </td>
-                      <td className="px-5 py-3 text-sm font-mono text-muted-foreground">
-                        {formatDate(department.updatedAt)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => navigate(`/detail-department?id=${department.id}`)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title={t("common.view")}>
-                            <span className="material-symbols-outlined text-lg">visibility</span>
-                          </button>
-                          <button
-                            onClick={() => navigate(`/edit-department?id=${department.id}`)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-                            title={t("common.edit")}>
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(department)}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-                            title={t("common.delete")}>
-                            <span className="material-symbols-outlined text-lg">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            {t("page.department.list.showing", { count: departments.length, total })}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-semibold transition-all ${
-                    page === pageNum
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border hover:bg-muted text-muted-foreground"
-                  }`}>
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="px-1 text-muted-foreground text-sm">...</span>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground text-sm font-semibold">
-                  {totalPages}
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-all text-muted-foreground disabled:opacity-30">
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+        rowClassName={() => "group"}
+      />
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

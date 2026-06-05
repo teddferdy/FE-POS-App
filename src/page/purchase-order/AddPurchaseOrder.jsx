@@ -26,6 +26,7 @@ const AddPurchaseOrder = () => {
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([{ productId: "", productName: "", qty: 1, price: 0 }]);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchProduct, setSearchProduct] = useState("");
 
@@ -68,7 +69,7 @@ const AddPurchaseOrder = () => {
 
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!supplier) {
       toast.error("Pilih supplier", { description: "Pilih supplier terlebih dahulu" });
@@ -83,7 +84,8 @@ const AddPurchaseOrder = () => {
       supplier,
       notes,
       items: items.map(({ productId, qty, price }) => ({ product: productId, qty, price })),
-      createdBy: user?.id
+      createdBy: user?.id,
+      status: saveAsDraft ? "draft" : "active"
     });
   };
 
@@ -130,7 +132,7 @@ const AddPurchaseOrder = () => {
         Batal
       </Button>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <Card className="p-6">
           <h3 className="text-base font-semibold text-foreground mb-4">Informasi Supplier</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,7 +276,7 @@ const AddPurchaseOrder = () => {
           </div>
         </Card>
 
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
           <Button
             type="button"
             variant="outline"
@@ -283,14 +285,24 @@ const AddPurchaseOrder = () => {
             <X size={18} />
             Batal
           </Button>
-          <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
-            {createMutation.isLoading ? (
-              <Loading size="sm" className="text-white" />
-            ) : (
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={createMutation.isLoading}
+              className="gap-2">
               <Save size={18} />
-            )}
-            Simpan PO
-          </Button>
+              Simpan sebagai Draft
+            </Button>
+            <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
+              {createMutation.isLoading ? (
+                <Loading size="sm" className="text-white" />
+              ) : (
+                <Save size={18} />
+              )}
+              {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
+            </Button>
+          </div>
         </div>
       </form>
 
@@ -303,6 +315,19 @@ const AddPurchaseOrder = () => {
         confirmText="Ya, Batalkan"
         cancelText="Lanjutkan"
         onConfirm={() => navigate("/purchase-order")}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(new Event("submit"), true);
+        }}
       />
     </div>
   );

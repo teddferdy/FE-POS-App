@@ -94,6 +94,7 @@ const EditRole = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
@@ -163,7 +164,7 @@ const EditRole = () => {
     return allActionTypes.filter((a) => itemActions?.includes(a));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error(t("common.error"), {
@@ -175,11 +176,18 @@ const EditRole = () => {
 
     const accessMenu = buildAccessMenuPayload(permissions);
     const user = cookie?.user;
+    const currentStatus = roleData?.data?.status;
+    const statusStr =
+      typeof currentStatus === "string"
+        ? currentStatus
+        : currentStatus === true || currentStatus === undefined
+          ? "active"
+          : "inactive";
     editMutation.mutate({
       id: Number(id),
       name: name.trim(),
       description: description.trim(),
-      status: roleData?.data?.status ?? true,
+      status: saveAsDraft ? "draft" : statusStr,
       modifiedBy: user?.id || user?.userId || null,
       accessMenu
     });
@@ -220,7 +228,10 @@ const EditRole = () => {
           <Button variant="outline" onClick={() => setCancelModal(true)}>
             {t("common.cancel")}
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+            Simpan sebagai Draft
+          </Button>
+          <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
             Simpan Perubahan
           </Button>
         </div>
@@ -403,6 +414,19 @@ const EditRole = () => {
         title="Batalkan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/role-management")}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(new Event("submit"), true);
+        }}
       />
     </div>
   );

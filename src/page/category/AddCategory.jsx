@@ -330,6 +330,7 @@ const AddCategory = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -378,12 +379,12 @@ const AddCategory = () => {
     e.target.value = "";
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("name", values.name);
     payload.append("description", values.description || "");
-    payload.append("isActive", values.isActive);
+    payload.append("status", saveAsDraft ? "draft" : values.isActive ? "active" : "inactive");
     if (selectedIcon) {
       payload.append("image", selectedIcon);
     } else if (selectedImage) {
@@ -627,13 +628,20 @@ const AddCategory = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
             <Button variant="outline" onClick={() => setCancelModal(true)}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
-              {t("page.category.button.save")}
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+                Simpan sebagai Draft
+              </Button>
+              <Button
+                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                disabled={isSubmitting}>
+                {t("page.category.button.save")}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
@@ -773,6 +781,19 @@ const AddCategory = () => {
         title={t("page.category.modal.cancelTitle")}
         confirmText={t("page.category.modal.confirmCancel")}
         onConfirm={() => navigate("/category-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

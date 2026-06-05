@@ -74,7 +74,7 @@ const DetailCategory = () => {
     );
   }
 
-  const isActive = cat.status ?? cat.isActive ?? true;
+  const isActive = cat.status === "active" || cat.isActive === true;
 
   return (
     <div className="space-y-8">

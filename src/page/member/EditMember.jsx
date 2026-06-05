@@ -20,6 +20,7 @@ const EditMember = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: memberData, isLoading: memberLoading } = useQuery(
     ["member-detail", id],
@@ -67,7 +68,7 @@ const EditMember = () => {
     setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(value) : value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!form.name || !form.phoneNumber) {
       toast.error("Validasi", { description: "Nama dan nomor telepon wajib diisi" });
@@ -83,7 +84,8 @@ const EditMember = () => {
       gender: form.gender,
       address: form.address,
       tier: form.tier,
-      store: user?.store
+      store: user?.store,
+      status: saveAsDraft ? "draft" : "active"
     });
   };
 
@@ -120,7 +122,10 @@ const EditMember = () => {
             <span className="material-symbols-outlined text-lg">arrow_back</span>
             {t("breadcrumb.back")}
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting} className="gap-2">
+          <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+            Simpan sebagai Draft
+          </Button>
+          <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
             <span className="material-symbols-outlined text-lg">save</span>
             {t("page.member.button.save")}
           </Button>
@@ -297,16 +302,18 @@ const EditMember = () => {
         </div>
 
         <div className="mt-8 flex justify-end items-center gap-6 bg-card border border-border rounded-xl p-4">
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Status Sistem</p>
-            <div className="flex items-center justify-end gap-1">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-xs font-bold text-foreground">Data Terenkripsi</span>
-            </div>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => handleSubmit(e, true)}
+              disabled={isSubmitting}>
+              Simpan sebagai Draft
+            </Button>
+            <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
+              Simpan Perubahan
+            </Button>
           </div>
-          <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
-            Simpan Perubahan
-          </Button>
         </div>
       </form>
 
@@ -326,6 +333,30 @@ const EditMember = () => {
         title="Batalkan Perubahan?"
         confirmText="Ya, Batalkan"
         onConfirm={() => navigate("/member-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          setIsSubmitting(true);
+          editMutation.mutate({
+            id: form.id,
+            nameMember: form.name,
+            phoneNumber: form.phoneNumber,
+            email: form.email,
+            birthDate: form.birthDate,
+            gender: form.gender,
+            address: form.address,
+            tier: form.tier,
+            store: user?.store,
+            status: "draft"
+          });
+        }}
       />
     </div>
   );

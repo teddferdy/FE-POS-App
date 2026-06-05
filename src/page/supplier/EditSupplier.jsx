@@ -36,6 +36,7 @@ const EditSupplier = () => {
   const supplierId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: supplierData, isLoading } = useQuery(
     ["supplier-detail", supplierId],
@@ -80,8 +81,12 @@ const EditSupplier = () => {
     }
   });
 
-  const onSubmit = (values) => {
-    updateMutation.mutate({ id: supplierId, ...values });
+  const onSubmit = (values, saveAsDraft = false) => {
+    updateMutation.mutate({
+      id: supplierId,
+      ...values,
+      status: saveAsDraft ? "draft" : "active"
+    });
   };
 
   if (!supplierId) {
@@ -125,13 +130,21 @@ const EditSupplier = () => {
             {t("page.supplier.edit.description")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
             {t("common.cancel")}
           </Button>
           <Button
-            onClick={form.handleSubmit(onSubmit)}
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={updateMutation.isLoading}
+            className="gap-2">
+            <Save size={18} />
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
@@ -230,6 +243,19 @@ const EditSupplier = () => {
         description={t("page.supplier.modal.updateSuccess")}
         confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

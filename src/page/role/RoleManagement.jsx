@@ -46,7 +46,7 @@ const RoleManagement = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div data-tour="page-roles" className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
@@ -137,12 +137,14 @@ const RoleManagement = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                            role.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                            role.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
                           }`}>
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${role.status ? "bg-green-700" : "bg-red-700"}`}
+                            className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`}
                           />
-                          {role.status ? "Aktif" : "Nonaktif"}
+                          {role.status === "active" ? "Aktif" : "Nonaktif"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

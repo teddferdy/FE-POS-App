@@ -10,7 +10,7 @@ export const getAllCategory = async (payload) => {
 
 export const getAllCategoryActive = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?store=${payload.location || ""}&status=true`
+    `/category/get-category-all?store=${payload.location || ""}&status=active`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

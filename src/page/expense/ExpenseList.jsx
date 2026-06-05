@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { Plus, Search, Edit, Tag, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Tag, DollarSign } from "lucide-react";
 import { getAllExpenses } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
+import DataTable from "@/components/ui/DataTable";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -75,6 +75,56 @@ const ExpenseList = () => {
     );
   };
 
+  const columns = [
+    {
+      header: t("page.expense.table.description"),
+      render: (item) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+            <Tag size={14} />
+          </div>
+          <span className="font-medium text-foreground">{item.description || "-"}</span>
+        </div>
+      )
+    },
+    {
+      header: t("page.expense.table.category"),
+      render: (item) => item.category?.name || "-"
+    },
+    {
+      header: t("page.expense.table.amount"),
+      accessor: "amount",
+      align: "right",
+      render: (item) => <span className="font-medium">{formatCurrency(item.amount)}</span>
+    },
+    {
+      header: t("page.expense.table.status"),
+      align: "center",
+      render: (item) => getStatusBadge(item.status)
+    },
+    {
+      header: t("page.expense.table.date"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">{formatDate(item.date)}</span>
+      )
+    },
+    {
+      header: t("page.expense.table.actions"),
+      align: "right",
+      render: (item) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
+            <Edit size={15} />
+          </Button>
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -129,123 +179,14 @@ const ExpenseList = () => {
         />
       </div>
 
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.description")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.category")}
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.amount")}
-                  </th>
-                  <th className="text-center px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.status")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.date")}
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.expense.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                      <DollarSign size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>Tidak ada biaya ditemukan</p>
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((item, index) => (
-                    <tr
-                      key={item.id || item._id || index}
-                      className="hover:bg-accent/30 transition-colors">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                            <Tag size={14} />
-                          </div>
-                          <span className="font-medium text-foreground">
-                            {item.description || "-"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-foreground">
-                        {item.category?.name || "-"}
-                      </td>
-                      <td className="px-4 py-4 text-right font-medium">
-                        {formatCurrency(item.amount)}
-                      </td>
-                      <td className="px-4 py-4 text-center">{getStatusBadge(item.status)}</td>
-                      <td className="px-4 py-4 text-sm text-muted-foreground">
-                        {formatDate(item.date)}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
-                            <Edit size={15} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-xs text-muted-foreground">
-          Menampilkan 1-{Math.min(limit, filtered.length)} dari {total} biaya
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const pageNum = i + 1;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${
-                  page === pageNum
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:bg-accent"
-                }`}>
-                {pageNum}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        emptyMessage="Tidak ada biaya ditemukan"
+        emptyIcon={DollarSign}
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+      />
     </div>
   );
 };

@@ -77,6 +77,7 @@ const AddProduct = () => {
   const [selectedStores, setSelectedStores] = useState(
     searchParams.get("location") ? [searchParams.get("location")] : user?.store ? [user?.store] : []
   );
+  const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -343,7 +344,7 @@ const AddProduct = () => {
     if (!checked) setModifierItems([]);
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (selectedStores.length === 0) {
       toast.error(t("page.product.form.selectStoreError"), {
         description: t("page.product.form.selectStoreErrorDesc")
@@ -372,7 +373,7 @@ const AddProduct = () => {
     if (values.point !== "") payload.append("point", values.point);
     if (values.preparationTime !== "") payload.append("preparationTime", values.preparationTime);
     if (values.description) payload.append("description", values.description);
-    payload.append("status", values.status);
+    payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
     payload.append("isOption", !!isOption);
     payload.append("hasModifiers", !!hasModifiers);
@@ -1422,7 +1423,7 @@ const AddProduct = () => {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-border mt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
             <Button
               type="button"
               variant="outline"
@@ -1444,10 +1445,25 @@ const AddProduct = () => {
                   <ChevronRight size={18} />
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
-                  {isSubmitting ? <Loading size="sm" className="text-white" /> : <Save size={18} />}
-                  {t("page.product.form.save")}
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={isSubmitting}
+                    className="gap-2">
+                    <Save size={18} />
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
+                    {isSubmitting ? (
+                      <Loading size="sm" className="text-white" />
+                    ) : (
+                      <Save size={18} />
+                    )}
+                    {t("page.product.form.save")}
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -1472,6 +1488,20 @@ const AddProduct = () => {
         confirmText={t("page.product.form.cancelConfirm")}
         cancelText={t("page.product.form.cancelBack")}
         onConfirm={() => navigate("/product-list")}
+      />
+
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.saving")} />}

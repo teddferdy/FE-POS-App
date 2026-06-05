@@ -362,7 +362,7 @@ const InvoicePage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div data-tour="page-settings" className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">{t("page.invoice.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("page.invoice.description")}</p>

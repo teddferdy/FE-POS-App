@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 
@@ -21,6 +22,7 @@ const EditDepartment = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [draftModal, setDraftModal] = useState(false);
   const [errors, setErrors] = useState({});
 
   const { data: allDepartmentsData, isLoading: departmentsLoading } = useQuery(
@@ -35,7 +37,7 @@ const EditDepartment = () => {
     if (department) {
       setName(department.name || "");
       setDescription(department.description || "");
-      setIsActive(department.isActive ?? true);
+      setIsActive(department.status === "active");
     }
   }, [department]);
 
@@ -59,14 +61,14 @@ const EditDepartment = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!validate()) return;
     editMutation.mutate({
       id: departmentId,
       name: name.trim(),
       description: description.trim(),
-      isActive
+      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
 
@@ -114,7 +116,7 @@ const EditDepartment = () => {
         description={t("page.department.edit.description")}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
@@ -190,15 +192,41 @@ const EditDepartment = () => {
             <span className="material-symbols-outlined text-lg">close</span>
             {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            disabled={editMutation.isLoading}
-            className="gap-2 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.department.button.saveChanges")}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={editMutation.isLoading}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              type="submit"
+              disabled={editMutation.isLoading}
+              className="gap-2 shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.department.button.saveChanges")}
+            </Button>
+          </div>
         </div>
       </form>
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          editMutation.mutate({
+            id: departmentId,
+            name: name.trim(),
+            description: description.trim(),
+            status: "draft"
+          });
+        }}
+      />
     </div>
   );
 };

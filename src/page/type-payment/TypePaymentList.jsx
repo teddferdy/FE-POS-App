@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Trash2, CreditCard } from "lucide-react";
 import { getAllTypePaymentListActive, deleteTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 
 const TypePaymentList = () => {
@@ -73,6 +73,47 @@ const TypePaymentList = () => {
     );
   };
 
+  const columns = [
+    {
+      header: t("page.typePayment.table.name"),
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+            {row.namaPembayaran?.charAt(0)?.toUpperCase() || "P"}
+          </div>
+          <span className="font-medium text-foreground">{row.namaPembayaran || "-"}</span>
+        </div>
+      )
+    },
+    { header: t("page.typePayment.table.type"), accessor: "tipe" },
+    {
+      header: t("common.status"),
+      render: (row) => getStatusBadge(row)
+    },
+    {
+      header: t("common.actions"),
+      align: "right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
+            <Edit size={15} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive"
+            onClick={() => handleDelete(row)}>
+            <Trash2 size={15} />
+          </Button>
+        </div>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -134,119 +175,14 @@ const TypePaymentList = () => {
       </div>
 
       {/* Table */}
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.typePayment.table.name")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("page.typePayment.table.type")}
-                  </th>
-                  <th className="text-left px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("common.status")}
-                  </th>
-                  <th className="text-right px-4 py-3.5 font-semibold text-xs uppercase tracking-wider">
-                    {t("common.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {payments.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
-                      <CreditCard size={40} className="mx-auto mb-3 opacity-30" />
-                      <p>{t("page.typePayment.list.empty")}</p>
-                    </td>
-                  </tr>
-                ) : (
-                  payments.map((item, index) => (
-                    <tr
-                      key={item.id || item._id || index}
-                      className="hover:bg-accent/30 transition-colors">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                            {item.namaPembayaran?.charAt(0)?.toUpperCase() || "P"}
-                          </div>
-                          <span className="font-medium text-foreground">
-                            {item.namaPembayaran || "-"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-foreground">{item.tipe || "-"}</td>
-                      <td className="px-4 py-4">{getStatusBadge(item)}</td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() =>
-                              navigate(`/edit-type-payment?id=${item.id || item._id}`)
-                            }>
-                            <Edit size={15} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => handleDelete(item)}>
-                            <Trash2 size={15} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      {/* Pagination */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-xs text-muted-foreground">
-          {t("page.typePayment.list.showing", { count: Math.min(limit, payments.length), total })}
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const pageNum = i + 1;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${
-                  page === pageNum
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:bg-accent"
-                }`}>
-                {pageNum}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={payments}
+        isLoading={isLoading}
+        emptyIcon={CreditCard}
+        emptyMessage={t("page.typePayment.list.empty")}
+        pagination={{ page, totalPages, total, onPageChange: setPage }}
+      />
 
       <Modal
         type="confirm"
