@@ -1976,5 +1976,34 @@
   "/best-selling": "Best Selling Products",
   "/expense-category": "Expense Categories",
   "/expense": "Expenses",
-  "/notification": "Notifications"
+  "/notification": "Notifications",
+
+  "guide.auth.login.title": "Login Guide",
+  "guide.auth.login.desc": "Sign in to your account to access the system",
+  "guide.auth.login.tip1": "Use your registered username or email",
+  "guide.auth.login.tip2": "Password is case-sensitive — watch your caps lock",
+  "guide.auth.login.tip3": "Check \"Remember Me\" to stay signed in",
+  "guide.auth.login.tip4": "Forgot password? Click \"Forgot Password?\" to reset",
+  "guide.auth.login.tip5": "Use the language toggle in the top-right to switch to Indonesian",
+
+  "guide.auth.register.title": "Registration Guide",
+  "guide.auth.register.desc": "Create a new account to start using the system",
+  "guide.auth.register.tip1": "Username must be at least 4 characters and unique",
+  "guide.auth.register.tip2": "Use an active email for account verification",
+  "guide.auth.register.tip3": "Select your store location — this determines your branch access",
+  "guide.auth.register.tip4": "Password must be at least 4 characters, confirmation must match",
+  "guide.auth.register.tip5": "After successful registration, sign in with your new account",
+
+  "guide.auth.reset.title": "Password Reset Guide",
+  "guide.auth.reset.desc": "Reset your account password securely",
+  "guide.auth.reset.tip1": "Enter your registered email address",
+  "guide.auth.reset.tip2": "New password must be at least 6 characters",
+  "guide.auth.reset.tip3": "Make sure the password confirmation matches",
+  "guide.auth.reset.tip4": "After success, you'll be redirected to the login page",
+
+  "guide.auth.security": "Data Security",
+  "guide.auth.security.desc": "All your data is protected with 256-bit SSL encryption",
+  "guide.auth.support": "Need help?",
+  "guide.auth.support.desc": "Contact us via WhatsApp or email support@bisnota.com",
+  "guide.auth.ok": "Got it"
 }

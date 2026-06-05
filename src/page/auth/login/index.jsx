@@ -19,6 +19,7 @@ import { Loading } from "@/components/ui/loading";
 
 import { login } from "@/services/auth";
 import { translationSelect } from "@/state/translation";
+import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ const LoginPage = () => {
   const [_, setCookie] = useCookies();
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { translation, updateTranslation } = translationSelect();
 
   const translationMemo = useMemo(
@@ -309,6 +311,7 @@ const LoginPage = () => {
       <div className="fixed bottom-4 md:bottom-lg right-4 md:right-lg z-50">
         <button
           type="button"
+          onClick={() => setGuideOpen(true)}
           className="flex items-center gap-1.5 md:gap-sm px-3.5 py-2.5 md:px-5 md:py-3 bg-white/80 dark:bg-foreground/10 backdrop-blur-md rounded-full shadow-lg border border-border/20 text-muted-foreground hover:text-foreground transition-all group">
           <HelpCircle className="w-4 h-4 md:w-[18px] md:h-[18px] group-hover:rotate-12 transition-transform" />
           <span className="text-[10px] md:text-xs font-medium tracking-wide">
@@ -316,6 +319,7 @@ const LoginPage = () => {
           </span>
         </button>
       </div>
+      <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="login" />
 
       {isLoading && <Loading fullscreen size="lg" label="Loading..." />}
     </>

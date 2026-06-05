@@ -1932,5 +1932,34 @@
   "tips.cashier2": "Scan barcode produk untuk mempercepat proses checkout",
   "tips.cashier3": "Pembayaran dapat diproses dengan metode tunai atau non-tunai",
   "commandPalette.placeholder": "Cari halaman...",
-  "commandPalette.notFound": "Tidak ditemukan untuk \"{{query}}\""
+  "commandPalette.notFound": "Tidak ditemukan untuk \"{{query}}\"",
+
+  "guide.auth.login.title": "Panduan Login",
+  "guide.auth.login.desc": "Masuk ke akun Anda untuk mengakses sistem",
+  "guide.auth.login.tip1": "Gunakan username atau email yang sudah terdaftar",
+  "guide.auth.login.tip2": "Kata sandi bersifat case-sensitive — perhatikan huruf kapital",
+  "guide.auth.login.tip3": "Centang \"Ingat Saya\" agar sesi tetap tersimpan",
+  "guide.auth.login.tip4": "Lupa kata sandi? Klik \"Lupa Kata Sandi?\" untuk mereset",
+  "guide.auth.login.tip5": "Gunakan tombol bahasa di pojok kanan untuk beralih ke Inggris",
+
+  "guide.auth.register.title": "Panduan Registrasi",
+  "guide.auth.register.desc": "Buat akun baru untuk memulai menggunakan sistem",
+  "guide.auth.register.tip1": "Username minimal 4 karakter dan harus unik",
+  "guide.auth.register.tip2": "Gunakan email aktif untuk verifikasi akun",
+  "guide.auth.register.tip3": "Pilih lokasi toko — ini menentukan cabang akses Anda",
+  "guide.auth.register.tip4": "Kata sandi minimal 4 karakter, pastikan konfirmasi cocok",
+  "guide.auth.register.tip5": "Setelah berhasil daftar, masuk dengan akun baru Anda",
+
+  "guide.auth.reset.title": "Panduan Reset Kata Sandi",
+  "guide.auth.reset.desc": "Atur ulang kata sandi akun Anda dengan aman",
+  "guide.auth.reset.tip1": "Masukkan email yang terdaftar di sistem",
+  "guide.auth.reset.tip2": "Kata sandi baru minimal 6 karakter",
+  "guide.auth.reset.tip3": "Pastikan konfirmasi kata sandi baru cocok",
+  "guide.auth.reset.tip4": "Setelah berhasil, Anda akan diarahkan ke halaman login",
+
+  "guide.auth.security": "Keamanan Data",
+  "guide.auth.security.desc": "Semua data Anda dilindungi dengan enkripsi SSL 256-bit",
+  "guide.auth.support": "Butuh bantuan?",
+  "guide.auth.support.desc": "Hubungi tim kami via WhatsApp atau email support@bisnota.com",
+  "guide.auth.ok": "Mengerti"
 }

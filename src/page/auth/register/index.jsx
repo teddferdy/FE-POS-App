@@ -29,6 +29,7 @@ import PolicyDialog from "@/components/organism/policy-dialog";
 import { register } from "@/services/auth";
 import { getAllLocation } from "@/services/location";
 import { translationSelect } from "@/state/translation";
+import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const RegisterPage = () => {
   const { t } = useTranslation();
@@ -38,6 +39,7 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { translation, updateTranslation } = translationSelect();
 
   const { data: locationsData } = useQuery({
@@ -175,6 +177,7 @@ const RegisterPage = () => {
               </button>
               <button
                 type="button"
+                onClick={() => setGuideOpen(true)}
                 className="hidden sm:inline-flex text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
                 {translationMemo.help}
               </button>
@@ -428,6 +431,7 @@ const RegisterPage = () => {
 
       <PolicyDialog type="privacy" open={privacyOpen} onOpenChange={setPrivacyOpen} />
       <PolicyDialog type="terms" open={termsOpen} onOpenChange={setTermsOpen} />
+      <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="register" />
       {isLoading && <Loading fullscreen size="lg" label="Loading..." />}
     </>
   );

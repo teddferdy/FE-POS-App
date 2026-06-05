@@ -16,6 +16,7 @@ import PolicyDialog from "@/components/organism/policy-dialog";
 
 import { resetPassword } from "@/services/auth";
 import { translationSelect } from "@/state/translation";
+import AuthGuideModal from "@/components/organism/AuthGuideModal";
 
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { translation, updateTranslation } = translationSelect();
 
   const translationMemo = useMemo(
@@ -137,6 +139,7 @@ const ResetPasswordPage = () => {
               </button>
               <button
                 type="button"
+                onClick={() => setGuideOpen(true)}
                 className="hidden sm:inline-flex text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
                 {translationMemo.help}
               </button>
@@ -331,6 +334,7 @@ const ResetPasswordPage = () => {
 
       <PolicyDialog type="privacy" open={privacyOpen} onOpenChange={setPrivacyOpen} />
       <PolicyDialog type="terms" open={termsOpen} onOpenChange={setTermsOpen} />
+      <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="reset-password" />
       {isLoading && <Loading fullscreen size="lg" label="Loading..." />}
     </>
   );
