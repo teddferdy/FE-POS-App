@@ -403,12 +403,7 @@ const AddLocation = () => {
           { label: t("page.location.add.title"), i18nKey: "page.location.add.title" }
         ]}
         title={t("page.location.add.title")}
-        description={t("page.location.add.description")}>
-        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          {t("breadcrumb.back")}
-        </Button>
-      </PageHeader>
+        description={t("page.location.add.description")}></PageHeader>
 
       {/* Form Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">

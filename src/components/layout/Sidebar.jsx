@@ -4,7 +4,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, LogOut, LifeBuoy, PanelLeftClose, PanelLeft } from "lucide-react";
-import { sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuUser } from "@/utils/sidebar-menu";
+import {
+  sidebarMenuSuperAdmin,
+  sidebarMenuAdmin,
+  sidebarMenuCashier,
+  sidebarMenuUser
+} from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
 
 const Sidebar = ({ collapsed, onToggle }) => {
@@ -24,6 +29,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   let baseMenu = sidebarMenuUser;
   if (role === "super_admin") baseMenu = sidebarMenuSuperAdmin;
   else if (role === "admin") baseMenu = sidebarMenuAdmin;
+  else if (role === "cashier") baseMenu = sidebarMenuCashier;
 
   const menuItems = filterMenuByPermission(baseMenu, user);
 
@@ -43,12 +49,34 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const matchPath = (href) => {
     if (!href) return false;
     if (location.pathname === href) return true;
+
+    // Handle standard case: menu item ending with "-list" matches add/edit/detail pages
     if (href.endsWith("-list")) {
-      const resource = href.replace("/", "").replace("-list", "");
+      const base = href.replace("/", "").replace("-list", "");
+      return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
+    }
+
+    // Handle exception cases where add/edit/detail paths don't follow standard naming
+    const exceptionMap = {
+      "/role-management": ["/add-role", "/edit-role"]
+    };
+
+    if (exceptionMap[href]) {
+      return exceptionMap[href].some((path) => {
+        if (location.pathname === path) return true;
+        if (location.pathname.startsWith(path + "/")) return true;
+        return false;
+      });
+    }
+
+    // Handle standard case: menu item matches add/edit/detail pages
+    const resource = href.replace("/", "");
+    if (resource) {
       return ["add", "edit", "detail"].some(
         (action) => location.pathname === `/${action}-${resource}`
       );
     }
+
     return false;
   };
 
@@ -200,7 +228,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <div className="mt-auto border-t border-border pt-3 flex flex-col gap-1">
         <button
           onClick={handleSupportClick}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors group">
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+            location.pathname === "/support"
+              ? "bg-primary text-primary-foreground font-medium shadow-sm"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          }`}>
           <LifeBuoy size={20} className="shrink-0" />
           <span
             className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${

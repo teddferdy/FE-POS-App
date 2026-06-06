@@ -117,289 +117,293 @@ const AddMemberTier = () => {
         <p className="text-sm text-muted-foreground mt-1">{t("page.memberTier.add.description")}</p>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-2 mb-6 text-primary">
-              <span className="material-symbols-outlined">info</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.memberTier.add.basicInfo")}
-              </h3>
+      <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-2 mb-6 text-primary">
+                <span className="material-symbols-outlined">info</span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.memberTier.add.basicInfo")}
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.memberTier.add.tierName")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tierName}
+                    onChange={(e) => handleInputChange("tierName", e.target.value)}
+                    disabled={!formData.isActive}
+                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50"
+                    placeholder={t("page.memberTier.add.tierNamePlaceholder")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.memberTier.add.minPoints")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.minPoints}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "minPoints",
+                          e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={!formData.isActive}
+                      className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                      PTS
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.memberTier.add.discountPercent")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.discountPercent}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "discountPercent",
+                          e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={!formData.isActive}
+                      className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.memberTier.add.tierName")}
-                </label>
-                <input
-                  type="text"
-                  value={formData.tierName}
-                  onChange={(e) => handleInputChange("tierName", e.target.value)}
+
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-2 mb-6 text-primary">
+                <span className="material-symbols-outlined">palette</span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.memberTier.add.visualIdentity")}
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-8">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.memberTier.add.selectIcon")}
+                  </label>
+                  <div className="flex gap-2">
+                    {icons.map((icon) => {
+                      const Icon = icon.component;
+                      const isSelected = formData.selectedIcon === icon.name;
+                      return (
+                        <button
+                          key={icon.name}
+                          disabled={!formData.isActive}
+                          onClick={() => handleInputChange("selectedIcon", icon.name)}
+                          className={`w-11 h-11 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 ${
+                            isSelected
+                              ? "bg-primary/10 border-2 border-primary text-primary"
+                              : "bg-background border border-border text-muted-foreground hover:bg-accent"
+                          }`}>
+                          <Icon size={22} style={icon.fill ? { fill: "currentColor" } : {}} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.memberTier.add.badgeColor")}
+                  </label>
+                  <div className="flex gap-2">
+                    {colors.map((color) => {
+                      const isSelected = formData.selectedColor === color.value;
+                      return (
+                        <button
+                          key={color.name}
+                          disabled={!formData.isActive}
+                          onClick={() => handleInputChange("selectedColor", color.value)}
+                          className={`w-8 h-8 rounded-full transition-all disabled:opacity-40 ${
+                            color.tailwind
+                          } ${isSelected ? "ring-2 ring-primary ring-offset-2 scale-110" : "ring-1 ring-border"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-2 mb-6 text-primary">
+                <span className="material-symbols-outlined">stars</span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.memberTier.add.benefits")}
+                </h3>
+              </div>
+              <div className="space-y-3" id="perks-list">
+                {formData.perks.map((perk) => (
+                  <div key={perk.id} className="flex items-center gap-2 group">
+                    <div className="flex-1 relative">
+                      <CheckCircle
+                        size={16}
+                        className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                          perk.text.trim() ? "text-green-600" : "text-muted-foreground"
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        value={perk.text}
+                        onChange={(e) => handlePerkChange(perk.id, e.target.value)}
+                        disabled={!formData.isActive}
+                        className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2.5 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all text-sm disabled:opacity-50"
+                        placeholder={t("page.memberTier.add.perkPlaceholder")}
+                      />
+                    </div>
+                    <button
+                      onClick={() => removePerk(perk.id)}
+                      disabled={!formData.isActive}
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                      <Delete size={18} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addPerk}
                   disabled={!formData.isActive}
-                  className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50"
-                  placeholder={t("page.memberTier.add.tierNamePlaceholder")}
+                  className="flex items-center gap-2 w-full py-2.5 rounded-lg border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-all justify-center disabled:opacity-40 text-sm font-semibold">
+                  <Plus size={18} />
+                  {t("page.memberTier.add.addBenefit")}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-2 mb-6 text-primary">
+                <span className="material-symbols-outlined">toggle_on</span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.memberTier.add.tierStatus")}
+                </h3>
+              </div>
+              <div
+                className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                  formData.isActive
+                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                }`}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      formData.isActive
+                        ? "bg-green-600 text-white"
+                        : "bg-destructive/10 text-destructive"
+                    }`}>
+                    <span className="material-symbols-outlined text-lg">
+                      {formData.isActive ? "check" : "close"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {formData.isActive ? t("common.active") : t("common.inactive")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formData.isActive
+                        ? "Tier ini aktif dan dapat digunakan."
+                        : "Tier ini tidak aktif."}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) => handleInputChange("isActive", checked)}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.memberTier.add.minPoints")}
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={formData.minPoints}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "minPoints",
-                        e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                      )
-                    }
-                    disabled={!formData.isActive}
-                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                    placeholder="0"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-                    PTS
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.memberTier.add.discountPercent")}
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={formData.discountPercent}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "discountPercent",
-                        e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                      )
-                    }
-                    disabled={!formData.isActive}
-                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                    placeholder="0"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-                    %
-                  </span>
-                </div>
-              </div>
             </div>
-          </div>
 
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-2 mb-6 text-primary">
-              <span className="material-symbols-outlined">palette</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.memberTier.add.visualIdentity")}
-              </h3>
-            </div>
-            <div className="flex flex-wrap gap-8">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.memberTier.add.selectIcon")}
-                </label>
-                <div className="flex gap-2">
-                  {icons.map((icon) => {
-                    const Icon = icon.component;
-                    const isSelected = formData.selectedIcon === icon.name;
-                    return (
-                      <button
-                        key={icon.name}
-                        disabled={!formData.isActive}
-                        onClick={() => handleInputChange("selectedIcon", icon.name)}
-                        className={`w-11 h-11 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 ${
-                          isSelected
-                            ? "bg-primary/10 border-2 border-primary text-primary"
-                            : "bg-background border border-border text-muted-foreground hover:bg-accent"
-                        }`}>
-                        <Icon size={22} style={icon.fill ? { fill: "currentColor" } : {}} />
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+              <div className="flex items-center gap-2 mb-6 text-primary relative">
+                <span className="material-symbols-outlined">visibility</span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.memberTier.add.previewBadge")}
+                </h3>
               </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.memberTier.add.badgeColor")}
-                </label>
-                <div className="flex gap-2">
-                  {colors.map((color) => {
-                    const isSelected = formData.selectedColor === color.value;
-                    return (
-                      <button
-                        key={color.name}
-                        disabled={!formData.isActive}
-                        onClick={() => handleInputChange("selectedColor", color.value)}
-                        className={`w-8 h-8 rounded-full transition-all disabled:opacity-40 ${
-                          color.tailwind
-                        } ${isSelected ? "ring-2 ring-primary ring-offset-2 scale-110" : "ring-1 ring-border"}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-2 mb-6 text-primary">
-              <span className="material-symbols-outlined">stars</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.memberTier.add.benefits")}
-              </h3>
-            </div>
-            <div className="space-y-3" id="perks-list">
-              {formData.perks.map((perk) => (
-                <div key={perk.id} className="flex items-center gap-2 group">
-                  <div className="flex-1 relative">
-                    <CheckCircle
-                      size={16}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                        perk.text.trim() ? "text-green-600" : "text-muted-foreground"
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      value={perk.text}
-                      onChange={(e) => handlePerkChange(perk.id, e.target.value)}
-                      disabled={!formData.isActive}
-                      className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2.5 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all text-sm disabled:opacity-50"
-                      placeholder={t("page.memberTier.add.perkPlaceholder")}
-                    />
-                  </div>
-                  <button
-                    onClick={() => removePerk(perk.id)}
-                    disabled={!formData.isActive}
-                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0">
-                    <Delete size={18} />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={addPerk}
-                disabled={!formData.isActive}
-                className="flex items-center gap-2 w-full py-2.5 rounded-lg border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-all justify-center disabled:opacity-40 text-sm font-semibold">
-                <Plus size={18} />
-                {t("page.memberTier.add.addBenefit")}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-2 mb-6 text-primary">
-              <span className="material-symbols-outlined">toggle_on</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.memberTier.add.tierStatus")}
-              </h3>
-            </div>
-            <div
-              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                formData.isActive
-                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-              }`}>
-              <div className="flex items-center gap-3">
+              <div className="bg-muted/30 rounded-xl p-5 border border-border relative flex items-center gap-4">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    formData.isActive
-                      ? "bg-green-600 text-white"
-                      : "bg-destructive/10 text-destructive"
-                  }`}>
-                  <span className="material-symbols-outlined text-lg">
-                    {formData.isActive ? "check" : "close"}
-                  </span>
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
+                  style={{
+                    backgroundColor: formData.selectedColor,
+                    boxShadow: `0 8px 16px ${formData.selectedColor}20`
+                  }}>
+                  <IconComponent
+                    size={32}
+                    className="text-white"
+                    style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
+                  />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {formData.isActive ? t("common.active") : t("common.inactive")}
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    {t("page.memberTier.add.previewBadge")}
                   </p>
+                  <h4 className="text-lg font-bold text-foreground">
+                    {formData.tierName || "Gold Member"}
+                  </h4>
                   <p className="text-xs text-muted-foreground">
-                    {formData.isActive
-                      ? "Tier ini aktif dan dapat digunakan."
-                      : "Tier ini tidak aktif."}
+                    Mulai dari{" "}
+                    {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
+                      "id-ID"
+                    )}{" "}
+                    PTS
                   </p>
                 </div>
               </div>
-              <Switch
-                checked={formData.isActive}
-                onCheckedChange={(checked) => handleInputChange("isActive", checked)}
-              />
             </div>
-          </div>
 
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
-            <div className="flex items-center gap-2 mb-6 text-primary relative">
-              <span className="material-symbols-outlined">visibility</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.memberTier.add.previewBadge")}
-              </h3>
+            <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
+              <span className="material-symbols-outlined text-secondary mt-0.5 text-base">
+                info
+              </span>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {t("page.memberTier.add.footerHint")}
+              </p>
             </div>
-            <div className="bg-muted/30 rounded-xl p-5 border border-border relative flex items-center gap-4">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
-                style={{
-                  backgroundColor: formData.selectedColor,
-                  boxShadow: `0 8px 16px ${formData.selectedColor}20`
-                }}>
-                <IconComponent
-                  size={32}
-                  className="text-white"
-                  style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
-                />
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                  {t("page.memberTier.add.previewBadge")}
-                </p>
-                <h4 className="text-lg font-bold text-foreground">
-                  {formData.tierName || "Gold Member"}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Mulai dari{" "}
-                  {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
-                    "id-ID"
-                  )}{" "}
-                  PTS
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 flex gap-3">
-            <span className="material-symbols-outlined text-secondary mt-0.5 text-base">info</span>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("page.memberTier.add.footerHint")}
-            </p>
           </div>
         </div>
-      </div>
 
-      <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
-        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-          <X size={18} />
-          {t("common.cancel")}
-        </Button>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={createMutation.isLoading}>
-            Simpan sebagai Draft
+        <div className="flex justify-between items-center gap-4 mt-8 bg-card border border-border rounded-xl p-4">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <X size={18} />
+            {t("common.cancel")}
           </Button>
-          <Button
-            onClick={() => handleSave(false)}
-            disabled={createMutation.isLoading}
-            className="gap-2 shadow-lg shadow-primary/20">
-            <Save size={18} />
-            {t("page.memberTier.add.saveTier")}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={createMutation.isLoading}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              onClick={() => handleSave(false)}
+              disabled={createMutation.isLoading}
+              className="gap-2 shadow-lg shadow-primary/20">
+              <Save size={18} />
+              {t("page.memberTier.add.saveTier")}
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -87,8 +87,8 @@ const AddPosition = () => {
         <p className="text-sm text-muted-foreground mt-1">{t("page.position.add.description")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+      <form onSubmit={handleSubmit}>
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -216,44 +216,43 @@ const AddPosition = () => {
             </div>
             <Switch checked={isActive} onCheckedChange={setIsActive} />
           </div>
-        </div>
-
-        <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
-          <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
-          <div>
-            <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
-              {t("page.position.add.securityNote")}
-            </h4>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {t("page.position.add.securityDescription")}
-            </p>
+          <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-start gap-3 border-l-4 border-tertiary">
+            <span className="material-symbols-outlined text-tertiary shrink-0">info</span>
+            <div>
+              <h4 className="text-xs font-bold text-tertiary uppercase tracking-wider">
+                {t("page.position.add.securityNote")}
+              </h4>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {t("page.position.add.securityDescription")}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate("/position-list")}
-            className="gap-2">
-            <span className="material-symbols-outlined text-lg">close</span>
-            {t("common.cancel")}
-          </Button>
-          <div className="flex gap-3">
+          <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={createMutation.isLoading}>
-              Simpan sebagai Draft
+              onClick={() => navigate("/position-list")}
+              className="gap-2">
+              <span className="material-symbols-outlined text-lg">close</span>
+              {t("common.cancel")}
             </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isLoading}
-              className="gap-2 shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-lg">save</span>
-              {t("page.position.button.save")}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={createMutation.isLoading}>
+                Simpan sebagai Draft
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isLoading}
+                className="gap-2 shadow-lg shadow-primary/20">
+                <span className="material-symbols-outlined text-lg">save</span>
+                {t("page.position.button.save")}
+              </Button>
+            </div>
           </div>
         </div>
       </form>

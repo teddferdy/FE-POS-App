@@ -173,6 +173,60 @@ const AddPriceListTemplate = () => {
                     </FormItem>
                   )}
                 />
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.priceListTemplate.form.priceTier")}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t("page.priceListTemplate.form.priceTierDescription")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {tiers.map((tier) => (
+                      <div
+                        key={tier.id}
+                        className="flex items-center gap-2 bg-muted/30 rounded-lg p-3">
+                        <Input
+                          placeholder={t("page.priceListTemplate.form.tierNamePlaceholder")}
+                          value={tier.name}
+                          onChange={(e) => updateTier(tier.id, "name", e.target.value)}
+                          className="h-9 text-sm flex-1"
+                        />
+                        <Input
+                          type="number"
+                          placeholder={t("page.priceListTemplate.form.sortOrderPlaceholder")}
+                          value={tier.sortOrder ?? ""}
+                          onChange={(e) => updateTier(tier.id, "sortOrder", Number(e.target.value))}
+                          className="h-9 text-sm w-20"
+                        />
+                        {tiers.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive shrink-0"
+                            onClick={() => removeTier(tier.id)}>
+                            <Trash2 size={15} />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={addTier}>
+                      <Plus size={15} />
+                      {t("page.priceListTemplate.button.addTier")}
+                    </Button>
+                  </div>
+                </Card>
+
                 <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
                     <X size={18} /> {t("common.cancel")}
@@ -198,54 +252,7 @@ const AddPriceListTemplate = () => {
               </form>
             </Form>
           </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.priceListTemplate.form.priceTier")}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t("page.priceListTemplate.form.priceTierDescription")}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {tiers.map((tier) => (
-                <div key={tier.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-3">
-                  <Input
-                    placeholder={t("page.priceListTemplate.form.tierNamePlaceholder")}
-                    value={tier.name}
-                    onChange={(e) => updateTier(tier.id, "name", e.target.value)}
-                    className="h-9 text-sm flex-1"
-                  />
-                  <Input
-                    type="number"
-                    placeholder={t("page.priceListTemplate.form.sortOrderPlaceholder")}
-                    value={tier.sortOrder ?? ""}
-                    onChange={(e) => updateTier(tier.id, "sortOrder", Number(e.target.value))}
-                    className="h-9 text-sm w-20"
-                  />
-                  {tiers.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive shrink-0"
-                      onClick={() => removeTier(tier.id)}>
-                      <Trash2 size={15} />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addTier}>
-                <Plus size={15} />
-                {t("page.priceListTemplate.button.addTier")}
-              </Button>
-            </div>
-          </Card>
         </div>
-
         <div className="lg:col-span-1">
           <Card className="p-6">
             <h3 className="text-sm font-semibold text-foreground mb-3">

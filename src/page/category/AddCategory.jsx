@@ -425,345 +425,355 @@ const AddCategory = () => {
         </div>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-8 space-y-6">
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-6">
-                  {t("page.category.form.info")}
-                </h3>
-                <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.category.form.name")} <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          placeholder={t("page.category.form.namePlaceholder")}
-                          className="h-12"
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.category.form.description")}
-                        </FormLabel>
-                        <Textarea
-                          {...field}
-                          placeholder={t("page.category.form.descPlaceholder")}
-                          className="resize-none"
-                          rows={5}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div
-                          className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                            field.value
-                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                          }`}>
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                field.value
-                                  ? "bg-green-600 text-white"
-                                  : "bg-destructive/10 text-destructive"
-                              }`}>
-                              <span className="material-symbols-outlined text-lg">
-                                {field.value ? "check" : "close"}
-                              </span>
+      <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-12 gap-6">
+              <div className="col-span-12 lg:col-span-8 space-y-6">
+                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.category.form.info")}
+                  </h3>
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.category.form.name")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            placeholder={t("page.category.form.namePlaceholder")}
+                            className="h-12"
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.category.form.description")}
+                          </FormLabel>
+                          <Textarea
+                            {...field}
+                            placeholder={t("page.category.form.descPlaceholder")}
+                            className="resize-none"
+                            rows={5}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div
+                            className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                              field.value
+                                ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                            }`}>
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  field.value
+                                    ? "bg-green-600 text-white"
+                                    : "bg-destructive/10 text-destructive"
+                                }`}>
+                                <span className="material-symbols-outlined text-lg">
+                                  {field.value ? "check" : "close"}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {field.value
+                                    ? t("page.category.form.statusActive")
+                                    : t("page.category.form.statusInactive")}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {field.value
+                                    ? t("page.category.form.activeDesc")
+                                    : t("page.category.form.inactiveDesc")}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">
-                                {field.value
-                                  ? t("page.category.form.statusActive")
-                                  : t("page.category.form.statusInactive")}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {field.value
-                                  ? t("page.category.form.activeDesc")
-                                  : t("page.category.form.inactiveDesc")}
-                              </p>
-                            </div>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </div>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-primary text-base">info</span>
-                  <span className="text-sm font-semibold text-primary">
-                    {t("page.category.form.namingTip")}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t("page.category.form.namingTipDesc")}
-                </p>
-              </div>
-            </div>
-
-            <div className="col-span-12 lg:col-span-4 space-y-6">
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-6">
-                  {t("page.category.form.iconSection")}
-                </h3>
-                <div className="space-y-6">
-                  <div
-                    onClick={() => {
-                      if (!imagePreview && !selectedIcon) fileInputRef.current?.click();
-                    }}
-                    className={`aspect-square w-full rounded-xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center p-6 text-center transition-all overflow-hidden ${
-                      !imagePreview && !selectedIcon ? "group cursor-pointer hover:bg-accent" : ""
-                    }`}>
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : selectedIcon ? (
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                          <span className="material-symbols-outlined text-6xl">{selectedIcon}</span>
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("page.category.form.iconSelected")}
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                          <span className="material-symbols-outlined text-3xl">image_search</span>
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("page.category.form.clickToUpload")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {t("page.category.form.imageFormat")}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                  {selectedIcon && !imagePreview && (
-                    <button
-                      onClick={() => setSelectedIcon("")}
-                      className="text-xs text-destructive hover:underline">
-                      {t("page.category.form.removeIcon")}
-                    </button>
-                  )}
-                  {imagePreview && (
-                    <button
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImagePreview(null);
-                        if (fileInputRef.current) fileInputRef.current.value = "";
-                      }}
-                      className="text-xs text-destructive hover:underline">
-                      {t("page.category.form.removeImage")}
-                    </button>
-                  )}
-
-                  <div className={imagePreview ? "pointer-events-none opacity-40" : ""}>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      {t("page.category.form.quickIcons")}
-                    </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {quickIcons.map((icon) => (
-                        <button
-                          key={icon}
-                          type="button"
-                          onClick={() => handleSelectIcon(icon)}
-                          className={`aspect-square rounded-lg border flex items-center justify-center transition-all ${
-                            selectedIcon === icon
-                              ? "bg-primary text-white border-primary"
-                              : "border-border text-muted-foreground hover:bg-primary hover:text-white"
-                          }`}>
-                          <span className="material-symbols-outlined">{icon}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIconSearch("");
-                        setIconPickerOpen(true);
-                      }}
-                      className="mt-4 py-2 px-4 rounded-lg border border-border text-sm text-muted-foreground hover:bg-accent transition-colors flex items-center gap-2 ml-auto">
-                      <span className="material-symbols-outlined text-base">menu_book</span>
-                      {t("page.category.form.viewAllIcons")}
-                    </button>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-            <Button variant="outline" onClick={() => setCancelModal(true)}>
-              {t("common.cancel")}
-            </Button>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
-                Simpan sebagai Draft
-              </Button>
-              <Button
-                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                disabled={isSubmitting}>
-                {t("page.category.button.save")}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Form>
-
-      {iconPickerOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="absolute inset-0" onClick={() => setIconPickerOpen(false)} />
-          <div className="relative bg-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
-            <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-muted/30">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">category</span>
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.category.iconPicker.title")}
-                </h3>
-              </div>
-              <button
-                onClick={() => setIconPickerOpen(false)}
-                className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <div className="px-8 py-4 border-b border-border">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  search
-                </span>
-                <input
-                  value={iconSearch}
-                  onChange={(e) => setIconSearch(e.target.value)}
-                  className="w-full h-11 pl-11 pr-4 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm"
-                  placeholder={t("page.category.iconPicker.search")}
-                />
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-8">
-              {iconSearch.trim() ? (
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-                  {searchedIcons.map((ic) => (
-                    <button
-                      key={ic.icon}
-                      type="button"
-                      onClick={() => {
-                        handleSelectIcon(ic.icon);
-                        setIconPickerOpen(false);
-                      }}
-                      className="flex flex-col items-center gap-2 group">
-                      <div
-                        className={`aspect-square w-full rounded-xl border flex items-center justify-center transition-all ${
-                          selectedIcon === ic.icon
-                            ? "bg-primary text-white border-primary"
-                            : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
-                        }`}>
-                        <span className="material-symbols-outlined text-2xl">{ic.icon}</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
-                        {ic.label}
-                      </span>
-                    </button>
-                  ))}
-                  {searchedIcons.length === 0 && (
-                    <div className="col-span-full py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">
-                        search_off
-                      </span>
-                      {t("page.category.iconPicker.empty")}
-                    </div>
-                  )}
+                <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-primary text-base">info</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {t("page.category.form.namingTip")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {t("page.category.form.namingTipDesc")}
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-8">
-                  {filteredIconSections.map((section) => (
-                    <section key={section.title}>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                        {section.title}
-                      </h4>
-                      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-                        {section.icons.map((ic) => (
-                          <button
-                            key={ic.icon}
-                            type="button"
-                            onClick={() => {
-                              handleSelectIcon(ic.icon);
-                              setIconPickerOpen(false);
-                            }}
-                            className="flex flex-col items-center gap-2 group">
-                            <div
-                              className={`aspect-square w-full rounded-xl border flex items-center justify-center transition-all ${
-                                selectedIcon === ic.icon
-                                  ? "bg-primary text-white border-primary"
-                                  : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
-                              }`}>
-                              <span className="material-symbols-outlined text-2xl">{ic.icon}</span>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
-                              {ic.label}
+              </div>
+
+              <div className="col-span-12 lg:col-span-4 space-y-6">
+                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.category.form.iconSection")}
+                  </h3>
+                  <div className="space-y-6">
+                    <div
+                      onClick={() => {
+                        if (!imagePreview && !selectedIcon) fileInputRef.current?.click();
+                      }}
+                      className={`aspect-square w-full rounded-xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center p-6 text-center transition-all overflow-hidden ${
+                        !imagePreview && !selectedIcon ? "group cursor-pointer hover:bg-accent" : ""
+                      }`}>
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : selectedIcon ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                            <span className="material-symbols-outlined text-6xl">
+                              {selectedIcon}
                             </span>
+                          </div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.category.form.iconSelected")}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-3xl">image_search</span>
+                          </div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.category.form.clickToUpload")}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {t("page.category.form.imageFormat")}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    {selectedIcon && !imagePreview && (
+                      <button
+                        onClick={() => setSelectedIcon("")}
+                        className="text-xs text-destructive hover:underline">
+                        {t("page.category.form.removeIcon")}
+                      </button>
+                    )}
+                    {imagePreview && (
+                      <button
+                        onClick={() => {
+                          setSelectedImage(null);
+                          setImagePreview(null);
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
+                        className="text-xs text-destructive hover:underline">
+                        {t("page.category.form.removeImage")}
+                      </button>
+                    )}
+
+                    <div className={imagePreview ? "pointer-events-none opacity-40" : ""}>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                        {t("page.category.form.quickIcons")}
+                      </p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {quickIcons.map((icon) => (
+                          <button
+                            key={icon}
+                            type="button"
+                            onClick={() => handleSelectIcon(icon)}
+                            className={`aspect-square rounded-lg border flex items-center justify-center transition-all ${
+                              selectedIcon === icon
+                                ? "bg-primary text-white border-primary"
+                                : "border-border text-muted-foreground hover:bg-primary hover:text-white"
+                            }`}>
+                            <span className="material-symbols-outlined">{icon}</span>
                           </button>
                         ))}
                       </div>
-                    </section>
-                  ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIconSearch("");
+                          setIconPickerOpen(true);
+                        }}
+                        className="mt-4 py-2 px-4 rounded-lg border border-border text-sm text-muted-foreground hover:bg-accent transition-colors flex items-center gap-2 ml-auto">
+                        <span className="material-symbols-outlined text-base">menu_book</span>
+                        {t("page.category.form.viewAllIcons")}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="px-8 py-5 border-t border-border bg-muted/30 flex justify-end gap-4">
-              <Button variant="outline" onClick={() => setIconPickerOpen(false)}>
-                {t("page.category.iconPicker.cancel")}
+            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <Button variant="outline" onClick={() => setCancelModal(true)}>
+                {t("common.cancel")}
               </Button>
-              <Button
-                onClick={() => {
-                  if (selectedIcon) setIconPickerOpen(false);
-                }}
-                disabled={!selectedIcon}>
-                {t("page.category.iconPicker.select")}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={isSubmitting}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button
+                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                  disabled={isSubmitting}>
+                  {t("page.category.button.save")}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+
+        {iconPickerOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="absolute inset-0" onClick={() => setIconPickerOpen(false)} />
+            <div className="relative bg-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
+              <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">category</span>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.category.iconPicker.title")}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIconPickerOpen(false)}
+                  className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div className="px-8 py-4 border-b border-border">
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    search
+                  </span>
+                  <input
+                    value={iconSearch}
+                    onChange={(e) => setIconSearch(e.target.value)}
+                    className="w-full h-11 pl-11 pr-4 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all text-sm"
+                    placeholder={t("page.category.iconPicker.search")}
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8">
+                {iconSearch.trim() ? (
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+                    {searchedIcons.map((ic) => (
+                      <button
+                        key={ic.icon}
+                        type="button"
+                        onClick={() => {
+                          handleSelectIcon(ic.icon);
+                          setIconPickerOpen(false);
+                        }}
+                        className="flex flex-col items-center gap-2 group">
+                        <div
+                          className={`aspect-square w-full rounded-xl border flex items-center justify-center transition-all ${
+                            selectedIcon === ic.icon
+                              ? "bg-primary text-white border-primary"
+                              : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
+                          }`}>
+                          <span className="material-symbols-outlined text-2xl">{ic.icon}</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
+                          {ic.label}
+                        </span>
+                      </button>
+                    ))}
+                    {searchedIcons.length === 0 && (
+                      <div className="col-span-full py-12 text-center text-muted-foreground">
+                        <span className="material-symbols-outlined text-4xl block mb-2">
+                          search_off
+                        </span>
+                        {t("page.category.iconPicker.empty")}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    {filteredIconSections.map((section) => (
+                      <section key={section.title}>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                          {section.title}
+                        </h4>
+                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
+                          {section.icons.map((ic) => (
+                            <button
+                              key={ic.icon}
+                              type="button"
+                              onClick={() => {
+                                handleSelectIcon(ic.icon);
+                                setIconPickerOpen(false);
+                              }}
+                              className="flex flex-col items-center gap-2 group">
+                              <div
+                                className={`aspect-square w-full rounded-xl border flex items-center justify-center transition-all ${
+                                  selectedIcon === ic.icon
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-card border-border text-muted-foreground group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
+                                }`}>
+                                <span className="material-symbols-outlined text-2xl">
+                                  {ic.icon}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
+                                {ic.label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-8 py-5 border-t border-border bg-muted/30 flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setIconPickerOpen(false)}>
+                  {t("page.category.iconPicker.cancel")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (selectedIcon) setIconPickerOpen(false);
+                  }}
+                  disabled={!selectedIcon}>
+                  {t("page.category.iconPicker.select")}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

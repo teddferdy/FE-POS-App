@@ -1,24 +1,24 @@
 import { axiosInstance } from ".";
 
-export const getAllCategory = async (payload) => {
+export const getAllCategory = async () => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?store=${payload.location || ""}&page=1&limit=50&status=all`
+    `/category/get-category-all?page=1&limit=50&status=all`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllCategoryActive = async (payload) => {
+export const getAllCategoryActive = async () => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?store=${payload.location || ""}&status=active`
+    `/category/get-category-all?status=active`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllCategoryTable = async ({ location, limit, page, statusCategory }) => {
+export const getAllCategoryTable = async ({ limit, page, statusCategory }) => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?store=${location}&page=${page}&limit=${limit}&status=${statusCategory}`
+    `/category/get-category-all?page=${page}&limit=${limit}&status=${statusCategory}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

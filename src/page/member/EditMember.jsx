@@ -84,7 +84,6 @@ const EditMember = () => {
       gender: form.gender,
       address: form.address,
       tier: form.tier,
-      store: user?.store,
       status: saveAsDraft ? "draft" : "active"
     });
   };
@@ -353,7 +352,6 @@ const EditMember = () => {
             gender: form.gender,
             address: form.address,
             tier: form.tier,
-            store: user?.store,
             status: "draft"
           });
         }}

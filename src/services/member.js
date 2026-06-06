@@ -4,20 +4,17 @@ export const getAllMember = async ({
   page = 1,
   limit = 10,
   nameMember = "",
-  phoneNumber = "",
-  store
+  phoneNumber = ""
 } = {}) => {
   const { data, status } = await axiosInstance.get("/member/get-member", {
-    params: { page, limit, nameMember, phoneNumber, store }
+    params: { page, limit, nameMember, phoneNumber }
   });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getMemberById = async ({ id, store } = {}) => {
-  const { data, status } = await axiosInstance.get(`/member/get-member/${id}`, {
-    params: { store }
-  });
+export const getMemberById = async ({ id } = {}) => {
+  const { data, status } = await axiosInstance.get(`/member/get-member/${id}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
@@ -34,10 +31,8 @@ export const editMember = async (payload) => {
   return data;
 };
 
-export const deleteMember = async ({ id, store } = {}) => {
-  const { data, status } = await axiosInstance.delete(`/member/delete-member/${id}`, {
-    params: { store }
-  });
+export const deleteMember = async ({ id } = {}) => {
+  const { data, status } = await axiosInstance.delete(`/member/delete-member/${id}`);
   if (status !== 200 && status !== 201 && status !== 204) throw Error(data?.error);
   return data;
 };

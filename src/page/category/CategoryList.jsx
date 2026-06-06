@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -55,7 +55,6 @@ const CategoryList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -65,13 +64,10 @@ const CategoryList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
-  const locationParam = searchParams.get("location");
-
   const { data, isLoading } = useQuery(
-    ["categories", page, limit, search, statusFilter, locationParam],
+    ["categories", page, limit, search, statusFilter],
     () =>
       getAllCategoryTable({
-        location: locationParam || "",
         page,
         limit,
         statusCategory: statusFilter || "all"

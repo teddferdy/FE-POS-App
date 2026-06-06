@@ -460,7 +460,7 @@ export const sidebarMenuAdmin = [
   }
 ];
 
-export const sidebarMenuUser = [
+export const sidebarMenuCashier = [
   {
     title: "Cashier",
     i18nKey: "sidebar.cashier",
@@ -481,6 +481,47 @@ export const sidebarMenuUser = [
     href: "#",
     icon: CalendarDays,
     actions: ["view"]
+  }
+];
+
+export const sidebarMenuUser = [
+  {
+    title: "Dashboard",
+    i18nKey: "sidebar.dashboardAdmin",
+    href: "/dashboard-admin",
+    icon: Crown,
+    children: [],
+    actions: ["view"]
+  },
+  {
+    title: "Membership",
+    i18nKey: "sidebar.membership",
+    href: "/member-list",
+    icon: BookUser,
+    actions: ["view"]
+  },
+  {
+    title: "Laporan",
+    i18nKey: "sidebar.laporan",
+    href: "",
+    icon: BarChart3,
+    children: [
+      {
+        title: "Penjualan",
+        i18nKey: "sidebar.penjualan",
+        href: "/report/sales",
+        icon: TrendingUp,
+        actions: ["view"]
+      },
+      {
+        title: "Produk Terlaris",
+        i18nKey: "sidebar.produkTerlaris",
+        href: "/best-selling",
+        icon: BarChart3,
+        actions: ["view"]
+      }
+    ],
+    actions: []
   }
 ];
 
