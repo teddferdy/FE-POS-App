@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Eye, EyeOff, Moon, Sun, Mail, Lock, ArrowLeft, ShieldCheck, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "react-query";
 import { toast } from "sonner";
 
@@ -21,13 +21,22 @@ import AuthGuideModal from "@/components/organism/AuthGuideModal";
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(
+    location.state?.openGuide && location.state?.guideContext === "reset-password"
+  );
   const { translation, updateTranslation } = translationSelect();
+
+  useEffect(() => {
+    if (location.state?.openGuide) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const translationMemo = useMemo(
     () => ({
@@ -173,7 +182,7 @@ const ResetPasswordPage = () => {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-tour="auth-email">
                         <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                           {translationMemo.email}
                         </FormLabel>
@@ -196,7 +205,7 @@ const ResetPasswordPage = () => {
                     control={form.control}
                     name="newPassword"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-tour="auth-password">
                         <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                           {translationMemo.newPassword}
                         </FormLabel>
@@ -262,6 +271,7 @@ const ResetPasswordPage = () => {
 
                   <Button
                     type="submit"
+                    data-tour="auth-submit"
                     className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
                     {translationMemo.btnResetPassword}
                   </Button>

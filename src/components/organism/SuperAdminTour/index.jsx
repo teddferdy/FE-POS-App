@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, HelpCircle, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -111,6 +112,7 @@ const fabVariants = {
 };
 
 const SuperAdminTour = () => {
+  const { t } = useTranslation();
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const user = cookie?.user;
@@ -192,7 +194,7 @@ const SuperAdminTour = () => {
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             onClick={isActive ? toggleMinimized : handleStart}
             className="fixed bottom-6 right-6 z-[70] p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
-            title="Panduan Super Admin">
+            title={t("translation:guide.dashboard.fabTitle")}>
             <HelpCircle size={22} />
           </motion.button>
         )}
@@ -225,19 +227,22 @@ const SuperAdminTour = () => {
               {/* Header */}
               <div className="flex items-center justify-between px-5 pt-4 pb-2">
                 <span className="text-xs font-medium text-muted-foreground tracking-wide">
-                  Langkah {currentStep + 1} dari {totalSteps}
+                  {t("translation:guide.dashboard.step", {
+                    current: currentStep + 1,
+                    total: totalSteps
+                  })}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={toggleMinimized}
                     className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title="Minimalkan">
+                    title={t("translation:guide.dashboard.minimize")}>
                     <ChevronDown size={16} />
                   </button>
                   <button
                     onClick={handleFinish}
                     className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title="Tutup">
+                    title={t("translation:guide.dashboard.close")}>
                     <X size={16} />
                   </button>
                 </div>
@@ -258,10 +263,10 @@ const SuperAdminTour = () => {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-base leading-tight mb-1.5 text-foreground">
-                        {step.title}
+                        {t(`translation:${step.titleKey}`)}
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        {step.description}
+                        {t(`translation:${step.descKey}`)}
                       </p>
                     </div>
                   </div>
@@ -277,16 +282,16 @@ const SuperAdminTour = () => {
                   onClick={handlePrev}
                   className="gap-1 text-xs">
                   <ChevronLeft size={14} />
-                  Sebelumnya
+                  {t("translation:guide.dashboard.prev")}
                 </Button>
 
                 {isLast ? (
                   <Button size="sm" onClick={handleFinish} className="gap-1 text-xs">
-                    Selesai
+                    {t("translation:guide.dashboard.finish")}
                   </Button>
                 ) : (
                   <Button size="sm" onClick={handleNext} className="gap-1 text-xs">
-                    {step.action || "Lanjut"}
+                    {t(`translation:${step.actionKey}`)}
                     <ChevronRight size={14} />
                   </Button>
                 )}

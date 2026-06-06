@@ -47,6 +47,7 @@ const pages = [
   { path: "/store-geospatial", label: "Peta Toko", keywords: "peta toko geospatial map" },
   { path: "/user-list", label: "Admin", keywords: "admin user pengguna" },
   { path: "/add-user", label: "Tambah Admin", keywords: "tambah admin add user" },
+  { path: "/support", label: "Support", keywords: "support bantuan help faq kontak cs" },
   { path: "/role-management", label: "Role Management", keywords: "role hak akses permission" },
   { path: "/add-role", label: "Tambah Role", keywords: "tambah role add" },
   { path: "/invoice-page", label: "Pengaturan Invoice", keywords: "invoice struk pengaturan" },

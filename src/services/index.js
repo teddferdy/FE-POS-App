@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err instanceof AxiosError) {
-      if (err.response?.status === 401 && !err.config?.url?.includes("/auth/login")) {
+      if (err.response?.status === 401 && getToken()) {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         if (authExpiredCallback) {
           authExpiredCallback();

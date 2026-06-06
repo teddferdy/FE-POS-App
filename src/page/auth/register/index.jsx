@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,9 +14,10 @@ import {
   User,
   MapPin,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "sonner";
 
@@ -34,15 +35,28 @@ import AuthGuideModal from "@/components/organism/AuthGuideModal";
 const RegisterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(
+    location.state?.openGuide && location.state?.guideContext === "register"
+  );
   const { translation, updateTranslation } = translationSelect();
 
-  const { data: locationsData } = useQuery({
+  useEffect(() => {
+    if (location.state?.openGuide) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
+
+  const {
+    data: locationsData,
+    isLoading,
+    isError
+  } = useQuery({
     queryKey: ["getAllLocation"],
     queryFn: getAllLocation
   });
@@ -53,6 +67,8 @@ const RegisterPage = () => {
     if (locationsData?.data && Array.isArray(locationsData.data)) return locationsData.data;
     return [];
   }, [locationsData]);
+
+  const noLocationsAvailable = !isLoading && locations.length === 0;
 
   const translationMemo = useMemo(
     () => ({
@@ -120,16 +136,16 @@ const RegisterPage = () => {
   });
 
   const mutateRegister = useMutation(register, {
-    onMutate: () => setIsLoading(true),
+    onMutate: () => setIsSubmitting(true),
     onSuccess: () => {
-      setIsLoading(false);
+      setIsSubmitting(false);
       toast.success("Success", {
         description: "Account created successfully"
       });
       setTimeout(() => navigate("/"), 1500);
     },
     onError: (err) => {
-      setIsLoading(false);
+      setIsSubmitting(false);
       toast.error("Failed", {
         description: err.message
       });
@@ -204,6 +220,7 @@ const RegisterPage = () => {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit((values) => {
+                    setIsSubmitting(true);
                     const { confirmPassword, ...payload } = values;
                     mutateRegister.mutate(payload);
                   })}
@@ -212,7 +229,7 @@ const RegisterPage = () => {
                     control={form.control}
                     name="userName"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-tour="auth-username">
                         <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                           {translationMemo.userName}
                         </FormLabel>
@@ -258,7 +275,7 @@ const RegisterPage = () => {
                     control={form.control}
                     name="location"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-tour="auth-location">
                         <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                           {translationMemo.location}
                         </FormLabel>
@@ -287,7 +304,26 @@ const RegisterPage = () => {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                  {noLocationsAvailable && (
+                    <div className="bg-warning/50 border border-warning/20 rounded-lg p-4 mt-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          <AlertTriangle className="h-5 w-5 text-warning" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-warning">Belum Ada Lokasi Toko</h3>
+                          <p className="text-sm text-warning/80">
+                            Belum ada lokasi toko yang tersedia. Silakan hubungi administrator untuk
+                            menambahkan lokasi toko terlebih dahulu sebelum dapat mendaftar.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    data-tour="auth-password"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                     <FormField
                       control={form.control}
                       name="password"
@@ -360,6 +396,8 @@ const RegisterPage = () => {
                   <div className="pt-sm">
                     <Button
                       type="submit"
+                      data-tour="auth-submit"
+                      disabled={noLocationsAvailable}
                       className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
                       {translationMemo.btnCreateAcc}
                     </Button>

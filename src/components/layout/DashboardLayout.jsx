@@ -9,6 +9,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import CommandPalette from "./CommandPalette";
 import { TipsCard } from "@/components/ui/tips-card";
+import FloatingTourButton from "@/components/organism/FloatingTourButton";
 
 const tipsKeys = {
   "/product-list": ["tips.product", "tips.product2", "tips.product3"],
@@ -136,6 +137,9 @@ const DashboardLayout = ({ children }) => {
 
       {/* Command Palette - above everything */}
       <CommandPalette open={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+
+      {/* Floating Tour Button - super_admin only */}
+      <FloatingTourButton />
     </div>
   );
 };

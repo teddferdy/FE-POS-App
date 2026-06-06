@@ -266,22 +266,27 @@ const ProductList = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.product.list.description")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button data-tour="product-import" variant="outline" className="gap-2">
             <Upload size={16} />
             {t("page.product.button.import")}
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button data-tour="product-export" variant="outline" className="gap-2">
             <Download size={16} />
             {t("page.product.button.export")}
           </Button>
-          <Button onClick={() => navigate("/add-product")} className="gap-2">
+          <Button
+            data-tour="product-add"
+            onClick={() => navigate("/add-product")}
+            className="gap-2">
             <Plus size={18} />
             {t("page.product.button.add")}
           </Button>
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+      <div
+        data-tour="product-search"
+        className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
         <div className="flex-1 w-full relative">
           <Search
             size={16}
@@ -318,19 +323,21 @@ const ProductList = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredProducts}
-        isLoading={isLoading}
-        emptyMessage={t("page.product.list.empty")}
-        emptyIcon={Package}
-        pagination={{
-          page,
-          totalPages,
-          total,
-          onPageChange: setPage
-        }}
-      />
+      <div data-tour="product-table">
+        <DataTable
+          columns={columns}
+          data={filteredProducts}
+          isLoading={isLoading}
+          emptyMessage={t("page.product.list.empty")}
+          emptyIcon={Package}
+          pagination={{
+            page,
+            totalPages,
+            total,
+            onPageChange: setPage
+          }}
+        />
+      </div>
 
       <Modal
         type="confirm"

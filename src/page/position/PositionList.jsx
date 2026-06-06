@@ -157,6 +157,7 @@ const PositionList = () => {
         title={t("page.position.list.title")}
         description={t("page.position.list.description")}>
         <Button
+          data-tour="position-download-template"
           variant="outline"
           disabled={isDownloadingTemplate}
           onClick={async () => {
@@ -191,6 +192,7 @@ const PositionList = () => {
             : t("page.position.button.downloadTemplate")}
         </Button>
         <Button
+          data-tour="position-download-data"
           variant="outline"
           disabled={isDownloadingData}
           onClick={async () => {
@@ -219,18 +221,27 @@ const PositionList = () => {
           {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
-        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+        <Button
+          data-tour="position-upload"
+          variant="default"
+          onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.position.button.uploadExcel")}
         </Button>
-        <Button variant="default" onClick={() => navigate("/add-position")} className="shadow-md">
+        <Button
+          data-tour="position-add"
+          variant="default"
+          onClick={() => navigate("/add-position")}
+          className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.position.button.add")}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+        <div
+          data-tour="position-stat-total"
+          className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.position.stats.total")}
@@ -249,7 +260,9 @@ const PositionList = () => {
             </span>
           </div>
         </div>
-        <div className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+        <div
+          data-tour="position-stat-active"
+          className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.position.stats.active")}
@@ -269,7 +282,9 @@ const PositionList = () => {
             </span>
           </div>
         </div>
-        <div className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
+        <div
+          data-tour="position-stat-inactive"
+          className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               {t("page.position.stats.inactive")}
@@ -290,45 +305,48 @@ const PositionList = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={positions}
-        isLoading={isLoading}
-        emptyMessage={t("page.position.list.empty")}
-        toolbar={
-          <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {t("page.position.list.show")}:
-              </span>
-              <select
-                value={limit}
-                className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
-                <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
-                <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
-              </select>
+      <div data-tour="position-table">
+        <DataTable
+          columns={columns}
+          data={positions}
+          isLoading={isLoading}
+          emptyMessage={t("page.position.list.empty")}
+          toolbar={
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {t("page.position.list.show")}:
+                </span>
+                <select
+                  value={limit}
+                  className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                  <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
+                  <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
+                  <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
+                </select>
+              </div>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                  search
+                </span>
+                <input
+                  data-tour="position-search"
+                  placeholder={t("page.position.list.search")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
             </div>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                search
-              </span>
-              <input
-                placeholder={t("page.position.list.search")}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              />
-            </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-        rowClassName={() => "group"}
-        onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
-      />
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => "group"}
+          onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
+        />
+      </div>
 
       <Modal
         type="confirm"

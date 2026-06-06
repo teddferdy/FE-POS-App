@@ -189,7 +189,7 @@ const MemberList = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div data-tour="page-member" className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
@@ -205,6 +205,7 @@ const MemberList = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.member.list.description")}</p>
         </div>
         <Button
+          data-tour="member-add"
           onClick={() => navigate("/add-member")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">person_add</span>
@@ -212,7 +213,9 @@ const MemberList = () => {
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+      <div
+        data-tour="member-search"
+        className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
         {tiers.length === 0 ? (
           <div className="flex items-center gap-3 w-full">
             <PackageOpen size={20} className="text-muted-foreground" />
@@ -277,11 +280,12 @@ const MemberList = () => {
         )}
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredMembers}
-        isLoading={isLoading}
-        emptyMessage={t("page.member.list.empty")}
+      <div data-tour="member-table">
+        <DataTable
+          columns={columns}
+          data={filteredMembers}
+          isLoading={isLoading}
+          emptyMessage={t("page.member.list.empty")}
         toolbar={
           <div className="flex items-center justify-between w-full">
             <h4 className="text-base font-semibold text-foreground">
@@ -306,6 +310,7 @@ const MemberList = () => {
         pagination={{ page, totalPages, total, onPageChange: setPage }}
         rowClassName={() => "group"}
       />
+      </div>
 
       <Modal
         type="confirm"

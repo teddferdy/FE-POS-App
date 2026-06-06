@@ -156,7 +156,7 @@ const UserDropdown = () => {
   };
 
   return (
-    <div className="relative" ref={ref}>
+    <div data-tour="header-user" className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
         className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-[10px] sm:text-xs font-bold shrink-0 hover:brightness-90 transition-all">
@@ -210,6 +210,7 @@ const NotificationBell = () => {
 
   return (
     <button
+      data-tour="header-notification"
       onClick={() => navigate("/notification")}
       className="relative p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
       <Bell size={16} className="sm:size-[18px]" />
@@ -253,6 +254,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const { t } = useTranslation();
   const [cookie, setCookie] = useCookies();
   const { translation, updateTranslation } = translationSelect();
+  const navigate = useNavigate();
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { startTour } = useTourStore();
@@ -282,6 +284,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             <h1 className="text-lg font-bold text-foreground hidden sm:block">SwiftPOS Admin</h1>
           </div>
           <button
+            data-tour="header-search"
             onClick={onOpenPalette}
             className="hidden md:flex items-center gap-2 bg-muted/50 hover:bg-accent px-3 py-1.5 rounded-lg lg:rounded-full border border-border transition-colors text-muted-foreground text-sm">
             <Search size={14} className="lg:size-[16px] shrink-0" />
@@ -304,7 +307,9 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
           </button>
 
           {/* Language Switcher */}
-          <div className="flex items-center bg-muted/50 rounded-full p-0.5 border border-border">
+          <div
+            data-tour="header-translation"
+            className="flex items-center bg-muted/50 rounded-full p-0.5 border border-border">
             {languages.map((lang) => (
               <button
                 key={lang.code}
@@ -321,6 +326,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
 
           {/* Theme Toggle */}
           <button
+            data-tour="header-theme"
             onClick={toggleTheme}
             className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Sun size={16} className="hidden dark:block sm:size-[18px]" />
@@ -329,9 +335,10 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
 
           {/* Tour Guide */}
           <button
-            onClick={startTour}
+            data-tour="header-tour"
+            onClick={() => startTour()}
             className="p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            title="Panduan Super Admin">
+            title={t("guide.dashboard.startTour")}>
             <LifeBuoy size={16} className="sm:size-[18px]" />
           </button>
 

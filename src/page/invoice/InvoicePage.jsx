@@ -370,7 +370,7 @@ const InvoicePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div data-tour="invoice-logo" className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-5">
               <Image size={18} className="text-primary" />
               <h3 className="text-base font-semibold">Logo & Header</h3>
@@ -440,7 +440,7 @@ const InvoicePage = () => {
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div data-tour="invoice-address" className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <MapPin size={18} className="text-primary" />
@@ -481,7 +481,7 @@ const InvoicePage = () => {
             )}
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div data-tour="invoice-footer" className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <ShoppingCart size={18} className="text-primary" />
@@ -508,6 +508,7 @@ const InvoicePage = () => {
           </div>
 
           <Button
+            data-tour="invoice-save"
             onClick={handleSaveSettings}
             disabled={isSaving}
             className="w-full gap-2"
@@ -518,7 +519,9 @@ const InvoicePage = () => {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-xl border border-border p-5 sticky top-24">
+          <div
+            data-tour="invoice-preview"
+            className="bg-card rounded-xl border border-border p-5 sticky top-24">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">visibility</span>

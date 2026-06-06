@@ -64,6 +64,7 @@ const RoleManagement = () => {
           </p>
         </div>
         <Button
+          data-tour="role-add"
           onClick={() => navigate("/add-role")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <Plus size={18} />
@@ -71,7 +72,9 @@ const RoleManagement = () => {
         </Button>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+      <div
+        data-tour="role-table"
+        className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
           <h4 className="text-base font-semibold text-foreground">Daftar Role</h4>
         </div>

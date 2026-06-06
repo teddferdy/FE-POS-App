@@ -188,6 +188,7 @@ const EmployeeList = () => {
         title={t("page.employee.list.title")}
         description={t("page.employee.list.description")}>
         <Button
+          data-tour="employee-add"
           onClick={() => navigate("/add-employee")}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-lg">person_add</span>
@@ -196,7 +197,9 @@ const EmployeeList = () => {
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="employee-stat-total"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.employee.table.total")}
@@ -211,7 +214,9 @@ const EmployeeList = () => {
             <span className="material-symbols-outlined text-3xl">groups</span>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="employee-stat-active"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.employee.table.active")}
@@ -229,7 +234,9 @@ const EmployeeList = () => {
             <span className="material-symbols-outlined text-3xl">how_to_reg</span>
           </div>
         </div>
-        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+        <div
+          data-tour="employee-stat-inactive"
+          className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               {t("page.employee.table.inactive")}
@@ -246,68 +253,70 @@ const EmployeeList = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={employees}
-        isLoading={isLoading}
-        emptyMessage="Tidak ada karyawan ditemukan"
-        toolbar={
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex flex-wrap gap-4 items-center flex-grow">
-              <div className="relative min-w-[260px]">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                  search
-                </span>
-                <Input
-                  placeholder="Cari nama, ID, atau email..."
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-9 h-9 w-full text-sm"
-                />
+      <div data-tour="employee-table">
+        <DataTable
+          columns={columns}
+          data={employees}
+          isLoading={isLoading}
+          emptyMessage="Tidak ada karyawan ditemukan"
+          toolbar={
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex flex-wrap gap-4 items-center flex-grow">
+                <div className="relative min-w-[260px]">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                    search
+                  </span>
+                  <Input
+                    placeholder="Cari nama, ID, atau email..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-9 h-9 w-full text-sm"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <select
+                    value={locationFilter}
+                    onChange={(e) => {
+                      setLocationFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="">Semua Toko/Cabang</option>
+                    {locationData?.map((loc) => (
+                      <option key={loc.id} value={loc.id.replace("loc-", "")}>
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={positionFilter}
+                    onChange={(e) => {
+                      setPositionFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="">Semua Jabatan</option>
+                    <option value="manager">Manager</option>
+                    <option value="kasir">Kasir</option>
+                    <option value="admin">Admin</option>
+                    <option value="staff">Staff</option>
+                    <option value="supervisor">Supervisor</option>
+                  </select>
+                </div>
               </div>
-              <div className="flex gap-3">
-                <select
-                  value={locationFilter}
-                  onChange={(e) => {
-                    setLocationFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="">Semua Toko/Cabang</option>
-                  {locationData?.map((loc) => (
-                    <option key={loc.id} value={loc.id.replace("loc-", "")}>
-                      {loc.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={positionFilter}
-                  onChange={(e) => {
-                    setPositionFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="">Semua Jabatan</option>
-                  <option value="manager">Manager</option>
-                  <option value="kasir">Kasir</option>
-                  <option value="admin">Admin</option>
-                  <option value="staff">Staff</option>
-                  <option value="supervisor">Supervisor</option>
-                </select>
-              </div>
+              <Button variant="outline" size="sm" className="gap-2 h-9">
+                <span className="material-symbols-outlined text-base">tune</span>
+                Advanced Filters
+              </Button>
             </div>
-            <Button variant="outline" size="sm" className="gap-2 h-9">
-              <span className="material-symbols-outlined text-base">tune</span>
-              Advanced Filters
-            </Button>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-        rowClassName={() => "group"}
-      />
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => "group"}
+        />
+      </div>
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

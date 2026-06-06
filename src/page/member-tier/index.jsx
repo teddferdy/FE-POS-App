@@ -206,6 +206,7 @@ const MemberTier = () => {
               </p>
             </div>
             <Button
+              data-tour="tier-add"
               onClick={() => navigate("/add-member-tier")}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
               <Plus size={18} />
@@ -214,7 +215,9 @@ const MemberTier = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div
+              data-tour="tier-stat-active"
+              className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                   <Award size={24} />
@@ -234,7 +237,9 @@ const MemberTier = () => {
                 <div className="h-full bg-primary w-2/3" />
               </div>
             </div>
-            <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div
+              data-tour="tier-stat-members"
+              className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
                 <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
                   <Users size={24} />
@@ -251,7 +256,9 @@ const MemberTier = () => {
                 {t("page.memberTier.list.acrossTiers")}
               </p>
             </div>
-            <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div
+              data-tour="tier-stat-growth"
+              className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
                 <div className="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
                   <TrendingUp size={24} />
@@ -280,43 +287,46 @@ const MemberTier = () => {
               </Button>
             </div>
           ) : (
-            <DataTable
-              columns={columns}
-              data={paginatedTiers}
-              isLoading={isLoading}
-              rowClassName={() => "group"}
-              toolbar={
-                <div className="flex items-center justify-between w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.memberTier.list.tableTitle")}
-                  </h4>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                      search
-                    </span>
-                    <Input
-                      placeholder={t("common.search")}
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className="pl-9 h-9 w-72 text-sm"
-                    />
+            <div data-tour="tier-table">
+              <DataTable
+                columns={columns}
+                data={paginatedTiers}
+                isLoading={isLoading}
+                rowClassName={() => "group"}
+                toolbar={
+                  <div className="flex items-center justify-between w-full">
+                    <h4 className="text-base font-semibold text-foreground">
+                      {t("page.memberTier.list.tableTitle")}
+                    </h4>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                        search
+                      </span>
+                      <Input
+                        data-tour="tier-search"
+                        placeholder={t("common.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="pl-9 h-9 w-72 text-sm"
+                      />
+                    </div>
                   </div>
-                </div>
-              }
-              pagination={{
-                page: currentPage,
-                totalPages,
-                total: filteredTiers.length,
-                onPageChange: setCurrentPage,
-                showingText: `${t("page.memberTier.list.showing", {
-                  count: paginatedTiers.length,
-                  total: filteredTiers.length
-                })}`
-              }}
-            />
+                }
+                pagination={{
+                  page: currentPage,
+                  totalPages,
+                  total: filteredTiers.length,
+                  onPageChange: setCurrentPage,
+                  showingText: `${t("page.memberTier.list.showing", {
+                    count: paginatedTiers.length,
+                    total: filteredTiers.length
+                  })}`
+                }}
+              />
+            </div>
           )}
         </div>
       )}

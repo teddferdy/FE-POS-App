@@ -228,10 +228,17 @@ const EditRole = () => {
           <Button variant="outline" onClick={() => setCancelModal(true)}>
             {t("common.cancel")}
           </Button>
-          <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+          <Button
+            data-tour="role-save-draft"
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={isSubmitting}>
             Simpan sebagai Draft
           </Button>
-          <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
+          <Button
+            data-tour="role-save"
+            onClick={(e) => handleSubmit(e, false)}
+            disabled={isSubmitting}>
             Simpan Perubahan
           </Button>
         </div>
@@ -250,6 +257,7 @@ const EditRole = () => {
                   Nama Role <span className="text-destructive">*</span>
                 </label>
                 <input
+                  data-tour="role-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
@@ -261,6 +269,7 @@ const EditRole = () => {
                   Deskripsi Role
                 </label>
                 <textarea
+                  data-tour="role-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
@@ -282,7 +291,9 @@ const EditRole = () => {
         </div>
 
         <div className="col-span-12 lg:col-span-8">
-          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+          <div
+            data-tour="role-permissions-matrix"
+            className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
             <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">rule</span>

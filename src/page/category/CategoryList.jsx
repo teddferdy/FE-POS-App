@@ -129,6 +129,7 @@ const CategoryList = () => {
 
   const stats = [
     {
+      dataTour: "category-stat-total",
       icon: "category",
       label: t("page.category.list.statsTotal"),
       value: statsTotal,
@@ -137,6 +138,7 @@ const CategoryList = () => {
       iconColor: "text-primary"
     },
     {
+      dataTour: "category-stat-active",
       icon: "check_circle",
       label: t("page.category.list.statsActive"),
       value: activeCount,
@@ -145,6 +147,7 @@ const CategoryList = () => {
       iconColor: "text-green-700 dark:text-green-300"
     },
     {
+      dataTour: "category-stat-inactive",
       icon: "cancel",
       label: t("page.category.list.statsInactive"),
       value: inactiveCount,
@@ -267,12 +270,13 @@ const CategoryList = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div data-tour="page-category" className="space-y-8">
       <PageHeader
         breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
         title={t("page.category.list.title")}
         description={t("page.category.list.description")}>
         <Button
+          data-tour="category-download-template"
           variant="outline"
           disabled={isDownloadingTemplate}
           onClick={async () => {
@@ -303,6 +307,7 @@ const CategoryList = () => {
             : t("page.category.button.downloadTemplate")}
         </Button>
         <Button
+          data-tour="category-download-data"
           variant="outline"
           disabled={isDownloadingData}
           onClick={async () => {
@@ -331,11 +336,17 @@ const CategoryList = () => {
             : t("page.category.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
-        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+        <Button
+          data-tour="category-upload"
+          variant="default"
+          onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.category.button.upload")}
         </Button>
-        <Button onClick={() => navigate("/add-category")} className="shadow-md">
+        <Button
+          data-tour="category-add"
+          onClick={() => navigate("/add-category")}
+          className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.category.button.add")}
         </Button>
@@ -345,6 +356,7 @@ const CategoryList = () => {
         {stats.map((stat) => (
           <div
             key={stat.label}
+            data-tour={stat.dataTour}
             className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
             <div className="flex justify-between items-start w-full mb-4">
               <div
@@ -370,11 +382,12 @@ const CategoryList = () => {
         ))}
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        isLoading={isLoading}
-        emptyMessage={t("page.category.list.empty")}
+      <div data-tour="category-table">
+        <DataTable
+          columns={columns}
+          data={filtered}
+          isLoading={isLoading}
+          emptyMessage={t("page.category.list.empty")}
         toolbar={
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
             <h4 className="text-base font-semibold text-foreground">
@@ -420,6 +433,7 @@ const CategoryList = () => {
         pagination={{ page, totalPages, total, onPageChange: setPage }}
         rowClassName={() => "group"}
       />
+      </div>
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

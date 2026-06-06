@@ -1,7 +1,7 @@
 import { axiosInstance } from ".";
 
 export const getAllLocation = async () => {
-  const { data, status } = await axiosInstance.get("/location/get-location");
+  const { data, status } = await axiosInstance.get("/location/get-location-public");
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

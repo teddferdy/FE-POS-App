@@ -130,22 +130,25 @@ const PriceListTemplateList = () => {
             {t("page.priceListTemplate.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-price-list-template")} className="gap-2">
+        <Button
+          data-tour="pricelist-add"
+          onClick={() => navigate("/add-price-list-template")}
+          className="gap-2">
           <Plus size={18} />
           {t("page.priceListTemplate.button.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
+        <Card data-tour="pricelist-stat-total" className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.priceListTemplate.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="pricelist-stat-active" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="pricelist-stat-inactive" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
@@ -157,6 +160,7 @@ const PriceListTemplateList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
+          data-tour="pricelist-search"
           placeholder={t("page.priceListTemplate.list.search")}
           value={search}
           onChange={(e) => {
@@ -167,14 +171,16 @@ const PriceListTemplateList = () => {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={items}
-        isLoading={isLoading}
-        emptyMessage={t("page.priceListTemplate.list.empty")}
-        emptyIcon={TrendingUp}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+      <div data-tour="pricelist-table">
+        <DataTable
+          columns={columns}
+          data={items}
+          isLoading={isLoading}
+          emptyMessage={t("page.priceListTemplate.list.empty")}
+          emptyIcon={TrendingUp}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+        />
+      </div>
 
       <Modal
         type="confirm"

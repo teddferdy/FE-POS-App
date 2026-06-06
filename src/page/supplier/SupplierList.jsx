@@ -122,7 +122,7 @@ const SupplierList = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div data-tour="page-supplier" className="space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -142,7 +142,10 @@ const SupplierList = () => {
             {t("page.supplier.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-supplier")} className="gap-2">
+        <Button
+          data-tour="supplier-add"
+          onClick={() => navigate("/add-supplier")}
+          className="gap-2">
           <Plus size={18} />
           {t("page.supplier.button.add")}
         </Button>
@@ -150,22 +153,22 @@ const SupplierList = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
+        <Card data-tour="supplier-stat-total" className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.supplier.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="supplier-stat-active" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="supplier-stat-inactive" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
       </div>
 
       {/* Search */}
-      <div className="relative w-full sm:w-72">
+      <div data-tour="supplier-search" className="relative w-full sm:w-72">
         <Search
           size={16}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -181,14 +184,16 @@ const SupplierList = () => {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={suppliers}
-        isLoading={isLoading}
-        emptyMessage={t("page.supplier.list.empty")}
-        emptyIcon={Building2}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+      <div data-tour="supplier-table">
+        <DataTable
+          columns={columns}
+          data={suppliers}
+          isLoading={isLoading}
+          emptyMessage={t("page.supplier.list.empty")}
+          emptyIcon={Building2}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+        />
+      </div>
 
       <Modal
         type="confirm"

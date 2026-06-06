@@ -200,14 +200,19 @@ const LocationList = () => {
         ]}
         title={t("page.location.list.title")}
         description={t("page.location.list.description")}>
-        <Button onClick={() => navigate("/add-location")} className="shrink-0">
+        <Button
+          data-tour="location-add"
+          onClick={() => navigate("/add-location")}
+          className="shrink-0">
           <Plus size={18} />
           {t("breadcrumb.add")}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="location-stat-total"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.location.stats.total")}
@@ -224,7 +229,9 @@ const LocationList = () => {
             <span className="material-symbols-outlined text-3xl">store</span>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="location-stat-active"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.location.stats.active")}
@@ -244,7 +251,9 @@ const LocationList = () => {
             <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
         </div>
-        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+        <div
+          data-tour="location-stat-inactive"
+          className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               {t("page.location.stats.inactive")}
@@ -261,7 +270,9 @@ const LocationList = () => {
             <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="location-stat-cities"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.location.stats.cities")}
@@ -280,11 +291,12 @@ const LocationList = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredLocations}
-        isLoading={isLoading}
-        emptyMessage={t("page.location.list.empty")}
+      <div data-tour="location-table">
+        <DataTable
+          columns={columns}
+          data={filteredLocations}
+          isLoading={isLoading}
+          emptyMessage={t("page.location.list.empty")}
         toolbar={
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 w-full">
@@ -355,6 +367,7 @@ const LocationList = () => {
           onPageChange: setPage
         }}
       />
+      </div>
 
       {/* Map Preview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

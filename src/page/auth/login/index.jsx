@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Eye, EyeOff, Moon, Sun, Mail, Lock, ArrowRight, HelpCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -24,12 +24,21 @@ import AuthGuideModal from "@/components/organism/AuthGuideModal";
 const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [_, setCookie] = useCookies();
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(
+    location.state?.openGuide && location.state?.guideContext === "login"
+  );
   const { translation, updateTranslation } = translationSelect();
+
+  useEffect(() => {
+    if (location.state?.openGuide) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const translationMemo = useMemo(
     () => ({
@@ -209,7 +218,7 @@ const LoginPage = () => {
                   control={form.control}
                   name="userName"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-tour="auth-username">
                       <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                         {translationMemo.userName}
                       </FormLabel>
@@ -232,7 +241,7 @@ const LoginPage = () => {
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-tour="auth-password">
                       <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
                         {translationMemo.password}
                       </FormLabel>
@@ -262,7 +271,9 @@ const LoginPage = () => {
                   )}
                 />
 
-                <div className="flex items-center justify-between flex-wrap gap-3">
+                <div
+                  data-tour="auth-options"
+                  className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="remember-me"
@@ -285,6 +296,7 @@ const LoginPage = () => {
 
                 <Button
                   type="submit"
+                  data-tour="auth-submit"
                   className="w-full bg-foreground text-background hover:bg-foreground/90 py-3.5 md:py-4 px-lg rounded-xl font-semibold text-sm md:text-base shadow-sm hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3">
                   <span>{translationMemo.btnLogin}</span>
                   <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />

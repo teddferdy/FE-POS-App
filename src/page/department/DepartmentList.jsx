@@ -185,6 +185,7 @@ const DepartmentList = () => {
         title={t("page.department.list.title")}
         description={t("page.department.list.description")}>
         <Button
+          data-tour="department-download-template"
           variant="outline"
           disabled={isDownloadingTemplate}
           onClick={async () => {
@@ -215,6 +216,7 @@ const DepartmentList = () => {
             : t("page.department.button.downloadTemplate")}
         </Button>
         <Button
+          data-tour="department-download-data"
           variant="outline"
           disabled={isDownloadingData}
           onClick={async () => {
@@ -245,18 +247,27 @@ const DepartmentList = () => {
             : t("page.department.button.downloadData")}
         </Button>
         <span className="w-px h-7 bg-border mx-1" />
-        <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+        <Button
+          data-tour="department-upload"
+          variant="default"
+          onClick={() => setUploadModalOpen(true)}>
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.department.button.upload")}
         </Button>
-        <Button variant="default" onClick={() => navigate("/add-department")} className="shadow-md">
+        <Button
+          data-tour="department-add"
+          variant="default"
+          onClick={() => navigate("/add-department")}
+          className="shadow-md">
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.department.button.add")}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="department-stat-total"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.department.list.statsTotal")}
@@ -273,7 +284,9 @@ const DepartmentList = () => {
             <span className="material-symbols-outlined text-3xl">domain</span>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="department-stat-active"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.department.list.statsActive")}
@@ -293,7 +306,9 @@ const DepartmentList = () => {
             <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
         </div>
-        <div className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+        <div
+          data-tour="department-stat-inactive"
+          className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
             <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
               {t("page.department.list.statsInactive")}
@@ -310,7 +325,9 @@ const DepartmentList = () => {
             <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+        <div
+          data-tour="department-stat-nodesc"
+          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               {t("page.department.list.statsNoDesc")}
@@ -332,44 +349,47 @@ const DepartmentList = () => {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={departments}
-        isLoading={isLoading}
-        emptyMessage={t("page.department.list.empty")}
-        toolbar={
-          <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {t("page.department.list.showLabel")}
-              </span>
-              <select
-                value={limit}
-                className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                <option value={10}>{t("page.department.list.show10")}</option>
-                <option value={25}>{t("page.department.list.show25")}</option>
-                <option value={50}>{t("page.department.list.show50")}</option>
-              </select>
+      <div data-tour="department-table">
+        <DataTable
+          columns={columns}
+          data={departments}
+          isLoading={isLoading}
+          emptyMessage={t("page.department.list.empty")}
+          toolbar={
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {t("page.department.list.showLabel")}
+                </span>
+                <select
+                  value={limit}
+                  className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                  <option value={10}>{t("page.department.list.show10")}</option>
+                  <option value={25}>{t("page.department.list.show25")}</option>
+                  <option value={50}>{t("page.department.list.show50")}</option>
+                </select>
+              </div>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                  search
+                </span>
+                <input
+                  data-tour="department-search"
+                  placeholder={t("page.department.list.search")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
             </div>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                search
-              </span>
-              <input
-                placeholder={t("page.department.list.search")}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              />
-            </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-        rowClassName={() => "group"}
-      />
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => "group"}
+        />
+      </div>
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">

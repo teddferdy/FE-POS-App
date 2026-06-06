@@ -129,22 +129,22 @@ const TaxConfigList = () => {
             {t("page.taxConfig.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-tax")} className="gap-2">
+        <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2">
           <Plus size={18} />
           {t("page.taxConfig.button.add")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
+        <Card data-tour="tax-stat-total" className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="tax-stat-active" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
         </Card>
-        <Card className="p-5">
+        <Card data-tour="tax-stat-inactive" className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
@@ -156,6 +156,7 @@ const TaxConfigList = () => {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
+          data-tour="tax-search"
           placeholder={t("page.taxConfig.list.search")}
           value={search}
           onChange={(e) => {
@@ -166,14 +167,16 @@ const TaxConfigList = () => {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={items}
-        isLoading={isLoading}
-        emptyMessage={t("page.taxConfig.list.empty")}
-        emptyIcon={Percent}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+      <div data-tour="tax-table">
+        <DataTable
+          columns={columns}
+          data={items}
+          isLoading={isLoading}
+          emptyMessage={t("page.taxConfig.list.empty")}
+          emptyIcon={Percent}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+        />
+      </div>
 
       <Modal
         type="confirm"

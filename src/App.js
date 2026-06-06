@@ -139,6 +139,8 @@ import ExpenseList from "./page/expense/ExpenseList";
 import AddExpense from "./page/expense/AddExpense";
 import EditExpense from "./page/expense/EditExpense";
 
+import Support from "./page/support";
+
 import Modal from "@/components/organism/modal";
 
 function App() {
@@ -280,6 +282,8 @@ function App() {
           <Route path="/expense" element={withLayout(<ExpenseList />)} />
           <Route path="/add-expense" element={withLayout(<AddExpense />)} />
           <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
+
+          <Route path="/support" element={withLayout(<Support />)} />
 
           <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
           <Route path="/best-selling" element={withLayout(<GlobalReport />)} />
