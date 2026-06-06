@@ -245,19 +245,17 @@ const EditSupplier = () => {
           </div>
         </Card>
 
-        <Card className="p-6 bg-blue-50/50 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800">
-          <div className="flex gap-3">
-            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-base mt-0.5">info</span>
-            <div>
-              <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
-                {t("page.supplier.form.tipsTitle")}
-              </h4>
-              <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                {t("page.supplier.form.tipsContent")}
-              </p>
-            </div>
+        <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
+          <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+          <div>
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+              {t("page.supplier.form.tipsTitle")}
+            </h4>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.supplier.form.tipsContent")}
+            </p>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
