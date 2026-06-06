@@ -255,6 +255,7 @@ const AddSupplier = () => {
           onSubmit(values, true);
         }}
       />
+    </div>
   );
 };
 
