@@ -102,7 +102,7 @@ const EditDiscount = () => {
     updateMutation.mutate({
       id,
       ...values,
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
+      status: saveAsDraft ? false : !!values.isActive
     });
   };
 

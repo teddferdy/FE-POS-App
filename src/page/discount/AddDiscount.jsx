@@ -69,7 +69,7 @@ const AddDiscount = () => {
   const onSubmit = (values, saveAsDraft = false) => {
     createMutation.mutate({
       ...values,
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
+      status: saveAsDraft ? false : !!values.isActive
     });
   };
 
