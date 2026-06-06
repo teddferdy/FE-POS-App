@@ -1614,6 +1614,8 @@
   "page.supplier.form.status": "Status Supplier",
 "page.supplier.form.activeDescription": "Supplier ini aktif dan dapat digunakan.",
 "page.supplier.form.inactiveDescription": "Supplier ini tidak aktif.",
+"page.supplier.form.tipsTitle": "Tips Mengelola Supplier",
+"page.supplier.form.tipsContent": "Pastikan data kontak supplier selalu terbarui agar memudahkan komunikasi dan proses pengadaan barang.",
 "page.supplier.form.contactPersonPlaceholder": "Masukkan nama kontak person",
   "page.supplier.form.phone": "Nomor Telepon",
   "page.supplier.form.phonePlaceholder": "Masukkan nomor telepon",

@@ -1614,6 +1614,8 @@
   "page.supplier.form.status": "Supplier Status",
 "page.supplier.form.activeDescription": "This supplier is active and can be used.",
 "page.supplier.form.inactiveDescription": "This supplier is inactive.",
+"page.supplier.form.tipsTitle": "Tips for Managing Suppliers",
+"page.supplier.form.tipsContent": "Keep supplier contact data up to date to facilitate communication and procurement processes.",
 "page.supplier.form.contactPersonPlaceholder": "Enter contact person name",
   "page.supplier.form.phone": "Phone Number",
   "page.supplier.form.phonePlaceholder": "Enter phone number",
