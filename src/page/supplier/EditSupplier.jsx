@@ -167,7 +167,7 @@ const EditSupplier = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("page.supplier.form.phone")}</FormLabel>
-                    <Input placeholder={t("page.supplier.form.phonePlaceholder")} {...field} />
+                    <Input placeholder={t("page.supplier.form.phonePlaceholder")} inputMode="numeric" {...field} onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); field.onChange(v); }} />
                     <FormMessage />
                   </FormItem>
                 )}
