@@ -32,6 +32,12 @@ export const getSupplierById = async (payload) => {
   return data;
 };
 
+export const getSupplierDetail = async (payload) => {
+  const { data, status } = await axiosInstance.get(`/supplier/detail/${payload.id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 const downloadBlob = async (url, filename) => {
   const { data, status } = await axiosInstance.get(url, {
     responseType: "arraybuffer"
