@@ -74,15 +74,14 @@ const UserGuide = ({ guideKey }) => {
   if (!guide) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <BookOpen size={16} />
-          {t("guide.button")}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <div className="p-2">
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-1.5">
+        <BookOpen size={16} />
+        {t("guide.button")}
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-foreground">{t(guide.titleKey)}</h2>
           </div>
@@ -101,9 +100,9 @@ const UserGuide = ({ guideKey }) => {
               </div>
             ))}
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
