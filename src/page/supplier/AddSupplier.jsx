@@ -200,32 +200,29 @@ const AddSupplier = () => {
         </Card>
       </div>
 
-    <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-                <X size={18} />
-                {t("common.cancel")}
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setDraftModal(true)}
-                  disabled={createMutation.isLoading}
-                  className="gap-2">
-                  <Save size={18} />
-                  Simpan sebagai Draft
-                </Button>
-                <Button
-                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                  disabled={createMutation.isLoading}
-                  className="gap-2">
-                  <Save size={18} />
-                  {createMutation.isLoading ? t("common.saving") : t("common.save")}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Form>
-      </Card>
+      <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <X size={18} />
+          {t("common.cancel")}
+        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setDraftModal(true)}
+            disabled={createMutation.isLoading}
+            className="gap-2">
+            <Save size={18} />
+            Simpan sebagai Draft
+          </Button>
+          <Button
+            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+            disabled={createMutation.isLoading}
+            className="gap-2">
+            <Save size={18} />
+            {createMutation.isLoading ? t("common.saving") : t("common.save")}
+          </Button>
+        </div>
+      </div>
 
       <Modal
         type="confirm"
@@ -258,7 +255,6 @@ const AddSupplier = () => {
           onSubmit(values, true);
         }}
       />
-    </div>
   );
 };
 
