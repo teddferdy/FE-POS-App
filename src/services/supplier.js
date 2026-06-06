@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getAllSupplier = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/supplier?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}`
+    `/supplier?page=${payload?.page || 1}&limit=${payload?.limit || 10}&search=${payload?.search || ""}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

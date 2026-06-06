@@ -24,11 +24,9 @@ const SupplierList = () => {
 
   const user = cookie?.user;
   // const role = user?.role || user?.roleType || "";
-  const locationParam = user?.store || "";
-
   const { data, isLoading } = useQuery(
     ["suppliers", page, limit, search],
-    () => getAllSupplier({ location: locationParam, page, limit, search }),
+    () => getAllSupplier({ page, limit, search }),
     { keepPreviousData: true }
   );
 
