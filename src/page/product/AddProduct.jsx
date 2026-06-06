@@ -152,7 +152,6 @@ const AddProduct = () => {
   const formSchema = useMemo(() => {
     return z.object({
       nameProduct: z.string().min(1, t("page.product.form.requiredName")),
-      productType: z.string().default("simple"),
       sku: z.string().optional().or(z.literal("")),
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
@@ -175,7 +174,6 @@ const AddProduct = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nameProduct: "",
-      productType: "simple",
       sku: "",
       barcode: "",
       brand: "",
@@ -354,7 +352,6 @@ const AddProduct = () => {
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("nameProduct", values.nameProduct);
-    payload.append("productType", values.productType);
     if (values.sku) payload.append("sku", values.sku);
     if (values.barcode) payload.append("barcode", values.barcode);
     if (values.brand) payload.append("brand", values.brand);
@@ -559,34 +556,6 @@ const AddProduct = () => {
                       <h3 className="text-base font-semibold text-foreground">
                         {t("page.product.add.productInfoSection")}
                       </h3>
-                    </div>
-
-                    <div className="flex items-center gap-3 pb-4 mb-4 border-b border-border">
-                      <span className="text-sm font-medium text-foreground shrink-0">
-                        {t("page.product.add.productType")}
-                      </span>
-                      <div className="flex bg-muted rounded-lg p-0.5 gap-0.5">
-                        {["simple", "service"].map((type) => (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => form.setValue("productType", type)}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                              form.watch("productType") === type
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            }`}>
-                            {type === "simple"
-                              ? t("page.product.add.productType.simple")
-                              : t("page.product.add.productType.service")}
-                          </button>
-                        ))}
-                      </div>
-                      <span className="text-[11px] text-muted-foreground">
-                        {form.watch("productType") === "service"
-                          ? t("page.product.add.productType.serviceDesc")
-                          : t("page.product.add.productType.simpleDesc")}
-                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
