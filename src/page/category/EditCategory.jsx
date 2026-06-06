@@ -15,6 +15,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import UserGuide from "@/components/organism/UserGuide";
 
 const iconSections = [
   {
@@ -464,6 +465,7 @@ const EditCategory = () => {
             {t("page.category.button.saveChanges")}
           </Button>
         </div>
+        <UserGuide guideKey="add-category" />
       </PageHeader>
 
       <Form {...form}>

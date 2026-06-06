@@ -42,6 +42,7 @@ import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
+import UserGuide from "@/components/organism/UserGuide";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -409,6 +410,7 @@ const AddProduct = () => {
         ]}
         title={t("page.product.add.title")}
         description={t("page.product.add.description")}></PageHeader>
+        <UserGuide guideKey="add-product" />
 
       {/* Stepper */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">

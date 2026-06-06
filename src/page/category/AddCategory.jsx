@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import UserGuide from "@/components/organism/UserGuide";
 
 const iconSections = [
   {
@@ -423,6 +424,7 @@ const AddCategory = () => {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">{t("page.category.add.description")}</p>
         </div>
+        <UserGuide guideKey="add-category" />
       </div>
 
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">

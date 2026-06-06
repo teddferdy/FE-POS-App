@@ -57,6 +57,7 @@ import {
 } from "@/services/general";
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { getAllEmployee } from "@/services/employee";
+import UserGuide from "@/components/organism/UserGuide";
 
 const days = [
   { id: "monday", label: "Senin" },
@@ -500,6 +501,7 @@ const EditLocation = () => {
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           {t("breadcrumb.back")}
         </Button>
+        <UserGuide guideKey="add-location" />
       </PageHeader>
 
       {/* Form Card */}

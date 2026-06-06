@@ -57,6 +57,7 @@ import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { useQuery } from "react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
+import UserGuide from "@/components/organism/UserGuide";
 
 const days = [
   { id: "monday", label: "Senin" },
@@ -404,6 +405,7 @@ const AddLocation = () => {
         ]}
         title={t("page.location.add.title")}
         description={t("page.location.add.description")}></PageHeader>
+        <UserGuide guideKey="add-location" />
 
       {/* Form Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">

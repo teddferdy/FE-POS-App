@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import UserGuide from "@/components/organism/UserGuide";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama supplier wajib diisi"),
@@ -128,6 +129,7 @@ const EditSupplier = () => {
           {t("page.supplier.edit.description")}
         </p>
       </div>
+      <UserGuide guideKey="add-supplier" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">

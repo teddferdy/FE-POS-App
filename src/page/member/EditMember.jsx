@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import UserGuide from "@/components/organism/UserGuide";
 
 const EditMember = () => {
   const { t } = useTranslation();
@@ -129,6 +130,7 @@ const EditMember = () => {
             {t("page.member.button.save")}
           </Button>
         </div>
+        <UserGuide guideKey="add-member" />
       </div>
 
       <form onSubmit={handleSubmit}>

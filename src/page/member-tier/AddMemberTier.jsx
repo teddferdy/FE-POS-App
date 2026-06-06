@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { addMemberTier } from "@/services/member-tier";
 import Modal from "@/components/organism/modal";
+import UserGuide from "@/components/organism/UserGuide";
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -116,6 +117,7 @@ const AddMemberTier = () => {
         </h2>
         <p className="text-sm text-muted-foreground mt-1">{t("page.memberTier.add.description")}</p>
       </div>
+      <UserGuide guideKey="add-member-tier" />
 
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
         <div className="grid grid-cols-12 gap-6">

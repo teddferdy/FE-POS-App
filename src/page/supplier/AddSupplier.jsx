@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import UserGuide from "@/components/organism/UserGuide";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama supplier wajib diisi"),
@@ -82,6 +83,7 @@ const AddSupplier = () => {
         <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.add.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
       </div>
+      <UserGuide guideKey="add-supplier" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">

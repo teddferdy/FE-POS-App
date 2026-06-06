@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import UserGuide from "@/components/organism/UserGuide";
 
 const AddMember = () => {
   const { t } = useTranslation();
@@ -89,14 +90,15 @@ const AddMember = () => {
             <span>/</span>
             <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("breadcrumb.add")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
-        </div>
-      </div>
+           <h2 className="text-2xl font-bold text-foreground tracking-tight">
+             {t("breadcrumb.add")}
+           </h2>
+           <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
+         </div>
+       </div>
+       <UserGuide guideKey="add-member" />
 
-      <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">

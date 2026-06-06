@@ -39,6 +39,7 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
+import UserGuide from "@/components/organism/UserGuide";
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -450,6 +451,7 @@ const EditProduct = () => {
         <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
           <X size={18} /> {t("page.product.form.cancel")}
         </Button>
+        <UserGuide guideKey="add-product" />
       </PageHeader>
 
       <Form {...form}>
