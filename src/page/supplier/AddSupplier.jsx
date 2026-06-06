@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,8 @@ const formSchema = z.object({
   contactPerson: z.string().optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal(""))
+  address: z.string().optional().or(z.literal("")),
+  isActive: z.boolean().default(true)
 });
 
 const AddSupplier = () => {
@@ -37,7 +39,8 @@ const AddSupplier = () => {
       contactPerson: "",
       phone: "",
       email: "",
-      address: ""
+      address: "",
+      isActive: true
     }
   });
 
@@ -54,7 +57,7 @@ const AddSupplier = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    createMutation.mutate({ ...values, status: saveAsDraft ? "draft" : "active" });
+    createMutation.mutate({ ...values, status: saveAsDraft ? false : !!values.isActive });
   };
 
   return (
@@ -80,9 +83,10 @@ const AddSupplier = () => {
         <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
       </div>
 
-      <Card className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="p-6 lg:col-span-2">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -149,7 +153,55 @@ const AddSupplier = () => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+            </div>
+          </form>
+        </Form>
+      </Card>
+
+      <Card className="p-6">
+        <h3 className="text-sm font-semibold text-foreground mb-3">
+          {t("page.supplier.form.status")}
+        </h3>
+        <div
+          className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+            form.watch("isActive")
+              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+          }`}>
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                form.watch("isActive")
+                  ? "bg-green-600 text-white"
+                  : "bg-destructive/10 text-destructive"
+              }`}>
+              <span className="material-symbols-outlined text-lg">
+                {form.watch("isActive") ? "check" : "close"}
+              </span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {form.watch("isActive") ? t("common.active") : t("common.inactive")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {form.watch("isActive")
+                  ? t("page.supplier.form.activeDescription")
+                  : t("page.supplier.form.inactiveDescription")}
+              </p>
+            </div>
+          </div>
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+            )}
+          />
+        </div>
+      </Card>
+    </div>
+
+    <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
               <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
                 <X size={18} />
                 {t("common.cancel")}

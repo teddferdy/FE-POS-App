@@ -96,6 +96,26 @@ const SupplierList = () => {
       )
     },
     {
+      header: t("common.status"),
+      render: (item) => (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+            item.status === "active" || item.status === true
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          }`}>
+          <span
+            className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+              item.status === "active" || item.status === true
+                ? "bg-green-500"
+                : "bg-red-500"
+            }`}
+          />
+          {item.status === "active" || item.status === true ? t("common.active") : t("common.inactive")}
+        </span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "right",
       render: (item) => (
