@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import { addTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,28 +71,16 @@ const AddTypePayment = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/type-payment")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.payment")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.typePayment.add.title")}</span>
-      </nav>
-
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("page.typePayment.add.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("page.typePayment.add.description")}
-        </p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          { i18nKey: "breadcrumb.payment", href: "/type-payment" },
+          { i18nKey: "page.typePayment.add.title" }
+        ]}
+        title={t("page.typePayment.add.title")}
+        description={t("page.typePayment.add.description")}>
+        <UserGuide guideKey="add-type-payment" />
+      </PageHeader>
 
       <Card className="p-6">
         <Form {...form}>

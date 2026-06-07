@@ -8,6 +8,8 @@ import EditMemberTier from "./EditMemberTier";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 
@@ -185,26 +187,14 @@ const MemberTier = () => {
         </div>
       ) : (
         <div data-tour="page-member-tier" className="space-y-6">
-          <div className="flex justify-between items-end">
-            <div>
-              <nav
-                className="flex gap-2 mb-2 text-sm text-muted-foreground"
-                aria-label="breadcrumb">
-                <span>{t("breadcrumb.home")}</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
-                <span>/</span>
-                <span className="text-primary font-semibold">
-                  {t("page.memberTier.list.title")}
-                </span>
-              </nav>
-              <h2 className="text-2xl font-bold text-foreground tracking-tight">
-                {t("page.memberTier.list.title")}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("page.memberTier.list.description")}
-              </p>
-            </div>
+          <PageHeader
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home" },
+              { i18nKey: "breadcrumb.management" },
+              { i18nKey: "page.memberTier.list.title" }
+            ]}
+            title={t("page.memberTier.list.title")}
+            description={t("page.memberTier.list.description")}>
             <Button
               data-tour="tier-add"
               onClick={() => navigate("/add-member-tier")}
@@ -212,7 +202,8 @@ const MemberTier = () => {
               <Plus size={18} />
               {t("breadcrumb.add")}
             </Button>
-          </div>
+            <UserGuide guideKey="add-member-tier" />
+          </PageHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
@@ -320,8 +311,9 @@ const MemberTier = () => {
                   totalPages,
                   total: filteredTiers.length,
                   onPageChange: setCurrentPage,
-                  showingText: `${t("page.memberTier.list.showing", {
-                    count: paginatedTiers.length,
+                  showingText: `${t("common.showing", {
+                    start: (currentPage - 1) * itemsPerPage + 1,
+                    end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
                     total: filteredTiers.length
                   })}`
                 }}

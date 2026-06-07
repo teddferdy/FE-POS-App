@@ -76,6 +76,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
         ...result,
         items: [...items],
         subtotal: finalTotal,
+        serviceCharge,
         paid: Number(amountReceived) || finalTotal,
         change: Math.max(0, (Number(amountReceived) || finalTotal) - finalTotal),
         paymentMethod: payments.find((p) => (p.id || p._id) === paymentTypeId)?.name || "Cash",
@@ -113,7 +114,9 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
       discountAmount = Math.min(discValue, subtotal);
     }
   }
-  const finalTotal = subtotal - discountAmount;
+  const SERVICE_CHARGE_RATE = 0.05;
+  const serviceCharge = Math.round(subtotal * SERVICE_CHARGE_RATE);
+  const finalTotal = subtotal - discountAmount + serviceCharge;
 
   const change = Math.max(0, (Number(amountReceived) || 0) - finalTotal);
   const isComplete = paymentTypeId && (Number(amountReceived) || 0) >= finalTotal;
@@ -144,6 +147,8 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
       change,
       ...memberPayload,
       ...(selectedTable ? { table: selectedTable } : {}),
+      serviceChargeRate: 5,
+      serviceChargeAmount: serviceCharge,
       ...(selectedDiscount ? { discount: selectedDiscount, discountAmount } : {}),
       ...(notes ? { notes } : {})
     };
@@ -162,19 +167,26 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
         </div>
 
         <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">
-              {t("page.cashier.modal.totalShopping")}
-            </span>
-            <div className="text-right">
-              {discountAmount > 0 && (
-                <span className="text-sm text-muted-foreground line-through block">
-                  {formatCurrencyRupiah(subtotal)}
-                </span>
-              )}
-              <span className="text-2xl font-bold text-primary">
-                {formatCurrencyRupiah(finalTotal)}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">
+                {t("page.cashier.modal.totalShopping")}
               </span>
+              <span>{formatCurrencyRupiah(subtotal)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">{t("page.cashier.modal.discount")}</span>
+                <span className="text-red-500">-{formatCurrencyRupiah(discountAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Biaya Layanan (5%)</span>
+              <span>{formatCurrencyRupiah(serviceCharge)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-border">
+              <span className="font-semibold">{t("page.cashier.total")}</span>
+              <span className="text-2xl font-bold text-primary">{formatCurrencyRupiah(finalTotal)}</span>
             </div>
           </div>
 

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 
@@ -63,27 +64,16 @@ const AddSupplier = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/supplier")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.supplier")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.supplier.add.title")}</span>
-      </nav>
-
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.add.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.supplier.add.description")}</p>
-      </div>
-      <UserGuide guideKey="add-supplier" />
+      <PageHeader
+        breadcrumbs={[
+          { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+          { label: t("breadcrumb.supplier"), href: "/supplier", i18nKey: "breadcrumb.supplier" },
+          { label: t("page.supplier.add.title"), i18nKey: "page.supplier.add.title" }
+        ]}
+        title={t("page.supplier.add.title")}
+        description={t("page.supplier.add.description")}>
+        <UserGuide guideKey="add-supplier" />
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">

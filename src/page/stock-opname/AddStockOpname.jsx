@@ -44,6 +44,8 @@ import {
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import {
   Select,
   SelectContent,
@@ -423,39 +425,39 @@ const AddStockOpname = () => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("page.stockOpname.add.description")}</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setUploadModalOpen(true)}
-            className="transition-all">
-            <UploadIcon size={15} className="mr-1.5" />
-            {t("page.stockOpname.button.uploadExcel")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isDownloading}
-            onClick={handleDownloadTemplate}
-            className="transition-all">
-            {isDownloading ? (
-              <Loader2 size={15} className="mr-1.5 animate-spin" />
-            ) : (
-              <Download size={15} className="mr-1.5" />
-            )}
-            {isDownloading
-              ? t("page.stockOpname.button.downloading")
-              : t("page.stockOpname.button.downloadTemplate")}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home" },
+          { i18nKey: "page.stockOpname.list.title" },
+          { i18nKey: id ? "breadcrumb.edit" : "breadcrumb.add" }
+        ]}
+        title={id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
+        description={t("page.stockOpname.add.description")}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setUploadModalOpen(true)}
+          className="transition-all">
+          <UploadIcon size={15} className="mr-1.5" />
+          {t("page.stockOpname.button.uploadExcel")}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isDownloading}
+          onClick={handleDownloadTemplate}
+          className="transition-all">
+          {isDownloading ? (
+            <Loader2 size={15} className="mr-1.5 animate-spin" />
+          ) : (
+            <Download size={15} className="mr-1.5" />
+          )}
+          {isDownloading
+            ? t("page.stockOpname.button.downloading")
+            : t("page.stockOpname.button.downloadTemplate")}
+        </Button>
+        <UserGuide guideKey="add-stock-opname" />
+      </PageHeader>
 
       {/* Meta */}
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
 const AddDepartment = () => {
@@ -52,23 +54,16 @@ const AddDepartment = () => {
 
   return (
     <div className="space-y-8">
-      <div className="mb-xl">
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-          <span>{t("breadcrumb.employee")}</span>
-          <span>/</span>
-          <button
-            onClick={() => navigate("/department-list")}
-            className="hover:text-primary transition-colors">
-            {t("breadcrumb.department")}
-          </button>
-          <span>/</span>
-          <span className="text-primary font-semibold">{t("page.department.add.title")}</span>
-        </nav>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">
-          {t("page.department.add.title")}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.department.add.description")}</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.employee" },
+          { i18nKey: "breadcrumb.department" },
+          { i18nKey: "page.department.add.title" }
+        ]}
+        title={t("page.department.add.title")}
+        description={t("page.department.add.description")}>
+        <UserGuide guideKey="add-department" />
+      </PageHeader>
 
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">

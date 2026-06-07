@@ -7,6 +7,7 @@ import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { addMemberTier } from "@/services/member-tier";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 
@@ -98,26 +99,17 @@ const AddMemberTier = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
-          <span>{t("breadcrumb.home")}</span>
-          <span>/</span>
-          <span>{t("breadcrumb.management")}</span>
-          <span>/</span>
-          <button
-            onClick={() => navigate("/member-tier")}
-            className="hover:text-primary transition-colors">
-            {t("page.memberTier.list.title")}
-          </button>
-          <span>/</span>
-          <span className="text-primary font-semibold">{t("page.memberTier.add.title")}</span>
-        </nav>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">
-          {t("page.memberTier.add.title")}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.memberTier.add.description")}</p>
-      </div>
-      <UserGuide guideKey="add-member-tier" />
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home" },
+          { i18nKey: "breadcrumb.management" },
+          { i18nKey: "page.memberTier.list.title", href: "/member-tier" },
+          { i18nKey: "page.memberTier.add.title" }
+        ]}
+        title={t("page.memberTier.add.title")}
+        description={t("page.memberTier.add.description")}>
+        <UserGuide guideKey="add-member-tier" />
+      </PageHeader>
 
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
         <div className="grid grid-cols-12 gap-6">

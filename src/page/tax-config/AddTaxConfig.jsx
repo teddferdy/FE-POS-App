@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
@@ -42,7 +44,7 @@ const AddTaxConfig = () => {
     defaultValues: {
       name: "",
       type: "PPN",
-      rate: 0,
+      rate: 11,
       description: "",
       isActive: true
     }
@@ -70,26 +72,16 @@ const AddTaxConfig = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/tax-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.tax")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.taxConfig.add.title")}</span>
-      </nav>
-
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.add.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.taxConfig.add.description")}</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          { i18nKey: "breadcrumb.tax", href: "/tax-list" },
+          { i18nKey: "page.taxConfig.add.title" }
+        ]}
+        title={t("page.taxConfig.add.title")}
+        description={t("page.taxConfig.add.description")}>
+        <UserGuide guideKey="add-tax" />
+      </PageHeader>
 
       <Card className="p-6">
         <Form {...form}>

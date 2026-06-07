@@ -7,6 +7,7 @@ import { addMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
@@ -76,29 +77,19 @@ const AddMember = () => {
   };
 
   return (
-    <div>
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>{t("breadcrumb.home")}</span>
-            <span>/</span>
-            <button
-              onClick={() => navigate("/member-list")}
-              className="hover:text-primary transition-colors">
-              {t("breadcrumb.management")}
-            </button>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-          </nav>
-           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-             {t("breadcrumb.add")}
-           </h2>
-           <p className="text-sm text-muted-foreground mt-1">{t("page.member.add.description")}</p>
-         </div>
-       </div>
-       <UserGuide guideKey="add-member" />
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          { label: t("breadcrumb.home") },
+          { label: t("breadcrumb.management") },
+          { label: t("breadcrumb.add") }
+        ]}
+        title={t("breadcrumb.add")}
+        description={t("page.member.add.description")}>
+        <UserGuide guideKey="add-member" />
+      </PageHeader>
 
-       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+      <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">

@@ -10,6 +10,7 @@ import {
   Save,
   X,
   Plus,
+  Package,
   Tag,
   Layers,
   DollarSign,
@@ -36,7 +37,7 @@ import { getProductById, editProduct } from "@/services/product";
 import { getAllCategory } from "@/services/category";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
-import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
+
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import UserGuide from "@/components/organism/UserGuide";
@@ -114,13 +115,6 @@ const EditProduct = () => {
   );
   const taxOptions = taxData?.data || [];
 
-  const { data: priceListTemplatesData } = useQuery(
-    ["price-list-templates-for-edit"],
-    () => getAllPriceListTemplate({ limit: 100 }),
-    { enabled: isSuperAdmin }
-  );
-  const priceListTemplates = priceListTemplatesData?.data || [];
-
   const { data: locationsData } = useQuery(["locations-for-edit"], getAllLocation, {
     enabled: isSuperAdmin
   });
@@ -139,36 +133,15 @@ const EditProduct = () => {
     }
   }, [storePricesData]);
 
-  const handleSelectPriceTemplate = async (templateId) => {
-    if (!templateId) return;
-    try {
-      const res = await getPriceListTemplateById({ id: templateId });
-      const template = res?.data;
-      if (template?.tiers) {
-        setPriceTiers(
-          template.tiers.map((t) => ({
-            id: Date.now() + Math.random(),
-            name: t.name,
-            price: t.price || 0
-          }))
-        );
-      }
-    } catch {
-      toast.error(t("page.product.form.failed"), {
-        description: t("page.product.form.failedLoadTemplate")
-      });
-    }
-  };
-
   const formSchema = useMemo(() => {
     return z.object({
       nameProduct: z.string().min(1, "Nama produk wajib diisi"),
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
       category: z.string().min(1, "Kategori wajib dipilih"),
+      tipeProduk: z.string().default("menu"),
       supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
-      priceTemplate: z.string().optional().or(z.literal("")),
       description: z.string().optional().or(z.literal("")),
       price: z.coerce.number().min(1, "Harga jual harus diisi"),
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
@@ -176,7 +149,6 @@ const EditProduct = () => {
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
       unit: z.string().default("pcs"),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
-      preparationTime: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true)
     });
@@ -189,9 +161,9 @@ const EditProduct = () => {
       barcode: "",
       brand: "",
       category: "",
+      tipeProduk: "menu",
       supplier: "",
       tax: "",
-      priceTemplate: "",
       description: "",
       price: "",
       costPrice: "",
@@ -199,7 +171,6 @@ const EditProduct = () => {
       minStock: "",
       unit: "pcs",
       point: "",
-      preparationTime: "15",
       status: true,
       isAvailable: true
     }
@@ -212,9 +183,9 @@ const EditProduct = () => {
         barcode: product.barcode || "",
         brand: product.brand || "",
         category: String(product.category || ""),
+        tipeProduk: product.tipeProduk || "menu",
         supplier: product.supplier ? String(product.supplier) : "",
         tax: product.tax ? String(product.tax) : "",
-        priceTemplate: product.priceTemplate ? String(product.priceTemplate) : "",
         description: product.description || "",
         price: product.price || "",
         costPrice: product.costPrice || "",
@@ -222,7 +193,6 @@ const EditProduct = () => {
         minStock: product.minStock ?? "",
         unit: product.unit || "pcs",
         point: product.point ?? "",
-        preparationTime: product.preparationTime ?? "15",
         status: product.status === "active" || product.status === true,
         isAvailable: product.isAvailable ?? true
       });
@@ -398,7 +368,6 @@ const EditProduct = () => {
     if (values.minStock) payload.append("minStock", values.minStock);
     payload.append("unit", values.unit);
     if (values.point) payload.append("point", values.point);
-    if (values.preparationTime) payload.append("preparationTime", values.preparationTime);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
@@ -598,16 +567,35 @@ const EditProduct = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.product.form.tax")}</FormLabel>
-                              <Combobox
-                                options={taxOptions.map((tOpt) => ({
-                                  value: String(tOpt.id),
-                                  label: `${tOpt.name} (${tOpt.rate}%)`
-                                }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder={t("page.product.form.taxPlaceholder")}
-                                searchPlaceholder={t("page.product.form.taxSearch")}
-                              />
+                              {taxOptions.length === 0 ? (
+                                <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                  <div className="text-center flex flex-col items-center gap-2">
+                                    <Package size={28} className="text-muted-foreground/60" />
+                                    <p className="text-sm font-medium text-foreground">Belum ada pajak</p>
+                                    <p className="text-xs text-muted-foreground">Tambah pajak terlebih dahulu di Pengaturan</p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => navigate("/tax-list")}
+                                    className="gap-2">
+                                    <span className="material-symbols-outlined text-base">add</span>
+                                    Tambah Pajak
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Combobox
+                                  options={taxOptions.map((tOpt) => ({
+                                    value: String(tOpt.id),
+                                    label: `${tOpt.name} (${tOpt.rate}%)`
+                                  }))}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.taxPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.taxSearch")}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -636,6 +624,24 @@ const EditProduct = () => {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="tipeProduk"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
+                            <select
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                              <option value="menu">{t("page.product.form.tipeProdukMenu")}</option>
+                              <option value="bahan_baku">{t("page.product.form.tipeProdukBahanBaku")}</option>
+                            </select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <FormField
                         control={form.control}
                         name="unit"
@@ -755,22 +761,7 @@ const EditProduct = () => {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="preparationTime"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.preparationTime")}</FormLabel>
-                            <div className="relative">
-                              <Input type="number" placeholder="15" className="pr-14" {...field} />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                {t("page.product.form.minutes")}
-                              </span>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
                     </div>
                   </Card>
 
@@ -782,31 +773,6 @@ const EditProduct = () => {
                         {t("page.product.form.tierSection")}
                       </h3>
                     </div>
-                    {isSuperAdmin && (
-                      <FormField
-                        control={form.control}
-                        name="priceTemplate"
-                        render={({ field }) => (
-                          <FormItem className="mb-4">
-                            <FormLabel>{t("page.product.form.priceTemplate")}</FormLabel>
-                            <Combobox
-                              options={priceListTemplates.map((tOpt) => ({
-                                value: String(tOpt.id),
-                                label: tOpt.name
-                              }))}
-                              value={field.value}
-                              onChange={(value) => {
-                                field.onChange(value);
-                                if (value) handleSelectPriceTemplate(value);
-                              }}
-                              placeholder={t("page.product.form.priceTemplatePlaceholder")}
-                              searchPlaceholder={t("page.product.form.priceTemplateSearch")}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
                     <div className="space-y-3">
                       {priceTiers.map((tier) => (
                         <div key={tier.id} className="bg-muted/30 rounded-lg p-4">

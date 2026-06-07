@@ -127,7 +127,7 @@ const ShiftList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
         </div>
-        <Button onClick={() => navigate("/add-shift")} className="gap-2">
+        <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
           <Plus size={18} />
           {t("breadcrumb.add")}
         </Button>
@@ -161,14 +161,16 @@ const ShiftList = () => {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={shifts}
-        isLoading={isLoading}
-        emptyIcon={Clock}
-        emptyMessage={t("page.shift.list.empty")}
-        pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
-      />
+      <div data-tour="shift-table">
+        <DataTable
+          columns={columns}
+          data={shifts}
+          isLoading={isLoading}
+          emptyIcon={Clock}
+          emptyMessage={t("page.shift.list.empty")}
+          pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
+        />
+      </div>
 
       <Modal
         type="confirm"

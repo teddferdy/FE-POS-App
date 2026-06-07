@@ -62,6 +62,9 @@ import MemberTier from "./page/member-tier";
 
 // Report
 import GlobalReport from "./page/report/GlobalReport";
+import DailyReport from "./page/report/DailyReport";
+import ProfitLossReport from "./page/report/ProfitLossReport";
+import CashFlowReport from "./page/report/CashFlowReport";
 import AddRole from "./page/user/AddRole";
 import RoleManagement from "./page/role/RoleManagement";
 import EditRole from "./page/role/EditRole";
@@ -95,11 +98,6 @@ import EditSupplier from "./page/supplier/EditSupplier";
 import TaxConfigList from "./page/tax-config/TaxConfigList";
 import AddTaxConfig from "./page/tax-config/AddTaxConfig";
 import EditTaxConfig from "./page/tax-config/EditTaxConfig";
-
-// Price List Template
-import PriceListTemplateList from "./page/price-list-template/PriceListTemplateList";
-import AddPriceListTemplate from "./page/price-list-template/AddPriceListTemplate";
-import EditPriceListTemplate from "./page/price-list-template/EditPriceListTemplate";
 
 // Purchase Order
 import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
@@ -260,10 +258,6 @@ function App() {
           <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
           <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
 
-          <Route path="/price-list-template" element={withLayout(<PriceListTemplateList />)} />
-          <Route path="/add-price-list-template" element={withLayout(<AddPriceListTemplate />)} />
-          <Route path="/edit-price-list-template" element={withLayout(<EditPriceListTemplate />)} />
-
           <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
           <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
 
@@ -287,6 +281,9 @@ function App() {
 
           <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
           <Route path="/best-selling" element={withLayout(<GlobalReport />)} />
+          <Route path="/report/daily" element={withLayout(<DailyReport />)} />
+          <Route path="/report/profit-loss" element={withLayout(<ProfitLossReport />)} />
+          <Route path="/report/cash-flow" element={withLayout(<CashFlowReport />)} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -19,6 +19,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const invoiceNumber = data?.invoice || data?.invoiceNumber || data?.noInvoice || "-";
   const items = data?.items || [];
   const subtotal = data?.subtotal || 0;
+  const serviceCharge = data?.serviceCharge || 0;
   const paid = data?.paid || subtotal;
   const change = data?.change || 0;
   const paymentMethod = data?.paymentMethod || "Cash";
@@ -123,6 +124,12 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               <span className="text-muted-foreground">{t("page.cashier.receipt.subtotal")}</span>
               <span>{formatCurrencyRupiah(subtotal)}</span>
             </div>
+            {serviceCharge > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Biaya Layanan (5%)</span>
+                <span>{formatCurrencyRupiah(serviceCharge)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
                 {t("page.cashier.receipt.paymentMethod")}

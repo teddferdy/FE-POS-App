@@ -8,6 +8,8 @@ import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
@@ -190,20 +192,10 @@ const MemberList = () => {
 
   return (
     <div data-tour="page-member" className="space-y-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
-            <span>{t("breadcrumb.home")}</span>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("page.member.list.title")}</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("page.member.list.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.member.list.description")}</p>
-        </div>
+      <PageHeader
+        breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
+        title={t("page.member.list.title")}
+        description={t("page.member.list.description")}>
         <Button
           data-tour="member-add"
           onClick={() => navigate("/add-member")}
@@ -211,7 +203,7 @@ const MemberList = () => {
           <span className="material-symbols-outlined text-lg">person_add</span>
           {t("breadcrumb.add")}
         </Button>
-      </div>
+      </PageHeader>
 
       <div
         data-tour="member-search"
@@ -286,30 +278,30 @@ const MemberList = () => {
           data={filteredMembers}
           isLoading={isLoading}
           emptyMessage={t("page.member.list.empty")}
-        toolbar={
-          <div className="flex items-center justify-between w-full">
-            <h4 className="text-base font-semibold text-foreground">
-              {t("page.member.list.title")}
-            </h4>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                search
-              </span>
-              <Input
-                placeholder={t("page.member.list.search")}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 h-9 w-72 text-sm"
-              />
+          toolbar={
+            <div className="flex items-center justify-between w-full">
+              <h4 className="text-base font-semibold text-foreground">
+                {t("page.member.list.title")}
+              </h4>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                  search
+                </span>
+                <Input
+                  placeholder={t("page.member.list.search")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 h-9 w-72 text-sm"
+                />
+              </div>
             </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-        rowClassName={() => "group"}
-      />
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => "group"}
+        />
       </div>
 
       <Modal

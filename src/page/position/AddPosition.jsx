@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
 const AddPosition = () => {
@@ -69,23 +71,16 @@ const AddPosition = () => {
 
   return (
     <div className="space-y-8">
-      <div className="mb-xl">
-        <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-          <span>{t("breadcrumb.hrm")}</span>
-          <span>/</span>
-          <button
-            onClick={() => navigate("/position-list")}
-            className="hover:text-primary transition-colors">
-            {t("breadcrumb.position")}
-          </button>
-          <span>/</span>
-          <span className="text-primary font-semibold">{t("page.position.add.title")}</span>
-        </nav>
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">
-          {t("page.position.add.title")}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.position.add.description")}</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.hrm" },
+          { i18nKey: "breadcrumb.position" },
+          { i18nKey: "page.position.add.title" }
+        ]}
+        title={t("page.position.add.title")}
+        description={t("page.position.add.description")}>
+        <UserGuide guideKey="add-position" />
+      </PageHeader>
 
       <form onSubmit={handleSubmit}>
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border space-y-6">

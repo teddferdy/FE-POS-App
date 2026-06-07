@@ -41,7 +41,7 @@ import { getAllCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
-import { getAllPriceListTemplate, getPriceListTemplateById } from "@/services/price-list-template";
+
 import UserGuide from "@/components/organism/UserGuide";
 
 const AddProduct = () => {
@@ -122,34 +122,6 @@ const AddProduct = () => {
   );
   const taxOptions = taxData?.data || [];
 
-  const { data: priceListTemplatesData } = useQuery(
-    ["price-list-templates-for-product"],
-    () => getAllPriceListTemplate({ limit: 100 }),
-    { enabled: isSuperAdmin }
-  );
-  const priceListTemplates = priceListTemplatesData?.data || [];
-
-  const handleSelectPriceTemplate = async (templateId) => {
-    if (!templateId) return;
-    try {
-      const res = await getPriceListTemplateById({ id: templateId });
-      const template = res?.data;
-      if (template?.tiers) {
-        setPriceTiers(
-          template.tiers.map((t) => ({
-            id: Date.now() + Math.random(),
-            name: t.name,
-            price: t.price || 0
-          }))
-        );
-      }
-    } catch {
-      toast.error(t("page.product.form.failed"), {
-        description: t("page.product.form.failedLoadTemplate")
-      });
-    }
-  };
-
   const formSchema = useMemo(() => {
     return z.object({
       nameProduct: z.string().min(1, t("page.product.form.requiredName")),
@@ -157,6 +129,7 @@ const AddProduct = () => {
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
       category: z.string().min(1, t("page.product.form.requiredCategory")),
+      tipeProduk: z.string().default("menu"),
       supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
       price: z.coerce.number().min(1, t("page.product.form.requiredPrice")),
@@ -164,7 +137,6 @@ const AddProduct = () => {
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
       unit: z.string().default("pcs"),
-      preparationTime: z.coerce.number().min(0).optional().or(z.literal("")),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true)
@@ -179,16 +151,15 @@ const AddProduct = () => {
       barcode: "",
       brand: "",
       category: "",
+      tipeProduk: "menu",
       supplier: "",
       tax: "",
-      priceTemplate: "",
       description: "",
       price: "",
       costPrice: "",
       stock: "",
       minStock: "",
       unit: "pcs",
-      preparationTime: "15",
       point: "",
       status: true,
       isAvailable: true
@@ -369,7 +340,6 @@ const AddProduct = () => {
     if (values.minStock !== "") payload.append("minStock", values.minStock);
     payload.append("unit", values.unit);
     if (values.point !== "") payload.append("point", values.point);
-    if (values.preparationTime !== "") payload.append("preparationTime", values.preparationTime);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
@@ -409,8 +379,9 @@ const AddProduct = () => {
           { i18nKey: "breadcrumb.add" }
         ]}
         title={t("page.product.add.title")}
-        description={t("page.product.add.description")}></PageHeader>
+        description={t("page.product.add.description")}>
         <UserGuide guideKey="add-product" />
+      </PageHeader>
 
       {/* Stepper */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">
@@ -605,6 +576,24 @@ const AddProduct = () => {
 
                       <FormField
                         control={form.control}
+                        name="tipeProduk"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
+                            <select
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                              <option value="menu">{t("page.product.form.tipeProdukMenu")}</option>
+                              <option value="bahan_baku">{t("page.product.form.tipeProdukBahanBaku")}</option>
+                            </select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
                         name="brand"
                         render={({ field }) => (
                           <FormItem>
@@ -707,46 +696,41 @@ const AddProduct = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t("page.product.form.tax")}</FormLabel>
-                              <Combobox
-                                options={taxOptions.map((tOpt) => ({
-                                  value: String(tOpt.id),
-                                  label: `${tOpt.name} (${tOpt.rate}%)`
-                                }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder={t("page.product.form.taxPlaceholder")}
-                                searchPlaceholder={t("page.product.form.taxSearch")}
-                              />
+                              {taxOptions.length === 0 ? (
+                                <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                  <div className="text-center flex flex-col items-center gap-2">
+                                    <Package size={28} className="text-muted-foreground/60" />
+                                    <p className="text-sm font-medium text-foreground">Belum ada pajak</p>
+                                    <p className="text-xs text-muted-foreground">Tambah pajak terlebih dahulu di Pengaturan</p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => navigate("/tax-list")}
+                                    className="gap-2">
+                                    <span className="material-symbols-outlined text-base">add</span>
+                                    Tambah Pajak
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Combobox
+                                  options={taxOptions.map((tOpt) => ({
+                                    value: String(tOpt.id),
+                                    label: `${tOpt.name} (${tOpt.rate}%)`
+                                  }))}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.taxPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.taxSearch")}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       )}
 
-                      <FormField
-                        control={form.control}
-                        name="preparationTime"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>{t("page.product.form.preparationTime")}</FormLabel>
-                            <div className="relative w-48">
-                              <Input
-                                type="number"
-                                placeholder={t("page.product.form.preparationTimePlaceholder")}
-                                className="pr-14"
-                                {...field}
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                {t("page.product.form.preparationTimeUnit")}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.preparationTimeInfo")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                       <FormField
                         control={form.control}
                         name="description"
@@ -963,29 +947,6 @@ const AddProduct = () => {
                     </div>
                     {isSuperAdmin && (
                       <div className="space-y-3">
-                        <FormField
-                          control={form.control}
-                          name="priceTemplate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("page.product.form.priceTemplate")}</FormLabel>
-                              <Combobox
-                                options={priceListTemplates.map((tOpt) => ({
-                                  value: String(tOpt.id),
-                                  label: tOpt.name
-                                }))}
-                                value={field.value}
-                                onChange={(value) => {
-                                  field.onChange(value);
-                                  if (value) handleSelectPriceTemplate(value);
-                                }}
-                                placeholder={t("page.product.form.priceTemplatePlaceholder")}
-                                searchPlaceholder={t("page.product.form.priceTemplateSearch")}
-                              />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
                     )}
                     <div className="space-y-3">

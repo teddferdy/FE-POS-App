@@ -405,8 +405,8 @@ const AddLocation = () => {
         ]}
         title={t("page.location.add.title")}
         description={t("page.location.add.description")}>
-          <UserGuide guideKey="add-location" />
-        </PageHeader>
+        <UserGuide guideKey="add-location" />
+      </PageHeader>
 
       {/* Form Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">

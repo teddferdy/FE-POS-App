@@ -79,17 +79,54 @@ export const sidebarMenuSuperAdmin = [
     icon: BookUser,
     children: [
       {
+        title: "Member Tier",
+        i18nKey: "sidebar.memberTier",
+        href: "/member-tier",
+        icon: Award,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
         title: "Daftar Member",
         i18nKey: "sidebar.daftarMember",
         href: "/member-list",
         icon: BookUser,
         actions: ["add", "edit", "view", "edit-points"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Karyawan",
+    i18nKey: "sidebar.karyawan",
+    href: "",
+    icon: Users,
+    children: [
+      {
+        title: "Departemen",
+        i18nKey: "sidebar.departemen",
+        href: "/department-list",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Member Tier",
-        i18nKey: "sidebar.memberTier",
-        href: "/member-tier",
-        icon: Award,
+        title: "Posisi",
+        i18nKey: "sidebar.posisi",
+        href: "/position-list",
+        icon: FileText,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Karyawan",
+        i18nKey: "sidebar.daftarKaryawan",
+        href: "/employee-list",
+        icon: Users,
+        actions: ["add", "view", "edit-access", "reset-password"]
+      },
+      {
+        title: "Shift",
+        i18nKey: "sidebar.shift",
+        href: "/shift-list",
+        icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
       }
     ],
@@ -126,36 +163,6 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Karyawan",
-    i18nKey: "sidebar.karyawan",
-    href: "",
-    icon: Users,
-    children: [
-      {
-        title: "Departemen",
-        i18nKey: "sidebar.departemen",
-        href: "/department-list",
-        icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Posisi",
-        i18nKey: "sidebar.posisi",
-        href: "/position-list",
-        icon: FileText,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Karyawan",
-        i18nKey: "sidebar.daftarKaryawan",
-        href: "/employee-list",
-        icon: Users,
-        actions: ["add", "view", "edit-access", "reset-password"]
-      }
-    ],
-    actions: []
-  },
-  {
     title: "Laporan",
     i18nKey: "sidebar.laporan",
     href: "",
@@ -174,6 +181,27 @@ export const sidebarMenuSuperAdmin = [
         href: "/best-selling",
         icon: BarChart3,
         actions: ["view", "export"]
+      },
+      {
+        title: "Laporan Harian",
+        i18nKey: "sidebar.laporanHarian",
+        href: "/report/daily",
+        icon: ClipboardList,
+        actions: ["view"]
+      },
+      {
+        title: "Laba / Rugi",
+        i18nKey: "sidebar.labaRugi",
+        href: "/report/profit-loss",
+        icon: TrendingUp,
+        actions: ["view"]
+      },
+      {
+        title: "Arus Kas",
+        i18nKey: "sidebar.arusKas",
+        href: "/report/cash-flow",
+        icon: Receipt,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -199,10 +227,10 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Template Harga",
-        i18nKey: "sidebar.templateHarga",
-        href: "/price-list-template",
-        icon: TrendingUp,
+        title: "Metode Pembayaran",
+        i18nKey: "sidebar.metodePembayaran",
+        href: "/type-payment-list",
+        icon: CreditCard,
         actions: ["add", "edit", "view", "delete"]
       },
       {
@@ -262,18 +290,18 @@ export const sidebarMenuAdmin = [
     icon: BookUser,
     children: [
       {
-        title: "Daftar Member",
-        i18nKey: "sidebar.daftarMember",
-        href: "/member-list",
-        icon: BookUser,
-        actions: ["add", "edit", "view"]
-      },
-      {
         title: "Tier / Level",
         i18nKey: "sidebar.memberTier",
         href: "/member-tier",
         icon: TrendingUp,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Member",
+        i18nKey: "sidebar.daftarMember",
+        href: "/member-list",
+        icon: BookUser,
+        actions: ["add", "edit", "view"]
       }
     ],
     actions: []
@@ -289,20 +317,6 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.diskon",
         href: "/discount-list",
         icon: Percent,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Metode Pembayaran",
-        i18nKey: "sidebar.metodePembayaran",
-        href: "/type-payment-list",
-        icon: CreditCard,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Shift",
-        i18nKey: "sidebar.shift",
-        href: "/shift-list",
-        icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
       }
     ],
@@ -424,6 +438,13 @@ export const sidebarMenuAdmin = [
         href: "/user-list",
         icon: Users,
         actions: ["add", "edit", "view", "edit-access"]
+      },
+      {
+        title: "Shift",
+        i18nKey: "sidebar.shift",
+        href: "/shift-list",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
@@ -442,10 +463,10 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "update-status"]
       },
       {
-        title: "Template Harga",
-        i18nKey: "sidebar.templateHarga",
-        href: "/price-list-template",
-        icon: TrendingUp,
+        title: "Metode Pembayaran",
+        i18nKey: "sidebar.metodePembayaran",
+        href: "/type-payment-list",
+        icon: CreditCard,
         actions: ["add", "edit", "view", "delete"]
       },
       {

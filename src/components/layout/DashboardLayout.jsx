@@ -33,7 +33,6 @@ const tipsKeys = {
   "/position-list": ["tips.position", "tips.position2"],
   "/table-list": ["tips.table"],
   "/tax-list": ["tips.tax", "tips.tax2"],
-  "/price-list-template": ["tips.priceList", "tips.priceList2"],
   "/location-list": ["tips.location", "tips.location2"],
   "/user-list": ["tips.user", "tips.user2"],
   "/report/sales": ["tips.report", "tips.report2"],

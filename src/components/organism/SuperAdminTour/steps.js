@@ -36,7 +36,11 @@ import {
   Mail,
   Phone,
   MessageCircle,
-  BookOpen
+  BookOpen,
+  ClipboardList,
+  Receipt,
+  CalendarDays,
+  CreditCard,
 } from "lucide-react";
 
 export const superAdminSteps = [
@@ -197,6 +201,7 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
+  // ── Produk ──
   // ── Kategori ──
   {
     id: "category-intro",
@@ -231,33 +236,6 @@ export const superAdminSteps = [
     icon: BarChart3,
     titleKey: "guide.category.s12d",
     descKey: "guide.category.s12ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-download-template",
-    page: "/category-list",
-    target: '[data-tour="category-download-template"]',
-    icon: Download,
-    titleKey: "guide.category.s12e",
-    descKey: "guide.category.s12edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-download-data",
-    page: "/category-list",
-    target: '[data-tour="category-download-data"]',
-    icon: Download,
-    titleKey: "guide.category.s12f",
-    descKey: "guide.category.s12fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-upload",
-    page: "/category-list",
-    target: '[data-tour="category-upload"]',
-    icon: Upload,
-    titleKey: "guide.category.s12g",
-    descKey: "guide.category.s12gdesc",
     actionKey: "guide.dashboard.next"
   },
   {
@@ -398,7 +376,72 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Member ──
+  // ── Pelanggan ──
+  // ── Member Tier ──
+  {
+    id: "tier-intro",
+    page: "/member-tier",
+    icon: Award,
+    titleKey: "guide.tier.s23a",
+    descKey: "guide.tier.s23adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-stat-active",
+    page: "/member-tier",
+    target: '[data-tour="tier-stat-active"]',
+    icon: BarChart3,
+    titleKey: "guide.tier.s23b",
+    descKey: "guide.tier.s23bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-stat-members",
+    page: "/member-tier",
+    target: '[data-tour="tier-stat-members"]',
+    icon: BarChart3,
+    titleKey: "guide.tier.s23c",
+    descKey: "guide.tier.s23cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-stat-growth",
+    page: "/member-tier",
+    target: '[data-tour="tier-stat-growth"]',
+    icon: BarChart3,
+    titleKey: "guide.tier.s23d",
+    descKey: "guide.tier.s23ddesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-add",
+    page: "/member-tier",
+    target: '[data-tour="tier-add"]',
+    icon: Plus,
+    titleKey: "guide.tier.s23e",
+    descKey: "guide.tier.s23edesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-search",
+    page: "/member-tier",
+    target: '[data-tour="tier-search"]',
+    icon: Search,
+    titleKey: "guide.tier.s23f",
+    descKey: "guide.tier.s23fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "tier-table",
+    page: "/member-tier",
+    target: '[data-tour="tier-table"]',
+    icon: List,
+    titleKey: "guide.tier.s23g",
+    descKey: "guide.tier.s23gdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Daftar Member ──
   {
     id: "member-intro",
     page: "/member-list",
@@ -436,60 +479,6 @@ export const superAdminSteps = [
   },
 
   // ── Karyawan ──
-  {
-    id: "employee-intro",
-    page: "/employee-list",
-    icon: Users,
-    titleKey: "guide.employee.s16a",
-    descKey: "guide.employee.s16adesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "employee-stat-total",
-    page: "/employee-list",
-    target: '[data-tour="employee-stat-total"]',
-    icon: BarChart3,
-    titleKey: "guide.employee.s16b",
-    descKey: "guide.employee.s16bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "employee-stat-active",
-    page: "/employee-list",
-    target: '[data-tour="employee-stat-active"]',
-    icon: BarChart3,
-    titleKey: "guide.employee.s16c",
-    descKey: "guide.employee.s16cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "employee-stat-inactive",
-    page: "/employee-list",
-    target: '[data-tour="employee-stat-inactive"]',
-    icon: BarChart3,
-    titleKey: "guide.employee.s16d",
-    descKey: "guide.employee.s16ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "employee-add",
-    page: "/employee-list",
-    target: '[data-tour="employee-add"]',
-    icon: Plus,
-    titleKey: "guide.employee.s16e",
-    descKey: "guide.employee.s16edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "employee-table",
-    page: "/employee-list",
-    target: '[data-tour="employee-table"]',
-    icon: List,
-    titleKey: "guide.employee.s16f",
-    descKey: "guide.employee.s16fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-
   // ── Departemen ──
   {
     id: "department-intro",
@@ -533,33 +522,6 @@ export const superAdminSteps = [
     icon: BarChart3,
     titleKey: "guide.department.s17e",
     descKey: "guide.department.s17edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "department-download-template",
-    page: "/department-list",
-    target: '[data-tour="department-download-template"]',
-    icon: Download,
-    titleKey: "guide.department.s17f",
-    descKey: "guide.department.s17fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "department-download-data",
-    page: "/department-list",
-    target: '[data-tour="department-download-data"]',
-    icon: Download,
-    titleKey: "guide.department.s17g",
-    descKey: "guide.department.s17gdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "department-upload",
-    page: "/department-list",
-    target: '[data-tour="department-upload"]',
-    icon: Upload,
-    titleKey: "guide.department.s17h",
-    descKey: "guide.department.s17hdesc",
     actionKey: "guide.dashboard.next"
   },
   {
@@ -627,33 +589,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
   {
-    id: "position-download-template",
-    page: "/position-list",
-    target: '[data-tour="position-download-template"]',
-    icon: Download,
-    titleKey: "guide.position.s18e",
-    descKey: "guide.position.s18edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "position-download-data",
-    page: "/position-list",
-    target: '[data-tour="position-download-data"]',
-    icon: Download,
-    titleKey: "guide.position.s18f",
-    descKey: "guide.position.s18fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "position-upload",
-    page: "/position-list",
-    target: '[data-tour="position-upload"]',
-    icon: Upload,
-    titleKey: "guide.position.s18g",
-    descKey: "guide.position.s18gdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
     id: "position-add",
     page: "/position-list",
     target: '[data-tour="position-add"]',
@@ -681,7 +616,159 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Pengaturan Invoice ──
+  // ── Daftar Karyawan ──
+  {
+    id: "employee-intro",
+    page: "/employee-list",
+    icon: Users,
+    titleKey: "guide.employee.s16a",
+    descKey: "guide.employee.s16adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "employee-stat-total",
+    page: "/employee-list",
+    target: '[data-tour="employee-stat-total"]',
+    icon: BarChart3,
+    titleKey: "guide.employee.s16b",
+    descKey: "guide.employee.s16bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "employee-stat-active",
+    page: "/employee-list",
+    target: '[data-tour="employee-stat-active"]',
+    icon: BarChart3,
+    titleKey: "guide.employee.s16c",
+    descKey: "guide.employee.s16cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "employee-stat-inactive",
+    page: "/employee-list",
+    target: '[data-tour="employee-stat-inactive"]',
+    icon: BarChart3,
+    titleKey: "guide.employee.s16d",
+    descKey: "guide.employee.s16ddesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "employee-add",
+    page: "/employee-list",
+    target: '[data-tour="employee-add"]',
+    icon: Plus,
+    titleKey: "guide.employee.s16e",
+    descKey: "guide.employee.s16edesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "employee-table",
+    page: "/employee-list",
+    target: '[data-tour="employee-table"]',
+    icon: List,
+    titleKey: "guide.employee.s16f",
+    descKey: "guide.employee.s16fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Shift ──
+  {
+    id: "shift-intro",
+    page: "/shift-list",
+    icon: CalendarDays,
+    titleKey: "guide.shift.s26a",
+    descKey: "guide.shift.s26adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "shift-add",
+    page: "/shift-list",
+    target: '[data-tour="shift-add"]',
+    icon: Plus,
+    titleKey: "guide.shift.s26b",
+    descKey: "guide.shift.s26bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "shift-table",
+    page: "/shift-list",
+    target: '[data-tour="shift-table"]',
+    icon: List,
+    titleKey: "guide.shift.s26c",
+    descKey: "guide.shift.s26cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Manajemen Stok ──
+  {
+    id: "stock-opname",
+    page: "/stock-opname",
+    icon: ClipboardList,
+    titleKey: "guide.stock.s27a",
+    descKey: "guide.stock.s27adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "stock-history",
+    page: "/stock-history",
+    icon: FileText,
+    titleKey: "guide.stock.s27b",
+    descKey: "guide.stock.s27bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "low-stock",
+    page: "/low-stock",
+    icon: BarChart3,
+    titleKey: "guide.stock.s27c",
+    descKey: "guide.stock.s27cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Laporan ──
+  {
+    id: "sales-report",
+    page: "/report/sales",
+    icon: ShoppingCart,
+    titleKey: "guide.sales.s28a",
+    descKey: "guide.sales.s28adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "best-selling",
+    page: "/best-selling",
+    icon: TrendingUp,
+    titleKey: "guide.bestselling.s28b",
+    descKey: "guide.bestselling.s28bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "daily-report",
+    page: "/report/daily",
+    icon: ClipboardList,
+    titleKey: "guide.dailyReport.s25a",
+    descKey: "guide.dailyReport.s25adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "profit-loss",
+    page: "/report/profit-loss",
+    icon: TrendingUp,
+    titleKey: "guide.pnl.s25b",
+    descKey: "guide.pnl.s25bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "cash-flow",
+    page: "/report/cash-flow",
+    icon: Receipt,
+    titleKey: "guide.cashflow.s25c",
+    descKey: "guide.cashflow.s25cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Pengaturan ──
+  // ── Invoice/Struk ──
   {
     id: "settings-intro",
     page: "/invoice-page",
@@ -736,7 +823,7 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Pajak (Tax Config) ──
+  // ── Pajak ──
   {
     id: "tax-intro",
     page: "/tax-list",
@@ -800,71 +887,17 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Template Harga (Price List Template) ──
+  // ── Metode Pembayaran ──
   {
-    id: "pricelist-intro",
-    page: "/price-list-template",
-    icon: Tag,
-    titleKey: "guide.pricelist.s21a",
-    descKey: "guide.pricelist.s21adesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-stat-total",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-stat-total"]',
-    icon: BarChart3,
-    titleKey: "guide.pricelist.s21b",
-    descKey: "guide.pricelist.s21bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-stat-active",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-stat-active"]',
-    icon: BarChart3,
-    titleKey: "guide.pricelist.s21c",
-    descKey: "guide.pricelist.s21cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-stat-inactive",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-stat-inactive"]',
-    icon: BarChart3,
-    titleKey: "guide.pricelist.s21d",
-    descKey: "guide.pricelist.s21ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-add",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-add"]',
-    icon: Plus,
-    titleKey: "guide.pricelist.s21e",
-    descKey: "guide.pricelist.s21edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-search",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-search"]',
-    icon: Search,
-    titleKey: "guide.pricelist.s21f",
-    descKey: "guide.pricelist.s21fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "pricelist-table",
-    page: "/price-list-template",
-    target: '[data-tour="pricelist-table"]',
-    icon: List,
-    titleKey: "guide.pricelist.s21g",
-    descKey: "guide.pricelist.s21gdesc",
+    id: "payment-list",
+    page: "/type-payment-list",
+    icon: CreditCard,
+    titleKey: "guide.payment.s26b",
+    descKey: "guide.payment.s26bdesc",
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Role Management (List) ──
+  // ── Manajemen Role ──
   {
     id: "role-intro",
     page: "/role-management",
@@ -889,70 +922,6 @@ export const superAdminSteps = [
     icon: List,
     titleKey: "guide.role.s22c",
     descKey: "guide.role.s22cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-
-  // ── Member Tier ──
-  {
-    id: "tier-intro",
-    page: "/member-tier",
-    icon: Award,
-    titleKey: "guide.tier.s23a",
-    descKey: "guide.tier.s23adesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-stat-active",
-    page: "/member-tier",
-    target: '[data-tour="tier-stat-active"]',
-    icon: BarChart3,
-    titleKey: "guide.tier.s23b",
-    descKey: "guide.tier.s23bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-stat-members",
-    page: "/member-tier",
-    target: '[data-tour="tier-stat-members"]',
-    icon: BarChart3,
-    titleKey: "guide.tier.s23c",
-    descKey: "guide.tier.s23cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-stat-growth",
-    page: "/member-tier",
-    target: '[data-tour="tier-stat-growth"]',
-    icon: BarChart3,
-    titleKey: "guide.tier.s23d",
-    descKey: "guide.tier.s23ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-add",
-    page: "/member-tier",
-    target: '[data-tour="tier-add"]',
-    icon: Plus,
-    titleKey: "guide.tier.s23e",
-    descKey: "guide.tier.s23edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-search",
-    page: "/member-tier",
-    target: '[data-tour="tier-search"]',
-    icon: Search,
-    titleKey: "guide.tier.s23f",
-    descKey: "guide.tier.s23fdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "tier-table",
-    page: "/member-tier",
-    target: '[data-tour="tier-table"]',
-    icon: List,
-    titleKey: "guide.tier.s23g",
-    descKey: "guide.tier.s23gdesc",
     actionKey: "guide.dashboard.next"
   },
 

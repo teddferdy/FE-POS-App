@@ -53,7 +53,6 @@ const pages = [
   { path: "/invoice-page", label: "Pengaturan Invoice", keywords: "invoice struk pengaturan" },
   { path: "/tax-list", label: "Pajak", keywords: "pajak tax ppn" },
   { path: "/add-tax", label: "Tambah Pajak", keywords: "tambah pajak add tax" },
-  { path: "/price-list-template", label: "Template Harga", keywords: "template harga price list" },
   { path: "/report/sales", label: "Laporan Penjualan", keywords: "laporan penjualan sales report" },
   { path: "/best-selling", label: "Produk Terlaris", keywords: "produk terlaris best selling" },
   {

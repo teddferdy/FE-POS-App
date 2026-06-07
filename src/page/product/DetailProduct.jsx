@@ -311,19 +311,7 @@ const DetailProduct = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Clock size={16} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase">
-                      {t("page.product.detail.preparationTime")}
-                    </p>
-                    <p className="text-sm font-medium text-foreground">
-                      {product.preparationTime || 0} {t("page.product.detail.minutes")}
-                    </p>
-                  </div>
-                </div>
+
               </div>
             </div>
           </Card>

@@ -7,6 +7,7 @@ import { getMemberById, editMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
@@ -99,39 +100,27 @@ const EditMember = () => {
 
   return (
     <div>
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>{t("breadcrumb.home")}</span>
-            <span>/</span>
-            <button
-              onClick={() => navigate("/member-list")}
-              className="hover:text-primary transition-colors">
-              {t("breadcrumb.management")}
-            </button>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("breadcrumb.edit")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.member.edit.description")}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            {t("breadcrumb.back")}
-          </Button>
-          <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
-            Simpan sebagai Draft
-          </Button>
-          <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
-            <span className="material-symbols-outlined text-lg">save</span>
-            {t("page.member.button.save")}
-          </Button>
-        </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: t("breadcrumb.home") },
+          { label: t("breadcrumb.management") },
+          { label: t("breadcrumb.edit") }
+        ]}
+        title={t("breadcrumb.edit")}
+        description={t("page.member.edit.description")}>
+        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          {t("breadcrumb.back")}
+        </Button>
+        <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+          Simpan sebagai Draft
+        </Button>
+        <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
+          <span className="material-symbols-outlined text-lg">save</span>
+          {t("page.member.button.save")}
+        </Button>
         <UserGuide guideKey="add-member" />
-      </div>
+      </PageHeader>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">

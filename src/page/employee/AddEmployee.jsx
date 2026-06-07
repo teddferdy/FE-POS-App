@@ -37,6 +37,8 @@ import { Switch } from "@/components/ui/switch";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 
 const AddEmployee = () => {
   const navigate = useNavigate();
@@ -303,26 +305,17 @@ const AddEmployee = () => {
   };
 
   return (
-    <div>
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>{t("sidebar.karyawan")}</span>
-            <span>/</span>
-            <button
-              onClick={() => navigate("/employee-list")}
-              className="hover:text-primary transition-colors">
-              {t("page.employee.list.title")}
-            </button>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("page.employee.add.title")}</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {t("page.employee.add.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.employee.add.description")}</p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        breadcrumbs={[
+          { i18nKey: "sidebar.karyawan" },
+          { i18nKey: "page.employee.list.title", href: "/employee-list" },
+          { i18nKey: "page.employee.add.title" }
+        ]}
+        title={t("page.employee.add.title")}
+        description={t("page.employee.add.description")}>
+        <UserGuide guideKey="add-employee" />
+      </PageHeader>
 
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
         <Form {...form}>
