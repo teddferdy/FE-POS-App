@@ -16,13 +16,16 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
+import { canAccess } from "@/utils/permission";
 
 const SocialMediaList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  const user = cookie?.user;
   const store = cookie?.store;
+  const MENU_KEY = "/invoice-page";
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -98,10 +101,12 @@ const SocialMediaList = () => {
         ]}
         title={t("page.socialMedia.list.title")}
         description={t("page.socialMedia.list.description")}>
-        <Button onClick={() => navigate("/add-social-media")} className="shrink-0">
-          <Plus size={18} />
-          {t("page.socialMedia.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-social-media")} className="shrink-0">
+            <Plus size={18} />
+            {t("page.socialMedia.button.add")}
+          </Button>
+        )}
       </PageHeader>
 
       <Card className="bg-card rounded-xl border border-border overflow-hidden">
@@ -221,29 +226,35 @@ const SocialMediaList = () => {
                       </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() =>
-                              navigate(`/edit-social-media?id=${item.id || item._id}`)
-                            }>
-                            <Edit size={15} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-8 w-8 ${item.isActive ? "text-amber-600" : "text-green-600"}`}
-                            onClick={() => handleToggle(item)}>
-                            {item.isActive ? <PowerOff size={15} /> : <Power size={15} />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => handleDelete(item.id || item._id)}>
-                            <Trash2 size={15} />
-                          </Button>
+                          {canAccess(user, MENU_KEY, "edit") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-primary"
+                              onClick={() =>
+                                navigate(`/edit-social-media?id=${item.id || item._id}`)
+                              }>
+                              <Edit size={15} />
+                            </Button>
+                          )}
+                          {canAccess(user, MENU_KEY, "edit") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 ${item.isActive ? "text-amber-600" : "text-green-600"}`}
+                              onClick={() => handleToggle(item)}>
+                              {item.isActive ? <PowerOff size={15} /> : <Power size={15} />}
+                            </Button>
+                          )}
+                          {canAccess(user, MENU_KEY, "delete") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDelete(item.id || item._id)}>
+                              <Trash2 size={15} />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

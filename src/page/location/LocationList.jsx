@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Plus, Search, Edit, Trash2, Eye, Store, Map } from "lucide-react";
 import { toast } from "sonner";
@@ -10,11 +11,15 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const LocationList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/location-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -38,6 +43,7 @@ const LocationList = () => {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.location.toast.success") });
       queryClient.invalidateQueries(["locations"]);
+      queryClient.invalidateQueries(["allLocations"]);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err.message });
@@ -161,27 +167,33 @@ const LocationList = () => {
       align: "right",
       render: (loc) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/detail-location?id=${loc.id || loc._id}`)}>
-            <Eye size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-location?id=${loc.id || loc._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(loc.id || loc._id)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "view") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/detail-location?id=${loc.id || loc._id}`)}>
+              <Eye size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-location?id=${loc.id || loc._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(loc.id || loc._id)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -200,13 +212,15 @@ const LocationList = () => {
         ]}
         title={t("page.location.list.title")}
         description={t("page.location.list.description")}>
-        <Button
-          data-tour="location-add"
-          onClick={() => navigate("/add-location")}
-          className="shrink-0">
-          <Plus size={18} />
-          {t("breadcrumb.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="location-add"
+            onClick={() => navigate("/add-location")}
+            className="shrink-0">
+            <Plus size={18} />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -297,76 +311,76 @@ const LocationList = () => {
           data={filteredLocations}
           isLoading={isLoading}
           emptyMessage={t("page.location.list.empty")}
-        toolbar={
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 w-full">
-              <div className="relative flex-1">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  placeholder={t("page.location.list.search")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 text-sm"
-                />
+          toolbar={
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 w-full">
+                <div className="relative flex-1">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.location.list.search")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {t("common.status")}:
+                  </span>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                    <option value="all">{t("common.all")}</option>
+                    <option value="active">{t("common.active")}</option>
+                    <option value="inactive">{t("common.inactive")}</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {t("common.category")}:
+                  </span>
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => {
+                      setCategoryFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                    <option value="all">{t("common.all")}</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5"
+                  onClick={() => navigate("/store-geospatial")}>
+                  <Map size={14} />
+                  {t("page.location.button.viewMap")}
+                </Button>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t("common.status")}:
-                </span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("common.all")}</option>
-                  <option value="active">{t("common.active")}</option>
-                  <option value="inactive">{t("common.inactive")}</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t("common.category")}:
-                </span>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => {
-                    setCategoryFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("common.all")}</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5"
-                onClick={() => navigate("/store-geospatial")}>
-                <Map size={14} />
-                {t("page.location.button.viewMap")}
-              </Button>
-            </div>
-          </div>
-        }
-        pagination={{
-          page,
-          totalPages,
-          total,
-          onPageChange: setPage
-        }}
-      />
+          }
+          pagination={{
+            page,
+            totalPages,
+            total,
+            onPageChange: setPage
+          }}
+        />
       </div>
 
       {/* Map Preview */}

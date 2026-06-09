@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import { canAccess } from "@/utils/permission";
 
 const ShiftList = () => {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ const ShiftList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
+  const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -91,20 +93,24 @@ const ShiftList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-shift?id=${row.id || row._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(row)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-shift?id=${row.id || row._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(row)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -127,10 +133,12 @@ const ShiftList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
         </div>
-        <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
-          <Plus size={18} />
-          {t("breadcrumb.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
+            <Plus size={18} />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

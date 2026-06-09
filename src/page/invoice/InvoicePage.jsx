@@ -18,7 +18,10 @@ import {
   Store,
   Printer,
   Eye,
-  EyeOff
+  EyeOff,
+  Award,
+  Medal,
+  Coins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +42,12 @@ const sampleItems = [
   { name: "Es Teh Manis", qty: 1, price: 8000 },
   { name: "Ayam Bakar", qty: 1, price: 35000 }
 ];
+
+const sampleMember = {
+  name: "Budi Santoso",
+  tier: "Gold",
+  points: 2450
+};
 
 const formatPrice = (val) => `Rp${Number(val).toLocaleString("id-ID")}`;
 
@@ -63,10 +72,14 @@ const InvoicePreview = ({
   footer,
   socialMedia,
   cashierName,
+  memberName,
+  memberTier,
+  memberPoints,
   showLogo = true,
   showStoreName = true,
   showAddress = true,
-  showFooter = true
+  showFooter = true,
+  showMemberInfo = true
 }) => {
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
   const tax = Math.round(subtotal * 0.1);
@@ -115,6 +128,19 @@ const InvoicePreview = ({
           <span>Kasir: {cashierName || "Demo"}</span>
         </div>
       </div>
+
+      {showMemberInfo && (memberName || memberTier) && (
+        <div className="border-b border-dashed border-gray-300 pb-2 mb-3">
+          <div className="flex items-center gap-3 text-gray-700 text-[11px]">
+            <Medal size={14} className="text-yellow-600 shrink-0" />
+            <div className="flex-1 space-y-0.5">
+              <span className="block font-medium">{memberName || "-"}</span>
+              {memberTier && <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>}
+              {memberPoints !== undefined && <span className="block text-gray-500 text-[10px]">Poin: {Number(memberPoints).toLocaleString("id-ID")}</span>}
+            </div>
+          </div>
+        </div>
+      )}
 
       <table className="w-full mb-3">
         <thead>
@@ -186,7 +212,6 @@ const InvoicePage = () => {
   const fileInputRef = useRef(null);
 
   const user = cookie?.user;
-  const storeName = cookie?.activeStoreName || user?.storeName || "Nama Toko";
   const store = user?.store || "";
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
@@ -197,40 +222,45 @@ const InvoicePage = () => {
   const [showStoreName, setShowStoreName] = useState(true);
   const [showAddress, setShowAddress] = useState(true);
   const [showFooter, setShowFooter] = useState(true);
+  const [showMemberInfo, setShowMemberInfo] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: storeData } = useQuery(
+  const { data: storeData, isError: storeError } = useQuery(
     ["store-detail", store],
     () => getLocationById({ id: store }),
-    { enabled: !!store, staleTime: 5 * 60 * 1000 }
+    { enabled: !!store, staleTime: 60 * 1000 }
   );
-  const locationDetail = storeData?.data || storeData || {};
-  const storePhone = locationDetail?.phoneNumber || "";
-  const storeEmail = locationDetail?.email || "";
+  const locationDetail = (storeData?.data || storeData) ?? null;
+  const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
+  const storeName = hasStore
+    ? (locationDetail?.name || locationDetail?.storeName)
+    : "Nama Toko";
+  const storePhone = hasStore ? (locationDetail?.phoneNumber || "") : "";
+  const storeEmail = hasStore ? (locationDetail?.email || "") : "";
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
-    enabled: !!locationDetail?.province,
+    enabled: hasStore && !!locationDetail?.province,
     staleTime: 30 * 60 * 1000
   });
   const { data: cities } = useQuery(
     ["cities", locationDetail?.province],
     () => getCities(locationDetail.province),
-    { enabled: !!locationDetail?.province, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.province, staleTime: 30 * 60 * 1000 }
   );
   const { data: districts } = useQuery(
     ["districts", locationDetail?.city],
     () => getDistricts(locationDetail.city),
-    { enabled: !!locationDetail?.city, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.city, staleTime: 30 * 60 * 1000 }
   );
   const { data: villages } = useQuery(
     ["villages", locationDetail?.district],
     () => getVillages(locationDetail.district),
-    { enabled: !!locationDetail?.district, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.district, staleTime: 30 * 60 * 1000 }
   );
   const { data: postalCodes } = useQuery(
     ["postal-codes", locationDetail?.village],
     () => getPostalCode(locationDetail.village),
-    { enabled: !!locationDetail?.village, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.village, staleTime: 30 * 60 * 1000 }
   );
 
   const provinceName =
@@ -286,6 +316,7 @@ const InvoicePage = () => {
       if (settingsData.showStoreName !== undefined) setShowStoreName(settingsData.showStoreName);
       if (settingsData.showAddress !== undefined) setShowAddress(settingsData.showAddress);
       if (settingsData.showFooter !== undefined) setShowFooter(settingsData.showFooter);
+      if (settingsData.showMemberInfo !== undefined) setShowMemberInfo(settingsData.showMemberInfo);
     }
   }, [settingsData]);
 
@@ -314,6 +345,7 @@ const InvoicePage = () => {
       formData.append("showStoreName", showStoreName);
       formData.append("showAddress", showAddress);
       formData.append("showFooter", showFooter);
+      formData.append("showMemberInfo", showMemberInfo);
 
       await updateInvoiceSetting(formData);
       toast.success("Pengaturan invoice berhasil disimpan");
@@ -346,6 +378,9 @@ const InvoicePage = () => {
       storeName: showStoreName ? storeName || "Nama Toko" : "",
       storeAddress: showAddress ? addressParts.join(" | ") : "",
       storePhone: "",
+      memberName: showMemberInfo ? sampleMember.name : "",
+      memberTier: showMemberInfo ? sampleMember.tier : "",
+      memberPoints: showMemberInfo ? sampleMember.points : 0,
       orderNumber: "INV-" + String(Date.now()).slice(-8),
       cashier: cashierName || "Demo",
       customer: "Umum",
@@ -455,7 +490,7 @@ const InvoicePage = () => {
                 <Switch checked={showAddress} onCheckedChange={setShowAddress} />
               </div>
             </div>
-            {store ? (
+            {hasStore ? (
               <div className="divide-y divide-border">
                 <DetailRow icon={Store} label="Nama Toko" value={storeName} />
                 <DetailRow icon={MapPin} label="Alamat" value={locationDetail?.address} />
@@ -471,14 +506,36 @@ const InvoicePage = () => {
                 <DetailRow icon={Building2} label="Kecamatan" value={districtName} />
                 <DetailRow icon={Building2} label="Kelurahan" value={villageName} />
                 <DetailRow icon={Hash} label="Kode Pos" value={postalCodeValue} />
-                <DetailRow icon={Phone} label="Telepon" value={locationDetail?.phoneNumber} />
-                <DetailRow icon={Mail} label="Email" value={locationDetail?.email} />
+                <DetailRow icon={Phone} label="Telepon" value={storePhone} />
+                <DetailRow icon={Mail} label="Email" value={storeEmail} />
               </div>
             ) : (
               <p className="text-sm text-muted-foreground italic">
-                Pilih lokasi toko terlebih dahulu
+                Tidak ada toko tersedia
               </p>
             )}
+          </div>
+
+          <div data-tour="invoice-member" className="bg-card rounded-xl border border-border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Award size={18} className="text-yellow-600" />
+                <h3 className="text-base font-semibold">Informasi Member</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                {showMemberInfo ? (
+                  <Eye size={14} className="text-primary" />
+                ) : (
+                  <EyeOff size={14} className="text-muted-foreground" />
+                )}
+                <Switch checked={showMemberInfo} onCheckedChange={setShowMemberInfo} />
+              </div>
+            </div>
+            <div className="divide-y divide-border">
+              <DetailRow icon={Medal} label="Nama Member" value={sampleMember.name} />
+              <DetailRow icon={Award} label="Tier Member" value={sampleMember.tier} />
+              <DetailRow icon={Coins} label="Total Poin" value={Number(sampleMember.points).toLocaleString("id-ID")} />
+            </div>
           </div>
 
           <div data-tour="invoice-footer" className="bg-card rounded-xl border border-border p-6">
@@ -545,10 +602,14 @@ const InvoicePage = () => {
               footer={footerText}
               socialMedia={socialMedia}
               cashierName={cashierName}
+              memberName={sampleMember.name}
+              memberTier={sampleMember.tier}
+              memberPoints={sampleMember.points}
               showLogo={showLogo}
               showStoreName={showStoreName}
               showAddress={showAddress}
               showFooter={showFooter}
+              showMemberInfo={showMemberInfo}
             />
           </div>
         </div>

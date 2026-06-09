@@ -27,9 +27,9 @@ const LowStock = () => {
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
 
-  const { data, isLoading } = useQuery(["low-stock"], () => getLowStockProducts(), {
-    refetchInterval: 30000
-  });
+   const { data, isLoading } = useQuery(["low-stock"], () => getLowStockProducts(), {
+     staleTime: 30 * 1000
+   });
 
   const lowStockData = data?.data || {};
   const products = lowStockData.products || [];

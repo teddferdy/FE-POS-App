@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { canAccess } from "@/utils/permission";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -74,6 +76,9 @@ const avatarBg = (name) => {
 const AdminList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/user-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -138,12 +143,14 @@ const AdminList = () => {
             {t("page.user.adminList.roleManagement")}
           </Button>
           */}
-          <Button
-            onClick={() => navigate("/add-user")}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-            <span className="material-symbols-outlined text-lg">person_add</span>
-            {t("page.user.button.add")}
-          </Button>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button
+              onClick={() => navigate("/add-user")}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+              <span className="material-symbols-outlined text-lg">person_add</span>
+              {t("page.user.button.add")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -190,10 +197,12 @@ const AdminList = () => {
               <span className="material-symbols-outlined text-base">filter_list</span>
               {t("page.user.adminList.filter")}
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 h-9">
-              <span className="material-symbols-outlined text-base">download</span>
-              {t("page.user.adminList.exportCsv")}
-            </Button>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button variant="outline" size="sm" className="gap-2 h-9">
+                <span className="material-symbols-outlined text-base">download</span>
+                {t("page.user.adminList.exportCsv")}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -293,12 +302,16 @@ const AdminList = () => {
                             </div>
                           ) : (
                             <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
-                                <span className="material-symbols-outlined text-lg">edit</span>
-                              </button>
-                              <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-                                <span className="material-symbols-outlined text-lg">delete</span>
-                              </button>
+                              {canAccess(user, MENU_KEY, "edit") && (
+                                <button className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
+                                  <span className="material-symbols-outlined text-lg">edit</span>
+                                </button>
+                              )}
+                              {canAccess(user, MENU_KEY, "delete") && (
+                                <button className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
+                                  <span className="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                              )}
                             </div>
                           )}
                         </td>

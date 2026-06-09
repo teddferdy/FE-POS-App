@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import { canAccess } from "@/utils/permission";
 
 const TypePaymentList = () => {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ const TypePaymentList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
+  const MENU_KEY = "/type-payment-list";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -95,20 +97,24 @@ const TypePaymentList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(row)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(row)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -135,10 +141,12 @@ const TypePaymentList = () => {
             {t("page.typePayment.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-type-payment")} className="gap-2">
-          <Plus size={18} />
-          {t("page.typePayment.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-type-payment")} className="gap-2">
+            <Plus size={18} />
+            {t("page.typePayment.button.add")}
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}

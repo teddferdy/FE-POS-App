@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import {
   Plus,
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const statusColors = {
   draft: {
@@ -45,6 +47,9 @@ const StockOpnameList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/stock-opname";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -87,6 +92,16 @@ const StockOpnameList = () => {
   useEffect(() => {
     setSelectedItems([]);
   }, [page, search, warehouseFilter, statusFilter]);
+
+  // Remove completed items from selection
+  useEffect(() => {
+    setSelectedItems((prev) =>
+      prev.filter((id) => {
+        const item = items.find((it) => (it.id || it._id) === id);
+        return item && item.status !== "completed";
+      })
+    );
+  }, [items]);
 
   const handleExportSelected = useCallback(() => {
     exportStockOpnameByIds(selectedItems)
@@ -138,12 +153,14 @@ const StockOpnameList = () => {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleExportSelected}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              <FileDown size={14} />
-              Export
-            </button>
+            {canAccess(user, MENU_KEY, "export") && (
+              <button
+                onClick={handleExportSelected}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                <FileDown size={14} />
+                Export
+              </button>
+            )}
             <button
               onClick={() => {
                 setSelectedItems([]);
@@ -213,26 +230,30 @@ const StockOpnameList = () => {
   const columns = [
     {
       header: "Tanggal Audit",
+      align: "center",
       render: (item) => (
         <span className="font-mono text-xs text-foreground">{item.auditDate || "-"}</span>
       )
     },
     {
       header: "ID Audit",
+      align: "center",
       render: (item) => (
-        <span className="text-xs font-bold text-primary">{item.auditId || "-"}</span>
+        <span className="text-xs font-bold text-primary">{item.opnameNumber || "-"}</span>
       )
     },
     {
       header: "Lokasi Gudang",
+      align: "center",
       render: (item) => (
         <span className="text-sm font-medium text-foreground">{item.store?.name || "-"}</span>
       )
     },
     {
       header: "Auditor",
+      align: "center",
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <div className="w-7 h-7 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">
             {item.auditor
               ?.split(" ")
@@ -246,12 +267,14 @@ const StockOpnameList = () => {
     },
     {
       header: "Jumlah Barang",
+      align: "center",
       render: (item) => (
         <span className="text-sm font-mono text-foreground">{item.stats?.totalItems ?? "-"}</span>
       )
     },
     {
       header: "Status",
+      align: "center",
       render: (item) => {
         const status = item.status || "draft";
         const statusStyle = statusColors[status] || statusColors.draft;
@@ -271,29 +294,35 @@ const StockOpnameList = () => {
         const isDraft = item.status === "draft";
         return (
           <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/stock-opname/detail?id=${item.id || item._id}`)}>
-              <Eye size={15} />
-            </Button>
+            {canAccess(user, MENU_KEY, "view") && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-primary"
+                onClick={() => navigate(`/stock-opname/detail?id=${item.id || item._id}`)}>
+                <Eye size={15} />
+              </Button>
+            )}
             {isDraft && (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-primary"
-                  onClick={() => navigate(`/add-stock-opname?id=${item.id || item._id}`)}>
-                  <Edit size={15} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => setDeleteTarget(item.id || item._id)}>
-                  <Trash2 size={15} />
-                </Button>
+                {canAccess(user, MENU_KEY, "edit") && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary"
+                    onClick={() => navigate(`/add-stock-opname?id=${item.id || item._id}`)}>
+                    <Edit size={15} />
+                  </Button>
+                )}
+                {canAccess(user, MENU_KEY, "delete") && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => setDeleteTarget(item.id || item._id)}>
+                    <Trash2 size={15} />
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -321,10 +350,12 @@ const StockOpnameList = () => {
             {t("page.stockOpname.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
-          <Plus size={16} />
-          Tambah Stock Opname Baru
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
+            <Plus size={16} />
+            Tambah Stock Opname Baru
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -362,6 +393,7 @@ const StockOpnameList = () => {
         selectable
         selectedIds={selectedItems}
         onSelectionChange={setSelectedItems}
+        isSelectable={(row) => row.status !== "completed"}
         rowClassName={(row) => {
           const status = row.status || "draft";
           const classes = [];

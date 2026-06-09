@@ -16,6 +16,7 @@ import {
   Check,
   Building2,
   Settings,
+  User,
   LogOut,
   ChevronRight,
   LifeBuoy
@@ -26,8 +27,10 @@ import { useSocket } from "@/services/socket";
 import { useQueryClient } from "react-query";
 import { axiosInstance } from "@/services";
 import { getUnreadCount } from "@/services/notification";
+import { parseAccessMenu } from "@/utils/permission";
 import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
+import { useThemeStore } from "@/state/theme";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -37,19 +40,25 @@ const StoreSelector = ({ cookie, setCookie }) => {
   const user = cookie?.user;
   const role = user?.role || user?.roleType || "";
 
-  const { data: locationsData } = useQuery(["all-locations-header"], getAllLocation, {
+  const userAccessMenu = parseAccessMenu(user?.accessMenu);
+  const hasCashierMenu =
+    userAccessMenu.length === 0 || userAccessMenu.some((m) => m.menu === "/home");
+
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: role === "super_admin",
-    staleTime: 5 * 60 * 1000
+    staleTime: 60 * 1000
   });
   const locations = locationsData?.data || [];
 
   const activeStoreId = cookie?.activeStore;
   const activeStore = locations.find((l) => (l.id || l._id) === activeStoreId);
   const storeName =
-    activeStore?.name ||
-    activeStore?.storeName ||
-    cookie?.activeStoreName ||
-    t("header.selectStore");
+    locations.length === 0
+      ? t("header.selectStore")
+      : activeStore?.name ||
+        activeStore?.storeName ||
+        cookie?.activeStoreName ||
+        t("header.selectStore");
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -59,7 +68,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  if (role !== "super_admin") return null;
+  if (role !== "super_admin" || !hasCashierMenu) return null;
 
   const handleSelect = (loc) => {
     const id = loc.id || loc._id;
@@ -130,7 +139,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
   );
 };
 
-const UserDropdown = () => {
+export const UserDropdown = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -140,6 +149,9 @@ const UserDropdown = () => {
   const user = cookie?.user;
   const userName = user?.userName || user?.name || "Admin";
   const userRole = user?.role || user?.roleType || "admin";
+  const userImage = user?.image || null;
+  const userFullName = user?.fullName || userName;
+  const userRoleName = user?.roleName || userRole.replace("_", " ");
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -152,6 +164,11 @@ const UserDropdown = () => {
   const handleLogout = () => {
     removeCookie("token");
     removeCookie("user");
+    try {
+      sessionStorage.removeItem("user");
+    } catch (_e) {
+      /* ignore */
+    }
     navigate("/");
   };
 
@@ -160,28 +177,32 @@ const UserDropdown = () => {
       <button
         onClick={() => setOpen(!open)}
         className="h-7 w-7 sm:h-8 sm:w-8 rounded-full overflow-hidden border-2 border-primary flex items-center justify-center bg-accent text-foreground text-[10px] sm:text-xs font-bold shrink-0 hover:brightness-90 transition-all">
-        {userName.charAt(0).toUpperCase()}
+        {userImage ? (
+          <img src={userImage} alt={userName} className="h-full w-full object-cover" />
+        ) : (
+          userName?.charAt(0)?.toUpperCase() || "A"
+        )}
       </button>
 
       {open && (
         <div className="absolute top-full mt-2 right-0 w-48 sm:w-56 bg-card border border-border rounded-xl shadow-lg z-50 py-2 overflow-hidden">
           <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
             <p className="text-[11px] sm:text-sm font-semibold text-foreground truncate">
-              {userName}
+              {userFullName}
             </p>
             <p className="text-[10px] sm:text-[11px] text-muted-foreground capitalize">
-              {userRole.replace("_", " ")}
+              {userRoleName}
             </p>
           </div>
 
           <button
             onClick={() => {
               setOpen(false);
-              navigate("/invoice-page");
+              navigate("/profile");
             }}
             className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-sm text-foreground hover:bg-accent transition-colors">
-            <Settings size={14} className="sm:size-[16px] text-muted-foreground" />
-            {t("header.settings")}
+            <User size={14} className="sm:size-[16px] text-muted-foreground" />
+            {userName}
             <ChevronRight size={12} className="sm:size-[14px] ml-auto text-muted-foreground" />
           </button>
 
@@ -199,24 +220,40 @@ const UserDropdown = () => {
   );
 };
 
-const NotificationBell = () => {
+export const NotificationBell = () => {
   const navigate = useNavigate();
   const { newNotification } = useSocket() || {};
   const queryClient = useQueryClient();
+  const [localUnread, setLocalUnread] = useState(0);
+
   const { data: unreadData } = useQuery("unread-notifications", getUnreadCount, {
-    refetchInterval: 30000
+    staleTime: 60 * 1000,
+    onSuccess: (data) => {
+      const count = data?.data?.count || data?.count || 0;
+      setLocalUnread(count);
+    }
   });
-  const unreadCount = unreadData?.data?.count || unreadData?.count || 0;
+
+  useEffect(() => {
+    if (newNotification) {
+      setLocalUnread((prev) => prev + 1);
+    }
+  }, [newNotification]);
+
+  const handleClick = () => {
+    setLocalUnread(0);
+    navigate("/notification");
+  };
 
   return (
     <button
       data-tour="header-notification"
-      onClick={() => navigate("/notification")}
+      onClick={handleClick}
       className="relative p-1.5 sm:p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
       <Bell size={16} className="sm:size-[18px]" />
-      {unreadCount > 0 && (
+      {localUnread > 0 && (
         <span className="absolute -top-0.5 -right-0.5 min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] sm:text-[10px] font-bold rounded-full px-1 leading-none shadow-sm">
-          {unreadCount > 99 ? "99+" : unreadCount}
+          {localUnread > 99 ? "99+" : localUnread}
         </span>
       )}
     </button>
@@ -247,7 +284,27 @@ const globalPages = [
   "/edit-role",
   "/user-list",
   "/add-user",
-  "/notification"
+  "/notification",
+  "/category-list",
+  "/add-category",
+  "/edit-category",
+  "/detail-category",
+  "/supplier",
+  "/add-supplier",
+  "/edit-supplier",
+  "/detail-supplier",
+  "/member-tier",
+  "/add-member-tier",
+  "/edit-member-tier",
+  "/member-list",
+  "/add-member",
+  "/edit-member",
+  "/detail-member",
+  "/tax-list",
+  "/add-tax",
+  "/edit-tax",
+  "/add-type-payment",
+  "/edit-type-payment"
 ];
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {
@@ -258,12 +315,22 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
 
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { startTour } = useTourStore();
+  const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
   const location = useLocation();
-  const showStoreSelector = !globalPages.some((p) => location.pathname.startsWith(p));
+  const userHeader = cookie?.user;
+  const roleHeader = userHeader?.role || userHeader?.roleType || "";
+  const isGlobalPage = globalPages.some((p) => location.pathname.startsWith(p));
+  const showStoreSelector = roleHeader === "super_admin" ? true : !isGlobalPage;
 
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-  };
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
+
+  const toggleTheme = () => toggleThemeStore();
 
   const languages = [
     { code: "id", label: "ID" },
@@ -356,3 +423,4 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
 };
 
 export default Header;
+export { StoreSelector };

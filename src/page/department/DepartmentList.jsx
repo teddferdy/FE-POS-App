@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -42,6 +44,9 @@ const DepartmentList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/department-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -143,33 +148,39 @@ const DepartmentList = () => {
       align: "center",
       render: (department) => (
         <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/detail-department?id=${department.id}`);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-            title={t("common.view")}>
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/edit-department?id=${department.id}`);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-            title={t("common.edit")}>
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(department);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-            title={t("common.delete")}>
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/detail-department?id=${department.id}`);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+              title={t("common.view")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-department?id=${department.id}`);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+              title={t("common.edit")}>
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(department);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
+              title={t("common.delete")}>
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -184,6 +195,7 @@ const DepartmentList = () => {
         ]}
         title={t("page.department.list.title")}
         description={t("page.department.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="department-download-template"
           variant="outline"
@@ -215,6 +227,8 @@ const DepartmentList = () => {
             ? t("page.department.button.downloading")
             : t("page.department.button.downloadTemplate")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="department-download-data"
           variant="outline"
@@ -246,7 +260,11 @@ const DepartmentList = () => {
             ? t("page.department.button.downloading")
             : t("page.department.button.downloadData")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <span className="w-px h-7 bg-border mx-1" />
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <Button
           data-tour="department-upload"
           variant="default"
@@ -254,6 +272,8 @@ const DepartmentList = () => {
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.department.button.upload")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
         <Button
           data-tour="department-add"
           variant="default"
@@ -262,6 +282,7 @@ const DepartmentList = () => {
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.department.button.add")}
         </Button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -16,12 +16,15 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
+import { canAccess } from "@/utils/permission";
 
 const SocialMediaRegularList = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  const user = cookie?.user;
   const store = cookie?.user?.store;
+  const MENU_KEY = "/social-media-regular";
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -144,10 +147,12 @@ const SocialMediaRegularList = () => {
         ]}
         title={t("page.socialMediaRegular.list.title")}
         description={t("page.socialMediaRegular.list.description")}>
-        <Button onClick={openAdd} className="shrink-0">
-          <Plus size={18} />
-          {t("page.socialMediaRegular.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={openAdd} className="shrink-0">
+            <Plus size={18} />
+            {t("page.socialMediaRegular.button.add")}
+          </Button>
+        )}
       </PageHeader>
 
       <Card className="bg-card rounded-xl border border-border overflow-hidden">
@@ -226,20 +231,24 @@ const SocialMediaRegularList = () => {
                       </td>
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-primary"
-                            onClick={() => openEdit(item)}>
-                            <Edit size={15} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => setDeleteTarget(item)}>
-                            <Trash2 size={15} />
-                          </Button>
+                          {canAccess(user, MENU_KEY, "edit") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-primary"
+                              onClick={() => openEdit(item)}>
+                              <Edit size={15} />
+                            </Button>
+                          )}
+                          {canAccess(user, MENU_KEY, "delete") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => setDeleteTarget(item)}>
+                              <Trash2 size={15} />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

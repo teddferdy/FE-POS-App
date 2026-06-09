@@ -83,7 +83,18 @@ const LoginPage = () => {
     onMutate: () => setIsLoading(true),
     onSuccess: (success) => {
       setCookie("token", success.token);
-      setCookie("user", success.user);
+      const user = { ...success.user };
+      if (typeof user.accessMenu === "string") {
+        try {
+          user.accessMenu = JSON.parse(user.accessMenu);
+        } catch (e) {
+          user.accessMenu = [];
+        }
+      }
+      try {
+        sessionStorage.setItem("user", JSON.stringify(user));
+      } catch (e) {}
+      setCookie("user", user);
       setIsLoading(false);
       setTimeout(() => {
         toast.success("Success", {

@@ -315,13 +315,14 @@ const EditLocation = () => {
     fetchRegions();
   }, [location]);
 
-  const editMutation = useMutation(editLocation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      queryClient.invalidateQueries(["location-edit"]);
-      setIsSubmitting(false);
-      setSuccessModal(true);
-    },
+   const editMutation = useMutation(editLocation, {
+     onSuccess: () => {
+       queryClient.invalidateQueries(["locations"]);
+       queryClient.invalidateQueries(["location-edit"]);
+       queryClient.invalidateQueries(["allLocations"]);
+       setIsSubmitting(false);
+       setSuccessModal(true);
+     },
     onError: (err) => {
       toast.error("Failed", { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);

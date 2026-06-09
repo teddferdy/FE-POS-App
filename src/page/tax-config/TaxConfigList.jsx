@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -29,7 +30,7 @@ const TaxConfigList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
-  // const role = user?.role || user?.roleType || "";
+  const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -91,20 +92,24 @@ const TaxConfigList = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-tax?id=${item.id || item._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(item)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-tax?id=${item.id || item._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(item)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -129,10 +134,12 @@ const TaxConfigList = () => {
             {t("page.taxConfig.list.description")}
           </p>
         </div>
-        <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2">
-          <Plus size={18} />
-          {t("page.taxConfig.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2">
+            <Plus size={18} />
+            {t("page.taxConfig.button.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

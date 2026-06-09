@@ -1,0 +1,289 @@
+import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "react-query";
+import { ChevronDown, ChevronRight, Shield, ArrowLeft } from "lucide-react";
+import { getRoleById } from "@/services/role";
+import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
+import { parseAccessMenuToPermissions, findMenuPermission, normalizePermissionActions } from "@/utils/permission";
+import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
+
+const actionLabels = {
+  view: "Lihat",
+  add: "Tambah",
+  edit: "Ubah",
+  delete: "Hapus",
+  import: "Import",
+  export: "Ekspor",
+  approve: "Setujui",
+  print: "Cetak",
+  "edit-points": "Edit Poin",
+  "edit-access": "Edit Akses",
+  "reset-password": "Reset Password",
+  "update-status": "Update Status"
+};
+
+const allActionTypes = [
+  "view", "add", "edit", "delete", "import", "export",
+  "approve", "print", "edit-points", "edit-access", "reset-password", "update-status"
+];
+
+const getLeafItemsGrouped = () => {
+  const groups = [];
+  sidebarMenuSuperAdmin.forEach((parent) => {
+    if (parent.href && (!parent.children || parent.children.length === 0)) {
+      groups.push({ parentTitle: "", parentIcon: null, items: [parent] });
+    } else if (parent.children && parent.children.length > 0) {
+      const leafChildren = parent.children.filter((c) => c.href && !c.href.startsWith("#"));
+      if (leafChildren.length > 0) {
+        groups.push({
+          parentTitle: parent.title,
+          parentIcon: parent.icon,
+          items: leafChildren
+        });
+      }
+    }
+  });
+  return groups;
+};
+
+const DetailRole = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+
+  const groups = useMemo(() => getLeafItemsGrouped(), []);
+
+  const { data: roleData, isLoading } = useQuery(
+    ["role-by-id", id],
+    () => getRoleById(id),
+    { enabled: !!id }
+  );
+
+  const role = roleData?.data || roleData;
+  const permissions = useMemo(() => {
+    if (!role?.accessMenu) return {};
+    return parseAccessMenuToPermissions(role.accessMenu);
+  }, [role]);
+
+  const getVisibleActions = (itemActions) => {
+    return allActionTypes.filter((a) => itemActions?.includes(a));
+  };
+
+  const toggleGroup = (idx) => {
+    setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (!role) {
+    return (
+      <div className="text-center py-16">
+        <Shield size={48} className="mx-auto mb-4 text-muted-foreground/40" />
+        <p className="text-muted-foreground">Role tidak ditemukan</p>
+        <Button onClick={() => navigate("/role-management")} className="mt-4">
+          Kembali
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
+        <button
+          onClick={() => navigate("/role-management")}
+          className="hover:text-primary transition-colors">
+          Manajemen Role & Izin
+        </button>
+        <ChevronRight size={14} />
+        <span className="text-foreground font-bold">Detail Role</span>
+      </nav>
+
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate("/role-management")}
+            className="p-2 rounded-lg hover:bg-muted transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
+              Detail Role: {role.name}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Informasi lengkap role dan hak akses menu sistem
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
+            Edit Role
+          </Button>
+          <Button onClick={() => navigate("/role-management")}>
+            Kembali
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield size={20} className="text-primary" />
+              <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nama Role</label>
+                <p className="text-sm font-medium text-foreground mt-1">{role.name}</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                <p className="text-sm text-foreground mt-1">{role.description || "-"}</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipe</label>
+                <p className="mt-1">
+                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
+                    role.roleType === "super_admin"
+                      ? "bg-red-100 text-red-700"
+                      : role.roleType === "admin"
+                        ? "bg-blue-100 text-blue-700"
+                        : role.roleType === "kasir"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-gray-100 text-gray-700"
+                  }`}>
+                    {role.roleType}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</label>
+                <p className="mt-1">
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                    role.status === "active"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`} />
+                    {role.status === "active" ? "Aktif" : "Nonaktif"}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-8">
+          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="p-6 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">rule</span>
+                <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
+              </div>
+            </div>
+
+            <div className="divide-y divide-border">
+              {groups.map((group, idx) => {
+                const visibleActions = getVisibleActions(
+                  group.items.reduce((acc, item) => {
+                    (item.actions || []).forEach((a) => {
+                      if (!acc.includes(a)) acc.push(a);
+                    });
+                    return acc;
+                  }, [])
+                );
+                const isCollapsed = collapsedGroups[idx];
+
+                return (
+                  <div key={idx}>
+                    {group.parentTitle && (
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(idx)}
+                        className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
+                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          {group.parentTitle}
+                        </span>
+                      </button>
+                    )}
+                    {!isCollapsed && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-muted/10">
+                              <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-56">
+                                Menu
+                              </th>
+                              {visibleActions.map((action) => (
+                                <th key={action}
+                                  className="px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center min-w-[60px]">
+                                  {actionLabels[action] || action}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {group.items.map((item) => {
+                              const itemActions = getVisibleActions(item.actions || []);
+                              const perm = normalizePermissionActions(findMenuPermission(permissions, item.href)) || {};
+                              return (
+                                <tr key={item.href} className="hover:bg-muted/10 transition-colors">
+                                  <td className="px-6 py-3">
+                                    <div className="flex items-center gap-2">
+                                      {item.icon && (
+                                        <item.icon size={16} className="text-muted-foreground shrink-0" />
+                                      )}
+                                      <span className="text-sm text-foreground">{item.title}</span>
+                                    </div>
+                                  </td>
+                                  {itemActions.map((action) => {
+                                    const val = perm[action];
+                                    const isDisabled = val === undefined || val === null;
+                                    return (
+                                      <td key={action} className="px-2 py-3 text-center">
+                                        {isDisabled ? (
+                                          <span className="text-muted-foreground/30 text-xs">—</span>
+                                        ) : val ? (
+                                          <span className="text-green-600 text-lg font-bold">✓</span>
+                                        ) : (
+                                          <span className="text-red-400 text-lg">✗</span>
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-4 bg-muted/20 text-right border-t border-border">
+              <p className="text-xs text-muted-foreground italic">
+                Tampilan hanya baca — edit role untuk mengubah izin akses
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DetailRole;

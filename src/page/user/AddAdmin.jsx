@@ -28,9 +28,7 @@ const AddAdmin = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
-  });
+   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {

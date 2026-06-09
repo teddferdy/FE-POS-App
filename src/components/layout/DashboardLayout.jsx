@@ -53,9 +53,9 @@ const DashboardLayout = ({ children }) => {
   const user = cookie?.user;
   const role = user?.role || user?.roleType || "";
 
-  const { data: locationsData } = useQuery(["dashboard-locations"], getAllLocation, {
-    enabled: role === "super_admin" && !cookie?.activeStore
-  });
+   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
+     enabled: role === "super_admin" && !cookie?.activeStore
+   });
   const locations = locationsData?.data || [];
 
   useEffect(() => {

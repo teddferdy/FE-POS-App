@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { canAccess } from "@/utils/permission";
 
 const ProductList = () => {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ const ProductList = () => {
   const [noStoreModal, setNoStoreModal] = useState(false);
 
   const user = cookie?.user;
+  const MENU_KEY = "/product-list";
   const role = user?.role || user?.type || "";
   const locationParam = searchParams.get("location");
 
@@ -209,20 +211,24 @@ const ProductList = () => {
       align: "right",
       render: (product) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(product.id || product._id)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(product.id || product._id)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -266,21 +272,27 @@ const ProductList = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.product.list.description")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button data-tour="product-import" variant="outline" className="gap-2">
-            <Upload size={16} />
-            {t("page.product.button.import")}
-          </Button>
-          <Button data-tour="product-export" variant="outline" className="gap-2">
-            <Download size={16} />
-            {t("page.product.button.export")}
-          </Button>
-          <Button
-            data-tour="product-add"
-            onClick={() => navigate("/add-product")}
-            className="gap-2">
-            <Plus size={18} />
-            {t("page.product.button.add")}
-          </Button>
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button data-tour="product-import" variant="outline" className="gap-2">
+              <Upload size={16} />
+              {t("page.product.button.import")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button data-tour="product-export" variant="outline" className="gap-2">
+              <Download size={16} />
+              {t("page.product.button.export")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button
+              data-tour="product-add"
+              onClick={() => navigate("/add-product")}
+              className="gap-2">
+              <Plus size={18} />
+              {t("page.product.button.add")}
+            </Button>
+          )}
         </div>
       </div>
 

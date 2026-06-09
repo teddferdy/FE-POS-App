@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Tag } from "lucide-react";
@@ -11,11 +12,15 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { canAccess } from "@/utils/permission";
 
 const ExpenseCategoryList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/expense-category";
 
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -73,20 +78,24 @@ const ExpenseCategoryList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-expense-category?id=${row.id || row._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(row)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-expense-category?id=${row.id || row._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(row)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -113,10 +122,12 @@ const ExpenseCategoryList = () => {
             {t("page.expenseCategory.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-expense-category")} className="gap-2">
-          <Plus size={18} />
-          {t("page.expenseCategory.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-expense-category")} className="gap-2">
+            <Plus size={18} />
+            {t("page.expenseCategory.button.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, PackageOpen } from "lucide-react";
 import { getAllMember, deleteMember } from "@/services/member";
@@ -13,6 +14,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
+import { canAccess } from "@/utils/permission";
 
 const defaultLevel = {
   bg: "bg-muted/30 text-muted-foreground border border-border",
@@ -50,6 +52,9 @@ const MemberList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/member-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -161,30 +166,36 @@ const MemberList = () => {
       align: "right",
       render: (member) => (
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/edit-member?id=${member.id || member._id}`);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-            title="Edit Member">
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
-            title="Kelola Poin">
-            <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(member);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-            title="Hapus Member">
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-member?id=${member.id || member._id}`);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title="Edit Member">
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => e.stopPropagation()}
+              className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
+              title="Kelola Poin">
+              <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(member);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+              title="Hapus Member">
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -196,13 +207,15 @@ const MemberList = () => {
         breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
         title={t("page.member.list.title")}
         description={t("page.member.list.description")}>
-        <Button
-          data-tour="member-add"
-          onClick={() => navigate("/add-member")}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-          <span className="material-symbols-outlined text-lg">person_add</span>
-          {t("breadcrumb.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="member-add"
+            onClick={() => navigate("/add-member")}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <span className="material-symbols-outlined text-lg">person_add</span>
+            {t("breadcrumb.add")}
+          </Button>
+        )}
       </PageHeader>
 
       <div

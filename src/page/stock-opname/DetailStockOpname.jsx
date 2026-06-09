@@ -157,6 +157,9 @@ const DetailStockOpname = () => {
                   {t("page.stockOpname.table.selisih")}
                 </th>
                 <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  {t("page.stockOpname.table.status")}
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                   {t("page.stockOpname.table.keterangan")}
                 </th>
               </tr>
@@ -164,7 +167,7 @@ const DetailStockOpname = () => {
             <tbody className="divide-y divide-border">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={12} className="px-4 py-12 text-center text-muted-foreground">
                     {t("page.stockOpname.detail.noItems")}
                   </td>
                 </tr>
@@ -205,6 +208,21 @@ const DetailStockOpname = () => {
                               : "text-foreground"
                         }`}>
                         {selisih > 0 ? `+${selisih}` : selisih}
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.notes === "menipis" ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            {t("page.stockOpname.status.menipis")}
+                          </span>
+                        ) : item.notes === "kurang" ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            {t("page.stockOpname.status.kurang")}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {t("page.stockOpname.status.sesuai")}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">
                         {item.keterangan || "-"}

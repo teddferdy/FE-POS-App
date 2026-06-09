@@ -178,6 +178,8 @@ const AddStockOpname = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [noLocationModal, setNoLocationModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [validationModal, setValidationModal] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const [formMeta, setFormMeta] = useState({
     tanggalAudit: new Date(),
@@ -199,6 +201,28 @@ const AddStockOpname = () => {
     { staleTime: 60000 }
   );
   const allProducts = productsData?.data || [];
+
+  const unitOptions = [
+    { value: "pcs", label: t("page.product.form.unit.pcs") },
+    { value: "item", label: t("page.product.form.unit.item") },
+    { value: "unit", label: t("page.product.form.unit.unit") },
+    { value: "buah", label: t("page.product.form.unit.buah") },
+    { value: "pasang", label: t("page.product.form.unit.pasang") },
+    { value: "set", label: t("page.product.form.unit.set") },
+    { value: "lusin", label: t("page.product.form.unit.lusin") },
+    { value: "pack", label: t("page.product.form.unit.pack") },
+    { value: "box", label: t("page.product.form.unit.box") },
+    { value: "karton", label: t("page.product.form.unit.karton") },
+    { value: "kg", label: t("page.product.form.unit.kg") },
+    { value: "gram", label: t("page.product.form.unit.gram") },
+    { value: "liter", label: t("page.product.form.unit.liter") },
+    { value: "ml", label: t("page.product.form.unit.ml") },
+    { value: "meter", label: t("page.product.form.unit.meter") },
+    { value: "cm", label: t("page.product.form.unit.cm") },
+    { value: "cup", label: t("page.product.form.unit.cup") },
+    { value: "gelas", label: t("page.product.form.unit.gelas") },
+    { value: "porsi", label: t("page.product.form.unit.porsi") }
+  ];
 
   // Fetch existing stock opname if editing
   const { data: stockOpnameData } = useQuery(["stock-opname", id], () => getStockOpnameById(id), {
@@ -327,13 +351,14 @@ const AddStockOpname = () => {
     );
   }, [rows]);
 
-  const buildPayload = () => ({
+  const buildPayload = (status) => ({
     auditDate:
       formMeta.tanggalAudit instanceof Date
         ? formMeta.tanggalAudit.toISOString().split("T")[0]
         : formMeta.tanggalAudit,
     auditor: formMeta.auditor,
     notes: catatan,
+    ...(status ? { status } : {}),
     items: rows.map((row) => {
       const stokAkhir = calculateStockAkhir(row);
       const fisik = calculateStockFisik(row);
@@ -358,36 +383,45 @@ const AddStockOpname = () => {
   });
 
   const validate = () => {
+    const errors = [];
+
     if (!formMeta.tanggalAudit) {
-      toast.error(t("common.error"), {
-        description: t("page.stockOpname.validation.auditDateRequired")
-      });
-      return false;
+      errors.push(t("page.stockOpname.validation.auditDateRequired"));
     }
     if (!formMeta.auditor.trim()) {
-      toast.error(t("common.error"), {
-        description: t("page.stockOpname.validation.auditorRequired")
-      });
+      errors.push(t("page.stockOpname.validation.auditorRequired"));
+    }
+
+    const fieldLabels = [
+      { key: "kodeBarang", label: t("page.stockOpname.table.kodeBarang") },
+      { key: "namaBarang", label: t("page.stockOpname.table.namaBarang") },
+      { key: "satuan", label: t("page.stockOpname.table.satuan") },
+      { key: "lokasiId", label: t("page.stockOpname.table.lokasi") },
+      { key: "stokAwalJumlah", label: t("page.stockOpname.table.stokAwal") },
+      { key: "barangMasukJumlah", label: t("page.stockOpname.table.barangMasuk") },
+      { key: "barangKeluarJumlah", label: t("page.stockOpname.table.barangKeluar") },
+      { key: "stokFisikJumlah", label: t("page.stockOpname.table.stockFisik") },
+      { key: "keterangan", label: t("page.stockOpname.table.keterangan") }
+    ];
+
+    rows.forEach((row, idx) => {
+      const missing = fieldLabels
+        .filter((f) => {
+          const val = row[f.key];
+          return !val || (typeof val === "string" && !val.trim());
+        })
+        .map((f) => f.label);
+      if (missing.length > 0) {
+        errors.push(`${t("page.stockOpname.table.row")} ${idx + 1}: ${missing.join(", ")}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setValidationModal(true);
       return false;
     }
-    const invalidRow = rows.find(
-      (row) =>
-        !row.kodeBarang.trim() ||
-        !row.namaBarang.trim() ||
-        !row.satuan.trim() ||
-        !row.lokasiId ||
-        !row.stokAwalJumlah.toString().trim() ||
-        !row.barangMasukJumlah.toString().trim() ||
-        !row.barangKeluarJumlah.toString().trim() ||
-        !row.stokFisikJumlah.toString().trim() ||
-        !row.keterangan.trim()
-    );
-    if (invalidRow) {
-      toast.error(t("common.error"), {
-        description: t("page.stockOpname.validation.allFieldsRequired")
-      });
-      return false;
-    }
+
     return true;
   };
 
@@ -396,20 +430,19 @@ const AddStockOpname = () => {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const payload = buildPayload();
+      const payload = buildPayload("completed");
       let newId;
       if (id) {
         // Edit mode
         await updateStockOpname(id, payload);
         newId = id;
+        await changeStockOpnameStatus(newId, "completed");
       } else {
         // Create mode
         const created = await addStockOpname(payload);
         newId = created?.data?.id || created?.id;
         if (!newId) throw new Error(t("page.stockOpname.toast.getIdError"));
       }
-      // Then change status to completed
-      await changeStockOpnameStatus(newId, "completed");
       toast.success(t("common.success"), {
         description: t("page.stockOpname.toast.completeSuccess")
       });
@@ -506,7 +539,7 @@ const AddStockOpname = () => {
                   <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
                     {t("page.stockOpname.table.namaBarang")}
                   </th>
-                  <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap w-16">
+                  <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap w-28">
                     {t("page.stockOpname.table.satuan")}
                   </th>
                   <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
@@ -642,13 +675,19 @@ const AddStockOpname = () => {
                           </div>
                         </td>
                         <td className="border-r border-muted/20 px-3 py-2">
-                          <input
-                            type="text"
+                          <select
                             value={row.satuan}
                             onChange={(e) => updateRowField(row.id, "satuan", e.target.value)}
-                            placeholder={t("page.stockOpname.form.satuanPlaceholder")}
-                            className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
-                          />
+                            className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1">
+                            <option value="" disabled>
+                              {t("page.stockOpname.form.satuanPlaceholder")}
+                            </option>
+                            {unitOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td className="border-r border-muted/20 px-3 py-2 min-w-[150px]">
                           <LokasiSelect
@@ -839,6 +878,17 @@ const AddStockOpname = () => {
             })
             .finally(() => setIsSubmitting(false));
         }}
+      />
+
+      {/* Validation Error Modal */}
+      <Modal
+        type="error"
+        open={validationModal}
+        onOpenChange={(open) => !open && setValidationModal(false)}
+        title={t("common.error")}
+        description={validationErrors.join(". ")}
+        confirmText="Oke"
+        onConfirm={() => setValidationModal(false)}
       />
 
       {/* Upload Excel Modal */}

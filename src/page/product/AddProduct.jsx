@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { addProduct } from "@/services/product";
+import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import { getAllCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
@@ -92,10 +93,13 @@ const AddProduct = () => {
   const [priceTiers, setPriceTiers] = useState([]);
   const [hasBatch, setHasBatch] = useState(false);
   const [batches, setBatches] = useState([]);
+  const [noStockOpname, setNoStockOpname] = useState(false);
+  const [composition, setComposition] = useState([]);
+  const [compositionOptions, setCompositionOptions] = useState([]);
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData } = useQuery(["locations"], getAllLocation, {
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];
@@ -168,6 +172,29 @@ const AddProduct = () => {
 
   const isOption = form.watch("isOption");
   const hasModifiers = form.watch("hasModifiers");
+
+  const tipeProduk = form.watch("tipeProduk");
+
+  useEffect(() => {
+    if (tipeProduk === "bahan_baku" && selectedStores.length > 0) {
+      checkStockOpnameExists(selectedStores[0])
+        .then((res) => setNoStockOpname(!res?.data?.exists))
+        .catch(() => setNoStockOpname(false));
+    } else {
+      setNoStockOpname(false);
+    }
+  }, [tipeProduk, selectedStores]);
+
+  useEffect(() => {
+    const store = selectedStores.length > 0 ? selectedStores[0] : null;
+    if (store) {
+      getStockOpnameCompositionItems(store)
+        .then((res) => setCompositionOptions(res?.data || []))
+        .catch(() => setCompositionOptions([]));
+    } else {
+      setCompositionOptions([]);
+    }
+  }, [selectedStores]);
 
   const createMutation = useMutation(addProduct, {
     onSuccess: () => {
@@ -276,9 +303,29 @@ const AddProduct = () => {
     setPriceTiers((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const addComposition = () => {
+    setComposition((prev) => [...prev, { id: Date.now(), name: "", qty: 1, unit: "" }]);
+  };
+
+  const updateComposition = (id, field, value) => {
+    setComposition((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+  };
+
+  const removeComposition = (id) => {
+    setComposition((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleCompositionSelect = (id, selectedName) => {
+    const opt = compositionOptions.find((o) => o.name === selectedName);
+    setComposition((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, name: selectedName, unit: opt?.unit || c.unit } : c))
+    );
+  };
+
   const canGoNext = () => {
     if (currentStep === 1) {
       const values = form.getValues();
+      if (values.tipeProduk === "bahan_baku" && composition.length === 0) return false;
       return !!values.nameProduct && !!values.category;
     }
     if (currentStep === 2) {
@@ -290,10 +337,14 @@ const AddProduct = () => {
 
   const handleNext = () => {
     if (!canGoNext()) {
-      const msg =
+      const values = form.getValues();
+      let msg =
         currentStep === 1
           ? t("page.product.form.requiredStep1")
           : t("page.product.form.requiredStep2");
+      if (currentStep === 1 && values.tipeProduk === "bahan_baku" && composition.length === 0) {
+        msg = "Tambah minimal satu bahan baku di komposisi sebelum lanjut.";
+      }
       toast.error(t("page.product.form.completeData"), { description: msg });
       return;
     }
@@ -314,13 +365,37 @@ const AddProduct = () => {
     if (!checked) setModifierItems([]);
   };
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const onSubmit = async (values, saveAsDraft = false) => {
     if (selectedStores.length === 0) {
       toast.error(t("page.product.form.selectStoreError"), {
         description: t("page.product.form.selectStoreErrorDesc")
       });
       return;
     }
+
+    if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
+      if (composition.length === 0) {
+        toast.error("Komposisi wajib diisi", {
+          description: "Tambah minimal satu bahan baku untuk produk ini"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      try {
+        const storeToCheck = selectedStores.length > 0 ? selectedStores[0] : null;
+        if (storeToCheck) {
+          const res = await checkStockOpnameExists(storeToCheck);
+          if (!res?.data?.exists) {
+            toast.warning("Belum ada stok opname", {
+              description: "Disarankan melakukan stok opname untuk bahan baku terlebih dahulu"
+            });
+          }
+        }
+      } catch {
+        // silent - non-blocking check
+      }
+    }
+
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("nameProduct", values.nameProduct);
@@ -342,6 +417,7 @@ const AddProduct = () => {
     if (values.point !== "") payload.append("point", values.point);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
+    payload.append("tipeProduk", values.tipeProduk);
     payload.append("isAvailable", values.isAvailable);
     payload.append("isOption", !!isOption);
     payload.append("hasModifiers", !!hasModifiers);
@@ -356,6 +432,10 @@ const AddProduct = () => {
 
     if (hasBatch && batches.length > 0) {
       payload.append("batches", JSON.stringify(batches));
+    }
+
+    if (composition.length > 0) {
+      payload.append("composition", JSON.stringify(composition));
     }
 
     if (user?.id) payload.append("createdBy", user.id);
@@ -390,7 +470,8 @@ const AddProduct = () => {
             <React.Fragment key={s.num}>
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                  onClick={() => setCurrentStep(s.num)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
                     currentStep === s.num
                       ? "bg-primary text-primary-foreground"
                       : currentStep > s.num
@@ -585,9 +666,26 @@ const AddProduct = () => {
                               onChange={field.onChange}
                               className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
                               <option value="menu">{t("page.product.form.tipeProdukMenu")}</option>
-                              <option value="bahan_baku">{t("page.product.form.tipeProdukBahanBaku")}</option>
+                              <option value="bahan_baku">
+                                {t("page.product.form.tipeProdukBahanBaku")}
+                              </option>
                             </select>
                             <FormMessage />
+                            {noStockOpname && (
+                              <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
+                                  warning
+                                </span>
+                                <div>
+                                  <p className="text-xs font-semibold text-amber-800">
+                                    Belum ada stok opname
+                                  </p>
+                                  <p className="text-[11px] text-amber-700 mt-0.5">
+                                    Harap lakukan stok opname untuk bahan baku ini terlebih dahulu
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </FormItem>
                         )}
                       />
@@ -700,8 +798,12 @@ const AddProduct = () => {
                                 <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
                                   <div className="text-center flex flex-col items-center gap-2">
                                     <Package size={28} className="text-muted-foreground/60" />
-                                    <p className="text-sm font-medium text-foreground">Belum ada pajak</p>
-                                    <p className="text-xs text-muted-foreground">Tambah pajak terlebih dahulu di Pengaturan</p>
+                                    <p className="text-sm font-medium text-foreground">
+                                      Belum ada pajak
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Tambah pajak terlebih dahulu di Pengaturan
+                                    </p>
                                   </div>
                                   <Button
                                     type="button"
@@ -748,6 +850,92 @@ const AddProduct = () => {
                       />
                     </div>
                   </div>
+
+                  {form.watch("tipeProduk") === "bahan_baku" && (
+                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                      <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                        <Package size={18} className="text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">
+                          Komposisi <span className="text-destructive">*</span>
+                        </h3>
+                      </div>
+                      <div className="space-y-3">
+                        {composition.length > 0 ? (
+                          composition.map((c) => (
+                            <div key={c.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <select
+                                    value={c.name}
+                                    onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
+                                    className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                                    <option value="">Pilih bahan</option>
+                                    {compositionOptions.map((opt, i) => (
+                                      <option key={i} value={opt.name}>
+                                        {opt.name} {opt.unit ? `(${opt.unit})` : ""}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="w-24 shrink-0">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="Qty"
+                                    value={c.qty}
+                                    onChange={(e) => updateComposition(c.id, "qty", e.target.value)}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <div className="w-20 shrink-0">
+                                  <Input
+                                    placeholder="Unit"
+                                    value={c.unit}
+                                    onChange={(e) =>
+                                      updateComposition(c.id, "unit", e.target.value)
+                                    }
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive shrink-0"
+                                  onClick={() => removeComposition(c.id)}>
+                                  <Trash2 size={15} />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            Belum ada komposisi. Tambah bahan baku dari stok opname.
+                          </p>
+                        )}
+                        {compositionOptions.length === 0 ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => navigate("/add-stock-opname")}>
+                            <Plus size={15} /> Tambah Stok Opname Dulu
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={addComposition}>
+                            <Plus size={15} /> Tambah Bahan
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -781,7 +969,6 @@ const AddProduct = () => {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="costPrice"
@@ -798,7 +985,6 @@ const AddProduct = () => {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="stock"
@@ -810,7 +996,6 @@ const AddProduct = () => {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="minStock"
@@ -818,14 +1003,10 @@ const AddProduct = () => {
                           <FormItem>
                             <FormLabel>{t("page.product.form.minStock")}</FormLabel>
                             <Input type="number" placeholder="0" {...field} />
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.minStockInfo")}
-                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="point"
@@ -840,6 +1021,63 @@ const AddProduct = () => {
                           </FormItem>
                         )}
                       />
+                    </div>
+                  </div>
+
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                      <TrendingUp size={18} className="text-primary" />
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.tierSection")}
+                      </h3>
+                    </div>
+                    {isSuperAdmin && <div className="space-y-3"></div>}
+                    <div className="space-y-3">
+                      {priceTiers.map((tier) => (
+                        <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder={t("page.product.form.tierNamePlaceholder")}
+                              value={tier.name}
+                              onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
+                              className="h-9 text-sm flex-1"
+                            />
+                            <div className="relative w-40 shrink-0">
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                Rp
+                              </span>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                value={tier.price}
+                                onChange={(e) => updatePriceTier(tier.id, "price", e.target.value)}
+                                className="h-9 text-sm pl-8"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive shrink-0"
+                              onClick={() => removePriceTier(tier.id)}>
+                              <Trash2 size={15} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1"
+                        onClick={addPriceTier}>
+                        <Plus size={15} /> {t("page.product.form.addTier")}
+                      </Button>
+                      {priceTiers.length === 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {t("page.product.form.tierEmpty")}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -934,66 +1172,6 @@ const AddProduct = () => {
                             <Plus size={15} /> {t("page.product.form.addBatch")}
                           </Button>
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <TrendingUp size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.tierSection")}
-                      </h3>
-                    </div>
-                    {isSuperAdmin && (
-                      <div className="space-y-3">
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      {priceTiers.map((tier) => (
-                        <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              placeholder={t("page.product.form.tierNamePlaceholder")}
-                              value={tier.name}
-                              onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
-                              className="h-9 text-sm flex-1"
-                            />
-                            <div className="relative w-40 shrink-0">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                Rp
-                              </span>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                value={tier.price}
-                                onChange={(e) => updatePriceTier(tier.id, "price", e.target.value)}
-                                className="h-9 text-sm pl-8"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive shrink-0"
-                              onClick={() => removePriceTier(tier.id)}>
-                              <Trash2 size={15} />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1"
-                        onClick={addPriceTier}>
-                        <Plus size={15} /> {t("page.product.form.addTier")}
-                      </Button>
-                      {priceTiers.length === 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          {t("page.product.form.tierEmpty")}
-                        </p>
                       )}
                     </div>
                   </div>
@@ -1147,6 +1325,32 @@ const AddProduct = () => {
 
                         {hasModifiers && (
                           <div className="space-y-3 pl-4 border-l-2 border-primary/20 mt-4">
+                            {compositionOptions.length > 0 && (
+                              <div className="bg-muted/30 rounded-lg p-4">
+                                <select
+                                  onChange={(e) => {
+                                    const opt = compositionOptions.find(
+                                      (o) => o.name === e.target.value
+                                    );
+                                    if (opt) {
+                                      setModifierItems((prev) => [
+                                        ...prev,
+                                        { id: Date.now(), name: opt.name, price: 0 }
+                                      ]);
+                                      form.setValue("hasModifiers", true);
+                                    }
+                                    e.target.value = "";
+                                  }}
+                                  className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                                  <option value="">Ambil dari stok opname...</option>
+                                  {compositionOptions.map((opt, i) => (
+                                    <option key={i} value={opt.name}>
+                                      {opt.name} {opt.unit ? `(${opt.unit})` : ""}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
                             {modifierItems.map((mod) => (
                               <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
                                 <div className="flex items-center gap-2 mb-3">

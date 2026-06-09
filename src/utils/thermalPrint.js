@@ -16,6 +16,9 @@ export const generateReceiptHTML = (data) => {
     storeName = "TOKO ANDA",
     storeAddress = "",
     storePhone = "",
+    memberName = "",
+    memberTier = "",
+    memberPoints = 0,
     orderNumber = "",
     cashier = "",
     customer = "Umum",
@@ -63,6 +66,11 @@ export const generateReceiptHTML = (data) => {
       <div>Pelanggan: ${customer}</div>
       <div>${date}</div>
     </div>
+    ${memberName ? `
+    <div style="border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
+      <div>Member: ${memberName}${memberTier ? ` (${memberTier})` : ""}</div>
+      ${memberPoints ? `<div>Poin: ${Number(memberPoints).toLocaleString("id-ID")}</div>` : ""}
+    </div>` : ""}
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
         <tr style="border-bottom:1px solid #000">
@@ -99,6 +107,9 @@ export const generateESCPOS = (data) => {
     storeName = "TOKO ANDA",
     storeAddress = "",
     storePhone = "",
+    memberName = "",
+    memberTier = "",
+    memberPoints = 0,
     orderNumber = "",
     cashier = "",
     customer = "Umum",
@@ -140,6 +151,12 @@ export const generateESCPOS = (data) => {
   enc += padBoth("No: " + orderNumber, date) + "\n";
   enc += "Kasir: " + cashier + "\n";
   enc += "Pelanggan: " + customer + "\n";
+  if (memberName) {
+    enc += "Member: " + memberName;
+    if (memberTier) enc += " (" + memberTier + ")";
+    enc += "\n";
+    if (memberPoints) enc += "Poin: " + Number(memberPoints).toLocaleString("id-ID") + "\n";
+  }
   enc += line("-", W) + "\n";
 
   items.forEach((item) => {

@@ -35,6 +35,14 @@ export const sidebarMenuSuperAdmin = [
     actions: ["view"]
   },
   {
+    title: "Kasir",
+    i18nKey: "sidebar.cashier",
+    href: "/home",
+    icon: Calculator,
+    children: [],
+    actions: ["view", "add"]
+  },
+  {
     title: "Kelola Toko",
     i18nKey: "sidebar.kelolaToko",
     href: "/location-list",
@@ -53,14 +61,14 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.kategori",
         href: "/category-list",
         icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Daftar Produk",
@@ -271,17 +279,25 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.kategori",
         href: "/category-list",
         icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       }
     ],
     actions: []
+  },
+  {
+    title: "Kasir",
+    i18nKey: "sidebar.cashier",
+    href: "/home",
+    icon: Calculator,
+    children: [],
+    actions: ["view", "add"]
   },
   {
     title: "Pelanggan",
@@ -653,6 +669,18 @@ export const urlWithArrowBack = [
     pathName: "/role-management"
   },
   { url: "/role-management", title: "Add Role", i18nKey: "breadcrumb.add", pathName: "/add-role" },
+  {
+    url: "/role-management",
+    title: "Edit Role",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-role"
+  },
+  {
+    url: "/role-management",
+    title: "Detail Role",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/detail-role"
+  },
   { url: "/user-list", title: "Add Admin", i18nKey: "breadcrumb.add", pathName: "/add-user" },
   {
     url: "/location-list",

@@ -1,5 +1,13 @@
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 
+export const parseAccessMenu = (accessMenu) => {
+  if (Array.isArray(accessMenu)) return accessMenu;
+  if (typeof accessMenu === "string") {
+    try { return JSON.parse(accessMenu); } catch (e) { return []; }
+  }
+  return [];
+};
+
 export const getAllMenuItems = () => {
   const items = [];
   const walk = (list, parentKey = "") => {
@@ -63,34 +71,65 @@ export const parseAccessMenuToPermissions = (accessMenu = []) => {
   return result;
 };
 
+export const findMenuPermission = (permissions, href) => {
+  if (permissions[href]) return permissions[href];
+  const pathPart = href?.replace("/", "").replace("-list", "").replace("-page", "").replace("-super-admin", "");
+  const result = permissions[pathPart];
+  if (!result) return null;
+  return result;
+};
+
+const ACTION_MAP = {
+  read: "view",
+  create: "add",
+  update: "edit",
+  upload: "import",
+  download: "export",
+  view: "view",
+  add: "add",
+  edit: "edit",
+  "import": "import",
+  "export": "export"
+};
+
+export const normalizePermissionActions = (perm) => {
+  if (!perm) return perm;
+  const normalized = {};
+  Object.entries(perm).forEach(([key, val]) => {
+    const mapped = ACTION_MAP[key] || key;
+    normalized[mapped] = val;
+  });
+  return normalized;
+};
+
 export const canAccess = (user, menuKey, action) => {
   if (!user) return false;
   const role = user.role || user.roleType || user.type || user.userType;
   if (role === "super_admin") return true;
-  const accessMenu = user.accessMenu;
-  if (!accessMenu) return false;
-  const menu = Array.isArray(accessMenu) ? accessMenu.find((m) => m.menu === menuKey) : null;
-  return menu ? !!menu[action] : false;
+  const accessMenu = parseAccessMenu(user.accessMenu);
+  if (!accessMenu || accessMenu.length === 0) return false;
+  const menu = accessMenu.find((m) => m.menu === menuKey || m.menu === menuKey.replace("/", "").replace("-list", "").replace("-page", "").replace("-super-admin", ""));
+  if (!menu) return false;
+  const normalized = normalizePermissionActions(menu);
+  return !!normalized[action];
 };
 
 export const filterMenuByPermission = (menuItems, user) => {
   if (!user) return [];
   const role = user.role || user.roleType || user.type || user.userType;
   if (role === "super_admin") return menuItems;
-  const accessMenu = user.accessMenu;
-  if (!accessMenu || !Array.isArray(accessMenu)) return [];
+  const accessMenu = parseAccessMenu(user.accessMenu);
+  if (!accessMenu || accessMenu.length === 0) return [];
+
+  const permissions = parseAccessMenuToPermissions(accessMenu);
 
   const hasAccess = (href, actions) => {
-    const menuEntry = accessMenu.find((m) => {
-      if (m.menu === href) return true;
-      const pathPart = href?.replace("/", "").replace("-list", "").replace("-page", "");
-      return m.menu === pathPart;
-    });
-    if (!menuEntry) return false;
+    const perm = normalizePermissionActions(findMenuPermission(permissions, href));
+    if (!perm) return false;
     if (actions && actions.length > 0) {
-      return actions.some((a) => !!menuEntry[a]);
+      return actions.some((a) => !!perm[a]);
     }
-    return !!menuEntry.view;
+    return !!perm.view;
   };
 
   const filterItems = (items) => {

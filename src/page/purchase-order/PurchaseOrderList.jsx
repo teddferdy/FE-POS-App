@@ -14,6 +14,7 @@ import {
   Undo2
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseOrder,
   receivePurchaseOrder,
@@ -52,6 +53,7 @@ const PurchaseOrderList = () => {
   const [returReason, setReturReason] = useState("");
 
   const user = cookie?.user;
+  const MENU_KEY = "/purchase-order";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -197,10 +199,12 @@ const PurchaseOrderList = () => {
             {t("page.purchaseOrder.list.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
-          <Plus size={18} />
-          {t("breadcrumb.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
+            <Plus size={18} />
+            {t("breadcrumb.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

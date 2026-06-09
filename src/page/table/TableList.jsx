@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { canAccess } from "@/utils/permission";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -24,6 +25,7 @@ const TableList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const MENU_KEY = "/table";
   const locationParam = user?.store || "";
 
   const [page, setPage] = useState(1);
@@ -109,20 +111,24 @@ const TableList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => openEdit(row)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => setDeleteTarget(row)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => openEdit(row)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => setDeleteTarget(row)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -145,16 +151,18 @@ const TableList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.table.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.table.list.description")}</p>
         </div>
-        <Button
-          onClick={() => {
-            setEditTarget(null);
-            setFormName("");
-            setFormCapacity(4);
-          }}
-          className="gap-2">
-          <Plus size={18} />
-          {t("page.table.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            onClick={() => {
+              setEditTarget(null);
+              setFormName("");
+              setFormCapacity(4);
+            }}
+            className="gap-2">
+            <Plus size={18} />
+            {t("page.table.button.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

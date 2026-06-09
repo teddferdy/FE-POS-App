@@ -47,9 +47,7 @@ const AddShift = () => {
   });
   const employees = employeesData?.data || employeesData?.employees || [];
 
-  const { data: locationsData } = useQuery(["locations-for-shift"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
-  });
+   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({

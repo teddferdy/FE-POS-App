@@ -260,23 +260,25 @@ const AddLocation = () => {
     }
   };
 
-  const addMutation = useMutation(addLocation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      setIsSubmitting(false);
-      setSuccessModal(true);
-    },
+   const addMutation = useMutation(addLocation, {
+     onSuccess: () => {
+       queryClient.invalidateQueries(["locations"]);
+       queryClient.invalidateQueries(["allLocations"]);
+       setIsSubmitting(false);
+       setSuccessModal(true);
+     },
     onError: (err) => {
       toast.error("Failed", { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
 
-  const editMutation = useMutation(editLocation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      setIsSubmitting(false);
-      setSuccessModal(true);
+   const editMutation = useMutation(editLocation, {
+     onSuccess: () => {
+       queryClient.invalidateQueries(["locations"]);
+       queryClient.invalidateQueries(["allLocations"]);
+       setIsSubmitting(false);
+       setSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });

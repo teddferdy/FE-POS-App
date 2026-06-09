@@ -1,0 +1,269 @@
+import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  User,
+  Building2,
+  Shield,
+  Store,
+  Briefcase,
+  CheckCircle2,
+  XCircle,
+  Badge
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const ProfilePage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const user = useMemo(() => {
+    try {
+      const stored = sessionStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <p className="text-muted-foreground">User data not found</p>
+        <Button variant="outline" onClick={() => navigate("/home")}>
+          Back
+        </Button>
+      </div>
+    );
+  }
+
+  const statusActive = user.statusActive !== false;
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button
+          onClick={() => navigate(-1)}
+          className="font-medium hover:text-primary transition-colors flex items-center gap-1">
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <span className="text-xs">/</span>
+        <span className="font-semibold text-foreground">Profile</span>
+      </nav>
+
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32" />
+        <div className="relative">
+          <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-white shadow-md bg-muted">
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.fullName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-4xl font-bold">
+                {(user.fullName || user.userName || "?").charAt(0)}
+              </div>
+            )}
+          </div>
+          <div
+            className={`absolute -bottom-2 -right-2 p-1 rounded-full border-2 border-background ${
+              statusActive ? "bg-green-500" : "bg-muted-foreground"
+            }`}>
+            <span
+              className="material-symbols-outlined text-sm block text-white"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
+              verified
+            </span>
+          </div>
+        </div>
+        <div className="flex-1 space-y-1 relative">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h3 className="text-2xl font-bold text-foreground">{user.fullName || user.userName}</h3>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
+                statusActive
+                  ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                  : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+              }`}>
+              {statusActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+          <p className="text-muted-foreground">
+            {user.positionName || user.position || "-"}
+            <span className="mx-2">&bull;</span>
+            ID: {user.employeeID || user.id || "-"}
+          </p>
+          <div className="flex gap-4 pt-2 flex-wrap">
+            {user.storeName && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Store size={14} />
+                <span>{user.storeName}</span>
+              </div>
+            )}
+            {user.startDate && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Calendar size={14} />
+                <span>Joined {formatDate(user.startDate)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-3 w-full md:w-auto relative">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => navigate(`/edit-employee?id=${user.id}`)}>
+            <User size={16} />
+            Edit Profile
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-4 space-y-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-base font-semibold">Basic Info</h4>
+              <User size={16} className="text-muted-foreground" />
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Email</p>
+                <p className="text-sm text-foreground flex items-center gap-2">
+                  <Mail size={14} className="text-muted-foreground shrink-0" />
+                  {user.email || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Phone</p>
+                <p className="text-sm text-foreground flex items-center gap-2">
+                  <Phone size={14} className="text-muted-foreground shrink-0" />
+                  {user.phoneNumber || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Address</p>
+                <p className="text-sm text-foreground flex items-start gap-2">
+                  <MapPin size={14} className="text-muted-foreground shrink-0 mt-0.5" />
+                  {user.address || "-"}
+                </p>
+              </div>
+              <div className="pt-3 border-t border-border">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Department</p>
+                <p className="text-sm text-foreground">{user.department || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Gender</p>
+                <p className="text-sm text-foreground">{user.gender || "-"}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-base font-semibold">Account</h4>
+              <Shield size={16} className="text-muted-foreground" />
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Username</p>
+                <p className="text-sm text-foreground flex items-center gap-2">
+                  <User size={14} className="text-muted-foreground shrink-0" />
+                  {user.userName || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Role</p>
+                <p className="text-sm text-foreground flex items-center gap-2">
+                  <Shield size={14} className="text-muted-foreground shrink-0" />
+                  {user.roleName || user.roleType || "user"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Type</p>
+                <p className="text-sm text-foreground">{user.userType || "-"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+            <h4 className="text-base font-semibold mb-4">Job Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Employee ID</p>
+                <p className="text-sm font-mono font-bold text-primary">{user.employeeID || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Position</p>
+                <p className="text-sm text-foreground">{user.positionName || user.position || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Store</p>
+                <p className="text-sm text-foreground">{user.storeName || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Employment Type</p>
+                <p className="text-sm text-foreground">{user.employmentType || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Shift</p>
+                <p className="text-sm text-foreground">{user.shift || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Start Date</p>
+                <p className="text-sm text-foreground">{formatDate(user.startDate)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
+              <div className="relative z-10">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Place of Birth</p>
+                <p className="text-lg font-bold text-foreground">{user.placeOfBirth || "-"}</p>
+              </div>
+              <MapPin className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
+              <div className="relative z-10">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Date of Birth</p>
+                <p className="text-lg font-bold text-foreground">{formatDate(user.dateOfBirth)}</p>
+              </div>
+              <Calendar className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
+              <div className="relative z-10">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Status</p>
+                <p className={`text-lg font-bold flex items-center gap-1 ${statusActive ? "text-green-600" : "text-red-600"}`}>
+                  {statusActive ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                  {statusActive ? "Active" : "Inactive"}
+                </p>
+              </div>
+              <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProfilePage;

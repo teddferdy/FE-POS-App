@@ -29,6 +29,12 @@ const defaultText = {
   confirm: { cancel: "Batal" }
 };
 
+const defaultDescription = {
+  success: "Data berhasil diproses",
+  error: "Gagal memproses data",
+  confirm: "Apakah anda yakin ingin melanjutkan?"
+};
+
 export default function Modal({
   open,
   onOpenChange,
@@ -47,6 +53,7 @@ export default function Modal({
   const isNotification = type === "success" || type === "error";
   const confirmLabel = confirmText || defaultText[type]?.confirm || "Konfirmasi";
   const cancelLabel = cancelText || defaultText[type]?.cancel || "Batal";
+  const desc = description || defaultDescription[type] || "";
 
   const confirmBtnVariant = confirmVariant || (type === "error" ? "destructive" : "default");
 
@@ -66,15 +73,15 @@ export default function Modal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent withX={false} className={cn("sm:max-w-[400px]", className)}>
+      <DialogContent withX={false} className={cn("sm:max-w-[500px]", className)}>
         <DialogHeader className="items-center text-center gap-0">
           <div className={cn("mb-4", iconColorMap[type])}>
             <Icon className="w-16 h-16" strokeWidth={1.5} />
           </div>
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-          {description && (
+          {desc && (
             <DialogDescription className="text-sm text-muted-foreground mt-1">
-              {description}
+              {desc}
             </DialogDescription>
           )}
         </DialogHeader>

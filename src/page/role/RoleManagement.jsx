@@ -1,20 +1,31 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Shield } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { canAccess } from "@/utils/permission";
 
 const RoleManagement = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/role-management";
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const PROTECTED_ROLE_NAMES = ["Super Admin", "Admin", "User", "Kasir"];
+
+  const isProtected = (role) => {
+    return PROTECTED_ROLE_NAMES.includes(role.name || "");
+  };
 
   const { data, isLoading } = useQuery(
     ["roles-table", page],
@@ -63,13 +74,15 @@ const RoleManagement = () => {
             Kelola role dan hak akses pengguna sistem
           </p>
         </div>
-        <Button
-          data-tour="role-add"
-          onClick={() => navigate("/add-role")}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-          <Plus size={18} />
-          Tambah Role
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="role-add"
+            onClick={() => navigate("/add-role")}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <Plus size={18} />
+            Tambah Role
+          </Button>
+        )}
       </div>
 
       <div
@@ -120,6 +133,11 @@ const RoleManagement = () => {
                         <div className="flex items-center gap-2">
                           <Shield size={16} className="text-primary" />
                           <span className="text-sm font-semibold text-foreground">{role.name}</span>
+                          {isProtected(role) && (
+                            <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
+                              Default
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">
@@ -152,18 +170,30 @@ const RoleManagement = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => navigate(`/edit-role/${role.id}`)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                            title="Edit Role">
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(role)}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                            title="Hapus Role">
-                            <Trash2 size={18} />
-                          </button>
+                          {canAccess(user, MENU_KEY, "view") && (
+                            <button
+                              onClick={() => navigate(`/detail-role/${role.id}`)}
+                              className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
+                              title="Detail Role">
+                              <Eye size={18} />
+                            </button>
+                          )}
+                          {canAccess(user, MENU_KEY, "edit") && (
+                            <button
+                              onClick={() => navigate(`/edit-role/${role.id}`)}
+                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                              title="Edit Role">
+                              <Edit size={18} />
+                            </button>
+                          )}
+                          {!isProtected(role) && canAccess(user, MENU_KEY, "delete") && (
+                            <button
+                              onClick={() => setDeleteTarget(role)}
+                              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                              title="Hapus Role">
+                              <Trash2 size={18} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, editMemberTier, deleteMemberTier } from "@/services/member-tier";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import EditMemberTier from "./EditMemberTier";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,15 @@ import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const MemberTier = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/member-tier";
   const [currentPage, setCurrentPage] = useState(1);
   const [editingTier, setEditingTier] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -145,24 +150,28 @@ const MemberTier = () => {
       align: "right",
       render: (tier) => (
         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingTier(tier);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-            title="Edit">
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteTarget(tier);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-            title="Delete">
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTier(tier);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title="Edit">
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTarget(tier);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+              title="Delete">
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -195,13 +204,15 @@ const MemberTier = () => {
             ]}
             title={t("page.memberTier.list.title")}
             description={t("page.memberTier.list.description")}>
-            <Button
-              data-tour="tier-add"
-              onClick={() => navigate("/add-member-tier")}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-              <Plus size={18} />
-              {t("breadcrumb.add")}
-            </Button>
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="tier-add"
+                onClick={() => navigate("/add-member-tier")}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+                <Plus size={18} />
+                {t("breadcrumb.add")}
+              </Button>
+            )}
             <UserGuide guideKey="add-member-tier" />
           </PageHeader>
 

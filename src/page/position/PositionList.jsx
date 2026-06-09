@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -16,11 +17,15 @@ import Modal from "@/components/organism/modal";
 import UploadPositionModal from "@/page/position/components/UploadPositionModal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const PositionList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/position-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -118,33 +123,39 @@ const PositionList = () => {
       align: "center",
       render: (position) => (
         <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/detail-position?positionID=${position.id}`);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-            title={t("common.view")}>
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/edit-position?id=${position.id}`);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-            title={t("common.edit")}>
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(position);
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-            title={t("common.delete")}>
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/detail-position?positionID=${position.id}`);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+              title={t("common.view")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-position?id=${position.id}`);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
+              title={t("common.edit")}>
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(position);
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
+              title={t("common.delete")}>
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -156,6 +167,7 @@ const PositionList = () => {
         breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.position") }]}
         title={t("page.position.list.title")}
         description={t("page.position.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="position-download-template"
           variant="outline"
@@ -191,6 +203,8 @@ const PositionList = () => {
             ? t("common.downloading")
             : t("page.position.button.downloadTemplate")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="position-download-data"
           variant="outline"
@@ -220,7 +234,11 @@ const PositionList = () => {
           )}
           {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <span className="w-px h-7 bg-border mx-1" />
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <Button
           data-tour="position-upload"
           variant="default"
@@ -228,6 +246,8 @@ const PositionList = () => {
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.position.button.uploadExcel")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
         <Button
           data-tour="position-add"
           variant="default"
@@ -236,6 +256,7 @@ const PositionList = () => {
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.position.button.add")}
         </Button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

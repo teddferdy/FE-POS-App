@@ -68,6 +68,7 @@ import CashFlowReport from "./page/report/CashFlowReport";
 import AddRole from "./page/user/AddRole";
 import RoleManagement from "./page/role/RoleManagement";
 import EditRole from "./page/role/EditRole";
+import DetailRole from "./page/role/DetailRole";
 import AddMemberTier from "./page/member-tier/AddMemberTier";
 
 // Employee
@@ -105,6 +106,9 @@ import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 
 // Cashier
 import CashierPage from "./page/cashier/CashierPage";
+
+// Profile
+import ProfilePage from "./page/profile/ProfilePage";
 
 // Table
 import TableList from "./page/table/TableList";
@@ -216,6 +220,7 @@ function App() {
           <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
           <Route path="/add-role" element={withLayout(<AddRole />)} />
           <Route path="/edit-role/:id" element={withLayout(<EditRole />)} />
+          <Route path="/detail-role/:id" element={withLayout(<DetailRole />)} />
           <Route path="/role-management" element={withLayout(<RoleManagement />)} />
           <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
           <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
@@ -278,6 +283,8 @@ function App() {
           <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
 
           <Route path="/support" element={withLayout(<Support />)} />
+
+          <Route path="/profile" element={withLayout(<ProfilePage />)} />
 
           <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
           <Route path="/best-selling" element={withLayout(<GlobalReport />)} />

@@ -21,11 +21,13 @@ import { getShiftDropdown } from "@/services/shift";
 import { getAllLocation } from "@/services/location";
 import { getAllPosition } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
+import { getAllRole, getRoleById } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import AccessMenuModal from "@/components/organism/AccessMenuModal";
 import {
   Select,
   SelectContent,
@@ -53,6 +55,7 @@ const AddEmployee = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [accessMenuModalOpen, setAccessMenuModalOpen] = useState(false);
   const { t } = useTranslation();
 
   const formSchema = useMemo(() => {
@@ -170,9 +173,7 @@ const AddEmployee = () => {
     fetchId();
   }, []);
 
-  const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: positionsData } = useQuery(["positions-all"], () => getAllPosition(), {
@@ -184,6 +185,23 @@ const AddEmployee = () => {
     staleTime: 5 * 60 * 1000
   });
   const departments = departmentsData?.data || departmentsData?.departments || [];
+
+  const { data: rolesData } = useQuery(["roles"], getAllRole, {
+    staleTime: 5 * 60 * 1000
+  });
+  const roles = rolesData?.data || rolesData?.roles || [];
+
+  const selectedRoleIdForAccess = form.watch("roleId") && accessMenuModalOpen ? form.watch("roleId") : null;
+
+  const { data: selectedRoleData } = useQuery(
+    ["role-detail", selectedRoleIdForAccess],
+    () => getRoleById(selectedRoleIdForAccess),
+    {
+      enabled: !!selectedRoleIdForAccess,
+      staleTime: 5 * 60 * 1000
+    }
+  );
+  const selectedRoleAccessMenu = selectedRoleData?.data?.accessMenu || selectedRoleData?.accessMenu || {};
 
   const selectedStore = form.watch("store");
 
@@ -977,23 +995,66 @@ const AddEmployee = () => {
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Pilih Peran (Role)
                           </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={String(field.value || "")}>
                             <SelectTrigger>
                               <SelectValue placeholder="Default: User" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="1">Super Admin</SelectItem>
-                              <SelectItem value="2">Admin</SelectItem>
-                              <SelectItem value="3">User</SelectItem>
-                              <SelectItem value="4">Kasir</SelectItem>
+                              {roles.map((role) => (
+                                <SelectItem key={role.id || role._id} value={String(role.id || role._id)}>
+                                  {role.name || role.role}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="accessMenu"
+                      render={({ field }) => {
+                        let permCount = 0;
+                        try {
+                          const parsed = field.value ? JSON.parse(field.value) : [];
+                          if (Array.isArray(parsed)) permCount = parsed.length;
+                        } catch { permCount = 0; }
+                        const selectedRoleId = form.watch("roleId");
+                        const disableAccess = !selectedRoleId;
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.form.accessMenu")}
+                            </FormLabel>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-start text-left font-normal"
+                              disabled={disableAccess}
+                              onClick={() => setAccessMenuModalOpen(true)}
+                            >
+                              {disableAccess
+                                ? "Pilih role terlebih dahulu"
+                                : permCount > 0
+                                  ? t("page.employee.form.accessMenuCount", { count: permCount })
+                                  : t("page.employee.form.accessMenuButton")}
+                            </Button>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
                   </div>
                 </div>
+
+                <AccessMenuModal
+                  open={accessMenuModalOpen}
+                  onOpenChange={setAccessMenuModalOpen}
+                  value={form.watch("accessMenu")}
+                  roleAccessMenu={selectedRoleAccessMenu}
+                  onSave={(json) => form.setValue("accessMenu", json)}
+                />
 
                 {/* Section 5: Dokumen */}
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">

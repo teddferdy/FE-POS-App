@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ const ExpenseList = () => {
   const [search, setSearch] = useState("");
 
   const user = cookie?.user;
+  const MENU_KEY = "/expense";
   const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
@@ -113,13 +115,15 @@ const ExpenseList = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
-            <Edit size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-expense?id=${item.id || item._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -142,10 +146,12 @@ const ExpenseList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.expense.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.expense.list.description")}</p>
         </div>
-        <Button onClick={() => navigate("/add-expense")} className="gap-2">
-          <Plus size={18} />
-          {t("page.expense.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button onClick={() => navigate("/add-expense")} className="gap-2">
+            <Plus size={18} />
+            {t("page.expense.button.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

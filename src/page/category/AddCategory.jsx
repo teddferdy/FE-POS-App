@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { addCategory } from "@/services/category";
@@ -324,6 +324,7 @@ const allIconsFlat = iconSections.flatMap((s) => s.icons);
 const AddCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("");
   const [iconSearch, setIconSearch] = useState("");
@@ -784,7 +785,10 @@ const AddCategory = () => {
         open={successModal}
         onOpenChange={setSuccessModal}
         title={t("page.category.modal.successAdd")}
-        onConfirm={() => navigate("/category-list")}
+        onConfirm={() => {
+          queryClient.invalidateQueries(["categories"]);
+          navigate("/category-list");
+        }}
       />
       <Modal
         type="confirm"

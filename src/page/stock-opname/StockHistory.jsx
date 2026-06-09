@@ -255,7 +255,7 @@ const StockHistory = () => {
                       {formatDate(h.createdAt)}
                     </TableCell>
                     <TableCell className="font-medium text-sm">
-                      {h.productData?.nameProduct || h.productName || "-"}
+                      {h.productData?.nameProduct || h.ingredientName || "-"}
                     </TableCell>
                     <TableCell className="text-right text-sm">
                       {formatNumber(h.quantityBefore)}

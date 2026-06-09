@@ -36,6 +36,18 @@ export const getLowStockProducts = async () => {
   return data;
 };
 
+export const checkStockOpnameExists = async (store) => {
+  const { data, status } = await axiosInstance.get(`/stock-opname/check-exists?store=${store}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getStockOpnameCompositionItems = async (store) => {
+  const { data, status } = await axiosInstance.get(`/stock-opname/composition-items?store=${store}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const getStockOpname = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.page) params.append("page", payload.page);

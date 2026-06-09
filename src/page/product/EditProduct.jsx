@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -20,7 +20,10 @@ import {
   TrendingUp,
   Store,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  CloudUpload,
+  CheckCircle2,
+  XCircle
 } from "lucide-react";
 import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
@@ -31,7 +34,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
-import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { getProductById, editProduct } from "@/services/product";
 import { getAllCategory } from "@/services/category";
@@ -40,6 +42,7 @@ import { getAllTaxConfig } from "@/services/tax-config";
 
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
+import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import UserGuide from "@/components/organism/UserGuide";
 
 const EditProduct = () => {
@@ -84,6 +87,28 @@ const EditProduct = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [storePrices, setStorePrices] = useState([]);
   const [savingStoreId, setSavingStoreId] = useState(null);
+  const [noStockOpname, setNoStockOpname] = useState(false);
+  const [composition, setComposition] = useState([]);
+  const [compositionOptions, setCompositionOptions] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => setPreviewImage(event.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setPreviewImage(null);
+    setImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const { data: productData, isLoading: loadingProduct } = useQuery(
     ["product-edit", productId],
@@ -115,7 +140,7 @@ const EditProduct = () => {
   );
   const taxOptions = taxData?.data || [];
 
-  const { data: locationsData } = useQuery(["locations-for-edit"], getAllLocation, {
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];
@@ -129,7 +154,8 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (storePricesData?.data) {
-      setStorePrices(storePricesData.data);
+      const prices = storePricesData.data.storePrices || storePricesData.data;
+      setStorePrices(Array.isArray(prices) ? prices : []);
     }
   }, [storePricesData]);
 
@@ -197,19 +223,66 @@ const EditProduct = () => {
         isAvailable: product.isAvailable ?? true
       });
       if (product.isOption && product.options) {
-        setVariantGroups(product.options);
+        const parsed =
+          typeof product.options === "string" ? JSON.parse(product.options) : product.options;
+        setVariantGroups(Array.isArray(parsed) ? parsed : []);
       }
       if (product.hasModifiers && product.modifiers) {
-        setModifierItems(product.modifiers);
+        const parsed =
+          typeof product.modifiers === "string" ? JSON.parse(product.modifiers) : product.modifiers;
+        setModifierItems(Array.isArray(parsed) ? parsed : []);
       }
       if (product.priceTiers) {
-        setPriceTiers(product.priceTiers);
+        const parsed =
+          typeof product.priceTiers === "string"
+            ? JSON.parse(product.priceTiers)
+            : product.priceTiers;
+        setPriceTiers(Array.isArray(parsed) ? parsed : []);
       }
     }
   }, [product, form]);
 
   const isOption = form.watch("isOption");
   const hasModifiers = form.watch("hasModifiers");
+  const tipeProduk = form.watch("tipeProduk");
+
+  useEffect(() => {
+    if (tipeProduk === "bahan_baku") {
+      const store =
+        Array.isArray(product.store) && product.store.length > 0
+          ? product.store[0]
+          : product.store || null;
+      if (store) {
+        checkStockOpnameExists(store)
+          .then((res) => setNoStockOpname(!res?.data?.exists))
+          .catch(() => setNoStockOpname(false));
+      }
+    } else {
+      setNoStockOpname(false);
+    }
+  }, [tipeProduk, product.store]);
+
+  useEffect(() => {
+    const store =
+      Array.isArray(product.store) && product.store.length > 0
+        ? product.store[0]
+        : product.store || null;
+    if (store) {
+      getStockOpnameCompositionItems(store)
+        .then((res) => setCompositionOptions(res?.data || []))
+        .catch(() => setCompositionOptions([]));
+    }
+  }, [product.store]);
+
+  useEffect(() => {
+    if (product.id && product.composition) {
+      const parsed =
+        typeof product.composition === "string"
+          ? JSON.parse(product.composition)
+          : product.composition;
+      setComposition(Array.isArray(parsed) ? parsed : []);
+    }
+  }, [product]);
 
   const editMutation = useMutation(editProduct, {
     onSuccess: () => {
@@ -304,6 +377,7 @@ const EditProduct = () => {
   const canGoNext = () => {
     if (currentStep === 1) {
       const values = form.getValues();
+      if (values.tipeProduk === "bahan_baku" && composition.length === 0) return false;
       return !!values.nameProduct && !!values.category;
     }
     if (currentStep === 2) {
@@ -315,10 +389,14 @@ const EditProduct = () => {
 
   const handleNext = () => {
     if (!canGoNext()) {
-      const msg =
+      const values = form.getValues();
+      let msg =
         currentStep === 1
           ? "Lengkapi field wajib (Nama Produk & Kategori) sebelum lanjut."
           : "Lengkapi field wajib (Harga Jual) sebelum lanjut.";
+      if (currentStep === 1 && values.tipeProduk === "bahan_baku" && composition.length === 0) {
+        msg = "Tambah minimal satu bahan baku di komposisi sebelum lanjut.";
+      }
       toast.error("Lengkapi Data", { description: msg });
       return;
     }
@@ -349,7 +427,51 @@ const EditProduct = () => {
     setPriceTiers((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const addComposition = () => {
+    setComposition((prev) => [...prev, { id: Date.now(), name: "", qty: 1, unit: "" }]);
+  };
+
+  const updateComposition = (id, field, value) => {
+    setComposition((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)));
+  };
+
+  const removeComposition = (id) => {
+    setComposition((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleCompositionSelect = (id, selectedName) => {
+    const opt = compositionOptions.find((o) => o.name === selectedName);
+    setComposition((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, name: selectedName, unit: opt?.unit || c.unit } : c))
+    );
+  };
+
+  const onSubmit = async (values, saveAsDraft = false) => {
+    if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
+      if (composition.length === 0) {
+        toast.error("Komposisi wajib diisi", {
+          description: "Tambah minimal satu bahan baku untuk produk ini"
+        });
+        return;
+      }
+      try {
+        const store =
+          Array.isArray(product.store) && product.store.length > 0
+            ? product.store[0]
+            : product.store || null;
+        if (store) {
+          const res = await checkStockOpnameExists(store);
+          if (!res?.data?.exists) {
+            toast.warning("Belum ada stok opname", {
+              description: "Disarankan melakukan stok opname untuk bahan baku terlebih dahulu"
+            });
+          }
+        }
+      } catch {
+        // silent - non-blocking check
+      }
+    }
+
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("id", productId);
@@ -371,6 +493,7 @@ const EditProduct = () => {
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
+    payload.append("tipeProduk", values.tipeProduk);
     payload.append("isOption", !!isOption);
     payload.append("hasModifiers", !!hasModifiers);
 
@@ -380,6 +503,12 @@ const EditProduct = () => {
     if (hasModifiers && modifierItems.length > 0) {
       payload.append("modifiers", JSON.stringify(modifierItems));
     }
+
+    if (composition.length > 0) {
+      payload.append("composition", JSON.stringify(composition));
+    }
+
+    if (imageFile) payload.append("image", imageFile);
 
     editMutation.mutate(payload);
   };
@@ -425,25 +554,38 @@ const EditProduct = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Stepper Progress */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-0 max-w-2xl mx-auto">
+          {/* Stepper */}
+          <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
+            <div className="flex items-center justify-between max-w-2xl mx-auto">
               {[
-                { step: 1, label: t("page.product.step.info") },
-                { step: 2, label: t("page.product.step.price") },
-                { step: 3, label: t("page.product.step.media") }
+                {
+                  num: 1,
+                  title: t("page.product.step.info"),
+                  desc: t("page.product.step.infoDesc")
+                },
+                {
+                  num: 2,
+                  title: t("page.product.step.price"),
+                  desc: t("page.product.step.priceDesc")
+                },
+                {
+                  num: 3,
+                  title: t("page.product.step.media"),
+                  desc: t("page.product.step.mediaDesc")
+                }
               ].map((s, i) => (
-                <React.Fragment key={s.step}>
-                  <div className="flex items-center gap-2">
+                <React.Fragment key={s.num}>
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                        currentStep > s.step
+                      onClick={() => setCurrentStep(s.num)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
+                        currentStep === s.num
                           ? "bg-primary text-primary-foreground"
-                          : currentStep === s.step
-                            ? "bg-primary text-primary-foreground ring-2 ring-primary/30"
+                          : currentStep > s.num
+                            ? "bg-green-500 text-white"
                             : "bg-muted text-muted-foreground"
                       }`}>
-                      {currentStep > s.step ? (
+                      {currentStep > s.num ? (
                         <svg
                           width="16"
                           height="16"
@@ -456,17 +598,20 @@ const EditProduct = () => {
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       ) : (
-                        s.step
+                        s.num
                       )}
                     </div>
-                    <span
-                      className={`text-sm font-medium hidden sm:inline ${currentStep >= s.step ? "text-foreground" : "text-muted-foreground"}`}>
-                      {s.label}
-                    </span>
+                    <div className="hidden sm:block">
+                      <p
+                        className={`text-sm font-semibold ${currentStep >= s.num ? "text-foreground" : "text-muted-foreground"}`}>
+                        {s.title}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">{s.desc}</p>
+                    </div>
                   </div>
                   {i < 2 && (
                     <div
-                      className={`flex-1 h-0.5 mx-3 rounded transition-colors ${currentStep > s.step ? "bg-primary" : "bg-muted"}`}
+                      className={`flex-1 h-px mx-4 ${currentStep > s.num ? "bg-green-500" : "bg-border"}`}
                     />
                   )}
                 </React.Fragment>
@@ -474,12 +619,12 @@ const EditProduct = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
               {currentStep === 1 && (
                 <>
                   {/* Informasi Produk */}
-                  <Card className="p-6">
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <Info size={18} className="text-primary" />
                       <h3 className="text-base font-semibold text-foreground">
@@ -571,8 +716,12 @@ const EditProduct = () => {
                                 <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
                                   <div className="text-center flex flex-col items-center gap-2">
                                     <Package size={28} className="text-muted-foreground/60" />
-                                    <p className="text-sm font-medium text-foreground">Belum ada pajak</p>
-                                    <p className="text-xs text-muted-foreground">Tambah pajak terlebih dahulu di Pengaturan</p>
+                                    <p className="text-sm font-medium text-foreground">
+                                      Belum ada pajak
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Tambah pajak terlebih dahulu di Pengaturan
+                                    </p>
                                   </div>
                                   <Button
                                     type="button"
@@ -635,9 +784,26 @@ const EditProduct = () => {
                               onChange={field.onChange}
                               className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
                               <option value="menu">{t("page.product.form.tipeProdukMenu")}</option>
-                              <option value="bahan_baku">{t("page.product.form.tipeProdukBahanBaku")}</option>
+                              <option value="bahan_baku">
+                                {t("page.product.form.tipeProdukBahanBaku")}
+                              </option>
                             </select>
                             <FormMessage />
+                            {noStockOpname && (
+                              <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
+                                  warning
+                                </span>
+                                <div>
+                                  <p className="text-xs font-semibold text-amber-800">
+                                    Belum ada stok opname
+                                  </p>
+                                  <p className="text-[11px] text-amber-700 mt-0.5">
+                                    Harap lakukan stok opname untuk bahan baku ini terlebih dahulu
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </FormItem>
                         )}
                       />
@@ -675,14 +841,100 @@ const EditProduct = () => {
                         )}
                       />
                     </div>
-                  </Card>
+                  </div>
+
+                  {form.watch("tipeProduk") === "bahan_baku" && (
+                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                      <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                        <Package size={18} className="text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">
+                          Komposisi <span className="text-destructive">*</span>
+                        </h3>
+                      </div>
+                      <div className="space-y-3">
+                        {composition.length > 0 ? (
+                          composition.map((c) => (
+                            <div key={c.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <select
+                                    value={c.name}
+                                    onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
+                                    className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                                    <option value="">Pilih bahan</option>
+                                    {compositionOptions.map((opt, i) => (
+                                      <option key={i} value={opt.name}>
+                                        {opt.name} {opt.unit ? `(${opt.unit})` : ""}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="w-24 shrink-0">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="Qty"
+                                    value={c.qty}
+                                    onChange={(e) => updateComposition(c.id, "qty", e.target.value)}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <div className="w-20 shrink-0">
+                                  <Input
+                                    placeholder="Unit"
+                                    value={c.unit}
+                                    onChange={(e) =>
+                                      updateComposition(c.id, "unit", e.target.value)
+                                    }
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive shrink-0"
+                                  onClick={() => removeComposition(c.id)}>
+                                  <Trash2 size={15} />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            Belum ada komposisi. Tambah bahan baku dari stok opname.
+                          </p>
+                        )}
+                        {compositionOptions.length === 0 ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => navigate("/add-stock-opname")}>
+                            <Plus size={15} /> Tambah Stok Opname Dulu
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={addComposition}>
+                            <Plus size={15} /> Tambah Bahan
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 
               {currentStep === 2 && (
                 <>
                   {/* Harga & Stok */}
-                  <Card className="p-6">
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <DollarSign size={18} className="text-primary" />
                       <h3 className="text-base font-semibold text-foreground">
@@ -761,12 +1013,11 @@ const EditProduct = () => {
                           </FormItem>
                         )}
                       />
-
                     </div>
-                  </Card>
+                  </div>
 
                   {/* Harga Berjenjang */}
-                  <Card className="p-6">
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <TrendingUp size={18} className="text-primary" />
                       <h3 className="text-base font-semibold text-foreground">
@@ -821,11 +1072,11 @@ const EditProduct = () => {
                         </p>
                       )}
                     </div>
-                  </Card>
+                  </div>
 
                   {/* Harga per Toko */}
                   {isSuperAdmin && (
-                    <Card className="p-6">
+                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                       <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                         <Store size={18} className="text-primary" />
                         <h3 className="text-base font-semibold text-foreground">
@@ -887,15 +1138,15 @@ const EditProduct = () => {
                           ))}
                         </div>
                       )}
-                    </Card>
+                    </div>
                   )}
                 </>
               )}
 
               {currentStep === 3 && (
                 <>
-                  {/* Varian & Opsi */}
-                  <Card className="p-6">
+                  {/* Varian & Opsi + Modifiers */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                       <Layers size={18} className="text-primary" />
                       <h3 className="text-base font-semibold text-foreground">
@@ -991,95 +1242,205 @@ const EditProduct = () => {
                         </div>
                       )}
                     </div>
-                  </Card>
 
-                  {/* Modifiers */}
-                  <Card className="p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <Tag size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.modifierSection")}
-                      </h3>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {t("page.product.form.hasModifier")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t("page.product.form.hasModifierDesc")}
-                        </p>
+                    {/* Separator */}
+                    <div className="border-t border-border my-6" />
+
+                    {/* Modifiers */}
+                    <div>
+                      <div className="flex items-center gap-2 pb-4 mb-5">
+                        <Tag size={18} className="text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">
+                          {t("page.product.form.modifierSection")}
+                        </h3>
                       </div>
-                      <Switch
-                        checked={form.watch("hasModifiers") || modifierItems.length > 0}
-                        onCheckedChange={handleToggleModifier}
-                      />
-                    </div>
-                    {hasModifiers && (
-                      <div className="space-y-3 mt-4">
-                        {modifierItems.map((mod) => (
-                          <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <Input
-                                placeholder={t("page.product.form.modifierNamePlaceholder")}
-                                value={mod.name}
-                                onChange={(e) => updateModifierItem(mod.id, "name", e.target.value)}
-                                className="h-9 text-sm"
-                              />
-                              <div className="flex items-center gap-2">
-                                <div className="relative flex-1">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
-                                    Rp
-                                  </span>
-                                  <Input
-                                    type="number"
-                                    placeholder="0"
-                                    value={mod.price}
-                                    onChange={(e) =>
-                                      updateModifierItem(mod.id, "price", e.target.value)
-                                    }
-                                    className="h-9 text-sm pl-10"
-                                  />
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("page.product.form.hasModifier")}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t("page.product.form.hasModifierDesc")}
+                          </p>
+                        </div>
+                        <Switch
+                          checked={form.watch("hasModifiers") || modifierItems.length > 0}
+                          onCheckedChange={handleToggleModifier}
+                        />
+                      </div>
+                      {hasModifiers && (
+                        <div className="space-y-3 mt-4">
+                          {compositionOptions.length > 0 && (
+                            <div className="bg-muted/30 rounded-lg p-4">
+                              <select
+                                onChange={(e) => {
+                                  const opt = compositionOptions.find(
+                                    (o) => o.name === e.target.value
+                                  );
+                                  if (opt) {
+                                    setModifierItems((prev) => [
+                                      ...prev,
+                                      { id: Date.now(), name: opt.name, price: 0 }
+                                    ]);
+                                    form.setValue("hasModifiers", true);
+                                  }
+                                  e.target.value = "";
+                                }}
+                                className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                                <option value="">Ambil dari stok opname...</option>
+                                {compositionOptions.map((opt, i) => (
+                                  <option key={i} value={opt.name}>
+                                    {opt.name} {opt.unit ? `(${opt.unit})` : ""}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                          {modifierItems.map((mod) => (
+                            <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <Input
+                                  placeholder={t("page.product.form.modifierNamePlaceholder")}
+                                  value={mod.name}
+                                  onChange={(e) =>
+                                    updateModifierItem(mod.id, "name", e.target.value)
+                                  }
+                                  className="h-9 text-sm"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <div className="relative flex-1">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                                      Rp
+                                    </span>
+                                    <Input
+                                      type="number"
+                                      placeholder="0"
+                                      value={mod.price}
+                                      onChange={(e) =>
+                                        updateModifierItem(mod.id, "price", e.target.value)
+                                      }
+                                      className="h-9 text-sm pl-10"
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive shrink-0"
+                                    onClick={() => removeModifierItem(mod.id)}>
+                                    <Trash2 size={14} />
+                                  </Button>
                                 </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive shrink-0"
-                                  onClick={() => removeModifierItem(mod.id)}>
-                                  <Trash2 size={14} />
-                                </Button>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                        <Button
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={addModifierItem}
+                            className="gap-2">
+                            <Plus size={16} /> {t("page.product.form.addModifier")}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {currentStep === 3 && (
+                <>
+                  {/* Image Upload */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
+                      <CloudUpload size={18} className="text-primary" />
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.imageSection")}
+                      </h3>
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+
+                    {previewImage ? (
+                      <div className="relative rounded-lg overflow-hidden border border-border">
+                        <img
+                          src={previewImage}
+                          alt={t("page.product.form.previewAlt")}
+                          className="w-full aspect-square object-cover"
+                        />
+                        <button
                           type="button"
-                          variant="outline"
-                          onClick={addModifierItem}
-                          className="gap-2">
-                          <Plus size={16} /> {t("page.product.form.addModifier")}
-                        </Button>
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearImage();
+                          }}
+                          className="absolute top-2 right-2 w-8 h-8 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 rounded-lg p-8 text-center cursor-pointer transition-all group">
+                        <CloudUpload
+                          size={48}
+                          className="mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                        />
+                        <p className="text-sm font-medium text-foreground">
+                          {t("page.product.form.uploadImage")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.product.form.clickToSelect")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.product.form.imageFormat")}
+                        </p>
                       </div>
                     )}
-                  </Card>
+                  </div>
 
                   {/* Status */}
-                  <Card className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
+                      <Tag size={18} className="text-primary" />
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.product.form.statusSection")}
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
                       <FormField
                         control={form.control}
                         name="status"
                         render={({ field }) => (
                           <FormItem>
                             <div
-                              className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-colors ${field.value ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
+                              className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                                field.value
+                                  ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+                              }`}>
                               <div className="flex items-center gap-3">
                                 <div
-                                  className={`w-2 h-2 rounded-full ${field.value ? "bg-green-500" : "bg-red-500"}`}
-                                />
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    field.value
+                                      ? "bg-green-600 text-white"
+                                      : "bg-destructive/10 text-destructive"
+                                  }`}>
+                                  {field.value ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
+                                    Status{" "}
                                     {field.value
                                       ? t("page.product.form.active")
                                       : t("page.product.form.inactive")}
@@ -1096,17 +1457,27 @@ const EditProduct = () => {
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name="isAvailable"
                         render={({ field }) => (
                           <FormItem>
                             <div
-                              className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-colors ${field.value ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}>
+                              className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                                field.value
+                                  ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+                              }`}>
                               <div className="flex items-center gap-3">
                                 <div
-                                  className={`w-2 h-2 rounded-full ${field.value ? "bg-green-500" : "bg-red-500"}`}
-                                />
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    field.value
+                                      ? "bg-green-600 text-white"
+                                      : "bg-destructive/10 text-destructive"
+                                  }`}>
+                                  {field.value ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
                                     {field.value
@@ -1126,48 +1497,14 @@ const EditProduct = () => {
                         )}
                       />
                     </div>
-                  </Card>
-                </>
-              )}
-            </div>
-
-            {/* Right Column - Tips */}
-            <div className="space-y-6">
-              {currentStep === 3 && (
-                <>
-                  <Card className="p-6">
-                    <h3 className="text-sm font-semibold text-foreground mb-3">
-                      {t("page.product.form.productInfo")}
-                    </h3>
-                    <div className="space-y-3 text-xs text-muted-foreground">
-                      <div className="flex items-start gap-2">
-                        <span className="material-symbols-outlined text-base text-primary shrink-0">
-                          badge
-                        </span>
-                        <span>
-                          {t("page.product.form.skuLabel")}:{" "}
-                          <strong className="text-foreground font-mono">
-                            {product.sku || "-"}
-                          </strong>
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="material-symbols-outlined text-base text-primary shrink-0">
-                          calendar_today
-                        </span>
-                        <span>
-                          {t("page.product.form.createdAtLabel")}:{" "}
-                          {new Date(product.createdAt).toLocaleDateString("id-ID")}
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
+                  </div>
                 </>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-border mt-6">
+          {/* Footer Actions */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
             <Button
               type="button"
               variant="outline"

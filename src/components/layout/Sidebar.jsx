@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -10,41 +10,84 @@ import {
   sidebarMenuCashier,
   sidebarMenuUser
 } from "@/utils/sidebar-menu";
-import { filterMenuByPermission } from "@/utils/permission";
+import { filterMenuByPermission, parseAccessMenu } from "@/utils/permission";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
-  const [expandedMenus, setExpandedMenus] = useState({});
+  const [expandedMenus, setExpandedMenus] = useState(() => {
+    const result = {};
+    const allMenus = [sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuCashier, sidebarMenuUser];
+    allMenus.forEach((group) => {
+      group.forEach((item) => {
+        if (!item.children) return;
+        const hasActive = item.children.some((child) => {
+          if (!child.href) return false;
+          if (location.pathname === child.href) return true;
+          if (child.href.endsWith("-list")) {
+            const base = child.href.replace("/", "").replace("-list", "");
+            return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
+          }
+          const resource = child.href.replace("/", "");
+          if (resource) {
+            return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${resource}`);
+          }
+          return false;
+        });
+        if (hasActive) result[item.title] = true;
+      });
+    });
+    return result;
+  });
 
   const handleSupportClick = () => {
     navigate("/support");
   };
 
-  const user = cookie?.user;
+  const user = useMemo(() => {
+    const fromSession = () => {
+      try {
+        const stored = sessionStorage.getItem("user");
+        return stored ? JSON.parse(stored) : null;
+      } catch (e) {
+        return null;
+      }
+    };
+    const session = fromSession();
+    if (session && session.accessMenu && Array.isArray(session.accessMenu) && session.accessMenu.length > 0) {
+      return session;
+    }
+    return cookie?.user;
+  }, [cookie?.user]);
   const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
+  const hasAccessMenu = user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
 
-  let baseMenu = sidebarMenuUser;
-  if (role === "super_admin") baseMenu = sidebarMenuSuperAdmin;
-  else if (role === "admin") baseMenu = sidebarMenuAdmin;
-  else if (role === "cashier") baseMenu = sidebarMenuCashier;
+  const baseMenu = useMemo(() => {
+    if (hasAccessMenu || role === "super_admin") return sidebarMenuSuperAdmin;
+    if (role === "admin") return sidebarMenuAdmin;
+    if (role === "cashier" || role === "kasir") return sidebarMenuCashier;
+    return sidebarMenuUser;
+  }, [hasAccessMenu, role]);
 
-  const menuItems = filterMenuByPermission(baseMenu, user);
+  const menuItems = useMemo(() => filterMenuByPermission(baseMenu, user), [baseMenu, user]);
 
   useEffect(() => {
-    if (!collapsed) {
-      const toOpen = {};
-      menuItems.forEach((item) => {
-        if (item.children) {
-          const hasActive = item.children.some((child) => matchPath(child.href));
-          if (hasActive) toOpen[item.title] = true;
-        }
-      });
-      setExpandedMenus((prev) => ({ ...prev, ...toOpen }));
-    }
-  }, [location.pathname, collapsed]);
+    if (collapsed) return;
+    const toOpen = {};
+    menuItems.forEach((item) => {
+      if (item.children) {
+        const hasActive = item.children.some((child) => matchPath(child.href));
+        if (hasActive) toOpen[item.title] = true;
+      }
+    });
+    setExpandedMenus((prev) => {
+      const hasChanges = Object.keys(toOpen).some((k) => prev[k] !== toOpen[k]);
+      if (!hasChanges) return prev;
+      return { ...prev, ...toOpen };
+    });
+  }, [location.pathname, collapsed, menuItems]);
 
   const matchPath = (href) => {
     if (!href) return false;
@@ -58,7 +101,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
     // Handle exception cases where add/edit/detail paths don't follow standard naming
     const exceptionMap = {
-      "/role-management": ["/add-role", "/edit-role"]
+      "/role-management": ["/add-role", "/edit-role", "/detail-role"]
     };
 
     if (exceptionMap[href]) {
@@ -97,6 +140,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const handleLogout = () => {
     removeCookie("token");
     removeCookie("user");
+    try { sessionStorage.removeItem("user"); } catch (e) {}
     navigate("/");
   };
 

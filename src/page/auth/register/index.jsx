@@ -57,7 +57,7 @@ const RegisterPage = () => {
     isLoading,
     isError
   } = useQuery({
-    queryKey: ["getAllLocation"],
+    queryKey: ["allLocations"],
     queryFn: getAllLocation
   });
 

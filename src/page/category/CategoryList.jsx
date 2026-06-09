@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,7 @@ import Modal from "@/components/organism/modal";
 import UploadCategoryModal from "@/page/category/components/UploadCategoryModal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -55,6 +57,9 @@ const CategoryList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/category-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -234,32 +239,38 @@ const CategoryList = () => {
       align: "right",
       render: (cat) => (
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/detail-category?id=${cat.id || cat._id}`);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-            title={t("common.view")}>
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/edit-category?id=${cat.id || cat._id}`);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-            title={t("common.edit")}>
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(cat.id || cat._id);
-            }}
-            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/detail-category?id=${cat.id || cat._id}`);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title={t("common.view")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-category?id=${cat.id || cat._id}`);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title={t("common.edit")}>
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(cat.id || cat._id);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -271,6 +282,7 @@ const CategoryList = () => {
         breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
         title={t("page.category.list.title")}
         description={t("page.category.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="category-download-template"
           variant="outline"
@@ -302,6 +314,8 @@ const CategoryList = () => {
             ? t("page.category.button.downloading")
             : t("page.category.button.downloadTemplate")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
         <Button
           data-tour="category-download-data"
           variant="outline"
@@ -331,7 +345,11 @@ const CategoryList = () => {
             ? t("page.category.button.downloading")
             : t("page.category.button.downloadData")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <span className="w-px h-7 bg-border mx-1" />
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
         <Button
           data-tour="category-upload"
           variant="default"
@@ -339,6 +357,8 @@ const CategoryList = () => {
           <span className="material-symbols-outlined text-lg">upload</span>
           {t("page.category.button.upload")}
         </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
         <Button
           data-tour="category-add"
           onClick={() => navigate("/add-category")}
@@ -346,6 +366,7 @@ const CategoryList = () => {
           <span className="material-symbols-outlined text-lg">add</span>
           {t("page.category.button.add")}
         </Button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

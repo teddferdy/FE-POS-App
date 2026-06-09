@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const SupplierList = () => {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ const SupplierList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
-  // const role = user?.role || user?.roleType || "";
+  const MENU_KEY = "/supplier";
   const { data, isLoading } = useQuery(
     ["suppliers", page, limit, search],
     () => getAllSupplier({ page, limit, search }),
@@ -120,20 +121,24 @@ const SupplierList = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary"
-            onClick={() => navigate(`/edit-supplier?id=${item.id || item._id}`)}>
-            <Edit size={15} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive"
-            onClick={() => handleDelete(item)}>
-            <Trash2 size={15} />
-          </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/edit-supplier?id=${item.id || item._id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive"
+              onClick={() => handleDelete(item)}>
+              <Trash2 size={15} />
+            </Button>
+          )}
         </div>
       )
     }
@@ -160,13 +165,15 @@ const SupplierList = () => {
             {t("page.supplier.list.description")}
           </p>
         </div>
-        <Button
-          data-tour="supplier-add"
-          onClick={() => navigate("/add-supplier")}
-          className="gap-2">
-          <Plus size={18} />
-          {t("page.supplier.button.add")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="supplier-add"
+            onClick={() => navigate("/add-supplier")}
+            className="gap-2">
+            <Plus size={18} />
+            {t("page.supplier.button.add")}
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}

@@ -19,6 +19,7 @@ const DataTable = ({
   selectable = false,
   selectedIds = [],
   onSelectionChange = () => {},
+  isSelectable,
   rowKey
 }) => {
   const getRowId = (row) => {
@@ -26,20 +27,29 @@ const DataTable = ({
     return row.id || row._id;
   };
 
+  const isRowSelectable = (row) => (isSelectable ? isSelectable(row) : true);
+
+  const currentPageSelectableIds = data.filter(isRowSelectable).map(getRowId);
   const currentPageIds = data.map(getRowId);
-  const isAllSelected = data.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+  const isAllSelected =
+    currentPageSelectableIds.length > 0 &&
+    currentPageSelectableIds.every((id) => selectedIds.includes(id));
   const isSomeSelected = selectedIds.length > 0 && !isAllSelected;
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
-      onSelectionChange([]);
+      onSelectionChange(selectedIds.filter((id) => !currentPageSelectableIds.includes(id)));
     } else {
-      onSelectionChange(currentPageIds);
+      const newIds = [
+        ...selectedIds.filter((id) => !currentPageSelectableIds.includes(id)),
+        ...currentPageSelectableIds
+      ];
+      onSelectionChange(newIds);
     }
   };
 
-  const toggleSelectRow = (e, row) => {
-    e.stopPropagation();
+  const toggleSelectRow = (row) => {
+    if (!isRowSelectable(row)) return;
     const id = getRowId(row);
     onSelectionChange(
       selectedIds.includes(id) ? selectedIds.filter((sid) => sid !== id) : [...selectedIds, id]
@@ -51,16 +61,18 @@ const DataTable = ({
         {
           header: (
             <Checkbox
-              checked={isSomeSelected ? "indeterminate" : isAllSelected}
+              checked={currentPageSelectableIds.length === 0 ? false : isSomeSelected ? "indeterminate" : isAllSelected}
+              disabled={currentPageSelectableIds.length === 0}
               onCheckedChange={toggleSelectAll}
             />
           ),
-          render: (row) => (
-            <Checkbox
-              checked={selectedIds.includes(getRowId(row))}
-              onCheckedChange={(e) => toggleSelectRow(e, row)}
-            />
-          )
+          render: (row) =>
+            isRowSelectable(row) ? (
+              <Checkbox
+                checked={selectedIds.includes(getRowId(row))}
+                onCheckedChange={() => toggleSelectRow(row)}
+              />
+            ) : null
         },
         ...columns
       ]

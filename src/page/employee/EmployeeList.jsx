@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
 const positionColors = {
   manager: "bg-primary-fixed text-on-primary-fixed",
@@ -28,6 +30,9 @@ const getPositionClass = (position) => {
 const EmployeeList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/employee-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
@@ -155,24 +160,30 @@ const EmployeeList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-            title="Lihat Detail">
-            <span className="material-symbols-outlined text-lg">visibility</span>
-          </button>
-          <button
-            onClick={() => navigate(`/edit-employee?id=${row.id}`)}
-            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-            title="Edit Karyawan">
-            <span className="material-symbols-outlined text-lg">edit</span>
-          </button>
-          <button
-            onClick={() => handleDelete(row)}
-            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-            title="Hapus Karyawan">
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+              title="Lihat Detail">
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={() => navigate(`/edit-employee?id=${row.id}`)}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+              title="Edit Karyawan">
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={() => handleDelete(row)}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+              title="Hapus Karyawan">
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
         </div>
       )
     }
@@ -187,13 +198,15 @@ const EmployeeList = () => {
         ]}
         title={t("page.employee.list.title")}
         description={t("page.employee.list.description")}>
-        <Button
-          data-tour="employee-add"
-          onClick={() => navigate("/add-employee")}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-          <span className="material-symbols-outlined text-lg">person_add</span>
-          {t("page.employee.add.title")}
-        </Button>
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="employee-add"
+            onClick={() => navigate("/add-employee")}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <span className="material-symbols-outlined text-lg">person_add</span>
+            {t("page.employee.add.title")}
+          </Button>
+        )}
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
