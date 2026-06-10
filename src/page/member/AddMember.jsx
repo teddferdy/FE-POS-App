@@ -60,8 +60,8 @@ const AddMember = () => {
 
   const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
-    if (!form.name || !form.phoneNumber) {
-      toast.error("Validasi", { description: "Nama dan nomor telepon wajib diisi" });
+    if (!form.name || !form.phoneNumber || !form.email || !form.birthDate) {
+      toast.error("Validasi", { description: "Nama lengkap, email, nomor telepon, dan tanggal lahir wajib diisi" });
       return;
     }
     setIsSubmitting(true);
@@ -114,6 +114,7 @@ const AddMember = () => {
                       onChange={handleChange}
                       className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                       placeholder="Contoh: Budi Santoso"
+                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -127,6 +128,7 @@ const AddMember = () => {
                       onChange={handleChange}
                       className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                       placeholder="budi.santoso@email.com"
+                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -140,6 +142,7 @@ const AddMember = () => {
                       onChange={handleChange}
                       className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                       placeholder="0812-XXXX-XXXX"
+                      required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -152,6 +155,7 @@ const AddMember = () => {
                       value={form.birthDate}
                       onChange={handleChange}
                       className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
+                      required
                     />
                   </div>
                   <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
