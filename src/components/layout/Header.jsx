@@ -303,8 +303,17 @@ const globalPages = [
   "/tax-list",
   "/add-tax",
   "/edit-tax",
+  "/type-payment-list",
   "/add-type-payment",
-  "/edit-type-payment"
+  "/edit-type-payment",
+  "/shift-list",
+  "/add-shift",
+  "/edit-shift",
+  "/stock-history",
+  "/low-stock",
+  "/low-stock-all",
+  "/stock-opname",
+  "/detail-member-tier"
 ];
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {
@@ -320,7 +329,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const userHeader = cookie?.user;
   const roleHeader = userHeader?.role || userHeader?.roleType || "";
   const isGlobalPage = globalPages.some((p) => location.pathname.startsWith(p));
-  const showStoreSelector = roleHeader === "super_admin" ? true : !isGlobalPage;
+  const showStoreSelector = !isGlobalPage;
 
   useEffect(() => {
     if (theme === "dark") {
