@@ -70,6 +70,7 @@ const InvoicePreview = ({
   memberTier,
   memberPoints,
   logoUrl,
+  showLogo = true,
   showStoreName = true,
   showAddress = true,
   showMemberInfo = true
@@ -84,7 +85,7 @@ const InvoicePreview = ({
     <div className="bg-white text-black rounded-xl shadow-sm border border-border p-5 max-w-sm mx-auto font-mono text-xs leading-relaxed select-all">
       {showHeader && (
         <div className="text-center border-b-2 border-gray-300 pb-4 mb-3">
-          {logoUrl && (
+          {showLogo && logoUrl && (
             <img
               src={logoUrl}
               alt="Logo"
@@ -203,6 +204,7 @@ const InvoicePage = () => {
   const [showStoreName, setShowStoreName] = useState(true);
   const [showAddress, setShowAddress] = useState(true);
   const [showMemberInfo, setShowMemberInfo] = useState(true);
+  const [showLogo, setShowLogo] = useState(true);
   const [logoUrl, setLogoUrl] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -288,6 +290,7 @@ const InvoicePage = () => {
       if (settingsData.showStoreName !== undefined) setShowStoreName(settingsData.showStoreName);
       if (settingsData.showAddress !== undefined) setShowAddress(settingsData.showAddress);
       if (settingsData.showMemberInfo !== undefined) setShowMemberInfo(settingsData.showMemberInfo);
+      if (settingsData.showLogo !== undefined) setShowLogo(settingsData.showLogo);
       if (settingsData.logo) {
         setLogoUrl(settingsData.logo);
         setLogoPreview(settingsData.logo);
@@ -317,6 +320,7 @@ const InvoicePage = () => {
       payload.append("showStoreName", showStoreName);
       payload.append("showAddress", showAddress);
       payload.append("showMemberInfo", showMemberInfo);
+      payload.append("showLogo", showLogo);
       if (logoFile) {
         payload.append("logo", logoFile);
       }
@@ -355,7 +359,7 @@ const InvoicePage = () => {
       storeName: showStoreName ? storeName || "Nama Toko" : "",
       storeAddress: showAddress ? addressParts.join(" | ") : "",
       storePhone: "",
-      logo: logoPreview,
+      logo: showLogo ? logoPreview : "",
       memberName: showMemberInfo ? sampleMember.name : "",
       memberTier: showMemberInfo ? sampleMember.tier : "",
       memberPoints: showMemberInfo ? sampleMember.points : 0,
@@ -384,9 +388,14 @@ const InvoicePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
           <div data-tour="invoice-logo" className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <ImagePlus size={18} className="text-primary" />
-              <h3 className="text-base font-semibold">Logo Invoice</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <ImagePlus size={18} className="text-primary" />
+                <h3 className="text-base font-semibold">Logo Invoice</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={showLogo} onCheckedChange={setShowLogo} />
+              </div>
             </div>
             <div className="flex items-start gap-6">
               <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 shrink-0">
@@ -527,6 +536,7 @@ const InvoicePage = () => {
               memberTier={sampleMember.tier}
               memberPoints={sampleMember.points}
               logoUrl={logoPreview}
+              showLogo={showLogo}
               showStoreName={showStoreName}
               showAddress={showAddress}
               showMemberInfo={showMemberInfo}
