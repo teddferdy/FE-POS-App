@@ -204,15 +204,6 @@ const MemberTier = () => {
             ]}
             title={t("page.memberTier.list.title")}
             description={t("page.memberTier.list.description")}>
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="tier-add"
-                onClick={() => navigate("/add-member-tier")}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <Plus size={18} />
-                {t("breadcrumb.add")}
-              </Button>
-            )}
             <UserGuide guideKey="add-member-tier" />
           </PageHeader>
 

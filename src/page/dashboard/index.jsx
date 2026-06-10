@@ -59,8 +59,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const store = cookie?.store;
-  const user = cookie?.user;
-  const role = user?.role || user?.type || "";
+  // const user = cookie?.user;
+  // const role = user?.role || user?.type || "";
   const { t } = useTranslation();
 
   const { data: dashData, isLoading } = useQuery(
