@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { addMember } from "@/services/member";
@@ -15,6 +15,7 @@ import UserGuide from "@/components/organism/UserGuide";
 const AddMember = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies(["user"]);
   const user = cookie?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +41,7 @@ const AddMember = () => {
   const createMutation = useMutation(addMember, {
     onSuccess: () => {
       setIsSubmitting(false);
+      queryClient.invalidateQueries(["members"]);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -52,7 +54,8 @@ const AddMember = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(value) : value }));
+    const sanitized = name === "phoneNumber" ? value.replace(/\D/g, "") : value;
+    setForm((prev) => ({ ...prev, [name]: name === "tier" ? Number(sanitized) || null : sanitized }));
   };
 
   const handleSubmit = (e, saveAsDraft = false) => {
@@ -69,7 +72,7 @@ const AddMember = () => {
       birthDate: form.birthDate,
       gender: form.gender,
       address: form.address,
-      tier: form.tier,
+      tier: form.tier || null,
       point: form.initialPoints,
       createdBy: user?.id,
       status: saveAsDraft ? "draft" : "active"
@@ -335,7 +338,7 @@ const AddMember = () => {
             birthDate: form.birthDate,
             gender: form.gender,
             address: form.address,
-            tier: form.tier,
+            tier: form.tier || null,
             point: form.initialPoints,
             createdBy: user?.id,
             status: "draft"
