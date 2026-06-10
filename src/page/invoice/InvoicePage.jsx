@@ -1,24 +1,19 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import {
-  Upload,
-  Building2,
-  Image,
-  ShoppingCart,
   MapPin,
   Phone,
   Mail,
   Hash,
   Globe,
+  Building2,
   Store,
   Printer,
-  Eye,
-  EyeOff,
   Award,
   Medal,
   Coins
@@ -64,36 +59,28 @@ const DetailRow = ({ icon: Icon, label, value }) => (
 );
 
 const InvoicePreview = ({
-  logo,
   storeName,
   storePhone,
   storeEmail,
   fullAddress,
-  footer,
-  socialMedia,
   cashierName,
   memberName,
   memberTier,
   memberPoints,
-  showLogo = true,
   showStoreName = true,
   showAddress = true,
-  showFooter = true,
   showMemberInfo = true
 }) => {
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
   const tax = Math.round(subtotal * 0.1);
   const total = subtotal + tax;
 
-  const showHeader = showLogo || showStoreName || showAddress;
+  const showHeader = showStoreName || showAddress;
 
   return (
     <div className="bg-white text-black rounded-xl shadow-sm border border-border p-5 max-w-sm mx-auto font-mono text-xs leading-relaxed select-all">
       {showHeader && (
         <div className="text-center border-b-2 border-gray-300 pb-4 mb-3">
-          {showLogo && logo && (
-            <img src={logo} alt="logo" className="h-14 mx-auto mb-2 object-contain" />
-          )}
           {showStoreName && (
             <h3 className="text-base font-bold uppercase tracking-tight text-gray-800">
               {storeName || "NAMA TOKO"}
@@ -135,8 +122,14 @@ const InvoicePreview = ({
             <Medal size={14} className="text-yellow-600 shrink-0" />
             <div className="flex-1 space-y-0.5">
               <span className="block font-medium">{memberName || "-"}</span>
-              {memberTier && <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>}
-              {memberPoints !== undefined && <span className="block text-gray-500 text-[10px]">Poin: {Number(memberPoints).toLocaleString("id-ID")}</span>}
+              {memberTier && (
+                <span className="block text-gray-500 text-[10px]">Tier: {memberTier}</span>
+              )}
+              {memberPoints !== undefined && (
+                <span className="block text-gray-500 text-[10px]">
+                  Poin: {Number(memberPoints).toLocaleString("id-ID")}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -180,24 +173,6 @@ const InvoicePreview = ({
         </div>
       </div>
 
-      {showFooter && footer && (
-        <div className="text-center text-gray-500 text-[10px] border-t border-dashed border-gray-300 pt-3 mb-2">
-          {footer.split("\n").map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      )}
-
-      {socialMedia?.length > 0 && (
-        <div className="text-center text-gray-400 text-[10px] border-t border-dashed border-gray-200 pt-2 mb-1">
-          {socialMedia.map((s, i) => (
-            <p key={i}>
-              {s.platform}: {s.account}
-            </p>
-          ))}
-        </div>
-      )}
-
       <div className="text-center text-gray-400 text-[10px] mt-2 pt-2 border-t border-dashed border-gray-200 italic">
         Terima kasih atas kunjungan Anda
       </div>
@@ -209,19 +184,13 @@ const InvoicePage = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef(null);
 
   const user = cookie?.user;
   const store = user?.store || "";
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
-  const [footerText, setFooterText] = useState("");
-  const [showLogo, setShowLogo] = useState(true);
   const [showStoreName, setShowStoreName] = useState(true);
   const [showAddress, setShowAddress] = useState(true);
-  const [showFooter, setShowFooter] = useState(true);
   const [showMemberInfo, setShowMemberInfo] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -232,11 +201,9 @@ const InvoicePage = () => {
   );
   const locationDetail = (storeData?.data || storeData) ?? null;
   const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
-  const storeName = hasStore
-    ? (locationDetail?.name || locationDetail?.storeName)
-    : "Nama Toko";
-  const storePhone = hasStore ? (locationDetail?.phoneNumber || "") : "";
-  const storeEmail = hasStore ? (locationDetail?.email || "") : "";
+  const storeName = hasStore ? locationDetail?.name || locationDetail?.storeName : "Nama Toko";
+  const storePhone = hasStore ? locationDetail?.phoneNumber || "" : "";
+  const storeEmail = hasStore ? locationDetail?.email || "" : "";
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
     enabled: hasStore && !!locationDetail?.province,
@@ -301,56 +268,28 @@ const InvoicePage = () => {
   );
 
   const settingsData = invoiceSettings?.data || null;
-  const settingsLogo = settingsData?.logoImage || null;
-  const settingsFooter = settingsData?.footerText || "";
-
-  const socialMedia = Array.isArray(settingsData?.socialMediaList)
-    ? settingsData.socialMediaList
-    : [];
 
   useEffect(() => {
     if (settingsData) {
-      if (settingsData.logoImage) setLogoPreview(settingsData.logoImage);
-      if (settingsData.footerText) setFooterText(settingsData.footerText);
-      if (settingsData.showLogo !== undefined) setShowLogo(settingsData.showLogo);
       if (settingsData.showStoreName !== undefined) setShowStoreName(settingsData.showStoreName);
       if (settingsData.showAddress !== undefined) setShowAddress(settingsData.showAddress);
-      if (settingsData.showFooter !== undefined) setShowFooter(settingsData.showFooter);
       if (settingsData.showMemberInfo !== undefined) setShowMemberInfo(settingsData.showMemberInfo);
     }
   }, [settingsData]);
 
-  const savedLogo = settingsLogo || logoPreview;
-
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setLogoFile(file);
-      setLogoPreview(URL.createObjectURL(file));
-    }
-  };
-
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      const formData = new FormData();
-      formData.append("store", store);
+      const payload = {
+        store,
+        showStoreName,
+        showAddress,
+        showMemberInfo
+      };
 
-      if (logoFile) {
-        formData.append("image", logoFile);
-      }
-
-      formData.append("footerText", footerText);
-      formData.append("showLogo", showLogo);
-      formData.append("showStoreName", showStoreName);
-      formData.append("showAddress", showAddress);
-      formData.append("showFooter", showFooter);
-      formData.append("showMemberInfo", showMemberInfo);
-
-      await updateInvoiceSetting(formData);
+      await updateInvoiceSetting(payload);
       toast.success("Pengaturan invoice berhasil disimpan");
       queryClient.invalidateQueries(["invoice-settings"]);
-      setLogoFile(null);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Gagal menyimpan pengaturan");
     } finally {
@@ -392,7 +331,7 @@ const InvoicePage = () => {
       paymentMethod: "Tunai",
       cashAmount: total,
       changeAmount: 0,
-      footer: showFooter ? footerText || "Terima kasih atas kunjungan Anda" : ""
+      footer: "Terima kasih atas kunjungan Anda"
     });
   };
 
@@ -405,76 +344,6 @@ const InvoicePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          <div data-tour="invoice-logo" className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Image size={18} className="text-primary" />
-              <h3 className="text-base font-semibold">Logo & Header</h3>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-                  Nama Toko (Header)
-                </label>
-                <Input value={storeName} disabled className="bg-muted/50" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
-                  Logo Invoice
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-lg border border-border overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
-                    {savedLogo ? (
-                      <img src={savedLogo} alt="Logo" className="w-full h-full object-contain" />
-                    ) : (
-                      <Building2 size={28} className="text-muted-foreground/40" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoChange}
-                      className="hidden"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="gap-2">
-                      <Upload size={14} />
-                      {logoPreview && logoFile ? "Ganti Logo" : "Pilih Logo"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="border-t border-border pt-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {showLogo ? (
-                      <Eye size={14} className="text-primary" />
-                    ) : (
-                      <EyeOff size={14} className="text-muted-foreground" />
-                    )}
-                    <span className="text-sm font-medium">Tampilkan Logo</span>
-                  </div>
-                  <Switch checked={showLogo} onCheckedChange={setShowLogo} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {showStoreName ? (
-                      <Eye size={14} className="text-primary" />
-                    ) : (
-                      <EyeOff size={14} className="text-muted-foreground" />
-                    )}
-                    <span className="text-sm font-medium">Tampilkan Nama Toko</span>
-                  </div>
-                  <Switch checked={showStoreName} onCheckedChange={setShowStoreName} />
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div data-tour="invoice-address" className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -482,11 +351,6 @@ const InvoicePage = () => {
                 <h3 className="text-base font-semibold">Alamat Toko</h3>
               </div>
               <div className="flex items-center gap-2">
-                {showAddress ? (
-                  <Eye size={14} className="text-primary" />
-                ) : (
-                  <EyeOff size={14} className="text-muted-foreground" />
-                )}
                 <Switch checked={showAddress} onCheckedChange={setShowAddress} />
               </div>
             </div>
@@ -510,9 +374,7 @@ const InvoicePage = () => {
                 <DetailRow icon={Mail} label="Email" value={storeEmail} />
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Tidak ada toko tersedia
-              </p>
+              <p className="text-sm text-muted-foreground italic">Tidak ada toko tersedia</p>
             )}
           </div>
 
@@ -523,43 +385,16 @@ const InvoicePage = () => {
                 <h3 className="text-base font-semibold">Informasi Member</h3>
               </div>
               <div className="flex items-center gap-2">
-                {showMemberInfo ? (
-                  <Eye size={14} className="text-primary" />
-                ) : (
-                  <EyeOff size={14} className="text-muted-foreground" />
-                )}
                 <Switch checked={showMemberInfo} onCheckedChange={setShowMemberInfo} />
               </div>
             </div>
             <div className="divide-y divide-border">
               <DetailRow icon={Medal} label="Nama Member" value={sampleMember.name} />
               <DetailRow icon={Award} label="Tier Member" value={sampleMember.tier} />
-              <DetailRow icon={Coins} label="Total Poin" value={Number(sampleMember.points).toLocaleString("id-ID")} />
-            </div>
-          </div>
-
-          <div data-tour="invoice-footer" className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <ShoppingCart size={18} className="text-primary" />
-                <h3 className="text-base font-semibold">Footer Invoice</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                {showFooter ? (
-                  <Eye size={14} className="text-primary" />
-                ) : (
-                  <EyeOff size={14} className="text-muted-foreground" />
-                )}
-                <Switch checked={showFooter} onCheckedChange={setShowFooter} />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <textarea
-                value={footerText}
-                onChange={(e) => setFooterText(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                placeholder="cth: Barang yang sudah dibeli tidak dapat dikembalikan&#10;Terima kasih atas kunjungan Anda"
-                rows={4}
+              <DetailRow
+                icon={Coins}
+                label="Total Poin"
+                value={Number(sampleMember.points).toLocaleString("id-ID")}
               />
             </div>
           </div>
@@ -570,7 +405,6 @@ const InvoicePage = () => {
             disabled={isSaving}
             className="w-full gap-2"
             size="lg">
-            <Upload size={16} />
             {isSaving ? "Menyimpan..." : "Simpan Pengaturan"}
           </Button>
         </div>
@@ -594,21 +428,16 @@ const InvoicePage = () => {
               </Button>
             </div>
             <InvoicePreview
-              logo={savedLogo}
               storeName={storeName}
               storePhone={storePhone}
               storeEmail={storeEmail}
               fullAddress={fullAddress}
-              footer={footerText}
-              socialMedia={socialMedia}
               cashierName={cashierName}
               memberName={sampleMember.name}
               memberTier={sampleMember.tier}
               memberPoints={sampleMember.points}
-              showLogo={showLogo}
               showStoreName={showStoreName}
               showAddress={showAddress}
-              showFooter={showFooter}
               showMemberInfo={showMemberInfo}
             />
           </div>

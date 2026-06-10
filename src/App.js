@@ -78,6 +78,7 @@ import AddStockOpname from "./page/stock-opname/AddStockOpname";
 import DetailStockOpname from "./page/stock-opname/DetailStockOpname";
 import StockHistory from "./page/stock-opname/StockHistory";
 import LowStock from "./page/stock-opname/LowStock";
+import LowStockAll from "./page/stock-opname/LowStockAll";
 import AddEmployee from "./page/employee/AddEmployee";
 import EditEmployee from "./page/employee/EditEmployee";
 import DetailEmployee from "./page/employee/DetailEmployee";
@@ -272,6 +273,7 @@ function App() {
 
           <Route path="/stock-history" element={withLayout(<StockHistory />)} />
           <Route path="/low-stock" element={withLayout(<LowStock />)} />
+          <Route path="/low-stock-all" element={withLayout(<LowStockAll />)} />
           <Route path="/notification" element={withLayout(<NotificationPage />)} />
 
           <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />

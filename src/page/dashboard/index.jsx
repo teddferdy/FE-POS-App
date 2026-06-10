@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -55,14 +56,17 @@ const fallbackChart = [
 ];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [cookie] = useCookies();
   const store = cookie?.store;
+  const user = cookie?.user;
+  const role = user?.role || user?.type || "";
   const { t } = useTranslation();
 
   const { data: dashData, isLoading } = useQuery(
     ["dashboard-summary", store],
     () => getDashboardSummary({ store }),
-    { enabled: !!store }
+    { enabled: true }
   );
 
   const d = dashData?.data || dashData || {};
@@ -129,12 +133,14 @@ const Dashboard = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {summaryCards.map((card) => {
               const Icon = card.icon;
+              const isLowStock = card.icon === AlertTriangle;
               return (
                 <div
                   key={card.label}
+                  onClick={isLowStock ? () => navigate("/low-stock-all") : undefined}
                   className={`bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow ${
                     card.bg || ""
-                  }`}>
+                  } ${isLowStock ? "cursor-pointer hover:ring-2 hover:ring-destructive/30" : ""}`}>
                   <div className="flex items-start justify-between mb-3">
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                       {card.label}

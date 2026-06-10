@@ -9,9 +9,7 @@ export const getInvoiceSetting = async (store) => {
 };
 
 export const updateInvoiceSetting = async (payload) => {
-  const { data, status } = await axiosInstance.put("/invoice/setting", payload, {
-    headers: { "Content-Type": "multipart/form-data" }
-  });
+  const { data, status } = await axiosInstance.put("/invoice/setting", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
