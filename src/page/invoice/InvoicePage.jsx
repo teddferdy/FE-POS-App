@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery, useQueryClient } from "react-query";
@@ -16,7 +16,9 @@ import {
   Printer,
   Award,
   Medal,
-  Coins
+  Coins,
+  ImagePlus,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +69,7 @@ const InvoicePreview = ({
   memberName,
   memberTier,
   memberPoints,
+  logoUrl,
   showStoreName = true,
   showAddress = true,
   showMemberInfo = true
@@ -75,12 +78,19 @@ const InvoicePreview = ({
   const tax = Math.round(subtotal * 0.1);
   const total = subtotal + tax;
 
-  const showHeader = showStoreName || showAddress;
+  const showHeader = showStoreName || showAddress || !!logoUrl;
 
   return (
     <div className="bg-white text-black rounded-xl shadow-sm border border-border p-5 max-w-sm mx-auto font-mono text-xs leading-relaxed select-all">
       {showHeader && (
         <div className="text-center border-b-2 border-gray-300 pb-4 mb-3">
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="max-h-16 mx-auto mb-2 object-contain"
+            />
+          )}
           {showStoreName && (
             <h3 className="text-base font-bold uppercase tracking-tight text-gray-800">
               {storeName || "NAMA TOKO"}
@@ -184,6 +194,7 @@ const InvoicePage = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const queryClient = useQueryClient();
+  const logoInputRef = useRef(null);
 
   const user = cookie?.user;
   const store = user?.store || "";
@@ -192,6 +203,9 @@ const InvoicePage = () => {
   const [showStoreName, setShowStoreName] = useState(true);
   const [showAddress, setShowAddress] = useState(true);
   const [showMemberInfo, setShowMemberInfo] = useState(true);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const { data: storeData, isError: storeError } = useQuery(
@@ -274,21 +288,45 @@ const InvoicePage = () => {
       if (settingsData.showStoreName !== undefined) setShowStoreName(settingsData.showStoreName);
       if (settingsData.showAddress !== undefined) setShowAddress(settingsData.showAddress);
       if (settingsData.showMemberInfo !== undefined) setShowMemberInfo(settingsData.showMemberInfo);
+      if (settingsData.logo) {
+        setLogoUrl(settingsData.logo);
+        setLogoPreview(settingsData.logo);
+      }
     }
   }, [settingsData]);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+    setLogoUrl(null);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoUrl(null);
+  };
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      const payload = {
-        store,
-        showStoreName,
-        showAddress,
-        showMemberInfo
-      };
+      const payload = new FormData();
+      payload.append("store", store);
+      payload.append("showStoreName", showStoreName);
+      payload.append("showAddress", showAddress);
+      payload.append("showMemberInfo", showMemberInfo);
+      if (logoFile) {
+        payload.append("logo", logoFile);
+      }
+      if (!logoPreview) {
+        payload.append("removeLogo", "true");
+      }
 
       await updateInvoiceSetting(payload);
       toast.success("Pengaturan invoice berhasil disimpan");
+      setLogoFile(null);
       queryClient.invalidateQueries(["invoice-settings"]);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Gagal menyimpan pengaturan");
@@ -317,6 +355,7 @@ const InvoicePage = () => {
       storeName: showStoreName ? storeName || "Nama Toko" : "",
       storeAddress: showAddress ? addressParts.join(" | ") : "",
       storePhone: "",
+      logo: logoPreview,
       memberName: showMemberInfo ? sampleMember.name : "",
       memberTier: showMemberInfo ? sampleMember.tier : "",
       memberPoints: showMemberInfo ? sampleMember.points : 0,
@@ -344,6 +383,57 @@ const InvoicePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
+          <div data-tour="invoice-logo" className="bg-card rounded-xl border border-border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <ImagePlus size={18} className="text-primary" />
+              <h3 className="text-base font-semibold">Logo Invoice</h3>
+            </div>
+            <div className="flex items-start gap-6">
+              <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 shrink-0">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Logo preview" className="max-w-full max-h-full object-contain p-2" />
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <ImagePlus size={28} className="mx-auto mb-1" />
+                    <p className="text-[10px]">Belum ada logo</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => logoInputRef.current?.click()}
+                  className="gap-2">
+                  <ImagePlus size={14} />
+                  {logoPreview ? "Ganti Logo" : "Pilih Logo"}
+                </Button>
+                {logoPreview && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveLogo}
+                    className="gap-2 text-destructive">
+                    <X size={14} />
+                    Hapus Logo
+                  </Button>
+                )}
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Format: PNG, JPG. Maks 5MB
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div data-tour="invoice-address" className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -436,6 +526,7 @@ const InvoicePage = () => {
               memberName={sampleMember.name}
               memberTier={sampleMember.tier}
               memberPoints={sampleMember.points}
+              logoUrl={logoPreview}
               showStoreName={showStoreName}
               showAddress={showAddress}
               showMemberInfo={showMemberInfo}

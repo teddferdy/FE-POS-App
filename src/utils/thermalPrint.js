@@ -34,6 +34,10 @@ export const generateReceiptHTML = (data) => {
     footer = "Terima kasih atas kunjungan Anda"
   } = data;
 
+  const logoHtml = logo
+    ? `<div style="text-align:center;margin-bottom:6px"><img src="${logo}" style="max-height:60px;object-fit:contain" /></div>`
+    : "";
+
   const itemsHtml = items
     .map(
       (item, i) => `
@@ -56,6 +60,7 @@ export const generateReceiptHTML = (data) => {
 <body>
   <div id="receipt" style="width:80mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
     <div style="text-align:center;margin-bottom:8px">
+      ${logoHtml}
       <div style="font-size:16px;font-weight:bold">${storeName}</div>
       ${storeAddress ? `<div style="font-size:11px">${storeAddress}</div>` : ""}
       ${storePhone ? `<div style="font-size:11px">Telp: ${storePhone}</div>` : ""}
