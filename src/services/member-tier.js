@@ -18,6 +18,12 @@ export const editMemberTier = async (payload) => {
   return data;
 };
 
+export const getDetailMemberTier = async (id) => {
+  const { data, status } = await axiosInstance.get(`/member-tier/detail/${id}`);
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteMemberTier = async (payload) => {
   const { data, status } = await axiosInstance.delete(`/member-tier/delete/${payload.id}`);
   if (status !== 200) throw Error(data?.error);

@@ -70,6 +70,7 @@ import RoleManagement from "./page/role/RoleManagement";
 import EditRole from "./page/role/EditRole";
 import DetailRole from "./page/role/DetailRole";
 import AddMemberTier from "./page/member-tier/AddMemberTier";
+import DetailMemberTier from "./page/member-tier/DetailMemberTier";
 
 // Employee
 import EmployeeList from "./page/employee/EmployeeList";
@@ -201,6 +202,10 @@ function App() {
           <Route
             path="/add-member-tier"
             element={withLayout(<AddMemberTier title="Add Member Tier" />)}
+          />
+          <Route
+            path="/detail-member-tier"
+            element={withLayout(<DetailMemberTier />)}
           />
 
           <Route path="/discount-list" element={withLayout(<DiscountList />)} />

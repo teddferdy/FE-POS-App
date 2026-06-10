@@ -30,6 +30,7 @@ const MemberTier = () => {
 
   const { data: tiersData, isLoading } = useQuery(["member-tiers"], getAllMemberTier);
   const tiers = tiersData?.data || tiersData?.tiers || [];
+  const activeTierCount = tiersData?.activeCount ?? tiers.filter((t) => t.status === "active" || t.status === true).length;
 
   const filteredTiers = tiers.filter((tier) =>
     tier.name?.toLowerCase().includes(search.toLowerCase())
@@ -74,12 +75,17 @@ const MemberTier = () => {
 
   const statusBadge = (status) => {
     const isActive = status === "active" || status === true;
-    const styles = isActive
-      ? "bg-secondary/10 text-secondary border-secondary/20"
-      : "bg-outline-variant/20 text-outline border-outline-variant/30";
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${styles}`}>
-        {isActive ? "Active" : "Inactive"}
+      <span
+        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          isActive
+            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+        }`}>
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
+        />
+        {isActive ? "Aktif" : "Non-Active"}
       </span>
     );
   };
@@ -150,6 +156,15 @@ const MemberTier = () => {
       align: "right",
       render: (tier) => (
         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/detail-member-tier?id=${tier.id}`);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
+            title="Detail">
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
           {canAccess(user, MENU_KEY, "edit") && (
             <button
               onClick={(e) => {
@@ -223,8 +238,7 @@ const MemberTier = () => {
                 {t("page.memberTier.list.totalTiers")}
               </p>
               <h3 className="text-xl font-bold mt-1">
-                {tiers.filter((t) => t.isActive || t.status === "active").length}{" "}
-                {t("page.memberTier.list.active")}
+                {activeTierCount} {t("page.memberTier.list.active")}
               </h3>
               <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary w-2/3" />
