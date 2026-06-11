@@ -146,6 +146,20 @@ import DetailBom from "./page/bom/DetailBom";
 // Cashier
 import CashierPage from "./page/cashier/CashierPage";
 
+// Kitchen Display
+import KitchenDisplay from "./page/kitchen-display";
+
+// Customer Order
+import CustomerOrder from "./page/customer-order";
+
+// Customer Display
+import CustomerDisplay from "./page/customer-display";
+
+// Reservation
+import ReservationList from "./page/reservation/ReservationList";
+import AddReservation from "./page/reservation/AddReservation";
+import EditReservation from "./page/reservation/EditReservation";
+
 // Profile
 import ProfilePage from "./page/profile/ProfilePage";
 
@@ -224,6 +238,18 @@ function App() {
           <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
 
           <Route path="/home" element={<CashierPage />} />
+          <Route path="/kitchen-display" element={withLayout(<KitchenDisplay />)} />
+
+          {/* Customer Order */}
+          <Route path="/customer-order" element={<CustomerOrder />} />
+
+          {/* Customer Display */}
+          <Route path="/customer-display" element={<CustomerDisplay />} />
+
+          {/* Reservation Routes */}
+          <Route path="/reservation" element={withLayout(<ReservationList />)} />
+          <Route path="/add-reservation" element={withLayout(<AddReservation />)} />
+          <Route path="/edit-reservation" element={withLayout(<EditReservation />)} />
 
           {/* Super Admin & Admin Routes */}
 

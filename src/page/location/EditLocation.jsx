@@ -967,21 +967,23 @@ const EditLocation = () => {
                         return (
                           <div key={day.id} className="grid grid-cols-12 gap-2 items-center py-2">
                             <div className="col-span-2 text-sm font-medium">{day.label}</div>
-                            <div className="col-span-3">
+                            <div className="col-span-3 relative">
+                              <Clock size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                               <input
-                                className="w-full px-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background"
+                                className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
                                 value={dayData.open || ""}
                                 disabled={!dayData.isOpen}
                                 onChange={(e) => updateOpeningHours(day.id, "open", e.target.value)}
                               />
                             </div>
-                            <div className="col-span-1 text-center text-xs text-muted-foreground">
-                              s/d
+                            <div className="col-span-1 text-center text-xs text-muted-foreground flex items-center justify-center">
+                              <span className="text-xs">s/d</span>
                             </div>
-                            <div className="col-span-3">
+                            <div className="col-span-3 relative">
+                              <Clock size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                               <input
-                                className="w-full px-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background"
+                                className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
                                 value={dayData.close || ""}
                                 disabled={!dayData.isOpen}

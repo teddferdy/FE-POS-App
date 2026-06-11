@@ -25,7 +25,8 @@ import {
   Shield,
   ArrowRightLeft,
   DollarSign,
-  BadgePercent
+  BadgePercent,
+  ChefHat
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -193,6 +194,13 @@ export const sidebarMenuSuperAdmin = [
         href: "",
         icon: Package,
         children: [
+          {
+            title: "Dapur (KDS)",
+            i18nKey: "sidebar.kitchenDisplay",
+            href: "/kitchen-display",
+            icon: ChefHat,
+            actions: ["view"]
+          },
           {
             title: "Production Order",
             i18nKey: "sidebar.productionOrder",
@@ -482,6 +490,13 @@ export const sidebarMenuAdmin = [
             actions: ["view"]
           },
           {
+            title: "Dapur (KDS)",
+            i18nKey: "sidebar.kitchenDisplay",
+            href: "/kitchen-display",
+            icon: ChefHat,
+            actions: ["view"]
+          },
+          {
             title: "Production Order",
             i18nKey: "sidebar.productionOrder",
             href: "/production-order",
@@ -632,6 +647,13 @@ export const sidebarMenuAdmin = [
         href: "/table-list",
         icon: Table,
         actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Metode Pembayaran",
@@ -890,6 +912,8 @@ export const urlWithArrowBack = [
   },
   { url: "/table-list", title: "Add Table", i18nKey: "breadcrumb.add", pathName: "/add-table" },
   { url: "/table-list", title: "Edit Table", i18nKey: "breadcrumb.edit", pathName: "/edit-table" },
+  { url: "/reservation", title: "Add Reservation", i18nKey: "breadcrumb.add", pathName: "/add-reservation" },
+  { url: "/reservation", title: "Edit Reservation", i18nKey: "breadcrumb.edit", pathName: "/edit-reservation" },
   { url: "/supplier", title: "Add Supplier", i18nKey: "breadcrumb.add", pathName: "/add-supplier" },
   {
     url: "/supplier",

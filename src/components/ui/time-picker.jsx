@@ -1,103 +1,118 @@
 /* eslint-disable react/prop-types */
-import { Input } from "./input";
-import { cn } from "@/lib/utils";
 import React from "react";
-import { getArrowByType, getDateByType, setDateByType } from "@/lib/time-picker-utils";
+import { Clock, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const TimePickerInput = React.forwardRef(
-  (
-    {
-      className,
-      type = "tel",
-      value,
-      id,
-      name,
-      date = new Date(new Date().setHours(0, 0, 0, 0)),
-      setDate,
-      onChange,
-      onKeyDown,
-      picker,
-      period,
-      onLeftFocus,
-      onRightFocus,
-      ...props
-    },
-    ref
-  ) => {
-    const [flag, setFlag] = React.useState(false);
-    const [prevIntKey, setPrevIntKey] = React.useState("0");
-
-    React.useEffect(() => {
-      if (flag) {
-        const timer = setTimeout(() => {
-          setFlag(false);
-        }, 2000);
-
-        return () => clearTimeout(timer);
-      }
-    }, [flag]);
-
-    const calculatedValue = React.useMemo(() => {
-      return getDateByType(date, picker);
-    }, [date, picker]);
-
-    const calculateNewValue = (key) => {
-      if (picker === "12hours") {
-        if (flag && calculatedValue.slice(1, 2) === "1" && prevIntKey === "0") return "0" + key;
-      }
-
-      return !flag ? "0" + key : calculatedValue.slice(1, 2) + key;
-    };
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Tab") return;
-      e.preventDefault();
-      if (e.key === "ArrowRight") onRightFocus?.();
-      if (e.key === "ArrowLeft") onLeftFocus?.();
-      if (["ArrowUp", "ArrowDown"].includes(e.key)) {
-        const step = e.key === "ArrowUp" ? 1 : -1;
-        const newValue = getArrowByType(calculatedValue, step, picker);
-        if (flag) setFlag(false);
-        const tempDate = new Date(date);
-        setDate(setDateByType(tempDate, newValue, picker, period));
-      }
-      if (e.key >= "0" && e.key <= "9") {
-        if (picker === "12hours") setPrevIntKey(e.key);
-
-        const newValue = calculateNewValue(e.key);
-        if (flag) onRightFocus?.();
-        setFlag((prev) => !prev);
-        const tempDate = new Date(date);
-        setDate(setDateByType(tempDate, newValue, picker, period));
-      }
-    };
-
-    return (
-      <Input
-        ref={ref}
-        id={id || picker}
-        name={name || picker}
-        className={cn(
-          "w-[48px] text-center font-mono text-base tabular-nums caret-transparent focus:bg-accent focus:text-accent-foreground [&::-webkit-inner-spin-button]:appearance-none",
-          className
-        )}
-        value={value || calculatedValue}
-        onChange={(e) => {
-          e.preventDefault();
-          onChange?.(e);
-        }}
-        type={type}
-        inputMode="decimal"
-        onKeyDown={(e) => {
-          onKeyDown?.(e);
-          handleKeyDown(e);
-        }}
-        {...props}
-      />
-    );
+function generateTimeSlots() {
+  const slots = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hour = h.toString().padStart(2, "0");
+      const minute = m.toString().padStart(2, "0");
+      slots.push(`${hour}:${minute}`);
+    }
   }
-);
+  return slots;
+}
 
-TimePickerInput.displayName = "TimePickerInput";
+const TIME_SLOTS = generateTimeSlots();
 
-export { TimePickerInput };
+const TIME_PRESETS = [
+  { label: "Pagi", value: "08:00" },
+  { label: "Siang", value: "12:00" },
+  { label: "Sore", value: "17:00" },
+  { label: "Malam", value: "20:00" },
+];
+
+export function TimePicker({
+  value,
+  onChange,
+  placeholder = "Pilih jam",
+  disabled = false,
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild disabled={disabled}>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(
+            "w-full justify-between font-normal h-10",
+            !value && "text-muted-foreground"
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <Clock className="h-4 w-4 shrink-0" />
+            {value || placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Cari jam..." />
+          <CommandList>
+            <CommandEmpty>Tidak ada jam</CommandEmpty>
+            {!value && (
+              <CommandGroup heading="Cepat">
+                <div className="grid grid-cols-4 gap-1.5 p-2">
+                  {TIME_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.value}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-8"
+                      onClick={() => {
+                        onChange(preset.value);
+                        setOpen(false);
+                      }}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
+              </CommandGroup>
+            )}
+            <CommandGroup heading="Semua Jam">
+              <ScrollArea className="h-48">
+                {TIME_SLOTS.map((time) => (
+                  <CommandItem
+                    key={time}
+                    value={time}
+                    onSelect={() => {
+                      onChange(time);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === time ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {time}
+                  </CommandItem>
+                ))}
+              </ScrollArea>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}

@@ -9,6 +9,7 @@ import { X, Save } from "lucide-react";
 import { addDiscount } from "@/services/discount";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -23,17 +24,40 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
+const PROMO_TYPES = {
+  standard: "Standard (Persen/Nominal)",
+  bogo: "BOGO (Beli X Gratis Y)",
+  bundling: "Bundling (Harga Paket)",
+  happyHour: "Happy Hour (Diskon Waktu)",
+  category: "Kategori (Diskon per Kategori)"
+};
+
 const formSchema = z.object({
   name: z.string().min(1, "Nama diskon wajib diisi"),
+  promoType: z.string().default("standard"),
   type: z.string().min(1, "Tipe diskon wajib dipilih"),
-  value: z.coerce.number().min(1, "Nilai diskon wajib diisi"),
+  value: z.coerce.number().min(1, "Nilai diskon wajib diisi").optional().or(z.literal("")),
   startDate: z.string().min(1, "Tanggal mulai wajib diisi"),
   endDate: z.string().optional().or(z.literal("")),
   minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
   description: z.string().optional().or(z.literal("")),
   isActive: z.boolean().default(true),
   code: z.string().optional().or(z.literal("")),
-  maxDiscount: z.coerce.number().min(0).optional().or(z.literal(""))
+  maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
+  // BOGO fields
+  buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
+  freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
+  // Bundling fields
+  bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
+  productIds: z.string().optional().or(z.literal("")),
+  // Happy Hour fields
+  discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+  startTime: z.string().optional().or(z.literal("")),
+  endTime: z.string().optional().or(z.literal("")),
+  daysOfWeek: z.string().optional().or(z.literal("")),
+  // Category fields
+  categoryIds: z.string().optional().or(z.literal("")),
+  catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal(""))
 });
 
 const AddDiscount = () => {
@@ -47,6 +71,7 @@ const AddDiscount = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      promoType: "standard",
       type: "",
       value: "",
       startDate: "",
@@ -55,9 +80,21 @@ const AddDiscount = () => {
       description: "",
       isActive: true,
       code: "",
-      maxDiscount: ""
+      maxDiscount: "",
+      buyQty: "",
+      freeQty: "",
+      bundlePrice: "",
+      productIds: "",
+      discountPercent: "",
+      startTime: "",
+      endTime: "",
+      daysOfWeek: "",
+      categoryIds: "",
+      catDiscountPercent: ""
     }
   });
+
+  const promoType = form.watch("promoType");
 
   const createMutation = useMutation(addDiscount, {
     onSuccess: () => {
@@ -70,15 +107,68 @@ const AddDiscount = () => {
     }
   });
 
+  const buildConditions = (values) => {
+    switch (values.promoType) {
+      case "bogo":
+        return {
+          promoType: "bogo",
+          buyQty: Number(values.buyQty),
+          freeQty: Number(values.freeQty)
+        };
+      case "bundling":
+        return {
+          promoType: "bundling",
+          bundlePrice: Number(values.bundlePrice),
+          productIds: values.productIds ? values.productIds.split(",").map(Number) : []
+        };
+      case "happyHour":
+        return {
+          promoType: "happyHour",
+          discountPercent: Number(values.discountPercent),
+          startTime: values.startTime,
+          endTime: values.endTime,
+          daysOfWeek: values.daysOfWeek ? values.daysOfWeek.split(",").map(Number) : []
+        };
+      case "category":
+        return {
+          promoType: "category",
+          discountPercent: Number(values.catDiscountPercent),
+          categoryIds: values.categoryIds ? values.categoryIds.split(",").map(Number) : []
+        };
+      default:
+        return null;
+    }
+  };
+
   const onSubmit = (values, saveAsDraft = false) => {
+    const conditions = buildConditions(values);
+    const isAdvanced = values.promoType !== "standard";
+
     const payload = {
-      ...values,
+      name: values.name,
+      type: isAdvanced
+        ? "percent"
+        : values.type === "Persentase"
+          ? "percent"
+          : values.type === "Nominal"
+            ? "nominal"
+            : values.type,
+      value: isAdvanced ? 0 : Number(values.value),
+      startDate: values.startDate,
+      endDate: values.endDate || null,
+      minimumOrder: values.minPurchase || 0,
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
+      conditions,
+      description: values.description || null,
       status: saveAsDraft ? false : !!values.isActive
     };
-    delete payload.maxDiscount;
     createMutation.mutate(payload);
+  };
+
+  const handleTypeClick = (e) => {
+    e.preventDefault();
+    form.handleSubmit((v) => onSubmit(v, false))();
   };
 
   return (
@@ -123,45 +213,279 @@ const AddDiscount = () => {
               />
               <FormField
                 control={form.control}
-                name="type"
+                name="promoType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tipe Diskon <span className="text-destructive">*</span>
+                      Tipe Promo <span className="text-destructive">*</span>
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe diskon" />
+                        <SelectValue placeholder="Pilih tipe promo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Persentase">Persentase</SelectItem>
-                        <SelectItem value="Nominal">Nominal</SelectItem>
+                        {Object.entries(PROMO_TYPES).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Nilai <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input
-                      type="number"
-                      placeholder="Masukkan nilai diskon"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                      }}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            </div>
+
+            {/* Standard discount fields */}
+            {promoType === "standard" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Tipe Diskon <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih tipe diskon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Persentase">Persentase</SelectItem>
+                          <SelectItem value="Nominal">Nominal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Nilai <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        placeholder="Masukkan nilai diskon"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                        }}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* BOGO fields */}
+            {promoType === "bogo" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="buyQty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Beli (Qty) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="cth: 2"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="freeQty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Gratis (Qty) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="cth: 1"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground md:col-span-2">
+                  Contoh: Beli 2 gratis 1. Produk termurah akan diberikan gratis secara otomatis.
+                </p>
+              </div>
+            )}
+
+            {/* Bundling fields */}
+            {promoType === "bundling" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="bundlePrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Harga Paket (Rp) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="cth: 50000"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="productIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        ID Produk <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground md:col-span-2">
+                  Masukkan ID produk yang termasuk dalam paket, pisahkan dengan koma.
+                </p>
+              </div>
+            )}
+
+            {/* Happy Hour fields */}
+            {promoType === "happyHour" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="discountPercent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Diskon (%) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="100"
+                        placeholder="cth: 10"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Jam Mulai <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <TimePicker {...field} placeholder="Pilih jam mulai" />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Jam Selesai <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <TimePicker {...field} placeholder="Pilih jam selesai" />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="daysOfWeek"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hari (0=Minggu, 1=Senin, ..., 6=Sabtu)</FormLabel>
+                      <Input placeholder="cth: 1,2,3,4,5 (senin-jumat)" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Category discount fields */}
+            {promoType === "category" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="catDiscountPercent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Diskon (%) <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="100"
+                        placeholder="cth: 15"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="categoryIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        ID Kategori <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Common fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -186,42 +510,46 @@ const AddDiscount = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="minPurchase"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Minimal Belanja</FormLabel>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                      }}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="maxDiscount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Maks Diskon</FormLabel>
-                    <Input
-                      type="number"
-                      placeholder="0 (0 = unlimited)"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                      }}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {promoType === "standard" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="minPurchase"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minimal Belanja</FormLabel>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                          }}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="maxDiscount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maks Diskon</FormLabel>
+                        <Input
+                          type="number"
+                          placeholder="0 (0 = unlimited)"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                          }}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
               <FormField
                 control={form.control}
                 name="code"
@@ -301,7 +629,7 @@ const AddDiscount = () => {
                   Simpan sebagai Draft
                 </Button>
                 <Button
-                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                  onClick={handleTypeClick}
                   disabled={createMutation.isLoading}
                   className="gap-2">
                   <Save size={18} />

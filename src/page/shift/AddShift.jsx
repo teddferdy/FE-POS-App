@@ -5,13 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Users, CalendarDays, Clock, Check, Store } from "lucide-react";
+import { X, Save, Users, CalendarDays, Check, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { addShift } from "@/services/shift";
 import { getAllEmployee } from "@/services/employee";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -237,14 +238,7 @@ const AddShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Jam Mulai <span className="text-destructive">*</span></FormLabel>
-                    <div className="relative">
-                      <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input
-                        type="time"
-                        className="flex h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      />
-                    </div>
+                    <TimePicker {...field} placeholder="Pilih jam mulai" />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -255,14 +249,7 @@ const AddShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Jam Selesai <span className="text-destructive">*</span></FormLabel>
-                    <div className="relative">
-                      <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input
-                        type="time"
-                        className="flex h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      />
-                    </div>
+                    <TimePicker {...field} placeholder="Pilih jam selesai" />
                     <FormMessage />
                   </FormItem>
                 )}

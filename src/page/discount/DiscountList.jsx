@@ -13,6 +13,18 @@ import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
+const PROMO_TYPE_LABELS = {
+  bogo: "BOGO",
+  bundling: "Bundling",
+  happyHour: "Happy Hour",
+  category: "Kategori"
+};
+
+const getPromoLabel = (item) => {
+  const promoType = item.conditions?.promoType;
+  if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
+  return item.type === "Persentase" ? "Persentase" : item.type === "Nominal" ? "Nominal" : item.type || "-";
+};
 const DiscountList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -81,7 +93,7 @@ const DiscountList = () => {
         </div>
       )
     },
-    { header: t("page.discount.table.type"), accessor: "type" },
+    { header: t("page.discount.table.type"), render: (item) => getPromoLabel(item) },
     {
       header: t("page.discount.table.value"),
       render: (item) =>

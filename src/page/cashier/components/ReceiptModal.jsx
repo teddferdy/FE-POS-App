@@ -33,16 +33,21 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     if (!waPhone.trim()) return;
     setSending(true);
     try {
-      await sendInvoiceWA({
+      const res = await sendInvoiceWA({
         invoice: invoiceNumber,
         phone: waPhone,
         store: data?.store,
         total: subtotal
       });
-      toast?.success?.(t("page.cashier.receipt.toast.waSuccess"));
+      if (res?.data?.waLink) {
+        window.open(res.data.waLink, "_blank");
+        toast?.success?.(t("page.cashier.receipt.toast.waSuccess"));
+      } else {
+        toast?.error?.(t("page.cashier.receipt.toast.waError"));
+      }
       setShowSendWA(false);
     } catch (err) {
-      toast?.error?.(err?.message || t("page.cashier.receipt.toast.waError"));
+      toast?.error?.(err?.response?.data?.message || err?.message || t("page.cashier.receipt.toast.waError"));
     }
     setSending(false);
   };

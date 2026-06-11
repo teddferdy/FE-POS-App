@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Sofa, QrCode } from "lucide-react";
 import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 
@@ -33,6 +34,7 @@ const TableList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
+  const [qrTarget, setQrTarget] = useState(null);
   const [formName, setFormName] = useState("");
   const [formCapacity, setFormCapacity] = useState(4);
 
@@ -120,6 +122,13 @@ const TableList = () => {
               <Edit size={15} />
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setQrTarget(row)}>
+            <QrCode size={15} />
+          </Button>
           {canAccess(user, MENU_KEY, "delete") && (
             <Button
               variant="ghost"
@@ -250,6 +259,12 @@ const TableList = () => {
           deleteMutation.mutate({ id: deleteTarget.id });
           setDeleteTarget(null);
         }}
+      />
+
+      <TableQRModal
+        open={!!qrTarget}
+        onOpenChange={(o) => !o && setQrTarget(null)}
+        table={qrTarget}
       />
     </div>
   );

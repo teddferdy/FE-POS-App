@@ -182,7 +182,7 @@ const EditExpense = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {categories.length === 0 ? (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="__none" disabled>
                             Tidak ada kategori
                           </SelectItem>
                         ) : (
