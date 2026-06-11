@@ -50,7 +50,7 @@ const TableList = () => {
   );
   const locations = locationsData?.data || [];
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
     () => getTablesByStore({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
@@ -59,7 +59,7 @@ const TableList = () => {
   const deleteMutation = useMutation(deleteTable, {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.table.toast.deleted") });
-      queryClient.invalidateQueries(["tables"]);
+      refetch();
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
@@ -76,7 +76,7 @@ const TableList = () => {
       setFormName("");
       setFormCapacity(4);
       setFormStore("");
-      queryClient.invalidateQueries(["tables"]);
+      refetch();
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
