@@ -45,8 +45,7 @@ const TableList = () => {
   const isSuperAdmin = user?.role === "super_admin";
   const { data: locationsData } = useQuery(
     ["allLocations"],
-    getAllLocation,
-    { enabled: isSuperAdmin }
+    getAllLocation
   );
   const locations = locationsData?.data || [];
 
@@ -187,7 +186,7 @@ const TableList = () => {
               setEditTarget(null);
               setFormName("");
               setFormCapacity(4);
-              setFormStore(isSuperAdmin ? "" : locationParam);
+              setFormStore("");
             }}
             className="gap-2">
             <Plus size={18} />
@@ -274,25 +273,23 @@ const TableList = () => {
               onChange={(e) => setFormCapacity(Number(e.target.value))}
             />
           </div>
-          {isSuperAdmin && (
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                {t("page.table.form.store")}
-              </label>
-              <Select value={formStore} onValueChange={setFormStore}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id.toString()}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.table.form.store")}
+            </label>
+            <Select value={formStore} onValueChange={setFormStore}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((loc) => (
+                  <SelectItem key={loc.id} value={loc.id.toString()}>
+                    {loc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Modal>
 
