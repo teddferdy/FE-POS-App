@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store } from "lucide-react";
@@ -26,10 +26,12 @@ const TableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const MENU_KEY = "/table";
-  const locationParam = user?.store || "";
+  const isSuperAdmin = user?.role === "super_admin";
+  const locationParam = isSuperAdmin ? searchParams.get("location") : (user?.store?.toString() || "");
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -42,7 +44,6 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const isSuperAdmin = user?.role === "super_admin";
   const { data: locationsData } = useQuery(
     ["allLocations"],
     getAllLocation
@@ -186,7 +187,7 @@ const TableList = () => {
               setEditTarget(null);
               setFormName("");
               setFormCapacity(4);
-              setFormStore("");
+              setFormStore(isSuperAdmin ? "" : locationParam);
             }}
             className="gap-2">
             <Plus size={18} />
