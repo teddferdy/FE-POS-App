@@ -10,7 +10,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
   if (!table) return null;
 
   const baseUrl = window.location.origin;
-  const storeId = new URLSearchParams(window.location.search).get("store") || "";
+  const storeId = table.store || "";
   const orderUrl = `${baseUrl}/customer-order?table=${table.id}&store=${storeId}`;
 
   const handlePrint = () => {
