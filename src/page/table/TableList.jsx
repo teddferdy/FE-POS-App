@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa, QrCode } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store } from "lucide-react";
 import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -179,7 +179,7 @@ const TableList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.table.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.table.list.description")}</p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
+        {canAccess(user, MENU_KEY, "add") && locations.length > 0 && (
           <Button
             onClick={() => {
               setShowAddModal(true);
@@ -195,6 +195,23 @@ const TableList = () => {
         )}
       </div>
 
+      {locations.length === 0 ? (
+        <Card className="p-12">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <Store size={32} className="text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-foreground">{t("page.table.noStore.title")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("page.table.noStore.description")}</p>
+            </div>
+            <Button onClick={() => navigate("/location-list")}>
+              {t("page.table.noStore.action")}
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
@@ -238,6 +255,8 @@ const TableList = () => {
         emptyMessage={t("page.table.list.empty")}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+        </>
+      )}
 
       <Modal
         type="form"
