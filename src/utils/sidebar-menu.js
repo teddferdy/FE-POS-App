@@ -341,6 +341,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/price-list-template",
         icon: BadgePercent,
         actions: ["view", "edit"]
+      },
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
       }
     ],
     actions: []
