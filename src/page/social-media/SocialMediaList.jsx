@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Plus, Search, Edit, Trash2, Power, PowerOff } from "lucide-react";
 import {
-  getAllInvoiceSocialMedia,
-  deleteInvoiceSocialMedia,
-  activateOrNotActiveInvoiceSocialMedia
-} from "@/services/invoice";
+  getAllSocialMedia,
+  deleteSocialMedia,
+  activateOrNotActiveSocialMedia
+} from "@/services/social-media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -34,11 +34,11 @@ const SocialMediaList = () => {
 
   const { data, isLoading } = useQuery(
     ["social-media-invoice", store],
-    () => getAllInvoiceSocialMedia({ location: store }),
+    () => getAllSocialMedia({ location: store }),
     { enabled: !!store, keepPreviousData: true }
   );
 
-  const deleteMutation = useMutation(deleteInvoiceSocialMedia, {
+  const deleteMutation = useMutation(deleteSocialMedia, {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.socialMedia.toast.deleted") });
       queryClient.invalidateQueries(["social-media-invoice"]);
@@ -48,7 +48,7 @@ const SocialMediaList = () => {
     }
   });
 
-  const toggleMutation = useMutation(activateOrNotActiveInvoiceSocialMedia, {
+  const toggleMutation = useMutation(activateOrNotActiveSocialMedia, {
     onSuccess: () => {
       toast.success(t("common.success"), {
         description: t("page.socialMedia.toast.statusUpdated")

@@ -33,3 +33,12 @@ export const deleteSocialMedia = async (payload) => {
   if (status !== 200) throw Error(data?.error);
   return data;
 };
+
+export const activateOrNotActiveSocialMedia = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/social-media/edit-social-media/${payload.id}`,
+    payload
+  );
+  if (status !== 200) throw Error(`${data.message || data?.error}`);
+  return data;
+};

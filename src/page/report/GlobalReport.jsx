@@ -1,12 +1,8 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { useQuery } from "react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getSalesReport, getDailySummary } from "@/services/report";
-import { getListTableBestSellingList } from "@/services/overview";
-import { getDataCurrentYear } from "@/services/chart";
 import { Loading } from "@/components/ui/loading";
 
 const tabs = [

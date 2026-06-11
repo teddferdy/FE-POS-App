@@ -6,10 +6,12 @@ export const getProductById = async (id) => {
   return data;
 };
 
-export const getAllProduct = async ({ location, nameProduct, category }) => {
-  const { data, status } = await axiosInstance.get(
-    `/product/get-product?store=${location}&nameProduct=${nameProduct}&category=${category}`
-  );
+export const getAllProduct = async ({ location, nameProduct, category } = {}) => {
+  const params = {}
+  if (location) params.store = location
+  if (nameProduct) params.nameProduct = nameProduct
+  if (category) params.category = category
+  const { data, status } = await axiosInstance.get('/product/get-product', { params });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

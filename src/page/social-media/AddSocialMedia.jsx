@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { addInvoiceSocialMedia } from "@/services/invoice";
+import { addSocialMedia } from "@/services/social-media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -27,7 +27,7 @@ const AddSocialMedia = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const addMutation = useMutation(addInvoiceSocialMedia, {
+  const addMutation = useMutation(addSocialMedia, {
     onSuccess: () => {
       setIsSubmitting(false);
       setSuccessModal(true);

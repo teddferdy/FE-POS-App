@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { getAllInvoiceSocialMedia, editInvoiceSocialMedia } from "@/services/invoice";
+import { getAllSocialMedia, editSocialMedia } from "@/services/social-media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -31,7 +31,7 @@ const EditSocialMedia = () => {
 
   const { data, isLoading } = useQuery(
     ["social-media-invoice", store],
-    () => getAllInvoiceSocialMedia({ location: store }),
+    () => getAllSocialMedia({ location: store }),
     { enabled: !!store }
   );
 
@@ -47,7 +47,7 @@ const EditSocialMedia = () => {
     }
   }, [item]);
 
-  const editMutation = useMutation(editInvoiceSocialMedia, {
+  const editMutation = useMutation(editSocialMedia, {
     onSuccess: () => {
       setIsSubmitting(false);
       setSuccessModal(true);
