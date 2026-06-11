@@ -26,7 +26,8 @@ const iconColorMap = {
 const defaultText = {
   success: { confirm: "Oke" },
   error: { confirm: "Oke" },
-  confirm: { cancel: "Batal" }
+  confirm: { cancel: "Batal" },
+  form: { cancel: "Batal", confirm: "Simpan" }
 };
 
 const defaultDescription = {
@@ -34,6 +35,8 @@ const defaultDescription = {
   error: "Gagal memproses data",
   confirm: "Apakah anda yakin ingin melanjutkan?"
 };
+
+const KNOWN_TYPES = Object.keys(iconMap);
 
 export default function Modal({
   open,
@@ -47,9 +50,13 @@ export default function Modal({
   confirmVariant,
   onConfirm,
   onCancel,
-  className
+  className,
+  children
 }) {
-  const Icon = IconOverride || iconMap[type];
+  const isKnownType = KNOWN_TYPES.includes(type);
+  const isForm = type === "form";
+
+  const Icon = isKnownType ? (IconOverride || iconMap[type]) : null;
   const isNotification = type === "success" || type === "error";
   const confirmLabel = confirmText || defaultText[type]?.confirm || "Konfirmasi";
   const cancelLabel = cancelText || defaultText[type]?.cancel || "Batal";
@@ -74,32 +81,61 @@ export default function Modal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent withX={false} className={cn("sm:max-w-[500px]", className)}>
-        <DialogHeader className="items-center text-center gap-0">
-          <div className={cn("mb-4", iconColorMap[type])}>
-            <Icon className="w-16 h-16" strokeWidth={1.5} />
-          </div>
-          <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-          {desc && (
-            <DialogDescription className="text-sm text-muted-foreground mt-1">
-              {desc}
-            </DialogDescription>
-          )}
-        </DialogHeader>
-
-        <div className="flex justify-center gap-3 mt-4">
-          {!isNotification && (
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              {cancelLabel}
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant={confirmBtnVariant}
-            className={confirmBtnClass}
-            onClick={handleConfirm}>
-            {confirmLabel}
-          </Button>
-        </div>
+        {isKnownType ? (
+          <>
+            <DialogHeader className="items-center text-center gap-0">
+              <div className={cn("mb-4", iconColorMap[type])}>
+                <Icon className="w-16 h-16" strokeWidth={1.5} />
+              </div>
+              <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+              {desc && (
+                <DialogDescription className="text-sm text-muted-foreground mt-1">
+                  {desc}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+            <div className="flex justify-center gap-3 mt-4">
+              {!isNotification && (
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  {cancelLabel}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant={confirmBtnVariant}
+                className={confirmBtnClass}
+                onClick={handleConfirm}>
+                {confirmLabel}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+              {desc && (
+                <DialogDescription className="text-sm text-muted-foreground mt-1">
+                  {desc}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+            <div className="py-4">{children}</div>
+            {isForm && (
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  {cancelLabel}
+                </Button>
+                <Button
+                  type="button"
+                  variant={confirmBtnVariant}
+                  className={confirmBtnClass}
+                  onClick={handleConfirm}>
+                  {confirmLabel}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

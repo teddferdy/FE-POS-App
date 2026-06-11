@@ -5,9 +5,11 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Sofa, QrCode } from "lucide-react";
 import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
@@ -35,8 +37,18 @@ const TableList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [qrTarget, setQrTarget] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [formName, setFormName] = useState("");
   const [formCapacity, setFormCapacity] = useState(4);
+  const [formStore, setFormStore] = useState("");
+
+  const isSuperAdmin = user?.role === "super_admin";
+  const { data: locationsData } = useQuery(
+    ["allLocations"],
+    getAllLocation,
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || [];
 
   const { data, isLoading } = useQuery(
     ["tables", locationParam, page, limit, search],
@@ -59,9 +71,11 @@ const TableList = () => {
       toast.success(t("common.success"), {
         description: editTarget ? t("page.table.toast.updated") : t("page.table.toast.added")
       });
+      setShowAddModal(false);
       setEditTarget(null);
       setFormName("");
       setFormCapacity(4);
+      setFormStore("");
       queryClient.invalidateQueries(["tables"]);
     },
     onError: (err) => {
@@ -78,6 +92,7 @@ const TableList = () => {
     setEditTarget(table);
     setFormName(table.name || "");
     setFormCapacity(table.capacity || 4);
+    setFormStore(table.store?.toString() || "");
   };
 
   const handleSave = () => {
@@ -85,7 +100,12 @@ const TableList = () => {
       toast.error(t("page.table.validation.nameRequired"));
       return;
     }
-    const payload = { store: locationParam, name: formName, capacity: formCapacity };
+    const storeId = isSuperAdmin ? formStore : locationParam;
+    if (!storeId) {
+      toast.error(t("page.table.validation.storeRequired"));
+      return;
+    }
+    const payload = { store: storeId, name: formName, capacity: formCapacity };
     if (editTarget) saveMutation.mutate({ id: editTarget.id || editTarget._id, ...payload });
     else saveMutation.mutate(payload);
   };
@@ -163,9 +183,11 @@ const TableList = () => {
         {canAccess(user, MENU_KEY, "add") && (
           <Button
             onClick={() => {
+              setShowAddModal(true);
               setEditTarget(null);
               setFormName("");
               setFormCapacity(4);
+              setFormStore(isSuperAdmin ? "" : locationParam);
             }}
             className="gap-2">
             <Plus size={18} />
@@ -174,7 +196,7 @@ const TableList = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
@@ -182,6 +204,10 @@ const TableList = () => {
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.available ?? 0}</p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
+          <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.reserved ?? 0}</p>
         </Card>
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
@@ -216,9 +242,12 @@ const TableList = () => {
 
       <Modal
         type="form"
-        open={editTarget !== null || (formName && !editTarget)}
+        open={showAddModal || editTarget !== null}
         onOpenChange={(open) => {
-          if (!open) setEditTarget(null);
+          if (!open) {
+            setShowAddModal(false);
+            setEditTarget(null);
+          }
         }}
         title={editTarget ? t("page.table.modal.editTitle") : t("page.table.modal.addTitle")}
         confirmText={t("common.save")}
@@ -245,6 +274,25 @@ const TableList = () => {
               onChange={(e) => setFormCapacity(Number(e.target.value))}
             />
           </div>
+          {isSuperAdmin && (
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                {t("page.table.form.store")}
+              </label>
+              <Select value={formStore} onValueChange={setFormStore}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id.toString()}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </Modal>
 
