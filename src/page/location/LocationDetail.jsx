@@ -39,7 +39,7 @@ import {
 } from "@/services/general";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -182,8 +182,107 @@ const LocationDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-72" />
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+          <Skeleton className="h-10 w-28 rounded-lg" />
+        </div>
+        <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-8">
+                {[...Array(4)].map((_, s) => (
+                  <div key={s} className="space-y-4">
+                    <div className="flex items-center gap-2 pb-3 border-b border-border">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-5 w-36" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                      {[...Array(s === 1 ? 2 : 4)].map((_, r) => (
+                        <div key={r} className="flex items-start gap-3 py-3 border-b border-border">
+                          <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                          <div className="flex-1 space-y-1">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-4 w-40" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {s === 2 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                        {[...Array(5)].map((_, r) => (
+                          <div key={r} className="flex items-start gap-3 py-3 border-b border-border">
+                            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                            <div className="flex-1 space-y-1">
+                              <Skeleton className="h-3 w-20" />
+                              <Skeleton className="h-4 w-36" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {s === 3 && (
+                      <div className="bg-muted/20 rounded-lg p-4 border border-border space-y-2">
+                        {[...Array(7)].map((_, d) => (
+                          <div key={d} className="flex items-center justify-between py-1.5">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-24 rounded" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-3 border-b border-border">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-5 w-28" />
+                  </div>
+                  <Skeleton className="h-80 w-full rounded-lg" />
+                </div>
+              </div>
+              <div className="lg:col-span-1 space-y-6">
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                </div>
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-5 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-5 w-28" />
+                    </div>
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, r) => (
+                        <div key={r} className="flex items-center justify-between py-2 border-b border-border">
+                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                    <Skeleton className="h-5 w-5 shrink-0 mt-0.5 rounded" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

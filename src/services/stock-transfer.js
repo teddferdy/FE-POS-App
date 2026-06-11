@@ -14,11 +14,29 @@ export const getTransferHistory = async ({ store, page = 1, limit = 10 } = {}) =
   return data;
 };
 
+export const getTransferById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/pos/transfer/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const deleteStockTransfer = async (id, store) => {
   const { data, status } = await axiosInstance.delete(`/pos/transfer/${id}`, {
     params: { store }
   });
   if (status !== 200 && status !== 204) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const approveStockTransfer = async (id) => {
+  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/approve`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const rejectStockTransfer = async (id) => {
+  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/reject`);
+  if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 

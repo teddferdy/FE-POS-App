@@ -32,7 +32,9 @@ const formSchema = z.object({
   endDate: z.string().optional().or(z.literal("")),
   minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
   description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean().default(true),
+  code: z.string().optional().or(z.literal("")),
+  maxDiscount: z.coerce.number().min(0).optional().or(z.literal(""))
 });
 
 const EditDiscount = () => {
@@ -68,7 +70,9 @@ const EditDiscount = () => {
       endDate: "",
       minPurchase: "",
       description: "",
-      isActive: true
+      isActive: true,
+      code: "",
+      maxDiscount: ""
     }
   });
 
@@ -82,7 +86,9 @@ const EditDiscount = () => {
         endDate: discountItem.endDate || "",
         minPurchase: discountItem.minPurchase ?? "",
         description: discountItem.description || "",
-        isActive: discountItem.status === "active"
+        isActive: discountItem.status === "active",
+        code: discountItem.code || "",
+        maxDiscount: discountItem.maximumDiscount ?? ""
       });
     }
   }, [discountItem, form]);
@@ -99,11 +105,15 @@ const EditDiscount = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    updateMutation.mutate({
+    const payload = {
       id,
       ...values,
+      maximumDiscount: values.maxDiscount || 0,
+      code: values.code || null,
       status: saveAsDraft ? false : !!values.isActive
-    });
+    };
+    delete payload.maxDiscount;
+    updateMutation.mutate(payload);
   };
 
   if (!id) {
@@ -269,6 +279,39 @@ const EditDiscount = () => {
                       onChange={(e) => {
                         field.onChange(e.target.value === "" ? "" : Number(e.target.value));
                       }}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="maxDiscount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Maks Diskon</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="0 (0 = unlimited)"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                      }}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Promo Code</FormLabel>
+                    <Input
+                      placeholder="PROMO10 (biarkan kosong jika bukan promo code)"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                     <FormMessage />
                   </FormItem>

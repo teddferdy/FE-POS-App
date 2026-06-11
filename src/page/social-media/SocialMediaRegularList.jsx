@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { canAccess } from "@/utils/permission";
@@ -175,8 +175,27 @@ const SocialMediaRegularList = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-muted-foreground">
+                  <th className="px-4 py-3.5"><Skeleton className="h-3 w-24" /></th>
+                  <th className="px-4 py-3.5"><Skeleton className="h-3 w-16" /></th>
+                  <th className="px-4 py-3.5"><Skeleton className="h-3 w-14" /></th>
+                  <th className="px-4 py-3.5 text-right"><Skeleton className="h-3 w-16 ml-auto" /></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {[...Array(6)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="px-4 py-4"><Skeleton className="h-4 w-40" /></td>
+                    <td className="px-4 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-4 py-4 text-right"><Skeleton className="h-8 w-16 rounded ml-auto" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="overflow-x-auto">

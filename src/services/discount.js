@@ -1,10 +1,6 @@
 import { axiosInstance } from ".";
 
-export const getAllDiscountByLocationAndActive = async ({
-  limit,
-  page,
-  statusDiscount
-}) => {
+export const getAllDiscountByLocationAndActive = async ({ limit, page, statusDiscount }) => {
   const { data, status } = await axiosInstance.get(
     `/discount/get-discount-by-location?page=${page}&limit=${limit}&status=${statusDiscount}`
   );
@@ -78,5 +74,13 @@ export const uploadDiscountExcel = async (file) => {
     headers: { "Content-Type": "multipart/form-data" }
   });
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const lookupDiscountByCode = async (code, store) => {
+  const { data, status } = await axiosInstance.get(`/discount/lookup-by-code/${code}`, {
+    params: { store }
+  });
+  if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

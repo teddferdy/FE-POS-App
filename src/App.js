@@ -6,6 +6,7 @@ import { setAuthExpiredCallback } from "@/services";
 
 // Offline
 import OfflineIndicator from "./components/organism/OfflineIndicator";
+import { setupAutoSync } from "@/services/offline";
 
 // Tour Guide
 import SuperAdminTour from "./components/organism/SuperAdminTour";
@@ -106,6 +107,42 @@ import EditTaxConfig from "./page/tax-config/EditTaxConfig";
 import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
 import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 
+// Production Order
+import ProductionOrderList from "./page/production-order/ProductionOrderList";
+import AddProductionOrder from "./page/production-order/AddProductionOrder";
+import DetailProductionOrder from "./page/production-order/DetailProductionOrder";
+
+// Goods Receipt
+import GoodsReceiptList from "./page/goods-receipt/GoodsReceiptList";
+import AddGoodsReceipt from "./page/goods-receipt/AddGoodsReceipt";
+import DetailGoodsReceipt from "./page/goods-receipt/DetailGoodsReceipt";
+
+// Sales Return
+import SalesReturnList from "./page/sales-return/SalesReturnList";
+import DetailSalesReturn from "./page/sales-return/DetailSalesReturn";
+
+// Purchase Return
+import PurchaseReturnList from "./page/purchase-return/PurchaseReturnList";
+import DetailPurchaseReturn from "./page/purchase-return/DetailPurchaseReturn";
+
+// Stock Transfer
+import StockTransferList from "./page/stock-transfer/StockTransferList";
+import AddStockTransfer from "./page/stock-transfer/AddStockTransfer";
+import DetailStockTransfer from "./page/stock-transfer/DetailStockTransfer";
+
+// Cash Register
+import CashRegisterOpenClose from "./page/cash-register/CashRegisterOpenClose";
+import CashRegisterCurrent from "./page/cash-register/CashRegisterCurrent";
+import CashRegisterHistory from "./page/cash-register/CashRegisterHistory";
+
+// Price Store
+import PriceStoreList from "./page/price-store/PriceStoreList";
+
+// BOM
+import BomList from "./page/bom/BomList";
+import AddBom from "./page/bom/AddBom";
+import DetailBom from "./page/bom/DetailBom";
+
 // Cashier
 import CashierPage from "./page/cashier/CashierPage";
 
@@ -164,6 +201,11 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    const cleanup = setupAutoSync();
+    return cleanup;
+  }, []);
+
   const withLayout = (element) => <DashboardLayout>{element}</DashboardLayout>;
 
   return (
@@ -203,10 +245,7 @@ function App() {
             path="/add-member-tier"
             element={withLayout(<AddMemberTier title="Add Member Tier" />)}
           />
-          <Route
-            path="/detail-member-tier"
-            element={withLayout(<DetailMemberTier />)}
-          />
+          <Route path="/detail-member-tier" element={withLayout(<DetailMemberTier />)} />
 
           <Route path="/discount-list" element={withLayout(<DiscountList />)} />
           <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
@@ -271,6 +310,34 @@ function App() {
 
           <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
           <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
+
+          <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
+          <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
+          <Route path="/production-order/detail" element={withLayout(<DetailProductionOrder />)} />
+
+          <Route path="/goods-receipt" element={withLayout(<GoodsReceiptList />)} />
+          <Route path="/add-goods-receipt" element={withLayout(<AddGoodsReceipt />)} />
+          <Route path="/goods-receipt/detail" element={withLayout(<DetailGoodsReceipt />)} />
+
+          <Route path="/sales-return" element={withLayout(<SalesReturnList />)} />
+          <Route path="/sales-return/detail" element={withLayout(<DetailSalesReturn />)} />
+
+          <Route path="/purchase-return" element={withLayout(<PurchaseReturnList />)} />
+          <Route path="/purchase-return/detail" element={withLayout(<DetailPurchaseReturn />)} />
+
+          <Route path="/stock-transfer" element={withLayout(<StockTransferList />)} />
+          <Route path="/add-stock-transfer" element={withLayout(<AddStockTransfer />)} />
+          <Route path="/stock-transfer/detail" element={withLayout(<DetailStockTransfer />)} />
+
+          <Route path="/cash-register/open-close" element={withLayout(<CashRegisterOpenClose />)} />
+          <Route path="/cash-register/current" element={withLayout(<CashRegisterCurrent />)} />
+          <Route path="/cash-register/history" element={withLayout(<CashRegisterHistory />)} />
+
+          <Route path="/price-list-template" element={withLayout(<PriceStoreList />)} />
+
+          <Route path="/bom" element={withLayout(<BomList />)} />
+          <Route path="/bom/add" element={withLayout(<AddBom />)} />
+          <Route path="/bom/detail" element={withLayout(<DetailBom />)} />
 
           <Route path="/stock-opname" element={withLayout(<StockOpnameList />)} />
           <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />

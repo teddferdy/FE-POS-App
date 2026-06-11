@@ -209,8 +209,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </span>
           </button>
           <div
-            className={`overflow-hidden transition-all duration-300 ${
-              collapsed ? "max-h-0" : isOpen ? "max-h-96" : "max-h-0"
+            className={`overflow-y-auto transition-all duration-300 ${
+              collapsed ? "max-h-0" : isOpen ? "max-h-[800px]" : "max-h-0"
             }`}>
             <div className="ml-2 mt-1 space-y-1 border-l-2 border-border pl-3">
               {item.children.map((child) => renderNavItem(child, depth + 1))}

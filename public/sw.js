@@ -94,3 +94,47 @@ function openDB() {
     req.onerror = () => reject(req.error);
   });
 }
+
+// Background Sync event
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-orders") {
+    event.waitUntil(flushSyncQueue());
+  }
+});
+
+async function flushSyncQueue() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction("syncQueue", "readonly");
+    const store = tx.objectStore("syncQueue");
+    const items = await new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    for (const item of items) {
+      try {
+        const response = await fetch(item.url, {
+          method: item.method,
+          headers: item.headers
+            ? Object.fromEntries(item.headers)
+            : { "Content-Type": "application/json" },
+          body: item.body
+        });
+        if (response.ok) {
+          const deleteTx = db.transaction("syncQueue", "readwrite");
+          deleteTx.objectStore("syncQueue").delete(item.id);
+          await new Promise((resolve, reject) => {
+            deleteTx.oncomplete = resolve;
+            deleteTx.onerror = reject;
+          });
+        }
+      } catch (e) {
+        console.error("Background sync fetch failed:", e);
+      }
+    }
+  } catch (e) {
+    console.error("Background sync flush error:", e);
+  }
+}

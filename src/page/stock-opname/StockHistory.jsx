@@ -7,7 +7,7 @@ import { getAllProductTable } from "@/services/product";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableHeader,
@@ -220,9 +220,36 @@ const StockHistory = () => {
       </Card>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loading />
-        </div>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead><Skeleton className="h-3 w-24" /></TableHead>
+                  <TableHead><Skeleton className="h-3 w-20" /></TableHead>
+                  <TableHead className="text-right"><Skeleton className="h-3 w-12 ml-auto" /></TableHead>
+                  <TableHead className="text-right"><Skeleton className="h-3 w-16 ml-auto" /></TableHead>
+                  <TableHead className="text-right"><Skeleton className="h-3 w-12 ml-auto" /></TableHead>
+                  <TableHead><Skeleton className="h-3 w-14" /></TableHead>
+                  <TableHead><Skeleton className="h-3 w-16" /></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(8)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20 rounded" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       ) : histories.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
           <Calendar size={48} className="mx-auto mb-4 opacity-30" />

@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { canAccess } from "@/utils/permission";
 
 const getStatus = (user, t) => {
@@ -207,8 +207,42 @@ const AdminList = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-muted/10">
+                  <th className="px-6 py-4 border-b border-border"><Skeleton className="h-3 w-24" /></th>
+                  <th className="px-6 py-4 border-b border-border"><Skeleton className="h-3 w-16" /></th>
+                  <th className="px-6 py-4 border-b border-border"><Skeleton className="h-3 w-12" /></th>
+                  <th className="px-6 py-4 border-b border-border"><Skeleton className="h-3 w-14" /></th>
+                  <th className="px-6 py-4 border-b border-border text-right"><Skeleton className="h-3 w-16 ml-auto" /></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {[...Array(6)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div>
+                          <Skeleton className="h-4 w-28 mb-1" />
+                          <Skeleton className="h-3 w-36" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-8 w-16 rounded ml-auto" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="overflow-x-auto">

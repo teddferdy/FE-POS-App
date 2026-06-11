@@ -22,7 +22,10 @@ import {
   ClipboardList,
   Award,
   TriangleAlert,
-  Shield
+  Shield,
+  ArrowRightLeft,
+  DollarSign,
+  BadgePercent
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -39,6 +42,14 @@ export const sidebarMenuSuperAdmin = [
     i18nKey: "sidebar.cashier",
     href: "/home",
     icon: Calculator,
+    children: [],
+    actions: ["view", "add"]
+  },
+  {
+    title: "Kasir (Register)",
+    i18nKey: "sidebar.cashRegister",
+    href: "/cash-register/current",
+    icon: DollarSign,
     children: [],
     actions: ["view", "add"]
   },
@@ -64,13 +75,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Supplier",
-        i18nKey: "sidebar.supplier",
-        href: "/supplier",
-        icon: Building2,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
-      {
         title: "Daftar Produk",
         i18nKey: "sidebar.daftarProduk",
         href: "/product-list",
@@ -79,6 +83,14 @@ export const sidebarMenuSuperAdmin = [
       }
     ],
     actions: []
+  },
+  {
+    title: "Supplier",
+    i18nKey: "sidebar.supplier",
+    href: "/supplier",
+    icon: Building2,
+    children: [],
+    actions: ["add", "edit", "view", "delete", "import", "export"]
   },
   {
     title: "Pelanggan",
@@ -147,25 +159,92 @@ export const sidebarMenuSuperAdmin = [
     icon: ClipboardList,
     children: [
       {
-        title: "Stock Opname",
-        i18nKey: "sidebar.stockOpname",
-        href: "/stock-opname",
+        title: "Persediaan",
+        i18nKey: "sidebar.persediaan",
+        href: "",
         icon: ClipboardList,
-        actions: ["add", "view"]
+        children: [
+          {
+            title: "Stock Opname",
+            i18nKey: "sidebar.stockOpname",
+            href: "/stock-opname",
+            icon: ClipboardList,
+            actions: ["add", "view"]
+          },
+          {
+            title: "History Stok",
+            i18nKey: "sidebar.historyStok",
+            href: "/stock-history",
+            icon: FileText,
+            actions: ["view"]
+          },
+          {
+            title: "Low Stock",
+            i18nKey: "sidebar.lowStock",
+            href: "/low-stock",
+            icon: TriangleAlert,
+            actions: ["view"]
+          }
+        ]
       },
       {
-        title: "History Stok",
-        i18nKey: "sidebar.historyStok",
-        href: "/stock-history",
+        title: "Produksi",
+        i18nKey: "sidebar.produksi",
+        href: "",
+        icon: Package,
+        children: [
+          {
+            title: "Production Order",
+            i18nKey: "sidebar.productionOrder",
+            href: "/production-order",
+            icon: Package,
+            actions: ["add", "edit", "view", "delete"]
+          },
+          {
+            title: "BOM",
+            i18nKey: "sidebar.bom",
+            href: "/bom",
+            icon: ClipboardList,
+            actions: ["add", "view", "delete"]
+          }
+        ]
+      },
+      {
+        title: "Penerimaan & Retur",
+        i18nKey: "sidebar.penerimaanRetur",
+        href: "",
         icon: FileText,
-        actions: ["view"]
+        children: [
+          {
+            title: "Goods Receipt",
+            i18nKey: "sidebar.goodsReceipt",
+            href: "/goods-receipt",
+            icon: FileText,
+            actions: ["add", "view", "delete"]
+          },
+          {
+            title: "Sales Return",
+            i18nKey: "sidebar.salesReturn",
+            href: "/sales-return",
+            icon: ShoppingCart,
+            actions: ["view"]
+          },
+          {
+            title: "Purchase Return",
+            i18nKey: "sidebar.purchaseReturn",
+            href: "/purchase-return",
+            icon: ShoppingCart,
+            actions: ["view"]
+          }
+        ]
       },
       {
-        title: "Low Stock",
-        i18nKey: "sidebar.lowStock",
-        href: "/low-stock",
-        icon: TriangleAlert,
-        actions: ["view"]
+        title: "Transfer Stok",
+        i18nKey: "sidebar.transferStok",
+        href: "/stock-transfer",
+        icon: ArrowRightLeft,
+        children: [],
+        actions: ["view", "add", "delete"]
       }
     ],
     actions: []
@@ -247,6 +326,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/role-management",
         icon: Shield,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
       }
     ],
     actions: []
@@ -280,13 +366,29 @@ export const sidebarMenuAdmin = [
         href: "/category-list",
         icon: Tag,
         actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengadaan",
+    i18nKey: "sidebar.pengadaan",
+    href: "",
+    icon: ShoppingCart,
+    children: [
       {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Purchase Order",
+        i18nKey: "sidebar.purchaseOrder",
+        href: "/purchase-order",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view"]
       }
     ],
     actions: []
@@ -296,6 +398,14 @@ export const sidebarMenuAdmin = [
     i18nKey: "sidebar.cashier",
     href: "/home",
     icon: Calculator,
+    children: [],
+    actions: ["view", "add"]
+  },
+  {
+    title: "Kasir (Register)",
+    i18nKey: "sidebar.cashRegister",
+    href: "/cash-register/current",
+    icon: DollarSign,
     children: [],
     actions: ["view", "add"]
   },
@@ -345,32 +455,77 @@ export const sidebarMenuAdmin = [
     icon: Warehouse,
     children: [
       {
-        title: "Purchase Order",
-        i18nKey: "sidebar.purchaseOrder",
-        href: "/purchase-order",
-        icon: ShoppingCart,
-        actions: ["add", "edit", "view"]
-      },
-      {
-        title: "Stock Opname",
-        i18nKey: "sidebar.stockOpname",
-        href: "/stock-opname",
+        title: "Persediaan",
+        i18nKey: "sidebar.persediaan",
+        href: "",
         icon: ClipboardList,
-        actions: ["add", "view"]
+        children: [
+          {
+            title: "Stock Opname",
+            i18nKey: "sidebar.stockOpname",
+            href: "/stock-opname",
+            icon: ClipboardList,
+            actions: ["add", "view"]
+          },
+          {
+            title: "History Stok",
+            i18nKey: "sidebar.historyStok",
+            href: "/stock-history",
+            icon: FileText,
+            actions: ["view"]
+          },
+          {
+            title: "Low Stock",
+            i18nKey: "sidebar.lowStock",
+            href: "/low-stock",
+            icon: TriangleAlert,
+            actions: ["view"]
+          },
+          {
+            title: "Production Order",
+            i18nKey: "sidebar.productionOrder",
+            href: "/production-order",
+            icon: Package,
+            actions: ["add", "edit", "view", "delete"]
+          }
+        ]
       },
       {
-        title: "History Stok",
-        i18nKey: "sidebar.historyStok",
-        href: "/stock-history",
+        title: "Penerimaan & Retur",
+        i18nKey: "sidebar.penerimaanRetur",
+        href: "",
         icon: FileText,
-        actions: ["view"]
+        children: [
+          {
+            title: "Goods Receipt",
+            i18nKey: "sidebar.goodsReceipt",
+            href: "/goods-receipt",
+            icon: FileText,
+            actions: ["add", "view", "delete"]
+          },
+          {
+            title: "Sales Return",
+            i18nKey: "sidebar.salesReturn",
+            href: "/sales-return",
+            icon: ShoppingCart,
+            actions: ["view"]
+          },
+          {
+            title: "Purchase Return",
+            i18nKey: "sidebar.purchaseReturn",
+            href: "/purchase-return",
+            icon: ShoppingCart,
+            actions: ["view"]
+          }
+        ]
       },
       {
-        title: "Low Stock",
-        i18nKey: "sidebar.lowStock",
-        href: "/low-stock",
-        icon: TriangleAlert,
-        actions: ["view"]
+        title: "Transfer Stok",
+        i18nKey: "sidebar.transferStok",
+        href: "/stock-transfer",
+        icon: ArrowRightLeft,
+        children: [],
+        actions: ["view", "add", "delete"]
       }
     ],
     actions: []
@@ -491,6 +646,13 @@ export const sidebarMenuAdmin = [
         href: "/invoice-page",
         icon: FileText,
         actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
       }
     ],
     actions: []
@@ -562,7 +724,6 @@ export const sidebarMenuUser = [
   }
 ];
 
-// ARROW BACK
 export const urlWithArrowBack = [
   { url: 0, title: "Dashboard", i18nKey: "sidebar.dashboardAdmin", pathName: "/dashboard-admin" },
   {
@@ -595,6 +756,13 @@ export const urlWithArrowBack = [
     pathName: "/purchase-order"
   },
   { url: -1, title: "Stock Opname", i18nKey: "sidebar.stockOpname", pathName: "/stock-opname" },
+  {
+    url: -1,
+    title: "Production Order",
+    i18nKey: "sidebar.productionOrder",
+    pathName: "/production-order"
+  },
+  { url: -1, title: "Goods Receipt", i18nKey: "sidebar.goodsReceipt", pathName: "/goods-receipt" },
   { url: -1, title: "Stock History", i18nKey: "sidebar.historyStok", pathName: "/stock-history" },
   { url: -1, title: "Low Stock", i18nKey: "sidebar.lowStock", pathName: "/low-stock" },
   {
@@ -742,6 +910,30 @@ export const urlWithArrowBack = [
     pathName: "/add-stock-opname"
   },
   {
+    url: "/production-order",
+    title: "Add Production Order",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-production-order"
+  },
+  {
+    url: "/production-order",
+    title: "Detail Production Order",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/production-order/detail"
+  },
+  {
+    url: "/goods-receipt",
+    title: "Add Goods Receipt",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-goods-receipt"
+  },
+  {
+    url: "/goods-receipt",
+    title: "Detail Goods Receipt",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/goods-receipt/detail"
+  },
+  {
     url: "/expense-category",
     title: "Add Expense Category",
     i18nKey: "breadcrumb.add",
@@ -760,5 +952,73 @@ export const urlWithArrowBack = [
     title: "Add Member Tier",
     i18nKey: "breadcrumb.add",
     pathName: "/add-member-tier"
+  },
+  { url: -1, title: "Sales Return", i18nKey: "sidebar.salesReturn", pathName: "/sales-return" },
+  {
+    url: "/sales-return",
+    title: "Detail Sales Return",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/sales-return/detail"
+  },
+  {
+    url: -1,
+    title: "Purchase Return",
+    i18nKey: "sidebar.purchaseReturn",
+    pathName: "/purchase-return"
+  },
+  {
+    url: "/purchase-return",
+    title: "Detail Purchase Return",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/purchase-return/detail"
+  },
+  {
+    url: -1,
+    title: "Stock Transfer",
+    i18nKey: "sidebar.stockTransfer",
+    pathName: "/stock-transfer"
+  },
+  {
+    url: "/stock-transfer",
+    title: "Add Stock Transfer",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-stock-transfer"
+  },
+  {
+    url: "/stock-transfer",
+    title: "Detail Stock Transfer",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/stock-transfer/detail"
+  },
+  {
+    url: -1,
+    title: "Kasir (Register)",
+    i18nKey: "sidebar.cashRegister",
+    pathName: "/cash-register/current"
+  },
+  {
+    url: "/cash-register/current",
+    title: "Riwayat Kasir",
+    i18nKey: "breadcrumb.history",
+    pathName: "/cash-register/history"
+  },
+  {
+    url: -1,
+    title: "Harga per Toko",
+    i18nKey: "sidebar.pricePerStore",
+    pathName: "/price-list-template"
+  },
+  { url: -1, title: "BOM", i18nKey: "sidebar.bom", pathName: "/bom" },
+  {
+    url: "/bom",
+    title: "Add BOM",
+    i18nKey: "breadcrumb.add",
+    pathName: "/bom/add"
+  },
+  {
+    url: "/bom",
+    title: "Detail BOM",
+    i18nKey: "breadcrumb.detail",
+    pathName: "/bom/detail"
   }
 ];

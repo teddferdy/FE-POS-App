@@ -27,13 +27,37 @@ const actionLabels = {
   "update-status": "Update Status"
 };
 
+const actionColors = {
+  view: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30",
+  add: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30",
+  edit: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30",
+  delete: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30",
+  import: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30",
+  export: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30",
+  approve: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30",
+  print: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30",
+  "edit-points": "text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30",
+  "edit-access": "text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/30",
+  "reset-password": "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30",
+  "update-status": "text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/30"
+};
+
+const collectLeaves = (items) => {
+  const leaves = [];
+  for (const item of items) {
+    if (item.href && !item.href.startsWith("#")) leaves.push(item);
+    if (item.children && item.children.length > 0) leaves.push(...collectLeaves(item.children));
+  }
+  return leaves;
+};
+
 const getLeafItemsGrouped = () => {
   const groups = [];
   sidebarMenuSuperAdmin.forEach((parent) => {
     if (parent.href && (!parent.children || parent.children.length === 0)) {
       groups.push({ parentTitle: "", parentIcon: null, items: [parent] });
     } else if (parent.children && parent.children.length > 0) {
-      const leafChildren = parent.children.filter((c) => c.href && !c.href.startsWith("#"));
+      const leafChildren = collectLeaves(parent.children);
       if (leafChildren.length > 0) {
         groups.push({
           parentTitle: parent.title,
@@ -342,13 +366,13 @@ const EditRole = () => {
                         <table className="w-full text-left border-collapse">
                           <thead>
                             <tr className="bg-muted/10">
-                              <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-56">
+                              <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
                                 Menu
                               </th>
                               {visibleActions.map((action) => (
                                 <th
                                   key={action}
-                                  className="px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center min-w-[60px]">
+                                  className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
                                   {actionLabels[action] || action}
                                 </th>
                               ))}

@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { getEmployeeDetail } from "@/services/employee";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DetailEmployee = () => {
   const { t } = useTranslation();
@@ -50,7 +50,95 @@ const DetailEmployee = () => {
   const statusActive = employee.statusActive === true;
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("page.employee.detail.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 text-sm">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
+          <Skeleton className="w-32 h-32 rounded-2xl" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+            <div className="flex gap-4">
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-4 w-44" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-36 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4 space-y-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5 space-y-4">
+              <Skeleton className="h-5 w-28" />
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="space-y-1.5">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))}
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5 space-y-4">
+              <Skeleton className="h-5 w-28" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-1.5">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="col-span-12 lg:col-span-8 space-y-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+              <Skeleton className="h-5 w-24 mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl shadow-sm border border-border p-4 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+              ))}
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+              <Skeleton className="h-5 w-24 mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                    <Skeleton className="h-9 w-9 rounded" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-5">
+              <Skeleton className="h-5 w-24 mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!employeeID || !employee.id) {

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { Button } from "@/components/ui/button";
 import { Stars } from "lucide-react";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 
 const levelConfig = {
@@ -86,8 +86,106 @@ const MemberDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div className="space-y-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-72" />
+            <Skeleton className="h-8 w-56" />
+          </div>
+          <Skeleton className="h-10 w-36 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col items-center">
+              <Skeleton className="w-24 h-24 rounded-full mb-4" />
+              <Skeleton className="h-6 w-36 mb-2" />
+              <Skeleton className="h-4 w-28 mb-3" />
+              <Skeleton className="h-5 w-28 rounded-full mb-4" />
+              <div className="w-full space-y-4 border-t border-border pt-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-5 w-5 rounded" />
+                    <div className="flex flex-col space-y-1">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+              <div className="bg-foreground p-4">
+                <Skeleton className="h-5 w-40" />
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <Skeleton className="h-2 w-full rounded-full" />
+                  <Skeleton className="h-3 w-44" />
+                </div>
+                <Skeleton className="h-16 w-full rounded-lg" />
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                  <Skeleton className="h-3 w-24" />
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-28" />
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-card rounded-xl border border-border shadow-sm">
+              <div className="flex gap-2 p-4 border-b border-border">
+                <Skeleton className="h-8 w-32 rounded" />
+                <Skeleton className="h-8 w-28 rounded" />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-muted/30 border-b border-border">
+                      {[...Array(6)].map((_, i) => (
+                        <th key={i} className="px-4 py-3">
+                          <Skeleton className="h-3 w-20" />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {[...Array(5)].map((_, r) => (
+                      <tr key={r}>
+                        {[...Array(6)].map((_, c) => (
+                          <td key={c} className="px-4 py-3">
+                            <Skeleton className="h-4 w-full" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+                <Skeleton className="h-3 w-52" />
+                <div className="flex gap-1">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-8 rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -437,9 +535,28 @@ const MemberDetail = () => {
               <>
                 <div className="overflow-x-auto">
                   {pointLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <Loading />
-                    </div>
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border">
+                          {["Tanggal", "Deskripsi", "Poin", "Saldo"].map((_, i) => (
+                            <th key={i} className="px-4 py-3">
+                              <Skeleton className="h-3 w-16" />
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {[...Array(4)].map((_, r) => (
+                          <tr key={r}>
+                            {[...Array(4)].map((_, c) => (
+                              <td key={c} className="px-4 py-3">
+                                <Skeleton className="h-4 w-full" />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   ) : (
                     <table className="w-full text-left">
                       <thead>

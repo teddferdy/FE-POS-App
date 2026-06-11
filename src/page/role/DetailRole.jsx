@@ -7,7 +7,7 @@ import { getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import { parseAccessMenuToPermissions, findMenuPermission, normalizePermissionActions } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const actionLabels = {
   view: "Lihat",
@@ -78,8 +78,80 @@ const DetailRole = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div>
+        <div className="mb-6 flex items-center gap-1">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-56" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-28 rounded-lg" />
+            <Skeleton className="h-10 w-28 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4">
+            <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-5 w-28" />
+              </div>
+              <div className="space-y-4">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i}>
+                    <Skeleton className="h-3 w-20 mb-2" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="col-span-12 lg:col-span-8">
+            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+              <div className="p-6 border-b border-border bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <Skeleton className="h-5 w-36" />
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {[0, 1, 2].map((g) => (
+                  <div key={g}>
+                    <div className="px-6 py-3 bg-muted/10">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto p-6">
+                      <div className="space-y-3">
+                        {[0, 1, 2].map((r) => (
+                          <div key={r} className="flex items-center gap-4">
+                            <Skeleton className="h-5 w-48" />
+                            {[0, 1, 2, 3].map((c) => (
+                              <Skeleton key={c} className="h-5 w-8" />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-4 bg-muted/20 border-t border-border">
+                <Skeleton className="h-3 w-64 ml-auto" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

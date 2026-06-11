@@ -22,7 +22,7 @@ import {
 import { getProductById, getProductBatches } from "@/services/product";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -87,8 +87,105 @@ const DetailProduct = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-3" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-3" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="rounded-2xl border border-border overflow-hidden">
+          <div className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <Skeleton className="w-full md:w-56 h-56 rounded-xl" />
+              <div className="flex-1 min-w-0 space-y-3">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <Skeleton className="h-6 w-28 rounded-full" />
+                  <Skeleton className="h-6 w-36 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="p-5 flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {[...Array(4)].map((_, ci) => (
+              <div key={ci} className="rounded-xl border border-border overflow-hidden">
+                <div className="p-5 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+                <div className="p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <Skeleton className="w-9 h-9 rounded-lg shrink-0" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-5 w-12 rounded-full" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-12 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-6">
+            <div className="rounded-xl border border-border overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="text-center space-y-2">
+                  <Skeleton className="h-10 w-20 mx-auto" />
+                  <Skeleton className="h-3 w-32 mx-auto" />
+                </div>
+                <Skeleton className="h-2.5 w-full rounded-full" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center gap-3 pt-2">
+          <Skeleton className="h-10 w-28 rounded-md" />
+          <Skeleton className="h-10 w-36 rounded-md" />
+        </div>
       </div>
     );
   }
@@ -384,8 +481,19 @@ const DetailProduct = () => {
             </div>
             <div className="p-5">
               {loadingBatches ? (
-                <div className="flex justify-center py-4">
-                  <Loading size="sm" />
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2 pb-2 border-b border-border">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-16 ml-auto" />
+                  </div>
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="grid grid-cols-3 gap-2 py-1.5">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-12 ml-auto" />
+                    </div>
+                  ))}
                 </div>
               ) : batches.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">

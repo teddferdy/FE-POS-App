@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { getStockOpnameById } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 
 const statusColors = {
@@ -34,7 +34,53 @@ const DetailStockOpname = () => {
   const store = opname?.store || {};
   const canEdit = opname?.status === "draft";
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-2 text-sm mb-1">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-3" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="p-5 rounded-xl border border-border">
+              <Skeleton className="h-3 w-20 mb-2" />
+              <Skeleton className="h-6 w-36" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <Skeleton className="h-5 w-40" />
+          </div>
+          <div className="overflow-x-auto p-4">
+            <div className="space-y-3">
+              <div className="grid grid-cols-12 gap-4 pb-2 border-b border-border">
+                {[...Array(8)].map((_, i) => (
+                  <Skeleton key={i} className="h-3 w-full" />
+                ))}
+              </div>
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="grid grid-cols-12 gap-4 py-2">
+                  {[...Array(8)].map((_, j) => (
+                    <Skeleton key={j} className="h-4 w-full" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <Skeleton className="h-10 w-24 rounded-md" />
+          <Skeleton className="h-10 w-20 rounded-md" />
+        </div>
+      </div>
+    );
+  }
 
   if (!opname) {
     return (

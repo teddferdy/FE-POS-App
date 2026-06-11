@@ -159,3 +159,30 @@ export const onOffline = (callback) => {
   window.addEventListener("offline", callback);
   return () => window.removeEventListener("offline", callback);
 };
+
+// Try Background Sync API (Chrome-only progressive enhancement)
+export const registerBackgroundSync = async (tag = "sync-orders") => {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if ("sync" in reg) {
+      await reg.sync.register(tag);
+      return true;
+    }
+  } catch (e) {
+    console.warn("Background Sync not available:", e.message);
+  }
+  return false;
+};
+
+// Flush queue when coming back online
+export const setupAutoSync = () => {
+  const handler = async () => {
+    await registerBackgroundSync();
+    const result = await syncOfflineData();
+    if (result.synced > 0 || result.failed > 0) {
+      console.info(`Offline sync: ${result.synced} synced, ${result.failed} failed`);
+    }
+  };
+  window.addEventListener("online", handler);
+  return () => window.removeEventListener("online", handler);
+};

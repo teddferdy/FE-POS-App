@@ -4,7 +4,7 @@ import { useCookies } from "react-cookie";
 import { AlertTriangle, Package, ShoppingBasket } from "lucide-react";
 import { getLowStockProducts } from "@/services/stock";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableHeader,
@@ -89,8 +89,36 @@ const LowStock = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loading />
+        <div className="space-y-4">
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b border-border bg-muted/30">
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead><Skeleton className="h-3 w-24" /></TableHead>
+                    <TableHead className="text-right"><Skeleton className="h-3 w-20 ml-auto" /></TableHead>
+                    <TableHead className="text-right"><Skeleton className="h-3 w-16 ml-auto" /></TableHead>
+                    <TableHead><Skeleton className="h-3 w-12" /></TableHead>
+                    <TableHead><Skeleton className="h-3 w-14" /></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[...Array(4)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
         </div>
       ) : products.length === 0 && ingredients.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">

@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import { getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 
 const formatDate = (dateStr) => {
@@ -57,8 +57,63 @@ const DetailDepartment = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div className="space-y-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-28 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[0, 1, 2].map((i) => (
+                  <div key={i}>
+                    <Skeleton className="h-3 w-20 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 pt-5 border-t border-border">
+                <Skeleton className="h-3 w-24 mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+              <div className="space-y-5">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Skeleton className="w-9 h-9 rounded-lg shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

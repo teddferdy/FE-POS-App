@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Award, Medal, Coins, Gift, Tag, Calendar, Users } from "lucide-react";
 import { getDetailMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -69,8 +69,72 @@ const DetailMemberTier = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <div className="space-y-8">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 md:p-10">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <Skeleton className="w-24 h-24 md:w-28 md:h-28 rounded-2xl shrink-0" />
+              <div className="text-center md:text-left space-y-3 flex-1">
+                <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="p-6 flex items-center gap-4">
+                <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
+            </div>
+          </div>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <div className="space-y-4">
+              {[0, 1].map((i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <Skeleton className="w-9 h-9 rounded-lg shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-3">
+          <Skeleton className="h-10 w-28 rounded-lg" />
+          <Skeleton className="h-10 w-24 rounded-lg" />
+        </div>
       </div>
     );
   }

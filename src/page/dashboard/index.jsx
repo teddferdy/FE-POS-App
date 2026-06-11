@@ -19,7 +19,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { getDashboardSummary } from "@/services/dashboard";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statusBadge = (status) => {
   const s = (status || "Paid").toLowerCase();
@@ -125,7 +125,74 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {isLoading ? (
-        <Loading />
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-4 rounded" />
+                </div>
+                <Skeleton className="h-8 w-28 mb-2" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <Skeleton className="h-5 w-40 mb-2" />
+                <Skeleton className="h-3 w-56" />
+              </div>
+              <div className="p-5">
+                <Skeleton className="h-[220px] w-full rounded-lg" />
+              </div>
+            </div>
+            <div className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <Skeleton className="h-5 w-32 mb-2" />
+                <Skeleton className="h-3 w-44" />
+              </div>
+              <div className="divide-y divide-border">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-lg" />
+                      <div>
+                        <Skeleton className="h-4 w-28 mb-1" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-5 w-10 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <Skeleton className="h-5 w-36 mb-2" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+            <div className="p-5">
+              <div className="flex gap-4 pb-3 border-b border-border mb-3">
+                {[...Array(7)].map((_, i) => (
+                  <Skeleton key={i} className="h-4 flex-1" />
+                ))}
+              </div>
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 py-3 border-b border-border">
+                  {[...Array(7)].map((_, j) => (
+                    <Skeleton
+                      key={j}
+                      className={`h-4 ${j === 0 ? "w-24" : j === 6 ? "w-16" : "flex-1"}`}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       ) : (
         <>
           <div

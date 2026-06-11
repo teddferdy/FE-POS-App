@@ -2,7 +2,7 @@
 import React from "react";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const DataTable = ({
@@ -264,8 +264,41 @@ const DataTable = ({
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loading />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 text-muted-foreground">
+                {allColumns.map((col, i) => (
+                  <th
+                    key={i}
+                    className={cn(
+                      "px-4 py-3.5 text-xs font-semibold uppercase tracking-wider",
+                      col.align === "right" && "text-right",
+                      col.align === "center" && "text-center"
+                    )}>
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {Array.from({ length: 6 }).map((_, rowIdx) => (
+                <tr key={rowIdx}>
+                  {allColumns.map((col, colIdx) => (
+                    <td
+                      key={colIdx}
+                      className={cn(
+                        "px-4 py-4",
+                        col.align === "right" && "text-right",
+                        col.align === "center" && "text-center"
+                      )}>
+                      <Skeleton className={cn("h-4", colIdx === 0 ? "w-24" : "w-32")} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         renderTable()
