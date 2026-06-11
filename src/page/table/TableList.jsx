@@ -205,7 +205,7 @@ const TableList = () => {
               <p className="text-lg font-semibold text-foreground">{t("page.table.noStore.title")}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("page.table.noStore.description")}</p>
             </div>
-            <Button onClick={() => navigate("/location-list")}>
+            <Button onClick={() => navigate("/add-location")}>
               {t("page.table.noStore.action")}
             </Button>
           </div>
