@@ -313,7 +313,8 @@ const globalPages = [
   "/low-stock",
   "/low-stock-all",
   "/stock-opname",
-  "/detail-member-tier"
+  "/detail-member-tier",
+  "/price-list-template"
 ];
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {
