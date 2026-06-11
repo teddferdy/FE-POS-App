@@ -30,7 +30,7 @@ export const addTable = async (payload) => {
   return data;
 };
 
-export const editTable = async (id, payload) => {
+export const editTable = async ({ id, ...payload }) => {
   const { data, status } = await axiosInstance.put(`/table/update/${id}`, payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
   return data;

@@ -321,7 +321,7 @@ const TableList = () => {
         description={t("page.table.modal.deleteDescription", { name: deleteTarget?.name || "" })}
         confirmText={t("page.table.modal.confirmDelete")}
         onConfirm={() => {
-          deleteMutation.mutate({ id: deleteTarget.id });
+          deleteMutation.mutate(deleteTarget.id);
           setDeleteTarget(null);
         }}
       />
