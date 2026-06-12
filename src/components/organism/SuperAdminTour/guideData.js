@@ -263,6 +263,29 @@ const guideData = [
         actions: ["edit"]
       },
       {
+        path: "/ingredient",
+        icon: Package,
+        titleKey: "sidebar.bahanBaku",
+        descKey: "guide.page.ingredient.desc",
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        path: "/add-ingredient",
+        icon: Plus,
+        titleKey: "breadcrumb.add",
+        parentPath: "/ingredient",
+        descKey: "guide.addIngredient.title",
+        actions: ["add"]
+      },
+      {
+        path: "/edit-ingredient",
+        icon: Settings,
+        titleKey: "breadcrumb.edit",
+        parentPath: "/ingredient",
+        descKey: "guide.addIngredient.title",
+        actions: ["edit"]
+      },
+      {
         path: "/purchase-order",
         icon: ShoppingCart,
         titleKey: "sidebar.purchaseOrder",

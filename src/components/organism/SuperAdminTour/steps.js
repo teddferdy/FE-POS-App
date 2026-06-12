@@ -354,6 +354,70 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
+  // ── Bahan Baku ──
+  {
+    id: "ingredient-intro",
+    page: "/ingredient",
+    icon: Package,
+    titleKey: "sidebar.bahanBaku",
+    descKey: "guide.page.ingredient.desc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-stat-total",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-stat-total"]',
+    icon: BarChart3,
+    titleKey: "guide.ingredient.s14a",
+    descKey: "guide.ingredient.s14adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-stat-active",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-stat-active"]',
+    icon: BarChart3,
+    titleKey: "guide.ingredient.s14b",
+    descKey: "guide.ingredient.s14bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-stat-low",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-stat-low"]',
+    icon: BarChart3,
+    titleKey: "guide.ingredient.s14c",
+    descKey: "guide.ingredient.s14cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-add",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-add"]',
+    icon: Plus,
+    titleKey: "guide.ingredient.s14d",
+    descKey: "guide.ingredient.s14ddesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-search",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-search"]',
+    icon: Search,
+    titleKey: "guide.ingredient.s14e",
+    descKey: "guide.ingredient.s14edesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "ingredient-table",
+    page: "/ingredient",
+    target: '[data-tour="ingredient-table"]',
+    icon: List,
+    titleKey: "guide.ingredient.s14f",
+    descKey: "guide.ingredient.s14fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
   // ── Produk ──
   {
     id: "product-intro",

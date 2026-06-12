@@ -157,6 +157,18 @@ const guides = {
       { icon: "description", textKey: "guide.addPurchaseOrder.step6" },
       { icon: "save", textKey: "guide.addPurchaseOrder.step7" }
     ]
+  },
+  "add-ingredient": {
+    titleKey: "guide.addIngredient.title",
+    steps: [
+      { icon: "badge", textKey: "guide.addIngredient.step1" },
+      { icon: "category", textKey: "guide.addIngredient.step2" },
+      { icon: "swap_horiz", textKey: "guide.addIngredient.step3" },
+      { icon: "inventory_2", textKey: "guide.addIngredient.step4" },
+      { icon: "payments", textKey: "guide.addIngredient.step5" },
+      { icon: "toggle_on", textKey: "guide.addIngredient.step6" },
+      { icon: "save", textKey: "guide.addIngredient.step7" }
+    ]
   }
 };
 

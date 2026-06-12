@@ -99,18 +99,18 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Purchase Order",
-        i18nKey: "sidebar.purchaseOrder",
-        href: "/purchase-order",
-        icon: ShoppingCart,
-        actions: ["add", "edit", "view"]
-      },
-      {
         title: "Bahan Baku",
         i18nKey: "sidebar.bahanBaku",
         href: "/ingredient",
         icon: Package,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Purchase Order",
+        i18nKey: "sidebar.purchaseOrder",
+        href: "/purchase-order",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view"]
       }
     ],
     actions: []
@@ -421,18 +421,18 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Purchase Order",
-        i18nKey: "sidebar.purchaseOrder",
-        href: "/purchase-order",
-        icon: ShoppingCart,
-        actions: ["add", "edit", "view"]
-      },
-      {
         title: "Bahan Baku",
         i18nKey: "sidebar.bahanBaku",
         href: "/ingredient",
         icon: Package,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Purchase Order",
+        i18nKey: "sidebar.purchaseOrder",
+        href: "/purchase-order",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view"]
       }
     ],
     actions: []
