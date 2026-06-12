@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Save, X } from "lucide-react";
 import { addIngredient } from "@/services/ingredient";
+import { getAllSupplier } from "@/services/supplier";
+import { getAllCategory } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Combobox } from "@/components/ui/combobox";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import UserGuide from "@/components/organism/UserGuide";
@@ -55,10 +58,24 @@ const AddIngredient = () => {
     stock: 0,
     minStock: 0,
     costPrice: 0,
-    supplier: "",
-    category: "",
+    supplier: null,
+    category: null,
     isActive: true
   });
+
+  const { data: suppliersData } = useQuery(
+    ["suppliers-dropdown"],
+    () => getAllSupplier({ limit: 999 }),
+    {}
+  );
+  const suppliers = suppliersData?.data || [];
+
+  const { data: categoriesData } = useQuery(
+    ["categories-dropdown"],
+    () => getAllCategory(),
+    {}
+  );
+  const categories = categoriesData?.data || [];
 
   const update = (field, value) => {
     const next = { ...form, [field]: value };
@@ -133,11 +150,23 @@ const AddIngredient = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kategori</Label>
-                      <Input value={form.category} onChange={(e) => update("category", e.target.value)} placeholder="Contoh: Bahan Kering" className="h-12" />
+                      <Combobox
+                        options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
+                        value={form.category ? String(form.category) : ""}
+                        onChange={(v) => update("category", v ? parseInt(v) : null)}
+                        placeholder="Pilih kategori"
+                        searchPlaceholder="Cari kategori..."
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</Label>
-                      <Input value={form.supplier} onChange={(e) => update("supplier", e.target.value)} placeholder="Nama supplier" className="h-12" />
+                      <Combobox
+                        options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
+                        value={form.supplier ? String(form.supplier) : ""}
+                        onChange={(v) => update("supplier", v ? parseInt(v) : null)}
+                        placeholder="Pilih supplier"
+                        searchPlaceholder="Cari supplier..."
+                      />
                     </div>
                   </div>
                 </div>
