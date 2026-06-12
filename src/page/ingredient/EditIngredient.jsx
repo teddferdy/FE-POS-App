@@ -252,6 +252,47 @@ const EditIngredient = () => {
                 </div>
               </div>
             </div>
+
+            <div className="col-span-12 lg:col-span-4 space-y-6">
+              <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-primary text-base">info</span>
+                  <span className="text-sm font-semibold text-primary">Tips Penamaan</span>
+                </div>
+                <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+                  <p>Gunakan nama yang spesifik dan mudah dikenali, contoh: <span className="text-foreground font-medium">"Tepung Terigu Protein Tinggi"</span> bukan hanya "Tepung".</p>
+                  <p>Jika bahan baku memiliki varian (ukuran/warna), tambahkan informasi tersebut pada nama.</p>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-primary text-base">swap_horiz</span>
+                  <span className="text-sm font-semibold text-foreground">Konversi Satuan</span>
+                </div>
+                <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+                  <p><span className="text-foreground font-medium">Unit Pembelian:</span> Satuan yang digunakan saat membeli dari supplier.</p>
+                  <p><span className="text-foreground font-medium">Base Unit:</span> Satuan terkecil untuk perhitungan stok dan resep.</p>
+                  <p><span className="text-foreground font-medium">Faktor Konversi:</span> Jumlah base unit per unit pembelian.</p>
+                  <div className="bg-background rounded-lg p-3 border border-border mt-2">
+                    <p className="text-foreground font-medium mb-1">Contoh:</p>
+                    <p>1 Kg = 1000 Gram <span className="text-muted-foreground">(faktor: 1000)</span></p>
+                    <p>1 Lusin = 12 Pcs <span className="text-muted-foreground">(faktor: 12)</span></p>
+                    <p>1 Karton = 50 Pcs <span className="text-muted-foreground">(faktor: 50)</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-primary text-base">inventory_2</span>
+                  <span className="text-sm font-semibold text-foreground">Manajemen Stok</span>
+                </div>
+                <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                  <p>Atur <span className="text-foreground font-medium">Minimal Stok</span> untuk mendapatkan notifikasi saat stok menipis dan perlu dilakukan pemesanan ulang.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
