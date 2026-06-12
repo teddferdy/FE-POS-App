@@ -32,7 +32,9 @@ const AddPurchaseOrder = () => {
   const [supplierId, setSupplierId] = useState(null);
   const [showSupplierList, setShowSupplierList] = useState(false);
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([{ name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }]);
+  const [items, setItems] = useState([
+    { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }
+  ]);
   const [cancelModal, setCancelModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
@@ -71,9 +73,7 @@ const AddPurchaseOrder = () => {
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const getFilteredIngredients = (search) =>
-    ingredients.filter((i) =>
-      i.name?.toLowerCase().includes((search || "").toLowerCase())
-    );
+    ingredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
   const unitOptions = [
     { value: "pcs", label: "Pcs" },
@@ -411,7 +411,9 @@ const AddPurchaseOrder = () => {
                               }}
                               className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
                               <span>{ing.name}</span>
-                              <span className="text-xs text-muted-foreground ml-auto">{ing.unit || "pcs"}</span>
+                              <span className="text-xs text-muted-foreground ml-auto">
+                                {ing.unit || "pcs"}
+                              </span>
                             </button>
                           ))
                         ) : (
@@ -425,7 +427,9 @@ const AddPurchaseOrder = () => {
                   <Input
                     placeholder="Qty"
                     value={item.qty || ""}
-                    onChange={(e) => updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)}
+                    onChange={(e) =>
+                      updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                    }
                     className="h-9 text-sm w-20 shrink-0"
                   />
                   <select

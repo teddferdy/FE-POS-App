@@ -102,6 +102,10 @@ import IngredientList from "./page/ingredient/IngredientList";
 import AddIngredient from "./page/ingredient/AddIngredient";
 import EditIngredient from "./page/ingredient/EditIngredient";
 
+// Ingredient Category
+import IngredientCategoryList from "./page/ingredient-category/CategoryList";
+import AddIngredientCategory from "./page/ingredient-category/AddCategory";
+
 // Tax Config
 import TaxConfigList from "./page/tax-config/TaxConfigList";
 import AddTaxConfig from "./page/tax-config/AddTaxConfig";
@@ -340,6 +344,10 @@ function App() {
           <Route path="/ingredient" element={withLayout(<IngredientList />)} />
           <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
           <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
+
+          <Route path="/ingredient-category" element={withLayout(<IngredientCategoryList />)} />
+          <Route path="/add-ingredient-category" element={withLayout(<AddIngredientCategory />)} />
+          <Route path="/edit-ingredient-category" element={withLayout(<AddIngredientCategory />)} />
 
           <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
           <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />

@@ -113,9 +113,7 @@ const PurchaseOrderList = () => {
     {
       header: "No. PO",
       render: (po) => (
-        <span className="font-medium text-foreground">
-          {po.orderNumber || `PO-${po.id}`}
-        </span>
+        <span className="font-medium text-foreground">{po.orderNumber || `PO-${po.id}`}</span>
       )
     },
     {
@@ -139,7 +137,9 @@ const PurchaseOrderList = () => {
         <span className="text-muted-foreground">
           {po.orderDate
             ? new Date(po.orderDate).toLocaleDateString("id-ID", {
-                year: "numeric", month: "short", day: "numeric"
+                year: "numeric",
+                month: "short",
+                day: "numeric"
               })
             : "-"}
         </span>
@@ -178,7 +178,9 @@ const PurchaseOrderList = () => {
     {
       header: "Catatan",
       render: (po) => (
-        <span className="text-muted-foreground text-xs max-w-[150px] block truncate" title={po.notes || ""}>
+        <span
+          className="text-muted-foreground text-xs max-w-[150px] block truncate"
+          title={po.notes || ""}>
           {po.notes || "-"}
         </span>
       )
@@ -372,8 +374,12 @@ const PurchaseOrderList = () => {
                               <td className="px-3 py-2 text-sm">
                                 {item.productData?.nameProduct || item.ingredientName || "-"}
                               </td>
-                              <td className="px-3 py-2 text-center text-sm">{item.quantity || 0}</td>
-                              <td className="px-3 py-2 text-center text-sm">{item.unit || "pcs"}</td>
+                              <td className="px-3 py-2 text-center text-sm">
+                                {item.quantity || 0}
+                              </td>
+                              <td className="px-3 py-2 text-center text-sm">
+                                {item.unit || "pcs"}
+                              </td>
                               <td className="px-3 py-2 text-center">
                                 <input
                                   type="text"

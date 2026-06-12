@@ -66,7 +66,11 @@ const AddSupplier = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
           { label: t("breadcrumb.supplier"), href: "/supplier", i18nKey: "breadcrumb.supplier" },
           { label: t("page.supplier.add.title"), i18nKey: "page.supplier.add.title" }
         ]}
@@ -113,7 +117,15 @@ const AddSupplier = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.supplier.form.phone")}</FormLabel>
-                      <Input placeholder={t("page.supplier.form.phonePlaceholder")} inputMode="numeric" {...field} onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); field.onChange(v); }} />
+                      <Input
+                        placeholder={t("page.supplier.form.phonePlaceholder")}
+                        inputMode="numeric"
+                        {...field}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, "");
+                          field.onChange(v);
+                        }}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -149,7 +161,7 @@ const AddSupplier = () => {
           </Form>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 space-y-6">
           <h3 className="text-sm font-semibold text-foreground mb-3">
             {t("page.supplier.form.status")}
           </h3>
@@ -189,19 +201,18 @@ const AddSupplier = () => {
               )}
             />
           </div>
-        </Card>
-
-        <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
-          <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
-          <div>
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-              {t("page.supplier.form.tipsTitle")}
-            </h4>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("page.supplier.form.tipsContent")}
-            </p>
+          <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3">
+            <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+            <div>
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                {t("page.supplier.form.tipsTitle")}
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("page.supplier.form.tipsContent")}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">

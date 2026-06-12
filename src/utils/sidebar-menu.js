@@ -99,6 +99,13 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
+        title: "Kategori Bahan Baku",
+        i18nKey: "sidebar.ingredientCategory",
+        href: "/ingredient-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
         title: "Bahan Baku",
         i18nKey: "sidebar.bahanBaku",
         href: "/ingredient",
@@ -419,6 +426,13 @@ export const sidebarMenuAdmin = [
         href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Kategori Bahan Baku",
+        i18nKey: "sidebar.ingredientCategory",
+        href: "/ingredient-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Bahan Baku",

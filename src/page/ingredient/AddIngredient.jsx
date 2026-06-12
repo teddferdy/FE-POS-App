@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Save, X } from "lucide-react";
 import { addIngredient } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
-import { getAllCategory } from "@/services/category";
+import { getAllIngredientCategory } from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,8 +71,8 @@ const AddIngredient = () => {
   const suppliers = suppliersData?.data || [];
 
   const { data: categoriesData } = useQuery(
-    ["categories-dropdown"],
-    () => getAllCategory(),
+    ["ingredient-categories-dropdown"],
+    () => getAllIngredientCategory(),
     {}
   );
   const categories = categoriesData?.data || [];
