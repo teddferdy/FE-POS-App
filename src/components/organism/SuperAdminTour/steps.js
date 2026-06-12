@@ -234,7 +234,61 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Produk ──
+  // ── Kategori ──
+  {
+    id: "category-intro",
+    page: "/category-list",
+    icon: FolderTree,
+    titleKey: "guide.category.s12a",
+    descKey: "guide.category.s12adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "category-stat-total",
+    page: "/category-list",
+    target: '[data-tour="category-stat-total"]',
+    icon: BarChart3,
+    titleKey: "guide.category.s12b",
+    descKey: "guide.category.s12bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "category-stat-active",
+    page: "/category-list",
+    target: '[data-tour="category-stat-active"]',
+    icon: BarChart3,
+    titleKey: "guide.category.s12c",
+    descKey: "guide.category.s12cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "category-stat-inactive",
+    page: "/category-list",
+    target: '[data-tour="category-stat-inactive"]',
+    icon: BarChart3,
+    titleKey: "guide.category.s12d",
+    descKey: "guide.category.s12ddesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "category-add",
+    page: "/category-list",
+    target: '[data-tour="category-add"]',
+    icon: Plus,
+    titleKey: "guide.category.s12h",
+    descKey: "guide.category.s12hdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "category-table",
+    page: "/category-list",
+    target: '[data-tour="category-table"]',
+    icon: List,
+    titleKey: "guide.category.s12i",
+    descKey: "guide.category.s12idesc",
+    actionKey: "guide.dashboard.next"
+  },
+
   // ── Produk ──
   {
     id: "product-intro",
@@ -290,61 +344,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-
-    // ── Kategori ──
-  {
-    id: "category-intro",
-    page: "/category-list",
-    icon: FolderTree,
-    titleKey: "guide.category.s12a",
-    descKey: "guide.category.s12adesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-stat-total",
-    page: "/category-list",
-    target: '[data-tour="category-stat-total"]',
-    icon: BarChart3,
-    titleKey: "guide.category.s12b",
-    descKey: "guide.category.s12bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-stat-active",
-    page: "/category-list",
-    target: '[data-tour="category-stat-active"]',
-    icon: BarChart3,
-    titleKey: "guide.category.s12c",
-    descKey: "guide.category.s12cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-stat-inactive",
-    page: "/category-list",
-    target: '[data-tour="category-stat-inactive"]',
-    icon: BarChart3,
-    titleKey: "guide.category.s12d",
-    descKey: "guide.category.s12ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-add",
-    page: "/category-list",
-    target: '[data-tour="category-add"]',
-    icon: Plus,
-    titleKey: "guide.category.s12h",
-    descKey: "guide.category.s12hdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "category-table",
-    page: "/category-list",
-    target: '[data-tour="category-table"]',
-    icon: List,
-    titleKey: "guide.category.s12i",
-    descKey: "guide.category.s12idesc",
-    actionKey: "guide.dashboard.next"
-  },
 
   // ── Supplier ──
   {
@@ -471,6 +470,17 @@ export const superAdminSteps = [
     icon: List,
     titleKey: "guide.ingredient.s14f",
     descKey: "guide.ingredient.s14fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+
+  // ── Purchase Order ──
+  {
+    id: "purchase-order",
+    page: "/purchase-order",
+    icon: ShoppingCart,
+    titleKey: "sidebar.purchaseOrder",
+    descKey: "guide.page.purchaseOrder.desc",
     actionKey: "guide.dashboard.next"
   },
 
@@ -1202,16 +1212,6 @@ export const superAdminSteps = [
     icon: LayoutDashboard,
     titleKey: "sidebar.dashboardAdmin",
     descKey: "guide.dashboard.s8desc",
-    actionKey: "guide.dashboard.next"
-  },
-
-  // ── Purchase Order ──
-  {
-    id: "purchase-order",
-    page: "/purchase-order",
-    icon: ShoppingCart,
-    titleKey: "sidebar.purchaseOrder",
-    descKey: "guide.page.purchaseOrder.desc",
     actionKey: "guide.dashboard.next"
   },
 
