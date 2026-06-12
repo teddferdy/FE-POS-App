@@ -174,6 +174,8 @@ const EditProduct = () => {
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
       unit: z.string().default("pcs"),
+      baseUnit: z.string().default("pcs"),
+      conversionFactor: z.coerce.number().min(1).default(1),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true)
@@ -196,6 +198,8 @@ const EditProduct = () => {
       stock: "",
       minStock: "",
       unit: "pcs",
+      baseUnit: "pcs",
+      conversionFactor: 1,
       point: "",
       status: true,
       isAvailable: true
@@ -218,6 +222,8 @@ const EditProduct = () => {
         stock: product.stock ?? "",
         minStock: product.minStock ?? "",
         unit: product.unit || "pcs",
+        baseUnit: product.baseUnit || product.unit || "pcs",
+        conversionFactor: product.conversionFactor ?? 1,
         point: product.point ?? "",
         status: product.status === "active" || product.status === true,
         isAvailable: product.isAvailable ?? true
@@ -489,6 +495,8 @@ const EditProduct = () => {
     if (values.stock) payload.append("stock", values.stock);
     if (values.minStock) payload.append("minStock", values.minStock);
     payload.append("unit", values.unit);
+    payload.append("baseUnit", values.baseUnit);
+    payload.append("conversionFactor", values.conversionFactor || 1);
     if (values.point) payload.append("point", values.point);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
@@ -821,6 +829,42 @@ const EditProduct = () => {
                               placeholder={t("page.product.form.unitPlaceholder")}
                               searchPlaceholder={t("page.product.form.unitSearch")}
                             />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="baseUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Base Unit</FormLabel>
+                            <Combobox
+                              options={[
+                                { value: "pcs", label: "Pcs" },
+                                { value: "gram", label: "Gram" },
+                                { value: "ml", label: "Ml" },
+                                { value: "cm", label: "Cm" },
+                                { value: "buah", label: "Buah" },
+                                { value: "lembar", label: "Lembar" }
+                              ]}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Pilih base unit"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Satuan terkecil untuk stok</p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="conversionFactor"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Faktor Konversi</FormLabel>
+                            <Input type="number" min="1" {...field} />
+                            <p className="text-xs text-muted-foreground">1 unit = {field.value} base unit</p>
                             <FormMessage />
                           </FormItem>
                         )}

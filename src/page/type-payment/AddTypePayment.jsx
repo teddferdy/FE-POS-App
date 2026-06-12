@@ -26,8 +26,8 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
-  namaPembayaran: z.string().min(1, "Nama pembayaran wajib diisi"),
-  tipe: z.string().min(1, "Tipe pembayaran wajib dipilih"),
+  name: z.string().min(1, "Nama pembayaran wajib diisi"),
+  type: z.string().min(1, "Tipe pembayaran wajib dipilih"),
   deskripsi: z.string().optional().or(z.literal("")),
   status: z.boolean().default(true)
 });
@@ -37,13 +37,12 @@ const AddTypePayment = () => {
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
-  const [draftModal, setDraftModal] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      namaPembayaran: "",
-      tipe: "",
+      name: "",
+      type: "",
       deskripsi: "",
       status: true
     }
@@ -61,11 +60,11 @@ const AddTypePayment = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const onSubmit = (values) => {
     const { status, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      status: saveAsDraft ? "draft" : status ? "active" : "inactive"
+      status
     });
   };
 
@@ -74,7 +73,7 @@ const AddTypePayment = () => {
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
-          { i18nKey: "breadcrumb.payment", href: "/type-payment" },
+          { i18nKey: "breadcrumb.payment", href: "/type-payment-list" },
           { i18nKey: "page.typePayment.add.title" }
         ]}
         title={t("page.typePayment.add.title")}
@@ -88,7 +87,7 @@ const AddTypePayment = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="namaPembayaran"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -101,7 +100,7 @@ const AddTypePayment = () => {
               />
               <FormField
                 control={form.control}
-                name="tipe"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -170,23 +169,13 @@ const AddTypePayment = () => {
                 <X size={18} />
                 {t("common.cancel")}
               </Button>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setDraftModal(true)}
-                  disabled={createMutation.isLoading}
-                  className="gap-2">
-                  <Save size={18} />
-                  Simpan sebagai Draft
-                </Button>
-                <Button
-                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                  disabled={createMutation.isLoading}
-                  className="gap-2">
-                  <Save size={18} />
-                  {createMutation.isLoading ? t("common.saving") : t("common.save")}
-                </Button>
-              </div>
+              <Button
+                onClick={() => form.handleSubmit(onSubmit)()}
+                disabled={createMutation.isLoading}
+                className="gap-2">
+                <Save size={18} />
+                {createMutation.isLoading ? t("common.saving") : t("common.save")}
+              </Button>
             </div>
           </form>
         </Form>
@@ -199,7 +188,7 @@ const AddTypePayment = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/type-payment")}
+        onConfirm={() => navigate("/type-payment-list")}
       />
       <Modal
         type="success"
@@ -208,20 +197,7 @@ const AddTypePayment = () => {
         title={t("common.success")}
         description={t("page.typePayment.toast.addSuccess")}
         confirmText={t("modal.backToList")}
-        onConfirm={() => navigate("/type-payment")}
-      />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
+        onConfirm={() => navigate("/type-payment-list")}
       />
     </div>
   );

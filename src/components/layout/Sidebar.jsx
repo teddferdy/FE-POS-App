@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -10,7 +12,7 @@ import {
   sidebarMenuCashier,
   sidebarMenuUser
 } from "@/utils/sidebar-menu";
-import { filterMenuByPermission, parseAccessMenu } from "@/utils/permission";
+import { filterMenuByPermission } from "@/utils/permission";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
@@ -28,11 +30,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
           if (location.pathname === child.href) return true;
           if (child.href.endsWith("-list")) {
             const base = child.href.replace("/", "").replace("-list", "");
-            return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
+            return ["add", "edit", "detail"].some(
+              (action) => location.pathname === `/${action}-${base}`
+            );
           }
           const resource = child.href.replace("/", "");
           if (resource) {
-            return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${resource}`);
+            return ["add", "edit", "detail"].some(
+              (action) => location.pathname === `/${action}-${resource}`
+            );
           }
           return false;
         });
@@ -56,13 +62,19 @@ const Sidebar = ({ collapsed, onToggle }) => {
       }
     };
     const session = fromSession();
-    if (session && session.accessMenu && Array.isArray(session.accessMenu) && session.accessMenu.length > 0) {
+    if (
+      session &&
+      session.accessMenu &&
+      Array.isArray(session.accessMenu) &&
+      session.accessMenu.length > 0
+    ) {
       return session;
     }
     return cookie?.user;
   }, [cookie?.user]);
   const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
-  const hasAccessMenu = user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
+  const hasAccessMenu =
+    user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
 
   const baseMenu = useMemo(() => {
     if (hasAccessMenu || role === "super_admin") return sidebarMenuSuperAdmin;
@@ -140,7 +152,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const handleLogout = () => {
     removeCookie("token");
     removeCookie("user");
-    try { sessionStorage.removeItem("user"); } catch (e) {}
+    try {
+      sessionStorage.removeItem("user");
+    } catch (e) {}
     navigate("/");
   };
 

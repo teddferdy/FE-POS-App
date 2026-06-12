@@ -18,13 +18,25 @@ import {
   Medal,
   Coins,
   ImagePlus,
-  X
+  X,
+  RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { getInvoiceSetting, updateInvoiceSetting } from "@/services/invoice";
-import { getLocationById } from "@/services/location";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { getInvoiceSetting, updateInvoiceSetting, resetInvoiceSetting } from "@/services/invoice";
+import { getLocationById, getAllLocation } from "@/services/location";
 import {
   getProvinces,
   getCities,
@@ -33,6 +45,14 @@ import {
   getPostalCode
 } from "@/services/general";
 import { printViaBrowser } from "@/utils/thermalPrint";
+
+const DEFAULT_INVOICE_TEMPLATE = {
+  showStoreName: true,
+  showAddress: true,
+  showMemberInfo: true,
+  showLogo: true,
+  logo: null
+};
 
 const sampleItems = [
   { name: "Nasi Goreng", qty: 2, price: 25000 },
@@ -209,6 +229,8 @@ const InvoicePage = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [selectedStores, setSelectedStores] = useState([]);
 
   const { data: storeData, isError: storeError } = useQuery(
     ["store-detail", store],
@@ -264,6 +286,14 @@ const InvoicePage = () => {
     "";
   const postalCodeValue = postalCodes?.[0]?.kode_pos || locationDetail?.postalCode || "";
 
+  const { data: allLocations } = useQuery(
+    ["allLocations"],
+    getAllLocation,
+    { enabled: !!user && user?.roleType === "super_admin", staleTime: 60 * 1000 }
+  );
+  const locations = allLocations?.data || allLocations || [];
+  const allSelected = locations.length > 0 && selectedStores.length === locations.length;
+
   const fullAddress = [
     locationDetail?.address,
     locationDetail?.detailLocation,
@@ -310,6 +340,44 @@ const InvoicePage = () => {
     setLogoFile(null);
     setLogoPreview(null);
     setLogoUrl(null);
+  };
+
+  const handleOpenResetModal = () => {
+    setSelectedStores([]);
+    setResetModalOpen(true);
+  };
+
+  const handleToggleStore = (id) => {
+    setSelectedStores((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectedStores(checked ? locations.map((l) => l.id) : []);
+  };
+
+  const handleConfirmReset = async () => {
+    if (selectedStores.length === 0) {
+      toast.error("Pilih minimal satu toko");
+      return;
+    }
+
+    try {
+      await resetInvoiceSetting({ stores: selectedStores });
+      setShowStoreName(DEFAULT_INVOICE_TEMPLATE.showStoreName);
+      setShowAddress(DEFAULT_INVOICE_TEMPLATE.showAddress);
+      setShowMemberInfo(DEFAULT_INVOICE_TEMPLATE.showMemberInfo);
+      setShowLogo(DEFAULT_INVOICE_TEMPLATE.showLogo);
+      setLogoUrl(null);
+      setLogoFile(null);
+      setLogoPreview(null);
+      setResetModalOpen(false);
+      queryClient.invalidateQueries(["invoice-settings"]);
+      toast.success("Pengaturan invoice berhasil direset ke default");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Gagal mereset pengaturan");
+    }
   };
 
   const handleSaveSettings = async () => {
@@ -498,14 +566,24 @@ const InvoicePage = () => {
             </div>
           </div>
 
-          <Button
-            data-tour="invoice-save"
-            onClick={handleSaveSettings}
-            disabled={isSaving}
-            className="w-full gap-2"
-            size="lg">
-            {isSaving ? "Menyimpan..." : "Simpan Pengaturan"}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleOpenResetModal}
+              className="flex-1 gap-2"
+              size="lg">
+              <RotateCcw size={16} />
+              Reset ke Default
+            </Button>
+            <Button
+              data-tour="invoice-save"
+              onClick={handleSaveSettings}
+              disabled={isSaving}
+              className="flex-1 gap-2"
+              size="lg">
+              {isSaving ? "Menyimpan..." : "Simpan Pengaturan"}
+            </Button>
+          </div>
         </div>
 
         <div className="lg:col-span-2">
@@ -544,6 +622,63 @@ const InvoicePage = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={resetModalOpen} onOpenChange={setResetModalOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Reset Pengaturan Invoice</DialogTitle>
+            <DialogDescription>
+              Pilih toko yang ingin direset ke pengaturan default
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-2">
+            {user?.roleType === "super_admin" && locations.length > 0 && (
+              <label className="flex items-center gap-2 pb-3 mb-3 border-b border-border cursor-pointer">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm font-medium">Pilih Semua</span>
+              </label>
+            )}
+
+            <ScrollArea className="max-h-[300px]">
+              <div className="space-y-3">
+                {(user?.roleType === "super_admin" ? locations : [locationDetail]).filter(Boolean).map((loc) => (
+                  <label
+                    key={loc.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <Checkbox
+                      checked={selectedStores.includes(loc.id)}
+                      onCheckedChange={() => handleToggleStore(loc.id)}
+                    />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Store size={16} className="text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{loc.name}</p>
+                        {loc.city && (
+                          <p className="text-xs text-muted-foreground truncate">{loc.city}</p>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setResetModalOpen(false)}>
+              Tidak
+            </Button>
+            <Button onClick={handleConfirmReset}>
+              Ya, Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

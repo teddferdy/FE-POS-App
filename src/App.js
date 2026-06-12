@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
-import { setAuthExpiredCallback } from "@/services";
 
 // Offline
 import OfflineIndicator from "./components/organism/OfflineIndicator";
@@ -98,6 +97,11 @@ import SupplierList from "./page/supplier/SupplierList";
 import AddSupplier from "./page/supplier/AddSupplier";
 import EditSupplier from "./page/supplier/EditSupplier";
 
+// Ingredient
+import IngredientList from "./page/ingredient/IngredientList";
+import AddIngredient from "./page/ingredient/AddIngredient";
+import EditIngredient from "./page/ingredient/EditIngredient";
+
 // Tax Config
 import TaxConfigList from "./page/tax-config/TaxConfigList";
 import AddTaxConfig from "./page/tax-config/AddTaxConfig";
@@ -106,6 +110,7 @@ import EditTaxConfig from "./page/tax-config/EditTaxConfig";
 // Purchase Order
 import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
 import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
+import DetailPurchaseOrder from "./page/purchase-order/DetailPurchaseOrder";
 
 // Production Order
 import ProductionOrderList from "./page/production-order/ProductionOrderList";
@@ -178,6 +183,7 @@ import EditDiscount from "./page/discount/EditDiscount";
 import TypePaymentList from "./page/type-payment/TypePaymentList";
 import AddTypePayment from "./page/type-payment/AddTypePayment";
 import EditTypePayment from "./page/type-payment/EditTypePayment";
+import DetailTypePayment from "./page/type-payment/DetailTypePayment";
 
 // Shift
 import ShiftList from "./page/shift/ShiftList";
@@ -210,14 +216,14 @@ function App() {
   }, [translation]);
 
   useEffect(() => {
-    setAuthExpiredCallback(() => {
-      setAuthExpiredModalOpen(true);
-    });
+    const cleanup = setupAutoSync();
+    return cleanup;
   }, []);
 
   useEffect(() => {
-    const cleanup = setupAutoSync();
-    return cleanup;
+    const handleSessionExpired = () => setAuthExpiredModalOpen(true);
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+    return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
   }, []);
 
   const withLayout = (element) => <DashboardLayout>{element}</DashboardLayout>;
@@ -280,6 +286,7 @@ function App() {
           <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
           <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
           <Route path="/edit-type-payment" element={withLayout(<EditTypePayment />)} />
+          <Route path="/detail-type-payment" element={withLayout(<DetailTypePayment />)} />
 
           <Route path="/shift-list" element={withLayout(<ShiftList />)} />
           <Route path="/add-shift" element={withLayout(<AddShift />)} />
@@ -330,12 +337,17 @@ function App() {
           <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
           <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
 
+          <Route path="/ingredient" element={withLayout(<IngredientList />)} />
+          <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
+          <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
+
           <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
           <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
           <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
 
           <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
           <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
+          <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
 
           <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
           <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />

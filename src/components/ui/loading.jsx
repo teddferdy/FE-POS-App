@@ -17,7 +17,7 @@ const Loading = React.forwardRef(
         ref={ref}
         className={cn(
           "flex items-center justify-center gap-3",
-          fullscreen && "fixed inset-0 z-50 flex-col bg-background/80 backdrop-blur-sm",
+          fullscreen && "fixed inset-0 z-[80] flex-col bg-black/50 backdrop-blur-sm",
           className
         )}
         {...props}>

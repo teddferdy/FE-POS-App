@@ -6,17 +6,31 @@ export const getAllTypePaymentListActive = async ({
   limit = 10,
   statusPayment = "all"
 }) => {
+  const params = new URLSearchParams();
+  if (store) params.append("store", store);
+  params.append("page", page);
+  params.append("limit", limit);
+  params.append("status", statusPayment);
   const { data, status } = await axiosInstance.get(
-    `/type-payment/get-type-payment?store=${store}&page=${page}&limit=${limit}&status=${statusPayment}`
+    `/type-payment/get-type-payment?${params.toString()}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllTypePayment = async (payload) => {
+export const getAllTypePayment = async (payload = {}) => {
+  const params = new URLSearchParams();
+  if (payload.store) params.append("store", payload.store);
+  const query = params.toString();
   const { data, status } = await axiosInstance.get(
-    `/type-payment/get-list-type-payment?store=${payload.store}`
+    `/type-payment/get-list-type-payment${query ? `?${query}` : ""}`
   );
+  if (status !== 200) throw Error(`${data.message}`);
+  return data;
+};
+
+export const getTypePaymentById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/type-payment/get-by-id/${id}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

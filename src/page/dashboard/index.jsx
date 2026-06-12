@@ -201,13 +201,21 @@ const Dashboard = () => {
             {summaryCards.map((card) => {
               const Icon = card.icon;
               const isLowStock = card.icon === AlertTriangle;
+              const isMember = card.icon === Users;
+              const isClickable = isLowStock || isMember;
               return (
                 <div
                   key={card.label}
-                  onClick={isLowStock ? () => navigate("/low-stock-all") : undefined}
+                  onClick={
+                    isLowStock
+                      ? () => navigate("/low-stock-all")
+                      : isMember
+                        ? () => navigate("/member-list")
+                        : undefined
+                  }
                   className={`bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow ${
                     card.bg || ""
-                  } ${isLowStock ? "cursor-pointer hover:ring-2 hover:ring-destructive/30" : ""}`}>
+                  } ${isClickable ? "cursor-pointer hover:ring-2 hover:ring-primary/30" : ""}`}>
                   <div className="flex items-start justify-between mb-3">
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                       {card.label}

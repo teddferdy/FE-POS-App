@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { ArrowLeft, Eye } from "lucide-react";
+import { useCookies } from "react-cookie";
 import { getCashRegisterHistory } from "@/services/cash-register";
 import { Button } from "@/components/ui/button";
 import DataTable from "@/components/ui/DataTable";
@@ -13,13 +14,16 @@ const statusCfg = {
 
 const CashRegisterHistory = () => {
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const storeId = cookie?.activeStore || user?.store;
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
   const { data, isLoading } = useQuery(
-    ["cash-register-history", page, limit],
-    () => getCashRegisterHistory({ page, limit }),
-    { keepPreviousData: true }
+    ["cash-register-history", page, limit, storeId],
+    () => getCashRegisterHistory({ page, limit, store: storeId }),
+    { keepPreviousData: true, enabled: !!storeId }
   );
 
   const items = data?.data || [];

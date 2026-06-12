@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, HelpCircle, ChevronDown } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Route, Map } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTourStore } from "@/state/tour";
 import { superAdminSteps } from "./steps";
+import GuidePanel from "./GuidePanel";
 
 const SpotlightOverlay = ({ target, stepIndex }) => {
   const [rect, setRect] = useState(null);
@@ -119,6 +120,9 @@ const SuperAdminTour = () => {
   const role = user?.role || user?.roleType || user?.type || user?.userType;
   const isSuperAdmin = role === "super_admin";
 
+  const [showMenu, setShowMenu] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+
   const {
     isActive,
     currentStep,
@@ -156,6 +160,7 @@ const SuperAdminTour = () => {
   };
 
   const handleStart = () => {
+    setShowMenu(false);
     startTour();
     const firstStepData = superAdminSteps[0];
     if (firstStepData?.page) {
@@ -165,6 +170,30 @@ const SuperAdminTour = () => {
 
   const handleFinish = () => {
     endTour();
+    navigate("/dashboard-super-admin");
+  };
+
+  const handleFabClick = () => {
+    if (isActive) {
+      toggleMinimized();
+    } else if (showGuide) {
+      setShowGuide(false);
+    } else {
+      setShowMenu((prev) => !prev);
+    }
+  };
+
+  const handleOpenGuide = () => {
+    setShowMenu(false);
+    setShowGuide(true);
+  };
+
+  const handleCloseGuide = () => {
+    setShowGuide(false);
+  };
+
+  const handleFabBlur = () => {
+    setTimeout(() => setShowMenu(false), 200);
   };
 
   if (!isSuperAdmin) return null;
@@ -185,20 +214,63 @@ const SuperAdminTour = () => {
       {/* Floating help button */}
       <AnimatePresence>
         {(!isActive || isMinimized) && (
-          <motion.button
-            key="fab"
-            variants={fabVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            onClick={isActive ? toggleMinimized : handleStart}
-            className="fixed bottom-6 right-6 z-[70] p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
-            title={t("translation:guide.dashboard.fabTitle")}>
-            <HelpCircle size={22} />
-          </motion.button>
+          <div className="fixed bottom-6 right-6 z-[70] flex flex-col items-end gap-2">
+            {/* FAB menu popover */}
+            <AnimatePresence>
+              {showMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  className="mb-2 bg-background border rounded-xl shadow-xl overflow-hidden min-w-[200px]">
+                  <button
+                    onClick={handleStart}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
+                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                      <Route size={16} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{t("guide.menu.tour")}</p>
+                      <p className="text-xs text-muted-foreground">{t("guide.menu.tourDesc")}</p>
+                    </div>
+                  </button>
+                  <div className="border-t" />
+                  <button
+                    onClick={handleOpenGuide}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
+                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                      <BookOpen size={16} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{t("guide.menu.guide")}</p>
+                      <p className="text-xs text-muted-foreground">{t("guide.menu.guideDesc")}</p>
+                    </div>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* FAB button */}
+            <motion.button
+              key="fab"
+              variants={fabVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              onClick={handleFabClick}
+              onBlur={handleFabBlur}
+              className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+              title={t("translation:guide.dashboard.fabTitle")}>
+              <Map size={22} />
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
+
+      {/* Guide Panel */}
+      <AnimatePresence>{showGuide && <GuidePanel onClose={handleCloseGuide} />}</AnimatePresence>
 
       {/* Tour panel */}
       <AnimatePresence>

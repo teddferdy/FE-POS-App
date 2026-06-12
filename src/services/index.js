@@ -6,12 +6,6 @@ const axiosInstance = axios.create({
   baseURL: ENDPOINT.BASE_URL
 });
 
-let authExpiredCallback = null;
-
-export const setAuthExpiredCallback = (cb) => {
-  authExpiredCallback = cb;
-};
-
 axiosInstance.interceptors.request.use(
   (req) => {
     const token = getToken();
@@ -23,17 +17,18 @@ axiosInstance.interceptors.request.use(
   (err) => err
 );
 
+let sessionExpiredFired = false;
+
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err instanceof AxiosError) {
-      if (err.response?.status === 401 && getToken()) {
+      if (err.response?.status === 401 && !sessionExpiredFired) {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-        if (authExpiredCallback) {
-          authExpiredCallback();
-        }
+        sessionExpiredFired = true;
+        window.dispatchEvent(new CustomEvent("auth:session-expired"));
       }
-      return err.response;
+      return Promise.reject(err);
     } else return err;
   }
 );

@@ -6,9 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
-import { getAllTypePayment, editTypePayment } from "@/services/type-payment";
+import { getTypePaymentById, editTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,8 +25,8 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
-  namaPembayaran: z.string().min(1, "Nama pembayaran wajib diisi"),
-  tipe: z.string().min(1, "Tipe pembayaran wajib dipilih"),
+  name: z.string().min(1, "Nama pembayaran wajib diisi"),
+  type: z.string().min(1, "Tipe pembayaran wajib dipilih"),
   deskripsi: z.string().optional().or(z.literal("")),
   status: z.boolean().default(true)
 });
@@ -36,50 +35,45 @@ const EditTypePayment = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [cookie] = useCookies();
   const paymentId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
-  const [draftModal, setDraftModal] = useState(false);
 
-  const user = cookie?.user;
-  const locationParam = user?.store || "";
-
-  const { data: allData, isLoading } = useQuery(
-    ["all-type-payments", locationParam],
-    () => getAllTypePayment({ store: locationParam }),
-    { enabled: !!locationParam }
+  const { data: detailData, isLoading } = useQuery(
+    ["type-payment-detail", paymentId],
+    () => getTypePaymentById(paymentId),
+    { enabled: !!paymentId }
   );
+
+  const item = detailData?.data || {};
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      namaPembayaran: "",
-      tipe: "",
+      name: "",
+      type: "",
       deskripsi: "",
       status: true
     }
   });
 
-  const itemToEdit = allData?.data?.find((item) => String(item.id) === String(paymentId)) || {};
-
   useEffect(() => {
-    if (itemToEdit?.id) {
+    if (item?.id) {
       const statusValue =
-        itemToEdit.status === "Aktif" ||
-        itemToEdit.status === true ||
-        itemToEdit.status === "active" ||
-        itemToEdit.isActive === true
+        item.status === "Aktif" ||
+        item.status === true ||
+        item.status === "active" ||
+        item.isActive === true
           ? true
           : false;
       form.reset({
-        namaPembayaran: itemToEdit.namaPembayaran || "",
-        tipe: itemToEdit.tipe || "",
-        deskripsi: itemToEdit.deskripsi || "",
+        name: item.name || "",
+        type: item.type || item.tipe || "",
+        deskripsi: item.deskripsi || "",
         status: statusValue
       });
     }
-  }, [itemToEdit, form]);
+  }, [item, form]);
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {
@@ -93,12 +87,12 @@ const EditTypePayment = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const onSubmit = (values) => {
     const { status, ...rest } = values;
     updateMutation.mutate({
       id: paymentId,
       ...rest,
-      status: saveAsDraft ? "draft" : status ? "active" : "inactive"
+      status
     });
   };
 
@@ -128,7 +122,7 @@ const EditTypePayment = () => {
         </button>
         <span className="text-xs">/</span>
         <button
-          onClick={() => navigate("/type-payment")}
+          onClick={() => navigate("/type-payment-list")}
           className="hover:text-foreground transition-colors">
           {t("breadcrumb.payment")}
         </button>
@@ -149,15 +143,7 @@ const EditTypePayment = () => {
             {t("common.cancel")}
           </Button>
           <Button
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={updateMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            Simpan sebagai Draft
-          </Button>
-          <Button
-            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+            onClick={() => form.handleSubmit(onSubmit)()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
@@ -172,7 +158,7 @@ const EditTypePayment = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="namaPembayaran"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -185,7 +171,7 @@ const EditTypePayment = () => {
               />
               <FormField
                 control={form.control}
-                name="tipe"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -260,7 +246,7 @@ const EditTypePayment = () => {
         title={t("modal.cancelTitle")}
         description={t("modal.cancelDescription")}
         confirmText={t("modal.yesCancel")}
-        onConfirm={() => navigate("/type-payment")}
+        onConfirm={() => navigate("/type-payment-list")}
       />
       <Modal
         type="success"
@@ -269,20 +255,7 @@ const EditTypePayment = () => {
         title={t("common.success")}
         description={t("page.typePayment.toast.updateSuccess")}
         confirmText={t("modal.backToList")}
-        onConfirm={() => navigate("/type-payment")}
-      />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
+        onConfirm={() => navigate("/type-payment-list")}
       />
     </div>
   );

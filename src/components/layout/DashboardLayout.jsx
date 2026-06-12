@@ -35,11 +35,98 @@ const tipsKeys = {
   "/tax-list": ["tips.tax", "tips.tax2"],
   "/location-list": ["tips.location", "tips.location2"],
   "/user-list": ["tips.user", "tips.user2"],
+  "/add-user": ["tips.user", "tips.user2"],
   "/report/sales": ["tips.report", "tips.report2"],
   "/best-selling": ["tips.report", "tips.report2"],
+  "/report/daily": ["tips.report", "tips.report2"],
+  "/report/profit-loss": ["tips.report", "tips.report2"],
+  "/report/cash-flow": ["tips.report", "tips.report2"],
   "/invoice-page": ["tips.invoice", "tips.invoice2", "tips.invoice3"],
   "/cashier": ["tips.cashier", "tips.cashier2", "tips.cashier3"],
-  "/dashboard": ["tips.dashboard", "tips.dashboard2"]
+  "/dashboard": ["tips.dashboard", "tips.dashboard2"],
+
+  "/add-category": ["tips.category", "tips.category2"],
+  "/edit-category": ["tips.category", "tips.category2"],
+  "/detail-category": ["tips.category", "tips.category2"],
+
+  "/add-supplier": ["tips.supplier", "tips.supplier2"],
+  "/edit-supplier": ["tips.supplier", "tips.supplier2"],
+
+  "/add-member": ["tips.member", "tips.member2"],
+  "/edit-member": ["tips.member", "tips.member2"],
+  "/add-member-tier": ["tips.memberTier", "tips.memberTier2"],
+  "/detail-member-tier": ["tips.memberTier", "tips.memberTier2"],
+
+  "/add-discount": ["tips.discount", "tips.discount2"],
+  "/edit-discount": ["tips.discount", "tips.discount2"],
+
+  "/add-type-payment": ["tips.payment", "tips.payment2"],
+  "/edit-type-payment": ["tips.payment", "tips.payment2"],
+
+  "/add-shift": ["tips.shift", "tips.shift2"],
+  "/edit-shift": ["tips.shift", "tips.shift2"],
+
+  "/add-location": ["tips.location", "tips.location2"],
+  "/edit-location": ["tips.location", "tips.location2"],
+  "/detail-location": ["tips.location", "tips.location2"],
+  "/store-geospatial": ["tips.location", "tips.location2"],
+
+  "/add-tax": ["tips.tax", "tips.tax2"],
+  "/edit-tax": ["tips.tax", "tips.tax2"],
+
+  "/add-position": ["tips.position", "tips.position2"],
+  "/edit-position": ["tips.position", "tips.position2"],
+  "/detail-position": ["tips.position", "tips.position2"],
+
+  "/add-department": ["tips.department", "tips.department2"],
+  "/edit-department": ["tips.department", "tips.department2"],
+  "/detail-department": ["tips.department", "tips.department2"],
+
+  "/add-employee": ["tips.employee", "tips.employee2"],
+  "/edit-employee": ["tips.employee", "tips.employee2"],
+  "/detail-employee": ["tips.employee", "tips.employee2"],
+
+  "/add-purchase-order": ["tips.purchaseOrder", "tips.purchaseOrder2"],
+
+  "/add-expense-category": ["tips.expense", "tips.expense2"],
+  "/edit-expense-category": ["tips.expense", "tips.expense2"],
+  "/add-expense": ["tips.expense", "tips.expense2"],
+  "/edit-expense": ["tips.expense", "tips.expense2"],
+
+  "/add-stock-opname": ["tips.stockOpname", "tips.stockOpname2"],
+
+  "/production-order": ["tips.productionOrder", "tips.productionOrder2"],
+  "/add-production-order": ["tips.productionOrder", "tips.productionOrder2"],
+
+  "/goods-receipt": ["tips.goodsReceipt", "tips.goodsReceipt2"],
+  "/add-goods-receipt": ["tips.goodsReceipt", "tips.goodsReceipt2"],
+
+  "/sales-return": ["tips.salesReturn", "tips.salesReturn2"],
+  "/purchase-return": ["tips.purchaseReturn", "tips.purchaseReturn2"],
+
+  "/stock-transfer": ["tips.stockTransfer", "tips.stockTransfer2"],
+  "/add-stock-transfer": ["tips.stockTransfer", "tips.stockTransfer2"],
+
+  "/cash-register": ["tips.cashRegister", "tips.cashRegister2"],
+
+  "/price-list-template": ["tips.priceStore", "tips.priceStore2"],
+
+  "/bom": ["tips.bom", "tips.bom2"],
+
+  "/reservation": ["tips.reservation", "tips.reservation2"],
+  "/add-reservation": ["tips.reservation", "tips.reservation2"],
+  "/edit-reservation": ["tips.reservation", "tips.reservation2"],
+
+  "/kitchen-display": ["tips.kitchenDisplay", "tips.kitchenDisplay2"],
+
+  "/notification": ["tips.notification", "tips.notification2"],
+  "/support": ["tips.support"],
+  "/profile": ["tips.profile"],
+
+  "/role-management": ["tips.role", "tips.role2"],
+  "/add-role": ["tips.role", "tips.role2"],
+  "/edit-role": ["tips.role", "tips.role2"],
+  "/detail-role": ["tips.role", "tips.role2"]
 };
 
 const DashboardLayout = ({ children }) => {
@@ -53,9 +140,9 @@ const DashboardLayout = ({ children }) => {
   const user = cookie?.user;
   const role = user?.role || user?.roleType || "";
 
-   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-     enabled: role === "super_admin" && !cookie?.activeStore
-   });
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
+    enabled: role === "super_admin" && !cookie?.activeStore
+  });
   const locations = locationsData?.data || [];
 
   useEffect(() => {

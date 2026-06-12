@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,8 +17,9 @@ import { Loading } from "@/components/ui/loading";
 const AddGoodsReceipt = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
-  const [poId, setPoId] = useState("");
+  const [poId, setPoId] = useState(searchParams.get("poId") || "");
   const [receivedDate, setReceivedDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([
@@ -190,11 +191,18 @@ const AddGoodsReceipt = () => {
                         value={item.unit}
                         onChange={(e) => updateItem(idx, "unit", e.target.value)}
                         className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="pcs">pcs</option>
-                        <option value="kg">kg</option>
-                        <option value="liter">liter</option>
-                        <option value="box">box</option>
-                        <option value="pack">pack</option>
+                        <option value="pcs">Pcs</option>
+                        <option value="buah">Buah</option>
+                        <option value="kg">Kg</option>
+                        <option value="gram">Gram</option>
+                        <option value="liter">Liter</option>
+                        <option value="ml">Ml</option>
+                        <option value="meter">Meter</option>
+                        <option value="cm">Cm</option>
+                        <option value="lusin">Lusin</option>
+                        <option value="box">Box</option>
+                        <option value="pack">Pack</option>
+                        <option value="karton">Karton</option>
                       </select>
                     </td>
                     <td className="px-3 py-2">

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const RECEIPT_WIDTH = 48;
 
 const padBoth = (left, right, width = RECEIPT_WIDTH) => {
@@ -71,11 +72,15 @@ export const generateReceiptHTML = (data) => {
       <div>Pelanggan: ${customer}</div>
       <div>${date}</div>
     </div>
-    ${memberName ? `
+    ${
+      memberName
+        ? `
     <div style="border-bottom:1px dashed #000;padding:4px 0;margin:4px 0;font-size:11px">
       <div>Member: ${memberName}${memberTier ? ` (${memberTier})` : ""}</div>
       ${memberPoints ? `<div>Poin: ${Number(memberPoints).toLocaleString("id-ID")}</div>` : ""}
-    </div>` : ""}
+    </div>`
+        : ""
+    }
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
         <tr style="border-bottom:1px solid #000">

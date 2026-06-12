@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save, Check } from "lucide-react";
+import { X, Save } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { editSupplier, getSupplierById } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,6 @@ const EditSupplier = () => {
   const supplierId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
-  const [draftModal, setDraftModal] = useState(false);
 
   const { data: supplierData, isLoading } = useQuery(
     ["supplier-detail", supplierId],
@@ -82,11 +81,11 @@ const EditSupplier = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const onSubmit = (values) => {
     updateMutation.mutate({
       id: supplierId,
       ...values,
-      status: saveAsDraft ? false : !!values.isActive
+      status: !!values.isActive
     });
   };
 
@@ -118,7 +117,6 @@ const EditSupplier = () => {
         description={t("page.supplier.edit.description")}>
         <UserGuide guideKey="add-supplier" />
       </PageHeader>
-      <UserGuide guideKey="add-supplier" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">
@@ -254,23 +252,13 @@ const EditSupplier = () => {
           <X size={18} />
           {t("common.cancel")}
         </Button>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={updateMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            Simpan sebagai Draft
-          </Button>
-          <Button
-            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+        <Button
+            onClick={() => form.handleSubmit(onSubmit)()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
             {updateMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
-        </div>
       </div>
 
       <Modal
@@ -291,19 +279,7 @@ const EditSupplier = () => {
         confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
       />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
-      />
+
     </div>
   );
 };

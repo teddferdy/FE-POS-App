@@ -86,12 +86,34 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
-    title: "Supplier",
-    i18nKey: "sidebar.supplier",
-    href: "/supplier",
-    icon: Building2,
-    children: [],
-    actions: ["add", "edit", "view", "delete", "import", "export"]
+    title: "Pengadaan",
+    i18nKey: "sidebar.pengadaan",
+    href: "",
+    icon: ShoppingCart,
+    children: [
+      {
+        title: "Supplier",
+        i18nKey: "sidebar.supplier",
+        href: "/supplier",
+        icon: Building2,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Purchase Order",
+        i18nKey: "sidebar.purchaseOrder",
+        href: "/purchase-order",
+        icon: ShoppingCart,
+        actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Bahan Baku",
+        i18nKey: "sidebar.bahanBaku",
+        href: "/ingredient",
+        icon: Package,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
   },
   {
     title: "Pelanggan",
@@ -404,6 +426,13 @@ export const sidebarMenuAdmin = [
         href: "/purchase-order",
         icon: ShoppingCart,
         actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Bahan Baku",
+        i18nKey: "sidebar.bahanBaku",
+        href: "/ingredient",
+        icon: Package,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []
@@ -919,8 +948,18 @@ export const urlWithArrowBack = [
   },
   { url: "/table-list", title: "Add Table", i18nKey: "breadcrumb.add", pathName: "/add-table" },
   { url: "/table-list", title: "Edit Table", i18nKey: "breadcrumb.edit", pathName: "/edit-table" },
-  { url: "/reservation", title: "Add Reservation", i18nKey: "breadcrumb.add", pathName: "/add-reservation" },
-  { url: "/reservation", title: "Edit Reservation", i18nKey: "breadcrumb.edit", pathName: "/edit-reservation" },
+  {
+    url: "/reservation",
+    title: "Add Reservation",
+    i18nKey: "breadcrumb.add",
+    pathName: "/add-reservation"
+  },
+  {
+    url: "/reservation",
+    title: "Edit Reservation",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-reservation"
+  },
   { url: "/supplier", title: "Add Supplier", i18nKey: "breadcrumb.add", pathName: "/add-supplier" },
   {
     url: "/supplier",

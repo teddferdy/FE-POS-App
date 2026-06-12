@@ -3,16 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2, Search as SearchIcon } from "lucide-react";
+import { Save, X, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { addPurchaseOrder } from "@/services/purchase-order";
-import { getAllSupplier } from "@/services/supplier";
-import { getAllProduct } from "@/services/product";
+import { getAllSupplier, addSupplier } from "@/services/supplier";
+import { getAllEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import PageHeader from "@/components/ui/PageHeader";
+import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
 const AddPurchaseOrder = () => {
@@ -22,13 +27,17 @@ const AddPurchaseOrder = () => {
   const user = cookie?.user;
   const locationParam = user?.store || "";
 
-  const [supplier, setSupplier] = useState("");
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [supplierId, setSupplierId] = useState(null);
+  const [showSupplierList, setShowSupplierList] = useState(false);
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([{ productId: "", productName: "", qty: 1, price: 0 }]);
+  const [items, setItems] = useState([{ name: "", qty: 1, price: 0, unit: "pcs" }]);
   const [cancelModal, setCancelModal] = useState(false);
-  const [draftModal, setDraftModal] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchProduct, setSearchProduct] = useState("");
+  const [orderDate, setOrderDate] = useState(new Date());
+  const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
+  const [picSearch, setPicSearch] = useState("");
+  const [picId, setPicId] = useState(null);
+  const [showPicList, setShowPicList] = useState(false);
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown"],
@@ -37,12 +46,57 @@ const AddPurchaseOrder = () => {
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: productsData } = useQuery(
-    ["products-for-po", searchProduct],
-    () => getAllProduct({ location: locationParam, nameProduct: searchProduct, category: "" }),
-    { enabled: searchOpen, staleTime: 30000 }
+  const { data: employeesData } = useQuery(
+    ["employees-for-po"],
+    () => getAllEmployee({ limit: 100 }),
+    { staleTime: 30000 }
   );
-  const products = productsData?.data || [];
+  const employees = employeesData?.data || [];
+
+  const filteredSuppliers = suppliers.filter((s) =>
+    s.name?.toLowerCase().includes(supplierSearch.toLowerCase())
+  );
+
+  const filteredEmployees = employees.filter((e) =>
+    (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
+  );
+
+  const unitOptions = [
+    { value: "pcs", label: "Pcs" },
+    { value: "item", label: "Item" },
+    { value: "unit", label: "Unit" },
+    { value: "buah", label: "Buah" },
+    { value: "pasang", label: "Pasang" },
+    { value: "set", label: "Set" },
+    { value: "lusin", label: "Lusin" },
+    { value: "pack", label: "Pack" },
+    { value: "box", label: "Box" },
+    { value: "karton", label: "Karton" },
+    { value: "kg", label: "Kg" },
+    { value: "gram", label: "Gram" },
+    { value: "liter", label: "Liter" },
+    { value: "ml", label: "Ml" },
+    { value: "meter", label: "Meter" },
+    { value: "cm", label: "Cm" },
+    { value: "cup", label: "Cup" },
+    { value: "gelas", label: "Gelas" },
+    { value: "porsi", label: "Porsi" }
+  ];
+
+  const addSupplierMutation = useMutation(addSupplier, {
+    onSuccess: (res) => {
+      const newSupplier = res.data || res;
+      setSupplierSearch(newSupplier.name);
+      setSupplierId(newSupplier.id || newSupplier._id);
+      setShowSupplierList(false);
+      toast.success("Supplier berhasil ditambahkan");
+    },
+    onError: (err) => {
+      toast.error("Gagal tambah supplier", {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
 
   const createMutation = useMutation(addPurchaseOrder, {
     onSuccess: () => {
@@ -54,105 +108,231 @@ const AddPurchaseOrder = () => {
     }
   });
 
+  const selectSupplier = (s) => {
+    setSupplierSearch(s.name);
+    setSupplierId(s.id || s._id);
+    setShowSupplierList(false);
+  };
+
+  const selectPic = (e) => {
+    setPicSearch(e.fullName || e.userName);
+    setPicId(e.id || e._id);
+    setShowPicList(false);
+  };
+  const formatIDR = (num) => {
+    if (!num && num !== 0) return "";
+    return "Rp " + Number(num).toLocaleString("id-ID");
+  };
+
+  const parseIDR = (str) => {
+    if (!str) return 0;
+    return Number(str.replace(/[^0-9]/g, "")) || 0;
+  };
+
   const addItem = () =>
-    setItems((prev) => [...prev, { productId: "", productName: "", qty: 1, price: 0 }]);
+    setItems((prev) => [...prev, { name: "", qty: 1, price: 0, unit: "pcs" }]);
   const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
 
-  const selectProduct = (product, idx) => {
-    updateItem(idx, "productId", product.id || product._id);
-    updateItem(idx, "productName", product.nameProduct || product.name);
-    updateItem(idx, "price", product.price || 0);
-    setSearchOpen(false);
-  };
-
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
 
-  const handleSubmit = (e, saveAsDraft = false) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!supplier) {
-      toast.error("Pilih supplier", { description: "Pilih supplier terlebih dahulu" });
+    if (!supplierId) {
+      toast.error("Pilih atau tambah supplier", { description: "Pilih supplier terlebih dahulu" });
       return;
     }
-    if (items.length === 0 || !items[0].productId) {
-      toast.error("Item kosong", { description: "Tambahkan minimal satu produk" });
+    if (!picId) {
+      toast.error("Pilih PIC", { description: "Pilih PIC yang bertugas terlebih dahulu" });
+      return;
+    }
+    if (!orderDate) {
+      toast.error("Pilih tanggal", { description: "Pilih tanggal purchase order" });
+      return;
+    }
+    if (!orderTime) {
+      toast.error("Pilih jam", { description: "Pilih jam purchase order" });
+      return;
+    }
+    if (items.length === 0 || !items[0].name?.trim()) {
+      toast.error("Item kosong", { description: "Tambahkan minimal satu item" });
       return;
     }
     createMutation.mutate({
       store: locationParam,
-      supplier,
+      supplier: supplierId,
       notes,
-      items: items.map(({ productId, qty, price }) => ({ product: productId, qty, price })),
-      createdBy: user?.id,
-      status: saveAsDraft ? "draft" : "active"
+      pic: picId,
+      orderDate: (() => {
+        const d = new Date(orderDate);
+        const [hours, minutes] = (orderTime || "00:00").split(":");
+        d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        return d;
+      })(),
+      items: items.map(({ name, qty, price, unit }) => ({
+        product: null,
+        ingredientName: name,
+        quantity: qty,
+        price,
+        unit: unit || "pcs"
+      })),
+      createdBy: user?.id
     });
   };
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/purchase-order")}
-          className="hover:text-foreground transition-colors">
-          {t("page.purchaseOrder.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.purchaseOrder.add.title")}</span>
-      </nav>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.purchaseOrder.list.title"),
+            href: "/purchase-order",
+            i18nKey: "page.purchaseOrder.list.title"
+          },
+          { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
+        ]}
+        title={t("page.purchaseOrder.add.title")}
+        description={t("page.purchaseOrder.add.description")}>
+        <UserGuide guideKey="add-purchase-order" />
+      </PageHeader>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.purchaseOrder.add.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.purchaseOrder.add.description")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            {t("breadcrumb.back")}
-          </Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isLoading} className="gap-2">
-            <Save size={18} />
-            {createMutation.isLoading ? t("common.saving") : t("common.save")}
-          </Button>
-        </div>
-      </div>
-      <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-        <X size={18} />
-        Batal
-      </Button>
-
-      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">
           <h3 className="text-base font-semibold text-foreground mb-4">Informasi Supplier</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="relative">
               <label className="text-sm font-medium text-foreground mb-1.5 block">
                 Supplier <span className="text-destructive">*</span>
               </label>
-              <select
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-colors">
-                <option value="">Pilih Supplier</option>
-                {suppliers.map((s) => (
-                  <option key={s.id || s._id} value={s.id || s._id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+              <Input
+                placeholder="Cari atau ketik nama supplier..."
+                value={supplierSearch}
+                onChange={(e) => {
+                  setSupplierSearch(e.target.value);
+                  setSupplierId(null);
+                  setShowSupplierList(true);
+                }}
+                onFocus={() => setShowSupplierList(true)}
+                onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
+                className="h-10"
+              />
+              {showSupplierList && (
+                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  {filteredSuppliers.length > 0 ? (
+                    filteredSuppliers.map((s) => (
+                      <button
+                        key={s.id || s._id}
+                        type="button"
+                        onMouseDown={() => selectSupplier(s)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                        {s.name}
+                      </button>
+                    ))
+                  ) : supplierSearch ? (
+                    <p className="p-3 text-xs text-muted-foreground text-center">
+                      Tidak ada supplier ditemukan
+                    </p>
+                  ) : (
+                    <p className="p-3 text-xs text-muted-foreground text-center">
+                      Ketik untuk mencari supplier
+                    </p>
+                  )}
+                  {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
+                    <button
+                      type="button"
+                      onMouseDown={() => {
+                        addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
+                      }}
+                      disabled={addSupplierMutation.isLoading}
+                      className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
+                      <Plus size={15} />
+                      Tambah &quot;{supplierSearch}&quot;
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="relative">
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                PIC <span className="text-destructive">*</span>
+              </label>
+              {employees.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-foreground">Belum ada pegawai</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tambah pegawai terlebih dahulu
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/add-employee")}
+                    className="gap-2">
+                    <Plus size={15} />
+                    Tambah Pegawai
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    placeholder="Cari atau ketik nama PIC..."
+                    value={picSearch}
+                    onChange={(e) => {
+                      setPicSearch(e.target.value);
+                      setPicId(null);
+                      setShowPicList(true);
+                    }}
+                    onFocus={() => setShowPicList(true)}
+                    onBlur={() => setTimeout(() => setShowPicList(false), 200)}
+                    className="h-10"
+                  />
+                  {showPicList && (
+                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredEmployees.length > 0 ? (
+                        filteredEmployees.map((e) => (
+                          <button
+                            key={e.id || e._id}
+                            type="button"
+                            onMouseDown={() => selectPic(e)}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                            {e.fullName || e.userName}
+                          </button>
+                        ))
+                      ) : picSearch ? (
+                        <p className="p-3 text-xs text-muted-foreground text-center">
+                          Tidak ada pegawai ditemukan
+                        </p>
+                      ) : (
+                        <p className="p-3 text-xs text-muted-foreground text-center">
+                          Ketik untuk mencari pegawai
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
             <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Tanggal PO <span className="text-destructive">*</span>
+              </label>
+              <DatePicker date={orderDate} setDate={setOrderDate} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Jam <span className="text-destructive">*</span>
+              </label>
+              <TimePicker value={orderTime} onChange={setOrderTime} />
+            </div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
               <Textarea
                 placeholder="Catatan untuk supplier (opsional)"
@@ -175,79 +355,43 @@ const AddPurchaseOrder = () => {
 
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan produk.
+              Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan barang.
             </p>
           ) : (
             <div className="space-y-3">
               {items.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                  <div className="flex-1 min-w-0 relative">
-                    <Input
-                      placeholder="Cari produk..."
-                      value={item.productName}
-                      onFocus={() => {
-                        setSearchOpen(true);
-                        setSearchProduct("");
-                      }}
-                      readOnly
-                      className="h-9 text-sm cursor-pointer pr-8"
-                    />
-                    <SearchIcon
-                      size={14}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                    />
-                    {searchOpen && !item.productName && (
-                      <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        <Input
-                          placeholder="Cari produk..."
-                          value={searchProduct}
-                          onChange={(e) => setSearchProduct(e.target.value)}
-                          className="border-0 border-b border-border rounded-none h-9 text-sm"
-                          autoFocus
-                        />
-                        {products.length === 0 ? (
-                          <p className="p-3 text-xs text-muted-foreground text-center">
-                            Tidak ada produk
-                          </p>
-                        ) : (
-                          products.map((p) => (
-                            <button
-                              key={p.id || p._id}
-                              type="button"
-                              onClick={() => selectProduct(p, idx)}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                              <span className="flex-1 truncate">{p.nameProduct || p.name}</span>
-                              {p.barcode && (
-                                <span className="text-[10px] text-muted-foreground">
-                                  {p.barcode}
-                                </span>
-                              )}
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
                   <Input
-                    type="number"
+                    placeholder="Nama barang / bahan baku"
+                    value={item.name}
+                    onChange={(e) => updateItem(idx, "name", e.target.value)}
+                    className="h-9 text-sm flex-1 min-w-0"
+                  />
+                  <Input
                     placeholder="Qty"
-                    value={item.qty}
-                    min={1}
-                    onChange={(e) => updateItem(idx, "qty", Number(e.target.value))}
+                    value={item.qty || ""}
+                    onChange={(e) => updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)}
                     className="h-9 text-sm w-20 shrink-0"
                   />
-                  <div className="relative w-32 shrink-0">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                      Rp
-                    </span>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={item.price}
-                      onChange={(e) => updateItem(idx, "price", Number(e.target.value))}
-                      className="h-9 text-sm pl-8"
-                    />
-                  </div>
+                  <select
+                    value={item.unit}
+                    onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                    className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
+                    {unitOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    placeholder="Rp 0"
+                    value={item.price ? formatIDR(item.price) : ""}
+                    onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
+                    className="h-9 text-sm w-36 shrink-0"
+                  />
                   <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
                     Rp {(item.qty * item.price).toLocaleString("id-ID")}
                   </span>
@@ -285,24 +429,14 @@ const AddPurchaseOrder = () => {
             <X size={18} />
             Batal
           </Button>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={createMutation.isLoading}
-              className="gap-2">
+          <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
+            {createMutation.isLoading ? (
+              <Loading size="sm" className="text-white" />
+            ) : (
               <Save size={18} />
-              Simpan sebagai Draft
-            </Button>
-            <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
-              {createMutation.isLoading ? (
-                <Loading size="sm" className="text-white" />
-              ) : (
-                <Save size={18} />
-              )}
-              {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
-            </Button>
-          </div>
+            )}
+            {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
+          </Button>
         </div>
       </form>
 
@@ -315,19 +449,6 @@ const AddPurchaseOrder = () => {
         confirmText="Ya, Batalkan"
         cancelText="Lanjutkan"
         onConfirm={() => navigate("/purchase-order")}
-      />
-
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          handleSubmit(new Event("submit"), true);
-        }}
       />
     </div>
   );

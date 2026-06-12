@@ -1,9 +1,14 @@
+/* eslint-disable no-unused-vars */
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 
 export const parseAccessMenu = (accessMenu) => {
   if (Array.isArray(accessMenu)) return accessMenu;
   if (typeof accessMenu === "string") {
-    try { return JSON.parse(accessMenu); } catch (e) { return []; }
+    try {
+      return JSON.parse(accessMenu);
+    } catch (e) {
+      return [];
+    }
   }
   return [];
 };
@@ -73,7 +78,11 @@ export const parseAccessMenuToPermissions = (accessMenu = []) => {
 
 export const findMenuPermission = (permissions, href) => {
   if (permissions[href]) return permissions[href];
-  const pathPart = href?.replace("/", "").replace("-list", "").replace("-page", "").replace("-super-admin", "");
+  const pathPart = href
+    ?.replace("/", "")
+    .replace("-list", "")
+    .replace("-page", "")
+    .replace("-super-admin", "");
   const result = permissions[pathPart];
   if (!result) return null;
   return result;
@@ -88,8 +97,8 @@ const ACTION_MAP = {
   view: "view",
   add: "add",
   edit: "edit",
-  "import": "import",
-  "export": "export"
+  import: "import",
+  export: "export"
 };
 
 export const normalizePermissionActions = (perm) => {
@@ -108,7 +117,16 @@ export const canAccess = (user, menuKey, action) => {
   if (role === "super_admin") return true;
   const accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) return false;
-  const menu = accessMenu.find((m) => m.menu === menuKey || m.menu === menuKey.replace("/", "").replace("-list", "").replace("-page", "").replace("-super-admin", ""));
+  const menu = accessMenu.find(
+    (m) =>
+      m.menu === menuKey ||
+      m.menu ===
+        menuKey
+          .replace("/", "")
+          .replace("-list", "")
+          .replace("-page", "")
+          .replace("-super-admin", "")
+  );
   if (!menu) return false;
   const normalized = normalizePermissionActions(menu);
   return !!normalized[action];

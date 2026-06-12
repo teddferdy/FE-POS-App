@@ -56,7 +56,7 @@ export default function Modal({
   const isKnownType = KNOWN_TYPES.includes(type);
   const isForm = type === "form";
 
-  const Icon = isKnownType ? (IconOverride || iconMap[type]) : null;
+  const Icon = isKnownType ? IconOverride || iconMap[type] : null;
   const isNotification = type === "success" || type === "error";
   const confirmLabel = confirmText || defaultText[type]?.confirm || "Konfirmasi";
   const cancelLabel = cancelText || defaultText[type]?.cancel || "Batal";

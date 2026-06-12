@@ -21,11 +21,15 @@ const CashRegisterCurrent = () => {
   const [closingBalance, setClosingBalance] = React.useState("0");
   const [closeModal, setCloseModal] = React.useState(false);
 
-  const { data, isLoading, refetch } = useQuery(["cash-register-current"], getCurrentCashRegister, {
-    enabled: !!storeId,
-    refetchInterval: storeId ? 30000 : false
-  });
-  const reg = data?.data;
+  const { data, isLoading, refetch } = useQuery(
+    ["cash-register-current", storeId],
+    () => getCurrentCashRegister(storeId),
+    {
+      enabled: !!storeId,
+      refetchInterval: storeId ? 30000 : false
+    }
+  );
+  const reg = data?.data?.register || data?.data;
 
   if (!storeId) {
     return (
@@ -59,6 +63,7 @@ const CashRegisterCurrent = () => {
   const closeMut = useMutation(
     () =>
       closeCashRegister(reg?.id, {
+        storeId,
         closedBy: user?.id,
         closingBalance: parseFloat(closingBalance) || 0
       }),
@@ -126,10 +131,13 @@ const CashRegisterCurrent = () => {
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  ["Dibuka Oleh", reg.openedByData?.name || "-"],
+                  ["Dibuka Oleh", reg.userData?.fullName || reg.openedByData?.name || "-"],
                   ["Dibuka Pada", new Date(reg.openedAt).toLocaleString("id")],
                   ["Saldo Awal", `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`],
-                  ["Total Penjualan", `Rp ${parseInt(reg.totalSales || 0).toLocaleString("id")}`],
+                  [
+                    "Total Penjualan",
+                    `Rp ${parseInt(data?.data?.currentSales || reg.totalSales || 0).toLocaleString("id")}`
+                  ],
                   ["Status", reg.status === "open" ? "Buka" : "Tutup"],
                   ["Catatan", reg.notes || "-"]
                 ].map(([l, v]) => (

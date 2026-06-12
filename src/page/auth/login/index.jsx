@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
 import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";

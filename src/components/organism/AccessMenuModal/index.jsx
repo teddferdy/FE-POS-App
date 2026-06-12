@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-empty */
 /* eslint-disable react/prop-types */
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { ChevronDown, ChevronRight, Loader } from "lucide-react";
@@ -14,15 +16,33 @@ import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/permission";
 
 const allActions = [
-  "view", "add", "edit", "delete", "import", "export",
-  "approve", "print", "edit-points", "edit-access", "reset-password", "update-status"
+  "view",
+  "add",
+  "edit",
+  "delete",
+  "import",
+  "export",
+  "approve",
+  "print",
+  "edit-points",
+  "edit-access",
+  "reset-password",
+  "update-status"
 ];
 
 const actionLabels = {
-  view: "Lihat", add: "Tambah", edit: "Ubah", delete: "Hapus",
-  import: "Import", export: "Ekspor", approve: "Setujui", print: "Cetak",
-  "edit-points": "Edit Poin", "edit-access": "Edit Akses",
-  "reset-password": "Reset Password", "update-status": "Update Status"
+  view: "Lihat",
+  add: "Tambah",
+  edit: "Ubah",
+  delete: "Hapus",
+  import: "Import",
+  export: "Ekspor",
+  approve: "Setujui",
+  print: "Cetak",
+  "edit-points": "Edit Poin",
+  "edit-access": "Edit Akses",
+  "reset-password": "Reset Password",
+  "update-status": "Update Status"
 };
 
 const actionColors = {
@@ -86,7 +106,13 @@ const buildInitialPermissions = (groups, existingPerms = {}) => {
   return perms;
 };
 
-export default function AccessMenuModal({ open, onOpenChange, value = "", roleAccessMenu, onSave }) {
+export default function AccessMenuModal({
+  open,
+  onOpenChange,
+  value = "",
+  roleAccessMenu,
+  onSave
+}) {
   const groups = useMemo(() => getLeafItemsGrouped(), []);
   const [collapsed, setCollapsed] = useState({});
 
@@ -117,7 +143,7 @@ export default function AccessMenuModal({ open, onOpenChange, value = "", roleAc
     try {
       const parsed = value ? JSON.parse(value) : [];
       employeePerms = Array.isArray(parsed) ? parseAccessMenuToPermissions(parsed) : {};
-    } catch {}
+    } catch (e) {}
     const merged = { ...rolePerms };
     Object.keys(employeePerms).forEach((menu) => {
       merged[menu] = { ...(merged[menu] || {}), ...employeePerms[menu] };
@@ -218,8 +244,7 @@ export default function AccessMenuModal({ open, onOpenChange, value = "", roleAc
                   <button
                     type="button"
                     onClick={() => toggleGroup(idx)}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 bg-muted/10 hover:bg-muted/20 transition-colors text-left"
-                  >
+                    className="w-full flex items-center gap-2 px-4 py-2.5 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
                     {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       {group.parentTitle}
@@ -234,11 +259,10 @@ export default function AccessMenuModal({ open, onOpenChange, value = "", roleAc
                           <th className="px-4 py-2 text-xs font-bold text-foreground uppercase tracking-wider w-48 bg-slate-100 dark:bg-slate-800">
                             Menu
                           </th>
-                              {visibleActions.map((action) => (
+                          {visibleActions.map((action) => (
                             <th
                               key={action}
-                              className={`px-2 py-2 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}
-                            >
+                              className={`px-2 py-2 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
                               {actionLabels[action] || action}
                             </th>
                           ))}
@@ -252,7 +276,10 @@ export default function AccessMenuModal({ open, onOpenChange, value = "", roleAc
                               <td className="px-4 py-2.5">
                                 <div className="flex items-center gap-2">
                                   {item.icon && (
-                                    <item.icon size={14} className="text-muted-foreground shrink-0" />
+                                    <item.icon
+                                      size={14}
+                                      className="text-muted-foreground shrink-0"
+                                    />
                                   )}
                                   <span className="text-sm text-foreground">{item.title}</span>
                                 </div>

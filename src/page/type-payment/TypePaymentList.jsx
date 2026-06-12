@@ -4,14 +4,40 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, CreditCard } from "lucide-react";
-import { getAllTypePaymentListActive, deleteTypePayment } from "@/services/type-payment";
+import { Plus, Search, Eye, Edit, Trash2, CreditCard } from "lucide-react";
+import {
+  getAllTypePaymentListActive,
+  getAllTypePayment,
+  deleteTypePayment
+} from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
 
 const TypePaymentList = () => {
   const { t } = useTranslation();
@@ -25,13 +51,14 @@ const TypePaymentList = () => {
 
   const user = cookie?.user;
   const MENU_KEY = "/type-payment-list";
-  const locationParam = user?.store || "";
 
   const { data, isLoading } = useQuery(
     ["type-payments", page, limit, search],
-    () => getAllTypePaymentListActive({ store: locationParam, page, limit, statusPayment: "all" }),
+    () => getAllTypePaymentListActive({ page, limit, statusPayment: "all" }),
     { keepPreviousData: true }
   );
+
+  const { data: allData } = useQuery(["type-payments-all"], () => getAllTypePayment({}));
 
   const deleteMutation = useMutation(deleteTypePayment, {
     onSuccess: () => {
@@ -39,6 +66,7 @@ const TypePaymentList = () => {
         description: t("page.typePayment.toast.deleteSuccess")
       });
       queryClient.invalidateQueries(["type-payments"]);
+      queryClient.invalidateQueries(["type-payments-all"]);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
@@ -46,9 +74,18 @@ const TypePaymentList = () => {
   });
 
   const payments = data?.data || [];
+  const allPayments = allData?.data || [];
   const pagination = data?.pagination || {};
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const activeCount = allPayments.filter(
+    (item) =>
+      item.status === "Aktif" ||
+      item.status === true ||
+      item.status === "active" ||
+      item.isActive === true
+  ).length;
+  const inactiveCount = allPayments.length - activeCount;
 
   const handleDelete = (item) => {
     setDeleteTarget(item);
@@ -62,7 +99,11 @@ const TypePaymentList = () => {
   };
 
   const getStatusBadge = (item) => {
-    const isActive = item.status === "Aktif" || item.status === true || item.isActive === true;
+    const isActive =
+      item.status === "Aktif" ||
+      item.status === true ||
+      item.status === "active" ||
+      item.isActive === true;
     return (
       <span
         className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -81,22 +122,43 @@ const TypePaymentList = () => {
       render: (row) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-            {row.namaPembayaran?.charAt(0)?.toUpperCase() || "P"}
+            {row.name?.charAt(0)?.toUpperCase() || "P"}
           </div>
-          <span className="font-medium text-foreground">{row.namaPembayaran || "-"}</span>
+          <span className="font-medium text-foreground">{row.name || "-"}</span>
         </div>
       )
     },
-    { header: t("page.typePayment.table.type"), accessor: "tipe" },
+    { header: t("page.typePayment.table.type"), accessor: "type" },
     {
       header: t("common.status"),
       render: (row) => getStatusBadge(row)
+    },
+    {
+      header: t("page.typePayment.table.createdDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.createdAt)}</span>
+      )
+    },
+    {
+      header: t("page.typePayment.table.updatedDate"),
+      render: (row) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(row.updatedAt)}</span>
+      )
     },
     {
       header: t("common.actions"),
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
+          {canAccess(user, MENU_KEY, "detail") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/detail-type-payment?id=${row.id || row._id}`)}>
+              <Eye size={15} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
@@ -157,11 +219,11 @@ const TypePaymentList = () => {
         </Card>
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+          <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
         </Card>
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+          <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
         </Card>
       </div>
 
@@ -198,7 +260,7 @@ const TypePaymentList = () => {
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("modal.deleteTitle")}
         description={t("page.typePayment.deleteConfirmDescription", {
-          name: deleteTarget?.namaPembayaran || ""
+          name: deleteTarget?.name || ""
         })}
         confirmText={t("modal.yesDelete")}
         onConfirm={confirmDelete}

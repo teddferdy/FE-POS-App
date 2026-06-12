@@ -17,6 +17,12 @@ export const updateInvoiceSetting = async (payload) => {
   return data;
 };
 
+export const resetInvoiceSetting = async (payload) => {
+  const { data, status } = await axiosInstance.post("/invoice/setting/reset", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const sendInvoiceWhatsApp = async (payload) => {
   const { data, status } = await axiosInstance.post("/pos/invoice/send-wa", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);

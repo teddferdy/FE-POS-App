@@ -41,6 +41,19 @@ import {
   Receipt,
   CalendarDays,
   CreditCard,
+  LogIn,
+  UserPlus,
+  KeyRound,
+  Calculator,
+  DollarSign,
+  ChefHat,
+  ArrowRightLeft,
+  BadgePercent,
+  Table,
+  Notebook,
+  Monitor,
+  BellDot,
+  MapPinned
 } from "lucide-react";
 
 export const superAdminSteps = [
@@ -134,6 +147,26 @@ export const superAdminSteps = [
     icon: ShoppingCart,
     titleKey: "guide.dashboard.s10",
     descKey: "guide.dashboard.s10desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Kasir / POS ──
+  {
+    id: "cashier",
+    page: "/home",
+    icon: Calculator,
+    titleKey: "sidebar.cashier",
+    descKey: "guide.page.cashier.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Cash Register ──
+  {
+    id: "cash-register",
+    page: "/cash-register/current",
+    icon: DollarSign,
+    titleKey: "sidebar.cashRegister",
+    descKey: "guide.page.cashRegister.desc",
     actionKey: "guide.dashboard.next"
   },
 
@@ -725,6 +758,76 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
+  // ── Kitchen Display ──
+  {
+    id: "kitchen-display",
+    page: "/kitchen-display",
+    icon: ChefHat,
+    titleKey: "sidebar.kitchenDisplay",
+    descKey: "guide.page.kitchenDisplay.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Production Order ──
+  {
+    id: "production-order",
+    page: "/production-order",
+    icon: Package,
+    titleKey: "sidebar.productionOrder",
+    descKey: "guide.page.productionOrder.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── BOM ──
+  {
+    id: "bom",
+    page: "/bom",
+    icon: ClipboardList,
+    titleKey: "sidebar.bom",
+    descKey: "guide.page.bom.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Goods Receipt ──
+  {
+    id: "goods-receipt",
+    page: "/goods-receipt",
+    icon: FileText,
+    titleKey: "sidebar.goodsReceipt",
+    descKey: "guide.page.goodsReceipt.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Sales Return ──
+  {
+    id: "sales-return",
+    page: "/sales-return",
+    icon: ShoppingCart,
+    titleKey: "sidebar.salesReturn",
+    descKey: "guide.page.salesReturn.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Purchase Return ──
+  {
+    id: "purchase-return",
+    page: "/purchase-return",
+    icon: ShoppingCart,
+    titleKey: "sidebar.purchaseReturn",
+    descKey: "guide.page.purchaseReturn.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Stock Transfer ──
+  {
+    id: "stock-transfer",
+    page: "/stock-transfer",
+    icon: ArrowRightLeft,
+    titleKey: "sidebar.transferStok",
+    descKey: "guide.page.stockTransfer.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
   // ── Laporan ──
   {
     id: "sales-report",
@@ -925,6 +1028,26 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
+  // ── Harga per Toko ──
+  {
+    id: "price-per-store",
+    page: "/price-list-template",
+    icon: BadgePercent,
+    titleKey: "sidebar.pricePerStore",
+    descKey: "guide.page.pricePerStore.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Meja ──
+  {
+    id: "table",
+    page: "/table-list",
+    icon: Table,
+    titleKey: "sidebar.meja",
+    descKey: "guide.page.table.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
   // ── Support ──
   {
     id: "support-intro",
@@ -977,6 +1100,152 @@ export const superAdminSteps = [
     icon: BookOpen,
     titleKey: "guide.support.s24f",
     descKey: "guide.support.s24fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Auth Pages ──
+  {
+    id: "auth-login",
+    page: "/",
+    icon: LogIn,
+    titleKey: "sidebar.login",
+    descKey: "guide.auth.login.s1desc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "auth-register",
+    page: "/register",
+    icon: UserPlus,
+    titleKey: "sidebar.register",
+    descKey: "guide.auth.register.s1desc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "auth-reset",
+    page: "/reset-password",
+    icon: KeyRound,
+    titleKey: "sidebar.resetPassword",
+    descKey: "guide.auth.reset.s1desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Dashboard Admin ──
+  {
+    id: "dashboard-admin",
+    page: "/dashboard-admin",
+    icon: LayoutDashboard,
+    titleKey: "sidebar.dashboardAdmin",
+    descKey: "guide.dashboard.s8desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Purchase Order ──
+  {
+    id: "purchase-order",
+    page: "/purchase-order",
+    icon: ShoppingCart,
+    titleKey: "sidebar.purchaseOrder",
+    descKey: "guide.page.purchaseOrder.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Discount ──
+  {
+    id: "discount",
+    page: "/discount-list",
+    icon: Percent,
+    titleKey: "sidebar.diskon",
+    descKey: "guide.page.discount.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Expense Category ──
+  {
+    id: "expense-category",
+    page: "/expense-category",
+    icon: Tag,
+    titleKey: "sidebar.kategoriPengeluaran",
+    descKey: "guide.page.expenseCategory.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Expense ──
+  {
+    id: "expense",
+    page: "/expense",
+    icon: Receipt,
+    titleKey: "sidebar.daftarPengeluaran",
+    descKey: "guide.page.expense.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Reservation ──
+  {
+    id: "reservation",
+    page: "/reservation",
+    icon: CalendarDays,
+    titleKey: "sidebar.reservation",
+    descKey: "guide.page.reservation.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Customer Order ──
+  {
+    id: "customer-order",
+    page: "/customer-order",
+    icon: Notebook,
+    titleKey: "sidebar.customerOrder",
+    descKey: "guide.page.customerOrder.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Customer Display ──
+  {
+    id: "customer-display",
+    page: "/customer-display",
+    icon: Monitor,
+    titleKey: "sidebar.customerDisplay",
+    descKey: "guide.page.customerDisplay.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Admin Users ──
+  {
+    id: "admin-users",
+    page: "/user-list",
+    icon: Users,
+    titleKey: "sidebar.adminList",
+    descKey: "guide.page.adminList.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Profile ──
+  {
+    id: "profile",
+    page: "/profile",
+    icon: User,
+    titleKey: "sidebar.profile",
+    descKey: "guide.page.profile.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Notification ──
+  {
+    id: "notification",
+    page: "/notification",
+    icon: BellDot,
+    titleKey: "sidebar.notification",
+    descKey: "guide.page.notification.desc",
+    actionKey: "guide.dashboard.next"
+  },
+
+  // ── Store Map ──
+  {
+    id: "store-geospatial",
+    page: "/store-geospatial",
+    icon: MapPinned,
+    titleKey: "sidebar.storeGeospatial",
+    descKey: "guide.page.storeGeospatial.desc",
     actionKey: "guide.dashboard.next"
   },
 
