@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { addPurchaseOrder } from "@/services/purchase-order";
+import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
 import { getAllIngredients } from "@/services/ingredient";
@@ -19,31 +19,64 @@ import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
-import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
-const AddPurchaseOrder = () => {
+const EditPurchaseOrder = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const [selectedStore, setSelectedStore] = useState(user?.store || "");
-  const locationParam = selectedStore;
 
+  const [selectedStore, setSelectedStore] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierId, setSupplierId] = useState(null);
   const [showSupplierList, setShowSupplierList] = useState(false);
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([
-    { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }
-  ]);
+  const [discount, setDiscount] = useState(0);
+  const [items, setItems] = useState([]);
   const [cancelModal, setCancelModal] = useState(false);
-  const [orderDate, setOrderDate] = useState(new Date());
-  const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
+  const [orderDate, setOrderDate] = useState(null);
+  const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
+
+  const { data: poData, isLoading: loadingPo } = useQuery(
+    ["po-edit", id],
+    () => getPurchaseOrderById(id),
+    { enabled: !!id }
+  );
+  const po = poData?.data;
+
+  useEffect(() => {
+    if (!po) return;
+    setSelectedStore(po.store || "");
+    setSupplierSearch(po.supplierData?.name || "");
+    setSupplierId(po.supplier);
+    setPicSearch(po.picData?.fullName || "");
+    setPicId(po.pic);
+    setNotes(po.notes || "");
+    setDiscount(po.discount || 0);
+    setOrderDate(po.orderDate ? new Date(po.orderDate) : new Date());
+    setOrderTime(
+      po.orderDate ? format(new Date(po.orderDate), "HH:mm") : format(new Date(), "HH:mm")
+    );
+    setDueDate(po.dueDate ? format(new Date(po.dueDate), "yyyy-MM-dd") : "");
+    if (po.items) {
+      setItems(
+        po.items.map((item) => ({
+          name: item.ingredientName || item.productData?.nameProduct || "",
+          ingredientId: item.ingredient || null,
+          qty: item.quantity,
+          price: item.price,
+          unit: item.unit || "pcs"
+        }))
+      );
+    }
+  }, [po]);
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown"],
@@ -73,8 +106,8 @@ const AddPurchaseOrder = () => {
   const locations = locationsData?.data || [];
 
   const { data: ingredientsData } = useQuery(
-    ["ingredients-po", selectedStore],
-    () => getAllIngredients({ store: locationParam, limit: 999 }),
+    ["ingredients-po-edit", selectedStore],
+    () => getAllIngredients({ store: selectedStore, limit: 999 }),
     { staleTime: 30000, enabled: !!selectedStore }
   );
   const ingredients = ingredientsData?.data || [];
@@ -120,9 +153,9 @@ const AddPurchaseOrder = () => {
     }
   });
 
-  const createMutation = useMutation(addPurchaseOrder, {
+  const updateMutation = useMutation((payload) => editPurchaseOrder(id, payload), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Purchase Order berhasil dibuat" });
+      toast.success("Berhasil", { description: "Purchase Order berhasil diperbarui" });
       navigate("/purchase-order");
     },
     onError: (err) => {
@@ -141,6 +174,7 @@ const AddPurchaseOrder = () => {
     setPicId(e.id || e._id);
     setShowPicList(false);
   };
+
   const formatIDR = (num) => {
     if (!num && num !== 0) return "";
     return "Rp " + Number(num).toLocaleString("id-ID");
@@ -157,7 +191,6 @@ const AddPurchaseOrder = () => {
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
 
-  const [discount, setDiscount] = useState(0);
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
   const finalAmount = totalAmount - discount;
 
@@ -187,13 +220,13 @@ const AddPurchaseOrder = () => {
       toast.error("Item kosong", { description: "Tambahkan minimal satu item" });
       return;
     }
-    createMutation.mutate({
-      store: locationParam,
+    updateMutation.mutate({
+      store: selectedStore,
       supplier: supplierId,
       notes,
+      pic: picId,
       discount,
       dueDate: dueDate || null,
-      pic: picId,
       orderDate: (() => {
         const d = new Date(orderDate);
         const [hours, minutes] = (orderTime || "00:00").split(":");
@@ -208,9 +241,36 @@ const AddPurchaseOrder = () => {
         price,
         unit: unit || "pcs"
       })),
-      createdBy: user?.id
+      modifiedBy: user?.id
     });
   };
+
+  if (!id) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">ID tidak ditemukan</p>
+      </div>
+    );
+  }
+
+  if (loadingPo) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (!po) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-muted-foreground">Purchase Order tidak ditemukan</p>
+        <Button variant="outline" onClick={() => navigate("/purchase-order")}>
+          Kembali
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -226,12 +286,10 @@ const AddPurchaseOrder = () => {
             href: "/purchase-order",
             i18nKey: "page.purchaseOrder.list.title"
           },
-          { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
+          { label: "Edit PO" }
         ]}
-        title={t("page.purchaseOrder.add.title")}
-        description={t("page.purchaseOrder.add.description")}>
-        <UserGuide guideKey="add-purchase-order" />
-      </PageHeader>
+        title={`Edit PO: ${po.orderNumber || `PO-${po.id}`}`}
+        description="Perbarui informasi purchase order"></PageHeader>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">
@@ -293,13 +351,12 @@ const AddPurchaseOrder = () => {
                   {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
                     <button
                       type="button"
-                      onMouseDown={() => {
-                        addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
-                      }}
+                      onMouseDown={() =>
+                        addSupplierMutation.mutate({ name: supplierSearch, isActive: true })
+                      }
                       disabled={addSupplierMutation.isLoading}
                       className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                      <Plus size={15} />
-                      Tambah &quot;{supplierSearch}&quot;
+                      <Plus size={15} /> Tambah &quot;{supplierSearch}&quot;
                     </button>
                   )}
                 </div>
@@ -323,8 +380,7 @@ const AddPurchaseOrder = () => {
                     size="sm"
                     onClick={() => navigate("/add-employee")}
                     className="gap-2">
-                    <Plus size={15} />
-                    Tambah Pegawai
+                    <Plus size={15} /> Tambah Pegawai
                   </Button>
                 </div>
               ) : (
@@ -406,8 +462,7 @@ const AddPurchaseOrder = () => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-foreground">Item Barang</h3>
             <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addItem}>
-              <Plus size={15} />
-              Tambah Item
+              <Plus size={15} /> Tambah Item
             </Button>
           </div>
 
@@ -544,16 +599,15 @@ const AddPurchaseOrder = () => {
             variant="outline"
             onClick={() => setCancelModal(true)}
             className="gap-2">
-            <X size={18} />
-            Batal
+            <X size={18} /> Batal
           </Button>
-          <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
-            {createMutation.isLoading ? (
+          <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
+            {updateMutation.isLoading ? (
               <Loading size="sm" className="text-white" />
             ) : (
               <Save size={18} />
             )}
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
+            {updateMutation.isLoading ? "Menyimpan..." : "Simpan Perubahan"}
           </Button>
         </div>
       </form>
@@ -572,4 +626,4 @@ const AddPurchaseOrder = () => {
   );
 };
 
-export default AddPurchaseOrder;
+export default EditPurchaseOrder;

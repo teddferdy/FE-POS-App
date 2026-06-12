@@ -28,6 +28,7 @@
   "sidebar.shift": "シフト",
   "sidebar.inventory": "在庫",
   "sidebar.purchaseOrder": "発注",
+  "sidebar.purchasePayment": "支払い履歴",
   "sidebar.pengeluaran": "支出",
   "sidebar.kategoriPengeluaran": "支出カテゴリ",
   "sidebar.daftarPengeluaran": "支出一覧",

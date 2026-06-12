@@ -13,15 +13,21 @@ import {
   XCircle,
   RefreshCw,
   Undo2,
-  Eye
+  Eye,
+  Upload,
+  Download
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseOrder,
   getPurchaseOrderById,
-  returnPurchaseOrder
+  returnPurchaseOrder,
+  uploadPurchaseOrderExcel,
+  downloadPurchaseOrderTemplate,
+  downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -31,6 +37,10 @@ const statusMap = {
   pending: {
     label: "Menunggu",
     class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+  },
+  ordered: {
+    label: "Sebagian",
+    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
   },
   received: {
     label: "Diterima",
@@ -50,10 +60,14 @@ const PurchaseOrderList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
+  const [storeFilter, setStoreFilter] = useState("all");
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
   const [returReason, setReturReason] = useState("");
   const [returItems, setReturItems] = useState([]);
+  const [importModal, setImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
 
   const { data: poDetail } = useQuery(
     ["po-detail", returPo?.id],
@@ -74,10 +88,16 @@ const PurchaseOrderList = () => {
 
   const user = cookie?.user;
   const MENU_KEY = "/purchase-order";
-  const locationParam = user?.store || "";
+  const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const { data: locations } = useQuery(["locations-po"], () => getAllLocation(), {
+    staleTime: 60000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading } = useQuery(
-    ["purchase-orders", page, limit, search],
+    ["purchase-orders", page, limit, search, storeFilter],
     () => getAllPurchaseOrder({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
   );
@@ -106,6 +126,40 @@ const PurchaseOrderList = () => {
 
   const orders = data?.data || [];
   const pagination = data?.pagination || {};
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadPurchaseOrderTemplate();
+      toast.success("Template diunduh");
+    } catch (err) {
+      toast.error("Gagal mengunduh template", { description: err?.response?.data?.message || err.message });
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      await downloadPurchaseOrderExcel();
+      toast.success("Data PO diunduh");
+    } catch (err) {
+      toast.error("Gagal mengunduh", { description: err?.response?.data?.message || err.message });
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+    try {
+      await uploadPurchaseOrderExcel(importFile);
+      toast.success("Import berhasil");
+      queryClient.invalidateQueries(["purchase-orders"]);
+      setImportModal(false);
+      setImportFile(null);
+    } catch (err) {
+      toast.error("Import gagal", { description: err?.response?.data?.message || err.message });
+    } finally {
+      setImportLoading(false);
+    }
+  };
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
@@ -146,6 +200,28 @@ const PurchaseOrderList = () => {
       )
     },
     {
+      header: "Jatuh Tempo",
+      render: (po) => {
+        const isOverdue = po.dueDate && po.status !== "received" && po.status !== "cancelled" && new Date(po.dueDate) < new Date(new Date().toDateString());
+        return (
+          <span className={isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"}>
+            {po.dueDate
+              ? new Date(po.dueDate).toLocaleDateString("id-ID", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric"
+                })
+              : "-"}
+            {isOverdue && " ⚠️"}
+          </span>
+        );
+      }
+    },
+    {
+      header: "Store",
+      render: (po) => <span className="text-sm">{po.storeData?.name || "-"}</span>
+    },
+    {
       header: "Status",
       render: (po) => {
         const st = statusMap[po.status] || statusMap.pending;
@@ -176,6 +252,28 @@ const PurchaseOrderList = () => {
       )
     },
     {
+      header: "Pembayaran",
+      align: "center",
+      render: (po) => {
+        const total = po.finalAmount || po.totalAmount || 0;
+        const paid = po.totalPaid || 0;
+        const remaining = total - paid;
+        if (total === 0) return <span className="text-xs text-muted-foreground">-</span>;
+        if (paid >= total) {
+          return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Lunas</span>;
+        }
+        if (paid > 0) {
+          return (
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Sebagian</span>
+              <span className="text-xs text-muted-foreground">Rp {Number(remaining).toLocaleString("id-ID")}</span>
+            </div>
+          );
+        }
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">Belum</span>;
+      }
+    },
+    {
       header: "Catatan",
       render: (po) => (
         <span
@@ -199,14 +297,36 @@ const PurchaseOrderList = () => {
             <Eye size={15} />
           </Button>
           {po.status === "pending" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-600"
-              onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
-              title="Terima PO">
-              <RefreshCw size={15} />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-blue-600"
+                onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
+                title="Edit PO">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
+                title="Terima PO">
+                <RefreshCw size={15} />
+              </Button>
+            </>
           )}
           {po.status === "received" && (
             <Button
@@ -275,20 +395,48 @@ const PurchaseOrderList = () => {
         </Card>
       </div>
 
-      <div className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder="Cari PO..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
-        />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        {isSuperAdmin && (
+          <select
+            value={storeFilter}
+            onChange={(e) => {
+              setStoreFilter(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+            <option value="all">Semua Store</option>
+            {(locations?.data || []).map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <div className="relative w-full sm:w-72">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            placeholder="Cari PO..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 h-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
+            <Download size={14} />
+            Export
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImportModal(true)}>
+            <Upload size={14} />
+            Import
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -345,6 +493,10 @@ const PurchaseOrderList = () => {
                         : "-"}
                     </p>
                   </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Store</p>
+                    <p className="font-medium">{returPo.storeData?.name || "-"}</p>
+                  </div>
                 </div>
 
                 {returItems.length > 0 && (
@@ -388,9 +540,17 @@ const PurchaseOrderList = () => {
                                   onChange={(e) => {
                                     const raw = e.target.value;
                                     if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
+                                    const maxQty = item.quantity || 0;
+                                    const val = parseFloat(raw);
+                                    const capped =
+                                      !isNaN(val) && val > maxQty ? String(maxQty) : raw;
+                                    const normalized = capped
+                                      .replace(/^0+(\d)/, "$1")
+                                      .replace(/^0+(\.)/, "0$1")
+                                      .replace(/^0+$/, "0");
                                     setReturItems((prev) =>
                                       prev.map((it, i) =>
-                                        i === idx ? { ...it, returnQty: raw } : it
+                                        i === idx ? { ...it, returnQty: normalized } : it
                                       )
                                     );
                                   }}
@@ -437,6 +597,7 @@ const PurchaseOrderList = () => {
                       })
                       .map((it) => ({
                         productId: it.product,
+                        ingredient: it.ingredient,
                         qty: parseFloat(it.returnQty),
                         unit: it.unit || "pcs",
                         notes: ""
@@ -459,6 +620,44 @@ const PurchaseOrderList = () => {
           </div>,
           document.body
         )}
+
+      {importModal && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+          <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-semibold">Import PO</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
+                <Download size={15} />
+                Download Template Excel
+              </Button>
+              <div className="border-t border-border pt-4">
+                <label className="text-sm font-medium text-foreground block mb-2">
+                  Upload File Excel
+                </label>
+                <Input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={(e) => setImportFile(e.target.files[0])}
+                />
+                {importFile && (
+                  <p className="text-xs text-muted-foreground mt-1">{importFile.name}</p>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setImportModal(false); setImportFile(null); }}>
+                Batal
+              </Button>
+              <Button onClick={handleImport} disabled={!importFile || importLoading}>
+                {importLoading ? "Mengupload..." : "Import"}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

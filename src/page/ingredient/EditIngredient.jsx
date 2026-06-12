@@ -217,7 +217,7 @@ const EditIngredient = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kategori</FormLabel>
                             <Combobox
-                              options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
+                              options={categories.filter((c) => c.status === "active").map((c) => ({ value: String(c.id), label: c.name }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
                               placeholder="Pilih kategori"
@@ -234,7 +234,7 @@ const EditIngredient = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</FormLabel>
                             <Combobox
-                              options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
+                              options={suppliers.filter((s) => s.status === "active").map((s) => ({ value: String(s.id), label: s.name }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
                               placeholder="Pilih supplier"
@@ -328,6 +328,7 @@ const EditIngredient = () => {
                             value={field.value}
                             onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
                           />
+                          <p className="text-xs text-muted-foreground">Jumlah stok saat ini</p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -343,6 +344,7 @@ const EditIngredient = () => {
                             value={field.value}
                             onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
                           />
+                          <p className="text-xs text-muted-foreground">Notifikasi stok menipis jika di bawah batas ini</p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -355,7 +357,7 @@ const EditIngredient = () => {
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Harga Beli (Rp)</FormLabel>
                           <Input
                             type="text" inputMode="numeric" className="h-12"
-                            value={field.value}
+                            value={field.value ? field.value.toLocaleString("id-ID") : "0"}
                             onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
                           />
                           <FormMessage />

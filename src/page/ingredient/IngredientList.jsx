@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Package } from "lucide-react";
 import { getAllIngredients, deleteIngredient } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +49,19 @@ const IngredientList = () => {
   const ingredients = data?.data || [];
   const total = ingredients.length;
 
+  const fmtDate = (date) =>
+    date ? new Date(date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+
   const columns = [
     { header: "Nama", render: (item) => <span className="font-medium">{item.name}</span> },
+    {
+      header: "Kategori",
+      render: (item) => <span className="text-sm text-muted-foreground">{item.categoryData?.name || "-"}</span>
+    },
+    {
+      header: "Supplier",
+      render: (item) => <span className="text-sm text-muted-foreground">{item.supplierData?.name || "-"}</span>
+    },
     {
       header: "Unit",
       render: (item) => (
@@ -59,6 +70,7 @@ const IngredientList = () => {
     },
     {
       header: "Konversi",
+      className: "min-w-[200px]",
       render: (item) => {
         const base = item.baseUnit || item.unit || "pcs";
         const factor = item.conversionFactor || 1;
@@ -82,11 +94,13 @@ const IngredientList = () => {
     {
       header: "Min Stok",
       align: "right",
+      className: "min-w-[120px]",
       render: (item) => <span className="font-mono text-muted-foreground">{item.minStock}</span>
     },
     {
       header: "Harga Beli",
       align: "right",
+      className: "min-w-[160px]",
       render: (item) => (
         <span className="font-medium">Rp {Number(item.costPrice || 0).toLocaleString("id-ID")}</span>
       )
@@ -100,10 +114,26 @@ const IngredientList = () => {
       )
     },
     {
+      header: "Dibuat",
+      className: "min-w-[180px]",
+      render: (item) => <span className="text-xs text-muted-foreground">{fmtDate(item.createdAt)}</span>
+    },
+    {
+      header: "Diubah",
+      className: "min-w-[180px]",
+      render: (item) => <span className="text-xs text-muted-foreground">{fmtDate(item.updatedAt)}</span>
+    },
+    {
       header: "Aksi",
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"
+            onClick={() => navigate(`/detail-ingredient?id=${item.id}`)}>
+            <Eye size={15} />
+          </Button>
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost" size="icon" className="h-8 w-8 text-primary"
@@ -184,6 +214,7 @@ const IngredientList = () => {
         confirmText="Ya, Hapus"
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
+
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Building2, Phone, Mail } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye } from "lucide-react";
 import { getAllSupplier, deleteSupplier } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,6 +121,15 @@ const SupplierList = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          {canAccess(user, MENU_KEY, "view") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+              onClick={() => navigate(`/detail-supplier?id=${item.id || item._id}`)}>
+              <Eye size={15} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"

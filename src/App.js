@@ -96,11 +96,13 @@ import DetailDepartment from "./page/department/DetailDepartment";
 import SupplierList from "./page/supplier/SupplierList";
 import AddSupplier from "./page/supplier/AddSupplier";
 import EditSupplier from "./page/supplier/EditSupplier";
+import DetailSupplier from "./page/supplier/DetailSupplier";
 
 // Ingredient
 import IngredientList from "./page/ingredient/IngredientList";
 import AddIngredient from "./page/ingredient/AddIngredient";
 import EditIngredient from "./page/ingredient/EditIngredient";
+import DetailIngredient from "./page/ingredient/DetailIngredient";
 
 // Ingredient Category
 import IngredientCategoryList from "./page/ingredient-category/CategoryList";
@@ -115,6 +117,8 @@ import EditTaxConfig from "./page/tax-config/EditTaxConfig";
 import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
 import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
 import DetailPurchaseOrder from "./page/purchase-order/DetailPurchaseOrder";
+import EditPurchaseOrder from "./page/purchase-order/EditPurchaseOrder";
+import PurchasePaymentList from "./page/purchase-order/PurchasePaymentList";
 
 // Production Order
 import ProductionOrderList from "./page/production-order/ProductionOrderList";
@@ -125,6 +129,7 @@ import DetailProductionOrder from "./page/production-order/DetailProductionOrder
 import GoodsReceiptList from "./page/goods-receipt/GoodsReceiptList";
 import AddGoodsReceipt from "./page/goods-receipt/AddGoodsReceipt";
 import DetailGoodsReceipt from "./page/goods-receipt/DetailGoodsReceipt";
+import EditGoodsReceipt from "./page/goods-receipt/EditGoodsReceipt";
 
 // Sales Return
 import SalesReturnList from "./page/sales-return/SalesReturnList";
@@ -340,10 +345,12 @@ function App() {
           <Route path="/supplier" element={withLayout(<SupplierList />)} />
           <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
           <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
+          <Route path="/detail-supplier" element={withLayout(<DetailSupplier />)} />
 
           <Route path="/ingredient" element={withLayout(<IngredientList />)} />
           <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
           <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
+          <Route path="/detail-ingredient" element={withLayout(<DetailIngredient />)} />
 
           <Route path="/ingredient-category" element={withLayout(<IngredientCategoryList />)} />
           <Route path="/add-ingredient-category" element={withLayout(<AddIngredientCategory />)} />
@@ -356,6 +363,8 @@ function App() {
           <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
           <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
           <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
+          <Route path="/edit-purchase-order" element={withLayout(<EditPurchaseOrder />)} />
+          <Route path="/purchase-payment" element={withLayout(<PurchasePaymentList />)} />
 
           <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
           <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
@@ -364,6 +373,7 @@ function App() {
           <Route path="/goods-receipt" element={withLayout(<GoodsReceiptList />)} />
           <Route path="/add-goods-receipt" element={withLayout(<AddGoodsReceipt />)} />
           <Route path="/goods-receipt/detail" element={withLayout(<DetailGoodsReceipt />)} />
+          <Route path="/edit-goods-receipt" element={withLayout(<EditGoodsReceipt />)} />
 
           <Route path="/sales-return" element={withLayout(<SalesReturnList />)} />
           <Route path="/sales-return/detail" element={withLayout(<DetailSalesReturn />)} />

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { Save, X, Plus, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
-import { addGoodsReceipt } from "@/services/goods-receipt";
+import { editGoodsReceipt, getGoodsReceiptById } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,31 +13,63 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 
-const AddGoodsReceipt = () => {
+const EditGoodsReceipt = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
 
-  const [poId, setPoId] = useState(searchParams.get("poId") || "");
+  const [poId, setPoId] = useState("");
   const [receivedDate, setReceivedDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
-  const { data: poData } = useQuery(["pos-for-gr"], () => getAllPurchaseOrder({ limit: 50 }), {
+  const { data: receiptData, isLoading: loadingReceipt } = useQuery(
+    ["goods-receipt-edit", id],
+    () => getGoodsReceiptById(id),
+    { enabled: !!id }
+  );
+
+  const { data: poData } = useQuery(["pos-for-gr-edit"], () => getAllPurchaseOrder({ limit: 50 }), {
     staleTime: 60000
   });
   const purchaseOrders = poData?.data || [];
 
+  useEffect(() => {
+    const receipt = receiptData?.data;
+    if (!receipt || loaded) return;
+    setPoId(receipt.purchaseOrderId || "");
+    setReceivedDate(receipt.receivedDate ? new Date(receipt.receivedDate) : new Date());
+    setNotes(receipt.notes || "");
+    if (receipt.items) {
+      setItems(
+        receipt.items.map((item) => ({
+          id: item.id,
+          ingredient: item.product || null,
+          ingredientName: item.productData?.nameProduct || "",
+          product: item.product || null,
+          qty: item.qtyReceived || 0,
+          unit: item.unit || "pcs",
+          qtyReceived: String(item.qtyReceived || 0),
+          conditionNotes: item.conditionNotes || "",
+          isFromPo: true
+        }))
+      );
+    }
+    setLoaded(true);
+  }, [receiptData, loaded]);
+
   const { data: poDetail, isLoading: loadingPo } = useQuery(
-    ["po-detail", poId],
+    ["po-detail-edit", poId],
     () => getPurchaseOrderById(poId),
     { enabled: !!poId }
   );
 
   useEffect(() => {
-    if (poDetail?.data?.items) {
+    if (poDetail?.data?.items && items.length === 0 && !loaded) {
       const poItems = poDetail.data.items;
       const mapped = poItems.map((item) => ({
         ingredient: item.ingredient || null,
@@ -51,7 +83,7 @@ const AddGoodsReceipt = () => {
       }));
       setItems(mapped);
     }
-  }, [poDetail]);
+  }, [poDetail, items.length, loaded]);
 
   const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
 
@@ -95,8 +127,7 @@ const AddGoodsReceipt = () => {
     }
     setIsSubmitting(true);
     try {
-      const payload = {
-        purchaseOrderId: parseInt(poId),
+      await editGoodsReceipt(id, {
         receivedDate:
           receivedDate instanceof Date ? receivedDate.toISOString().split("T")[0] : receivedDate,
         notes,
@@ -108,9 +139,8 @@ const AddGoodsReceipt = () => {
           unit: it.unit,
           conditionNotes: it.conditionNotes
         }))
-      };
-      await addGoodsReceipt(payload);
-      toast.success("Berhasil", { description: "Goods receipt berhasil dibuat" });
+      });
+      toast.success("Berhasil", { description: "Goods receipt berhasil diperbarui" });
       queryClient.invalidateQueries(["goods-receipts"]);
       navigate("/goods-receipt");
     } catch (err) {
@@ -119,6 +149,22 @@ const AddGoodsReceipt = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (!id) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">ID tidak ditemukan</p>
+      </div>
+    );
+  }
+
+  if (loadingReceipt) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -133,14 +179,12 @@ const AddGoodsReceipt = () => {
           Goods Receipt
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah</span>
+        <span className="text-primary font-semibold">Edit</span>
       </nav>
 
       <div>
-        <h1 className="text-2xl font-bold">Tambah Goods Receipt</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Catat penerimaan barang dari purchase order
-        </p>
+        <h1 className="text-2xl font-bold">Edit Goods Receipt</h1>
+        <p className="text-sm text-muted-foreground mt-1">Perbarui penerimaan barang</p>
       </div>
 
       <form
@@ -156,6 +200,7 @@ const AddGoodsReceipt = () => {
               onChange={(e) => {
                 setPoId(e.target.value);
                 setItems([]);
+                setLoaded(false);
               }}
               className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
               <option value="">Pilih PO</option>
@@ -340,7 +385,7 @@ const AddGoodsReceipt = () => {
             <X size={16} className="mr-1" /> Batal
           </Button>
           <Button type="submit" disabled={isSubmitting || items.length === 0}>
-            <Save size={16} className="mr-1" /> {isSubmitting ? "Menyimpan..." : "Simpan"}
+            <Save size={16} className="mr-1" /> {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
           </Button>
         </div>
       </form>
@@ -363,4 +408,4 @@ const AddGoodsReceipt = () => {
   );
 };
 
-export default AddGoodsReceipt;
+export default EditGoodsReceipt;

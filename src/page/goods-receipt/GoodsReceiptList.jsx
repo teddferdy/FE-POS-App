@@ -8,16 +8,17 @@ import {
   Search,
   Eye,
   Trash2,
-  // ClipboardList,
-  FileText
-  // XCircle
+  FileText,
+  Download
 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
-import { getAllGoodsReceipt, deleteGoodsReceipt } from "@/services/goods-receipt";
+import { getAllGoodsReceipt, deleteGoodsReceipt, exportGoodsReceipt } from "@/services/goods-receipt";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import * as XLSX from "xlsx";
 
 const statusColors = {
   draft: {
@@ -44,15 +45,24 @@ const GoodsReceiptList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
+  const isSuperAdmin = user?.roleType === "super_admin";
+
+  const { data: locations } = useQuery(["locations-gr"], () => getAllLocation(), {
+    staleTime: 60000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading } = useQuery(
-    ["goods-receipts", page, limit, statusFilter],
+    ["goods-receipts", page, limit, statusFilter, storeFilter],
     () =>
       getAllGoodsReceipt({
         page,
         limit,
-        status: statusFilter !== "all" ? statusFilter : undefined
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        store: storeFilter !== "all" ? storeFilter : undefined
       }),
     { keepPreviousData: true }
   );
@@ -73,6 +83,39 @@ const GoodsReceiptList = () => {
     }
     return true;
   });
+
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      const result = await exportGoodsReceipt({
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        store: storeFilter !== "all" ? storeFilter : undefined
+      });
+      const rows = result?.data || [];
+      const xlsData = rows.map((r, i) => ({
+        No: i + 1,
+        "No. Receipt": r.receiptNumber || "",
+        "PO Reference": r.purchaseOrderData?.orderNumber || "",
+        "Tanggal Terima": r.receivedDate
+          ? new Date(r.receivedDate).toLocaleDateString("id")
+          : "",
+        Store: r.storeData?.name || "",
+        Status: r.status || "",
+        "Jumlah Item": r.items?.length || 0
+      }));
+      const ws = XLSX.utils.json_to_sheet(xlsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "GoodsReceipt");
+      XLSX.writeFile(wb, `goods-receipt-${Date.now()}.xlsx`);
+      toast.success("Berhasil", { description: "Data berhasil di-export" });
+    } catch (err) {
+      toast.error("Gagal", {
+        description: err?.response?.data?.message || err.message
+      });
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const deleteMutation = useMutation(deleteGoodsReceipt, {
     onSuccess: () => {
@@ -144,6 +187,16 @@ const GoodsReceiptList = () => {
               <Eye size={15} />
             </Button>
           )}
+          {item.status === "draft" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-blue-600"
+              onClick={() => navigate(`/edit-goods-receipt?id=${item.id}`)}
+              title="Edit GR">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </Button>
+          )}
           {item.status === "draft" && canAccess(user, MENU_KEY, "delete") && (
             <Button
               variant="ghost"
@@ -206,6 +259,17 @@ const GoodsReceiptList = () => {
         emptyIcon={FileText}
         toolbar={
           <div className="flex items-center gap-3">
+            {isSuperAdmin && (
+              <select
+                value={storeFilter}
+                onChange={(e) => { setStoreFilter(e.target.value); setPage(1); }}
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="all">Semua Store</option>
+                {(locations?.data || []).map((loc) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
+            )}
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -232,6 +296,15 @@ const GoodsReceiptList = () => {
                 className="pl-9 h-9 text-sm"
               />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={exportLoading}
+              className="gap-1.5">
+              <Download size={14} />
+              {exportLoading ? "..." : "Export"}
+            </Button>
           </div>
         }
         pagination={{ page, totalPages, total, onPageChange: setPage }}

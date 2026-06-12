@@ -8,6 +8,7 @@ export const getAllGoodsReceipt = async (payload) => {
   if (payload?.poId) params.append("poId", payload.poId);
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);
+  if (payload?.store) params.append("store", payload.store);
   const { data, status } = await axiosInstance.get(`/goods-receipt/get-all?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
@@ -15,6 +16,17 @@ export const getAllGoodsReceipt = async (payload) => {
 
 export const getGoodsReceiptById = async (id) => {
   const { data, status } = await axiosInstance.get(`/goods-receipt/get-by-id/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const exportGoodsReceipt = async (payload) => {
+  const params = new URLSearchParams();
+  if (payload?.status) params.append("status", payload.status);
+  if (payload?.store) params.append("store", payload.store);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
+  const { data, status } = await axiosInstance.get(`/goods-receipt/export?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

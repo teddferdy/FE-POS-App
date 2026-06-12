@@ -26,7 +26,8 @@ import {
   ArrowRightLeft,
   DollarSign,
   BadgePercent,
-  ChefHat
+  ChefHat,
+  Wallet
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -118,6 +119,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/purchase-order",
         icon: ShoppingCart,
         actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Riwayat Pembayaran",
+        i18nKey: "sidebar.purchasePayment",
+        href: "/purchase-payment",
+        icon: Wallet,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -447,6 +455,13 @@ export const sidebarMenuAdmin = [
         href: "/purchase-order",
         icon: ShoppingCart,
         actions: ["add", "edit", "view"]
+      },
+      {
+        title: "Riwayat Pembayaran",
+        i18nKey: "sidebar.purchasePayment",
+        href: "/purchase-payment",
+        icon: Wallet,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -827,6 +842,12 @@ export const urlWithArrowBack = [
     i18nKey: "sidebar.purchaseOrder",
     pathName: "/purchase-order"
   },
+  {
+    url: -1,
+    title: "Riwayat Pembayaran",
+    i18nKey: "sidebar.purchasePayment",
+    pathName: "/purchase-payment"
+  },
   { url: -1, title: "Stock Opname", i18nKey: "sidebar.stockOpname", pathName: "/stock-opname" },
   {
     url: -1,
@@ -988,6 +1009,12 @@ export const urlWithArrowBack = [
     pathName: "/add-purchase-order"
   },
   {
+    url: "/purchase-order",
+    title: "Edit Purchase Order",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-purchase-order"
+  },
+  {
     url: "/stock-opname",
     title: "Add Stock Opname",
     i18nKey: "breadcrumb.add",
@@ -1016,6 +1043,12 @@ export const urlWithArrowBack = [
     title: "Detail Goods Receipt",
     i18nKey: "breadcrumb.detail",
     pathName: "/goods-receipt/detail"
+  },
+  {
+    url: "/goods-receipt",
+    title: "Edit Goods Receipt",
+    i18nKey: "breadcrumb.edit",
+    pathName: "/edit-goods-receipt"
   },
   {
     url: "/expense-category",
