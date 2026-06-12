@@ -235,7 +235,63 @@ export const superAdminSteps = [
   },
 
   // ── Produk ──
-  // ── Kategori ──
+  // ── Produk ──
+  {
+    id: "product-intro",
+    page: "/product-list",
+    icon: Package,
+    titleKey: "guide.product.s14a",
+    descKey: "guide.product.s14adesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "product-import",
+    page: "/product-list",
+    target: '[data-tour="product-import"]',
+    icon: Upload,
+    titleKey: "guide.product.s14b",
+    descKey: "guide.product.s14bdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "product-export",
+    page: "/product-list",
+    target: '[data-tour="product-export"]',
+    icon: Download,
+    titleKey: "guide.product.s14c",
+    descKey: "guide.product.s14cdesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "product-add",
+    page: "/product-list",
+    target: '[data-tour="product-add"]',
+    icon: Plus,
+    titleKey: "guide.product.s14d",
+    descKey: "guide.product.s14ddesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "product-search",
+    page: "/product-list",
+    target: '[data-tour="product-search"]',
+    icon: Search,
+    titleKey: "guide.product.s14e",
+    descKey: "guide.product.s14edesc",
+    actionKey: "guide.dashboard.next"
+  },
+  {
+    id: "product-table",
+    page: "/product-list",
+    target: '[data-tour="product-table"]',
+    icon: List,
+    titleKey: "guide.product.s14f",
+    descKey: "guide.product.s14fdesc",
+    actionKey: "guide.dashboard.next"
+  },
+
+
+    // ── Kategori ──
   {
     id: "category-intro",
     page: "/category-list",
@@ -418,60 +474,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-  // ── Produk ──
-  {
-    id: "product-intro",
-    page: "/product-list",
-    icon: Package,
-    titleKey: "guide.product.s14a",
-    descKey: "guide.product.s14adesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "product-import",
-    page: "/product-list",
-    target: '[data-tour="product-import"]',
-    icon: Upload,
-    titleKey: "guide.product.s14b",
-    descKey: "guide.product.s14bdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "product-export",
-    page: "/product-list",
-    target: '[data-tour="product-export"]',
-    icon: Download,
-    titleKey: "guide.product.s14c",
-    descKey: "guide.product.s14cdesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "product-add",
-    page: "/product-list",
-    target: '[data-tour="product-add"]',
-    icon: Plus,
-    titleKey: "guide.product.s14d",
-    descKey: "guide.product.s14ddesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "product-search",
-    page: "/product-list",
-    target: '[data-tour="product-search"]',
-    icon: Search,
-    titleKey: "guide.product.s14e",
-    descKey: "guide.product.s14edesc",
-    actionKey: "guide.dashboard.next"
-  },
-  {
-    id: "product-table",
-    page: "/product-list",
-    target: '[data-tour="product-table"]',
-    icon: List,
-    titleKey: "guide.product.s14f",
-    descKey: "guide.product.s14fdesc",
-    actionKey: "guide.dashboard.next"
-  },
 
   // ── Pelanggan ──
   // ── Member Tier ──
