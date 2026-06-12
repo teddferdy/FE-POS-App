@@ -109,8 +109,8 @@ const AddIngredient = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card p-6 rounded-xl border border-border space-y-6 max-w-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2 md:col-span-2">
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-2">
             <Label>Nama Bahan Baku <span className="text-destructive">*</span></Label>
             <Input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Contoh: Tepung Terigu" />
           </div>

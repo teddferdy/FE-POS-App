@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { addPurchaseOrder } from "@/services/purchase-order";
 import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
+import { getAllIngredients } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +32,7 @@ const AddPurchaseOrder = () => {
   const [supplierId, setSupplierId] = useState(null);
   const [showSupplierList, setShowSupplierList] = useState(false);
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([{ name: "", qty: 1, price: 0, unit: "pcs" }]);
+  const [items, setItems] = useState([{ name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }]);
   const [cancelModal, setCancelModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
@@ -60,6 +61,19 @@ const AddPurchaseOrder = () => {
   const filteredEmployees = employees.filter((e) =>
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
+
+  const { data: ingredientsData } = useQuery(
+    ["ingredients-po"],
+    () => getAllIngredients({ store: locationParam, limit: 999 }),
+    { staleTime: 30000 }
+  );
+  const ingredients = ingredientsData?.data || [];
+  const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
+
+  const getFilteredIngredients = (search) =>
+    ingredients.filter((i) =>
+      i.name?.toLowerCase().includes((search || "").toLowerCase())
+    );
 
   const unitOptions = [
     { value: "pcs", label: "Pcs" },
@@ -130,7 +144,7 @@ const AddPurchaseOrder = () => {
   };
 
   const addItem = () =>
-    setItems((prev) => [...prev, { name: "", qty: 1, price: 0, unit: "pcs" }]);
+    setItems((prev) => [...prev, { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }]);
   const removeItem = (idx) => setItems((prev) => prev.filter((_, i) => i !== idx));
   const updateItem = (idx, field, value) =>
     setItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
@@ -170,8 +184,9 @@ const AddPurchaseOrder = () => {
         d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         return d;
       })(),
-      items: items.map(({ name, qty, price, unit }) => ({
+      items: items.map(({ name, ingredientId, qty, price, unit }) => ({
         product: null,
+        ingredient: ingredientId || null,
         ingredientName: name,
         quantity: qty,
         price,
@@ -364,12 +379,45 @@ const AddPurchaseOrder = () => {
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                     {idx + 1}
                   </span>
-                  <Input
-                    placeholder="Nama barang / bahan baku"
-                    value={item.name}
-                    onChange={(e) => updateItem(idx, "name", e.target.value)}
-                    className="h-9 text-sm flex-1 min-w-0"
-                  />
+                  <div className="relative flex-1 min-w-0">
+                    <Input
+                      placeholder="Nama barang / bahan baku"
+                      value={item.name}
+                      onChange={(e) => {
+                        updateItem(idx, "name", e.target.value);
+                        updateItem(idx, "ingredientId", null);
+                        setIngredientFocusIdx(idx);
+                      }}
+                      onFocus={() => setIngredientFocusIdx(idx)}
+                      onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
+                      className="h-9 text-sm w-full"
+                    />
+                    {ingredientFocusIdx === idx && item.name && (
+                      <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {getFilteredIngredients(item.name).length > 0 ? (
+                          getFilteredIngredients(item.name).map((ing) => (
+                            <button
+                              key={ing.id}
+                              type="button"
+                              onMouseDown={() => {
+                                updateItem(idx, "name", ing.name);
+                                updateItem(idx, "ingredientId", ing.id);
+                                updateItem(idx, "unit", ing.unit || "pcs");
+                                setIngredientFocusIdx(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
+                              <span>{ing.name}</span>
+                              <span className="text-xs text-muted-foreground ml-auto">{ing.unit || "pcs"}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="p-3 text-xs text-muted-foreground text-center">
+                            Tidak ada bahan baku ditemukan. Gunakan teks bebas.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <Input
                     placeholder="Qty"
                     value={item.qty || ""}
