@@ -60,7 +60,6 @@ export function Combobox({
               {options.map((opt) => (
                 <CommandItem
                   key={opt.value}
-                  value={opt.label}
                   onSelect={() => {
                     onChange(opt.value === value ? "" : opt.value);
                     setOpen(false);
