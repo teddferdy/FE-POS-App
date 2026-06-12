@@ -392,9 +392,13 @@ const AddPurchaseOrder = () => {
                       onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
                       className="h-9 text-sm w-full"
                     />
-                    {ingredientFocusIdx === idx && item.name && (
+                    {ingredientFocusIdx === idx && (
                       <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {getFilteredIngredients(item.name).length > 0 ? (
+                        {!item.name ? (
+                          <p className="p-3 text-xs text-muted-foreground text-center">
+                            Ketik untuk mencari bahan baku
+                          </p>
+                        ) : getFilteredIngredients(item.name).length > 0 ? (
                           getFilteredIngredients(item.name).map((ing) => (
                             <button
                               key={ing.id}
