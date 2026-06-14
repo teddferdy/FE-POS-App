@@ -99,8 +99,9 @@ const ResetPasswordPage = () => {
     },
     onError: (err) => {
       setIsLoading(false);
-      toast.error("Failed", {
-        description: err.message
+      const message = err.response?.data?.error || err.response?.data?.message || err.message;
+      toast.error("Reset Password Gagal", {
+        description: message
       });
     }
   });
