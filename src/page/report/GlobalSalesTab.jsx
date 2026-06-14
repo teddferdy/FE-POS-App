@@ -1,11 +1,38 @@
 /* eslint-disable react/prop-types */
 import { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer
+} from "recharts";
 
 const STORE_COLORS = [
   "#3B82F6", "#F59E0B", "#10B981", "#EF4444",
   "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"
 ];
+
+const CustomTooltip = ({ active, payload, label, t }) => {
+  if (!active || !payload?.length) return null;
+  const total = payload.reduce((s, p) => s + (p.value || 0), 0);
+  return (
+    <div className="bg-card border border-border shadow-lg rounded-xl p-3 text-xs">
+      <p className="font-semibold text-foreground mb-1.5">{label}</p>
+      {payload.map((p) => (
+        <div key={p.name} className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: p.color }} />
+            <span className="text-muted-foreground">{p.name}</span>
+          </div>
+          <span className="font-mono font-semibold text-foreground">{formatCurrency(p.value)}</span>
+        </div>
+      ))}
+      <div className="border-t border-border mt-1.5 pt-1.5 flex justify-between font-semibold text-foreground">
+        <span>{t("page.report.sales.revenueTrend")}</span>
+        <span className="font-mono">{formatCurrency(total)}</span>
+      </div>
+    </div>
+  );
+};
 
 const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
   const salesChart = data?.salesChart || [];
@@ -13,19 +40,32 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
   const storeSalesChart = data?.storeSalesChart || [];
   const hasMultipleStores = storeSalesChart.length > 1;
 
-  const maxSales = Math.max(...salesChart.map((s) => Number(s.sales) || 0), 1);
-
   const dateStoreMap = useMemo(() => {
     if (!hasMultipleStores) return {};
     const map = {};
     for (const store of storeSalesChart) {
       for (const d of store.data) {
         if (!map[d.date]) map[d.date] = {};
-        map[d.date][store.storeId] = Number(d.sales) || 0;
+        map[d.date][store.storeName] = Number(d.sales) || 0;
       }
     }
     return map;
   }, [storeSalesChart, hasMultipleStores]);
+
+  const chartData = useMemo(() => {
+    if (!salesChart.length) return [];
+    return salesChart.map((item) => {
+      const row = { date: item.date };
+      if (hasMultipleStores && dateStoreMap[item.date]) {
+        for (const store of storeSalesChart) {
+          row[store.storeName] = dateStoreMap[item.date][store.storeName] || 0;
+        }
+      } else {
+        row.total = Number(item.sales) || 0;
+      }
+      return row;
+    });
+  }, [salesChart, storeSalesChart, dateStoreMap, hasMultipleStores]);
 
   return (
     <div className="space-y-6">
@@ -117,50 +157,63 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
             </div>
           )}
         </div>
-        <div className="relative h-[300px] w-full bg-muted/30 rounded-lg overflow-hidden">
-          {salesChart.length > 0 ? (
-            <div className="absolute inset-0 flex items-end px-4 pb-4 gap-0.5">
-              {salesChart.map((item, i) => {
-                const totalSales = Number(item.sales) || 0;
-                const h = maxSales > 0 ? (totalSales / maxSales) * 100 : 0;
-                const dateStr = item.date;
-                const perStore = hasMultipleStores && dateStoreMap[dateStr]
-                  ? storeSalesChart.map((s, si) => ({
-                      storeId: s.storeId,
-                      storeName: s.storeName,
-                      sales: dateStoreMap[dateStr][s.storeId] || 0,
-                      color: STORE_COLORS[si % STORE_COLORS.length]
-                    }))
-                  : [];
-
-                return (
-                  <div key={i} className="flex-1 relative group flex flex-col justify-end h-full">
-                    <div
-                      className="w-full rounded-t-lg overflow-hidden transition-all duration-300"
-                      style={{ height: `${Math.max(h, 1)}%` }}>
-                      {hasMultipleStores && perStore.length > 0 ? (
-                        perStore.map((ps) => {
-                          const segH = totalSales > 0 ? (ps.sales / totalSales) * 100 : 0;
-                          return segH > 0 ? (
-                            <div
-                              key={ps.storeId}
-                              className="w-full transition-all duration-200 hover:brightness-110"
-                              style={{ height: `${segH}%`, backgroundColor: ps.color }}
-                              title={`${ps.storeName}: ${formatCurrency(ps.sales)}`}
-                            />
-                          ) : null;
-                        })
-                      ) : (
-                        <div className="w-full h-full bg-blue-500/20 hover:bg-blue-500 transition-all duration-300" />
-                      )}
-                    </div>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background px-2 py-0.5 rounded text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                      {formatCurrency(totalSales)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        <div className="h-[300px] w-full">
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <defs>
+                  {hasMultipleStores
+                    ? storeSalesChart.map((s, i) => (
+                        <linearGradient key={s.storeId} id={`gradient-${s.storeId}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={STORE_COLORS[i % STORE_COLORS.length]} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={STORE_COLORS[i % STORE_COLORS.length]} stopOpacity={0.05} />
+                        </linearGradient>
+                      ))
+                    : (
+                      <linearGradient id="gradient-single" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                      </linearGradient>
+                    )}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  tickLine={false}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => formatCurrency(v)}
+                />
+                <Tooltip content={<CustomTooltip t={t} />} />
+                {hasMultipleStores
+                  ? storeSalesChart.map((s, i) => (
+                      <Area
+                        key={s.storeId}
+                        type="monotone"
+                        dataKey={s.storeName}
+                        stackId="1"
+                        stroke={STORE_COLORS[i % STORE_COLORS.length]}
+                        fill={`url(#gradient-${s.storeId})`}
+                        strokeWidth={2}
+                      />
+                    ))
+                  : (
+                    <Area
+                      type="monotone"
+                      dataKey="total"
+                      stackId="1"
+                      stroke="#3B82F6"
+                      fill="url(#gradient-single)"
+                      strokeWidth={2}
+                    />
+                  )}
+              </AreaChart>
+            </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
               Belum ada data penjualan
