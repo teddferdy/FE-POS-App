@@ -112,9 +112,10 @@ const LoginPage = () => {
     },
     onError: (err) => {
       setIsLoading(false);
+      const message = err.response?.data?.message || err.message;
       setTimeout(() => {
-        toast.error("Failed Login", {
-          description: err.message
+        toast.error("Login Gagal", {
+          description: message
         });
       }, 1500);
       setTimeout(() => {
