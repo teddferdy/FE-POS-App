@@ -26,10 +26,10 @@ const SalesReportPage = () => {
       const d = salesData?.data;
       if (!d) return;
       const rows = [
-        ["Laporan Penjualan", "", "", ""],
+        [t("page.report.sales.title"), "", "", ""],
         [],
-        ["Total Pelanggan", formatNumber(d.totalCustomers || 0), "", ""],
-        ["Total Penjualan", formatCurrency(d.totalSales || 0), "", ""],
+        [t("page.report.sales.kpi.totalCustomers"), formatNumber(d.totalCustomers || 0), "", ""],
+        [t("page.report.sales.kpi.totalSales"), formatCurrency(d.totalSales || 0), "", ""],
         [],
         [
           t("page.report.sales.table.storeName"),
@@ -43,9 +43,9 @@ const SalesReportPage = () => {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "SalesReport");
       XLSX.writeFile(wb, `sales-report-${salesPeriod.toLowerCase()}-${Date.now()}.xlsx`);
-      toast.success("Berhasil", { description: "Data penjualan berhasil di-export" });
+      toast.success(t("common.success"), { description: t("page.report.sales.exportSuccess") });
     } catch (err) {
-      toast.error("Gagal", { description: err?.message || "Export gagal" });
+      toast.error(t("common.error"), { description: err?.message || t("page.report.sales.exportFailed") });
     } finally {
       setExportLoading(false);
     }
@@ -55,9 +55,9 @@ const SalesReportPage = () => {
     <div data-tour="page-reports" className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Analitik Penjualan</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">{t("page.report.sales.title")}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Ringkasan penjualan toko berdasarkan periode
+            {t("page.report.sales.description")}
           </p>
         </div>
         <button
@@ -65,12 +65,12 @@ const SalesReportPage = () => {
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-all disabled:opacity-50">
           <span className="material-symbols-outlined text-lg">download</span>
-          {exportLoading ? "Exporting..." : "Export"}
+          {exportLoading ? t("common.downloading") : t("common.export")}
         </button>
       </div>
 
       <div className="relative min-h-[300px]">
-        {!salesData?.data && <Loading fullscreen size="lg" label="Memuat data..." />}
+        {!salesData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
         {salesData?.data && (
           <GlobalSalesTab

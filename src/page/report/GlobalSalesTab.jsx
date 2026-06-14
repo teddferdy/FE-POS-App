@@ -213,7 +213,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-              Belum ada data penjualan
+              {t("page.report.sales.noData")}
             </div>
           )}
         </div>

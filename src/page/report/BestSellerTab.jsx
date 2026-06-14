@@ -93,7 +93,7 @@ const BestSellerTab = ({ t, data }) => {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Belum ada data produk terlaris
+              {t("page.report.bestSeller.noData")}
             </p>
           )}
         </div>
@@ -109,7 +109,7 @@ const BestSellerTab = ({ t, data }) => {
               </span>
               <h4 className="text-lg font-semibold mb-2">{bestSellers[0].name}</h4>
               <p className="text-sm text-white/70 mb-6">
-                Produk terlaris dengan penjualan tertinggi
+                {t("page.report.bestSeller.spotlightDesc")}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white/10 p-3 rounded-lg">
@@ -188,7 +188,7 @@ const BestSellerTab = ({ t, data }) => {
               ) : (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                    Belum ada data
+                    {t("page.report.bestSeller.noData")}
                   </td>
                 </tr>
               )}
