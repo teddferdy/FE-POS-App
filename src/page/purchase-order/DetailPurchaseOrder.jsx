@@ -1,9 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Package, Wallet, Trash2, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Package,
+  Wallet,
+  Trash2,
+  Plus,
+  CalendarIcon
+} from "lucide-react";
+import { format } from "date-fns";
 import { getPurchaseOrderById } from "@/services/purchase-order";
 import { getPaymentsByPO, recordPayment, deletePayment } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
@@ -12,6 +23,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 const statusMap = {
   pending: {
@@ -41,6 +59,7 @@ const DetailPurchaseOrder = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const dateInputRef = useRef(null);
 
   const { data, isLoading } = useQuery(
     ["purchase-order-detail", id],
@@ -51,6 +70,80 @@ const DetailPurchaseOrder = () => {
   const po = data?.data || {};
   const st = statusMap[po.status] || statusMap.pending;
   const StatusIcon = st.icon;
+
+  const items = po.items || [];
+  const totalAmount =
+    items.reduce((sum, item) => sum + (item.quantity || 0) * (item.price || 0), 0) ||
+    po.totalAmount ||
+    0;
+  const discount = po.discount || 0;
+  const finalAmount = po.finalAmount || totalAmount - discount;
+
+  const queryClient = useQueryClient();
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    amount: "",
+    paymentDate: "",
+    paymentMethod: "cash",
+    reference: "",
+    notes: ""
+  });
+
+  const { data: paymentsData } = useQuery(["po-payments", id], () => getPaymentsByPO(id), {
+    enabled: !!id
+  });
+  const payments = paymentsData?.data || [];
+  const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+  const remaining = Math.max(0, finalAmount - totalPaid);
+
+  const recordMutation = useMutation(recordPayment, {
+    onSuccess: () => {
+      toast.success("Pembayaran berhasil dicatat");
+      queryClient.invalidateQueries(["po-payments", id]);
+      queryClient.invalidateQueries(["purchase-order-detail", id]);
+      setPaymentModalOpen(false);
+      setPaymentForm({
+        amount: "",
+        paymentDate: "",
+        paymentMethod: "cash",
+        reference: "",
+        notes: ""
+      });
+    },
+    onError: (err) => {
+      toast.error("Gagal mencatat pembayaran", {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const deletePaymentMutation = useMutation(deletePayment, {
+    onSuccess: () => {
+      toast.success("Pembayaran dihapus");
+      queryClient.invalidateQueries(["po-payments", id]);
+    },
+    onError: (err) => {
+      toast.error("Gagal menghapus pembayaran", {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const handleRecordPayment = () => {
+    if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
+      toast.error("Jumlah pembayaran harus diisi");
+      return;
+    }
+    recordMutation.mutate({
+      purchaseOrder: po.id,
+      supplier: po.supplier,
+      amount: Number(paymentForm.amount),
+      paymentDate: paymentForm.paymentDate || format(new Date(), "yyyy-MM-dd"),
+      paymentMethod: paymentForm.paymentMethod,
+      reference: paymentForm.reference,
+      notes: paymentForm.notes
+    });
+  };
 
   if (!id) {
     return (
@@ -80,61 +173,6 @@ const DetailPurchaseOrder = () => {
       </div>
     );
   }
-
-  const items = po.items || [];
-  const totalAmount =
-    items.reduce((sum, item) => sum + (item.quantity || 0) * (item.price || 0), 0) ||
-    po.totalAmount ||
-    0;
-  const discount = po.discount || 0;
-  const finalAmount = po.finalAmount || totalAmount - discount;
-
-  const queryClient = useQueryClient();
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({ amount: "", paymentDate: "", paymentMethod: "cash", reference: "", notes: "" });
-
-  const { data: paymentsData } = useQuery(
-    ["po-payments", id],
-    () => getPaymentsByPO(id),
-    { enabled: !!id }
-  );
-  const payments = paymentsData?.data || [];
-  const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
-  const remaining = Math.max(0, finalAmount - totalPaid);
-
-  const recordMutation = useMutation(recordPayment, {
-    onSuccess: () => {
-      toast.success("Pembayaran berhasil dicatat");
-      queryClient.invalidateQueries(["po-payments", id]);
-      queryClient.invalidateQueries(["purchase-order-detail", id]);
-      setPaymentModalOpen(false);
-      setPaymentForm({ amount: "", paymentDate: "", paymentMethod: "cash", reference: "", notes: "" });
-    },
-    onError: (err) => {
-      toast.error("Gagal mencatat pembayaran", { description: err?.response?.data?.message || err.message });
-    }
-  });
-
-  const deletePaymentMutation = useMutation(deletePayment, {
-    onSuccess: () => {
-      toast.success("Pembayaran dihapus");
-      queryClient.invalidateQueries(["po-payments", id]);
-    },
-    onError: (err) => {
-      toast.error("Gagal menghapus pembayaran", { description: err?.response?.data?.message || err.message });
-    }
-  });
-
-  const handleRecordPayment = () => {
-    recordMutation.mutate({
-      purchaseOrderId: po.id,
-      amount: Number(paymentForm.amount),
-      paymentDate: paymentForm.paymentDate,
-      paymentMethod: paymentForm.paymentMethod,
-      reference: paymentForm.reference,
-      notes: paymentForm.notes
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -298,13 +336,17 @@ const DetailPurchaseOrder = () => {
               {totalPaid > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Terbayar</span>
-                  <span className="font-medium text-green-600">Rp {Number(totalPaid).toLocaleString("id-ID")}</span>
+                  <span className="font-medium text-green-600">
+                    Rp {Number(totalPaid).toLocaleString("id-ID")}
+                  </span>
                 </div>
               )}
               {remaining > 0 && (
                 <div className="flex justify-between text-sm border-t border-border pt-3">
                   <span className="text-muted-foreground font-medium">Sisa</span>
-                  <span className="font-bold text-red-500">Rp {Number(remaining).toLocaleString("id-ID")}</span>
+                  <span className="font-bold text-red-500">
+                    Rp {Number(remaining).toLocaleString("id-ID")}
+                  </span>
                 </div>
               )}
             </div>
@@ -321,33 +363,49 @@ const DetailPurchaseOrder = () => {
             {payments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Belum ada pembayaran</p>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {payments.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2 text-sm">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-foreground">Rp {Number(p.amount).toLocaleString("id-ID")}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString("id-ID") : "-"}
-                        {p.paymentMethod ? ` · ${p.paymentMethod}` : ""}
-                      </div>
-                      {p.reference && <div className="text-xs text-muted-foreground">Ref: {p.reference}</div>}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => {
-                        if (window.confirm("Hapus pembayaran ini?")) {
-                          deletePaymentMutation.mutate(p.id);
-                        }
-                      }}>
-                      <Trash2 size={13} />
-                    </Button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto max-h-64 overflow-y-auto">
+                <table className="w-full text-sm text-center">
+                  <thead className="text-muted-foreground text-xs sticky top-0 bg-background">
+                    <tr className="border-b border-border">
+                      <th className="py-2 px-2 font-medium">Tanggal</th>
+                      <th className="py-2 px-2 font-medium">Metode</th>
+                      <th className="py-2 px-2 font-medium">Jumlah</th>
+                      <th className="py-2 px-2 font-medium">Referensi</th>
+                      <th className="py-2 px-2 font-medium w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {payments.map((p) => (
+                      <tr key={p.id} className="hover:bg-muted/20">
+                        <td className="py-2.5 px-2">
+                          {p.paymentDate
+                            ? new Date(p.paymentDate).toLocaleDateString("id-ID")
+                            : "-"}
+                        </td>
+                        <td className="py-2.5 px-2 capitalize">{p.paymentMethod || "-"}</td>
+                        <td className="py-2.5 px-2 font-medium">
+                          Rp {Number(p.amount).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-2.5 px-2 text-muted-foreground">{p.reference || "-"}</td>
+                        <td className="py-2.5 px-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              if (window.confirm("Hapus pembayaran ini?")) {
+                                deletePaymentMutation.mutate(p.id);
+                              }
+                            }}>
+                            <Trash2 size={13} />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-
           </Card>
 
           <Card className="p-6">
@@ -395,51 +453,92 @@ const DetailPurchaseOrder = () => {
         title="Catat Pembayaran"
         confirmText="Simpan"
         onConfirm={handleRecordPayment}>
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {remaining > 0 && (
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/40 rounded-lg px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-orange-700 dark:text-orange-400">
+                <Wallet size={18} />
+                <span>Sisa tagihan</span>
+              </div>
+              <span className="font-bold text-orange-700 dark:text-orange-400">
+                Rp {Number(remaining).toLocaleString("id-ID")}
+              </span>
+            </div>
+          )}
           <div className="space-y-2">
-            <Label>Jumlah Pembayaran</Label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={paymentForm.amount}
-              onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
-            />
+            <Label className="text-sm font-medium">
+              Jumlah Pembayaran <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                Rp
+              </span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={paymentForm.amount ? Number(paymentForm.amount).toLocaleString("id-ID") : ""}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                  setPaymentForm({ ...paymentForm, amount: raw ? Number(raw) : "" });
+                }}
+                className="pl-10 h-11 text-base"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Tanggal Bayar</Label>
-            <Input
-              type="date"
-              value={paymentForm.paymentDate}
-              onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Tanggal Bayar</Label>
+              <div
+                className="relative cursor-pointer"
+                onClick={() => dateInputRef.current?.showPicker()}>
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  ref={dateInputRef}
+                  type="date"
+                  value={paymentForm.paymentDate}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
+                  className="h-11 pl-10 pr-3 [color-scheme:light] dark:[color-scheme:dark] cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Metode Pembayaran</Label>
+              <Select
+                value={paymentForm.paymentMethod}
+                onValueChange={(value) => setPaymentForm({ ...paymentForm, paymentMethod: value })}>
+                <SelectTrigger className="h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[70]">
+                  <SelectItem value="cash">Tunai</SelectItem>
+                  <SelectItem value="transfer">Transfer</SelectItem>
+                  <SelectItem value="giro">Giro</SelectItem>
+                  <SelectItem value="other">Lainnya</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Metode Pembayaran</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={paymentForm.paymentMethod}
-              onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value })}>
-              <option value="cash">Tunai</option>
-              <option value="transfer">Transfer</option>
-              <option value="giro">Giro</option>
-              <option value="other">Lainnya</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Referensi (opsional)</Label>
-            <Input
-              placeholder="No. referensi"
-              value={paymentForm.reference}
-              onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Catatan (opsional)</Label>
-            <Input
-              placeholder="Catatan"
-              value={paymentForm.notes}
-              onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-            />
+          <hr className="border-t border-border" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Referensi</Label>
+              <Input
+                placeholder="No. invoice / referensi"
+                value={paymentForm.reference}
+                onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Catatan</Label>
+              <Input
+                placeholder="Catatan tambahan"
+                value={paymentForm.notes}
+                onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                className="h-11"
+              />
+            </div>
           </div>
         </div>
       </Modal>

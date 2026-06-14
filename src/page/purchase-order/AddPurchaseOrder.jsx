@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2 } from "lucide-react";
+import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { z } from "zod";
 import { addPurchaseOrder } from "@/services/purchase-order";
 import { getAllSupplier, addSupplier } from "@/services/supplier";
 import { getAllEmployee } from "@/services/employee";
@@ -21,6 +22,25 @@ import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+
+const poSchema = z.object({
+  store: z.string().min(1, "Pilih store/lokasi"),
+  supplier: z.number().min(1, "Pilih supplier"),
+  pic: z.number().min(1, "Pilih PIC"),
+  orderDate: z.date({ required_error: "Pilih tanggal PO" }),
+  orderTime: z.string().min(1, "Pilih jam PO"),
+  dueDate: z.date({ required_error: "Pilih tanggal jatuh tempo" }),
+  items: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Nama barang wajib diisi"),
+        qty: z.number().min(1, "Qty minimal 1"),
+        price: z.number().min(0, "Harga tidak valid"),
+        unit: z.string().min(1)
+      })
+    )
+    .min(1, "Tambahkan minimal satu item")
+});
 
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -40,7 +60,7 @@ const AddPurchaseOrder = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(null);
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
@@ -141,6 +161,7 @@ const AddPurchaseOrder = () => {
     setPicId(e.id || e._id);
     setShowPicList(false);
   };
+
   const formatIDR = (num) => {
     if (!num && num !== 0) return "";
     return "Rp " + Number(num).toLocaleString("id-ID");
@@ -161,38 +182,41 @@ const AddPurchaseOrder = () => {
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
   const finalAmount = totalAmount - discount;
 
+  const [errors, setErrors] = useState({});
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedStore) {
-      toast.error("Pilih store", { description: "Pilih store/lokasi terlebih dahulu" });
+    setErrors({});
+
+    const result = poSchema.safeParse({
+      store: selectedStore,
+      supplier: supplierId,
+      pic: picId,
+      orderDate,
+      orderTime,
+      dueDate,
+      items: items.filter((i) => i.name?.trim())
+    });
+
+    if (!result.success) {
+      const fieldErrors = {};
+      result.error.errors.forEach((err) => {
+        const path = err.path[0];
+        if (!fieldErrors[path]) fieldErrors[path] = err.message;
+      });
+      setErrors(fieldErrors);
+      toast.error("Validasi gagal", {
+        description: fieldErrors[Object.keys(fieldErrors)[0]]
+      });
       return;
     }
-    if (!supplierId) {
-      toast.error("Pilih atau tambah supplier", { description: "Pilih supplier terlebih dahulu" });
-      return;
-    }
-    if (!picId) {
-      toast.error("Pilih PIC", { description: "Pilih PIC yang bertugas terlebih dahulu" });
-      return;
-    }
-    if (!orderDate) {
-      toast.error("Pilih tanggal", { description: "Pilih tanggal purchase order" });
-      return;
-    }
-    if (!orderTime) {
-      toast.error("Pilih jam", { description: "Pilih jam purchase order" });
-      return;
-    }
-    if (items.length === 0 || !items[0].name?.trim()) {
-      toast.error("Item kosong", { description: "Tambahkan minimal satu item" });
-      return;
-    }
+
     createMutation.mutate({
       store: locationParam,
       supplier: supplierId,
       notes,
       discount,
-      dueDate: dueDate || null,
+      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       pic: picId,
       orderDate: (() => {
         const d = new Date(orderDate);
@@ -234,311 +258,350 @@ const AddPurchaseOrder = () => {
       </PageHeader>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card className="p-6">
-          <h3 className="text-base font-semibold text-foreground mb-4">Informasi Supplier</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Store / Lokasi <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={selectedStore}
-                onChange={(e) => setSelectedStore(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
-                <option value="">Pilih Store</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
+        <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+          <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                <ShoppingCart size={18} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-white">Informasi Supplier</h3>
+                <p className="text-xs text-blue-100">Detail supplier dan tanggal purchase order</p>
+              </div>
             </div>
-            <div className="relative">
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Supplier <span className="text-destructive">*</span>
-              </label>
-              <Input
-                placeholder="Cari atau ketik nama supplier..."
-                value={supplierSearch}
-                onChange={(e) => {
-                  setSupplierSearch(e.target.value);
-                  setSupplierId(null);
-                  setShowSupplierList(true);
-                }}
-                onFocus={() => setShowSupplierList(true)}
-                onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
-                className="h-10"
-              />
-              {showSupplierList && (
-                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {filteredSuppliers.length > 0 ? (
-                    filteredSuppliers.map((s) => (
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Store / Lokasi <span className="text-destructive">*</span>
+                </label>
+                <select
+                  value={selectedStore}
+                  onChange={(e) => {
+                    setSelectedStore(e.target.value);
+                    setErrors((prev) => ({ ...prev, store: undefined }));
+                  }}
+                  className={`w-full h-10 px-3 rounded-lg border text-sm outline-none focus:ring-1 transition-colors ${
+                    errors.store ? "border-destructive focus:ring-destructive/20" : "border-border focus:ring-primary/20 focus:border-primary"
+                  } bg-background`}>
+                  <option value="">Pilih Store</option>
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.store && <p className="text-xs text-destructive mt-1">{errors.store}</p>}
+              </div>
+              <div className="relative">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Supplier <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="Cari atau ketik nama supplier..."
+                  value={supplierSearch}
+                  onChange={(e) => {
+                    setSupplierSearch(e.target.value);
+                    setSupplierId(null);
+                    setShowSupplierList(true);
+                    setErrors((prev) => ({ ...prev, supplier: undefined }));
+                  }}
+                  onFocus={() => setShowSupplierList(true)}
+                  onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
+                  className={`h-10 ${errors.supplier ? "border-destructive" : ""}`}
+                />
+                {errors.supplier && <p className="text-xs text-destructive mt-1">{errors.supplier}</p>}
+                {showSupplierList && (
+                  <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredSuppliers.length > 0 ? (
+                      filteredSuppliers.map((s) => (
+                        <button
+                          key={s.id || s._id}
+                          type="button"
+                          onMouseDown={() => selectSupplier(s)}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                          {s.name}
+                        </button>
+                      ))
+                    ) : supplierSearch ? (
+                      <p className="p-3 text-xs text-muted-foreground text-center">
+                        Tidak ada supplier ditemukan
+                      </p>
+                    ) : (
+                      <p className="p-3 text-xs text-muted-foreground text-center">
+                        Ketik untuk mencari supplier
+                      </p>
+                    )}
+                    {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
                       <button
-                        key={s.id || s._id}
                         type="button"
-                        onMouseDown={() => selectSupplier(s)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                        {s.name}
+                        onMouseDown={() => {
+                          addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
+                        }}
+                        disabled={addSupplierMutation.isLoading}
+                        className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
+                        <Plus size={15} />
+                        Tambah &quot;{supplierSearch}&quot;
                       </button>
-                    ))
-                  ) : supplierSearch ? (
-                    <p className="p-3 text-xs text-muted-foreground text-center">
-                      Tidak ada supplier ditemukan
-                    </p>
-                  ) : (
-                    <p className="p-3 text-xs text-muted-foreground text-center">
-                      Ketik untuk mencari supplier
-                    </p>
-                  )}
-                  {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
-                    <button
-                      type="button"
-                      onMouseDown={() => {
-                        addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
-                      }}
-                      disabled={addSupplierMutation.isLoading}
-                      className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                      <Plus size={15} />
-                      Tambah &quot;{supplierSearch}&quot;
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="relative">
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                PIC <span className="text-destructive">*</span>
-              </label>
-              {employees.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-foreground">Belum ada pegawai</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Tambah pegawai terlebih dahulu
-                    </p>
+                    )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/add-employee")}
-                    className="gap-2">
-                    <Plus size={15} />
-                    Tambah Pegawai
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Input
-                    placeholder="Cari atau ketik nama PIC..."
-                    value={picSearch}
-                    onChange={(e) => {
-                      setPicSearch(e.target.value);
-                      setPicId(null);
-                      setShowPicList(true);
-                    }}
-                    onFocus={() => setShowPicList(true)}
-                    onBlur={() => setTimeout(() => setShowPicList(false), 200)}
-                    className="h-10"
-                  />
-                  {showPicList && (
-                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredEmployees.length > 0 ? (
-                        filteredEmployees.map((e) => (
-                          <button
-                            key={e.id || e._id}
-                            type="button"
-                            onMouseDown={() => selectPic(e)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                            {e.fullName || e.userName}
-                          </button>
-                        ))
-                      ) : picSearch ? (
-                        <p className="p-3 text-xs text-muted-foreground text-center">
-                          Tidak ada pegawai ditemukan
-                        </p>
-                      ) : (
-                        <p className="p-3 text-xs text-muted-foreground text-center">
-                          Ketik untuk mencari pegawai
-                        </p>
-                      )}
+                )}
+              </div>
+              <div className="relative">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  PIC <span className="text-destructive">*</span>
+                </label>
+                {employees.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground">Belum ada pegawai</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Tambah pegawai terlebih dahulu
+                      </p>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Tanggal PO <span className="text-destructive">*</span>
-              </label>
-              <DatePicker date={orderDate} setDate={setOrderDate} />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Jam <span className="text-destructive">*</span>
-              </label>
-              <TimePicker value={orderTime} onChange={setOrderTime} />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Jatuh Tempo
-              </label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="h-10"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
-              <Textarea
-                placeholder="Catatan untuk supplier (opsional)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[80px]"
-              />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-foreground">Item Barang</h3>
-            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addItem}>
-              <Plus size={15} />
-              Tambah Item
-            </Button>
-          </div>
-
-          {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan barang.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {items.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                    {idx + 1}
-                  </span>
-                  <div className="relative flex-1 min-w-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/add-employee")}
+                      className="gap-2">
+                      <Plus size={15} />
+                      Tambah Pegawai
+                    </Button>
+                  </div>
+                ) : (
+                  <>
                     <Input
-                      placeholder="Nama barang / bahan baku"
-                      value={item.name}
+                      placeholder="Cari atau ketik nama PIC..."
+                      value={picSearch}
                       onChange={(e) => {
-                        updateItem(idx, "name", e.target.value);
-                        updateItem(idx, "ingredientId", null);
-                        setIngredientFocusIdx(idx);
+                        setPicSearch(e.target.value);
+                        setPicId(null);
+                        setShowPicList(true);
+                        setErrors((prev) => ({ ...prev, pic: undefined }));
                       }}
-                      onFocus={() => setIngredientFocusIdx(idx)}
-                      onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
-                      className="h-9 text-sm w-full"
+                      onFocus={() => setShowPicList(true)}
+                      onBlur={() => setTimeout(() => setShowPicList(false), 200)}
+                      className={`h-10 ${errors.pic ? "border-destructive" : ""}`}
                     />
-                    {ingredientFocusIdx === idx && (
+                    {errors.pic && <p className="text-xs text-destructive mt-1">{errors.pic}</p>}
+                    {showPicList && (
                       <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {!item.name ? (
-                          <p className="p-3 text-xs text-muted-foreground text-center">
-                            Ketik untuk mencari bahan baku
-                          </p>
-                        ) : getFilteredIngredients(item.name).length > 0 ? (
-                          getFilteredIngredients(item.name).map((ing) => (
+                        {filteredEmployees.length > 0 ? (
+                          filteredEmployees.map((e) => (
                             <button
-                              key={ing.id}
+                              key={e.id || e._id}
                               type="button"
-                              onMouseDown={() => {
-                                updateItem(idx, "name", ing.name);
-                                updateItem(idx, "ingredientId", ing.id);
-                                updateItem(idx, "unit", ing.unit || "pcs");
-                                setIngredientFocusIdx(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                              <span>{ing.name}</span>
-                              <span className="text-xs text-muted-foreground ml-auto">
-                                {ing.unit || "pcs"}
-                              </span>
+                              onMouseDown={() => selectPic(e)}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                              {e.fullName || e.userName}
                             </button>
                           ))
+                        ) : picSearch ? (
+                          <p className="p-3 text-xs text-muted-foreground text-center">
+                            Tidak ada pegawai ditemukan
+                          </p>
                         ) : (
                           <p className="p-3 text-xs text-muted-foreground text-center">
-                            Tidak ada bahan baku ditemukan. Gunakan teks bebas.
+                            Ketik untuk mencari pegawai
                           </p>
                         )}
                       </div>
                     )}
-                  </div>
-                  <Input
-                    placeholder="Qty"
-                    value={item.qty || ""}
-                    onChange={(e) =>
-                      updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
-                    }
-                    className="h-9 text-sm w-20 shrink-0"
-                  />
-                  <select
-                    value={item.unit}
-                    onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                    className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
-                    {unitOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    placeholder="Rp 0"
-                    value={item.price ? formatIDR(item.price) : ""}
-                    onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
-                    className="h-9 text-sm w-36 shrink-0"
-                  />
-                  <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
-                    Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                  </span>
-                  {items.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive shrink-0"
-                      onClick={() => removeItem(idx)}>
-                      <Trash2 size={15} />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex flex-col items-end mt-4 pt-4 border-t border-border space-y-2">
-            <div className="flex items-center gap-4">
-              <label className="text-sm text-muted-foreground">Diskon</label>
-              <Input
-                placeholder="Rp 0"
-                value={discount ? formatIDR(discount) : ""}
-                onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                className="h-9 text-sm w-36 text-right"
-              />
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-xl font-bold text-foreground">
-                Rp {totalAmount.toLocaleString("id-ID")}
-              </p>
-            </div>
-            {discount > 0 && (
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground text-red-500">
-                  Diskon - Rp {discount.toLocaleString("id-ID")}
-                </p>
-                <p className="text-lg font-bold text-foreground">
-                  Rp {finalAmount.toLocaleString("id-ID")}
-                </p>
+                  </>
+                )}
               </div>
-            )}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Tanggal PO <span className="text-destructive">*</span>
+                </label>
+                <DatePicker date={orderDate} setDate={(d) => { setOrderDate(d); setErrors((prev) => ({ ...prev, orderDate: undefined })); }} />
+                {errors.orderDate && <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Jam <span className="text-destructive">*</span>
+                </label>
+                <TimePicker value={orderTime} onChange={(v) => { setOrderTime(v); setErrors((prev) => ({ ...prev, orderTime: undefined })); }} />
+                {errors.orderTime && <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  Jatuh Tempo <span className="text-destructive">*</span>
+                </label>
+                <DatePicker date={dueDate} setDate={(d) => { setDueDate(d); setErrors((prev) => ({ ...prev, dueDate: undefined })); }} />
+                {errors.dueDate && <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>}
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
+                <Textarea
+                  placeholder="Catatan untuk supplier (opsional)"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[80px] resize-none"
+                />
+              </div>
+            </div>
           </div>
         </Card>
 
-        <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
+        <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+          <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Package size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">Item Barang</h3>
+                  <p className="text-xs text-emerald-100">Daftar barang yang akan dipesan</p>
+                </div>
+              </div>
+              <Button type="button" variant="secondary" size="sm" className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0" onClick={addItem}>
+                <Plus size={15} />
+                Tambah Item
+              </Button>
+            </div>
+          </div>
+          <div className="p-6">
+            {errors.items && <p className="text-xs text-destructive mb-3">{errors.items}</p>}
+
+            {items.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan barang.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {items.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="relative flex-1 min-w-0">
+                      <Input
+                        placeholder="Nama barang / bahan baku"
+                        value={item.name}
+                        onChange={(e) => {
+                          updateItem(idx, "name", e.target.value);
+                          updateItem(idx, "ingredientId", null);
+                          setIngredientFocusIdx(idx);
+                          setErrors((prev) => ({ ...prev, items: undefined }));
+                        }}
+                        onFocus={() => setIngredientFocusIdx(idx)}
+                        onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
+                        className="h-9 text-sm w-full"
+                      />
+                      {ingredientFocusIdx === idx && (
+                        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {!item.name ? (
+                            <p className="p-3 text-xs text-muted-foreground text-center">
+                              Ketik untuk mencari bahan baku
+                            </p>
+                          ) : getFilteredIngredients(item.name).length > 0 ? (
+                            getFilteredIngredients(item.name).map((ing) => (
+                              <button
+                                key={ing.id}
+                                type="button"
+                                onMouseDown={() => {
+                                  updateItem(idx, "name", ing.name);
+                                  updateItem(idx, "ingredientId", ing.id);
+                                  updateItem(idx, "unit", ing.unit || "pcs");
+                                  setIngredientFocusIdx(null);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
+                                <span>{ing.name}</span>
+                                <span className="text-xs text-muted-foreground ml-auto">
+                                  {ing.unit || "pcs"}
+                                </span>
+                              </button>
+                            ))
+                          ) : (
+                            <p className="p-3 text-xs text-muted-foreground text-center">
+                              Tidak ada bahan baku ditemukan. Gunakan teks bebas.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Input
+                      placeholder="Qty"
+                      value={item.qty || ""}
+                      onChange={(e) =>
+                        updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                      }
+                      className="h-9 text-sm w-20 shrink-0"
+                    />
+                    <select
+                      value={item.unit}
+                      onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                      className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
+                      {unitOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      placeholder="Rp 0"
+                      value={item.price ? formatIDR(item.price) : ""}
+                      onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
+                      className="h-9 text-sm w-36 shrink-0"
+                    />
+                    <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
+                      Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                    </span>
+                    {items.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive shrink-0"
+                        onClick={() => removeItem(idx)}>
+                        <Trash2 size={15} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-muted/40 rounded-xl p-5 mt-4">
+              <div className="flex flex-col items-end space-y-2">
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-muted-foreground font-medium">Diskon</label>
+                  <Input
+                    placeholder="Rp 0"
+                    value={discount ? formatIDR(discount) : ""}
+                    onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                    className="h-9 text-sm w-36 text-right"
+                  />
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Total Harga</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    Rp {totalAmount.toLocaleString("id-ID")}
+                  </p>
+                </div>
+                {discount > 0 && (
+                  <>
+                    <div className="w-full border-t border-border my-1" />
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-red-500">
+                        Diskon - Rp {discount.toLocaleString("id-ID")}
+                      </p>
+                      <p className="text-xl font-bold text-foreground">
+                        Rp {finalAmount.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div className="sticky bottom-4 flex justify-between items-center gap-4 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
           <Button
             type="button"
             variant="outline"
@@ -547,14 +610,20 @@ const AddPurchaseOrder = () => {
             <X size={18} />
             Batal
           </Button>
-          <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-md">
-            {createMutation.isLoading ? (
-              <Loading size="sm" className="text-white" />
-            ) : (
-              <Save size={18} />
-            )}
-            {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs text-muted-foreground">Total setelah diskon</p>
+              <p className="text-sm font-semibold">Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}</p>
+            </div>
+            <Button type="submit" disabled={createMutation.isLoading} className="gap-2 min-w-[140px] shadow-md">
+              {createMutation.isLoading ? (
+                <Loading size="sm" className="text-white" />
+              ) : (
+                <Save size={18} />
+              )}
+              {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
+            </Button>
+          </div>
         </div>
       </form>
 

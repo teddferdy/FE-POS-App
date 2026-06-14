@@ -148,6 +148,7 @@ import DetailStockTransfer from "./page/stock-transfer/DetailStockTransfer";
 import CashRegisterOpenClose from "./page/cash-register/CashRegisterOpenClose";
 import CashRegisterCurrent from "./page/cash-register/CashRegisterCurrent";
 import CashRegisterHistory from "./page/cash-register/CashRegisterHistory";
+import CashRegisterDetail from "./page/cash-register/CashRegisterDetail";
 
 // Price Store
 import PriceStoreList from "./page/price-store/PriceStoreList";
@@ -388,6 +389,10 @@ function App() {
           <Route path="/cash-register/open-close" element={withLayout(<CashRegisterOpenClose />)} />
           <Route path="/cash-register/current" element={withLayout(<CashRegisterCurrent />)} />
           <Route path="/cash-register/history" element={withLayout(<CashRegisterHistory />)} />
+          <Route
+            path="/cash-register/history/detail"
+            element={withLayout(<CashRegisterDetail />)}
+          />
 
           <Route path="/price-list-template" element={withLayout(<PriceStoreList />)} />
 

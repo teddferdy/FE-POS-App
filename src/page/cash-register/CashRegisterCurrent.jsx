@@ -3,13 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Building2, DollarSign, X, Wallet } from "lucide-react";
+import { Building2, DollarSign, X, Wallet, Coins } from "lucide-react";
 import { getCurrentCashRegister, closeCashRegister } from "@/services/cash-register";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
+
+const formatIDR = (num) => {
+  if (!num && num !== 0) return "";
+  return "Rp " + Number(num).toLocaleString("id-ID");
+};
+
+const parseIDR = (str) => {
+  if (!str) return 0;
+  return Number(str.replace(/[^0-9]/g, "")) || 0;
+};
 
 const CashRegisterCurrent = () => {
   const navigate = useNavigate();
@@ -18,7 +28,8 @@ const CashRegisterCurrent = () => {
   const user = cookie?.user;
   const storeId = cookie?.activeStore || user?.store;
 
-  const [closingBalance, setClosingBalance] = React.useState("0");
+  const [rawClosing, setRawClosing] = React.useState("0");
+  const closingBalance = parseIDR(rawClosing);
   const [closeModal, setCloseModal] = React.useState(false);
 
   const { data, isLoading, refetch } = useQuery(
@@ -65,7 +76,7 @@ const CashRegisterCurrent = () => {
       closeCashRegister(reg?.id, {
         storeId,
         closedBy: user?.id,
-        closingBalance: parseFloat(closingBalance) || 0
+        closingBalance
       }),
     {
       onSuccess: () => {
@@ -131,8 +142,15 @@ const CashRegisterCurrent = () => {
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  ["Dibuka Oleh", reg.userData?.fullName || reg.openedByData?.name || "-"],
-                  ["Dibuka Pada", new Date(reg.openedAt).toLocaleString("id")],
+                  ["Toko", reg.storeData?.name
+                    ? {
+                        label: reg.storeData.name,
+                        sub: [reg.storeData.address, reg.storeData.city].filter(Boolean).join(", ") || null
+                      }
+                    : { label: reg.storeName || cookie?.activeStoreName || user?.storeName || "-" }],
+                  ["Dibuka Oleh", reg.userData?.fullName || "-"],
+                  ["Tanggal Buka", new Date(reg.openedAt).toLocaleDateString("id")],
+                  ["Jam Buka", new Date(reg.openedAt).toTimeString().slice(0, 8)],
                   ["Saldo Awal", `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`],
                   [
                     "Total Penjualan",
@@ -142,8 +160,15 @@ const CashRegisterCurrent = () => {
                   ["Catatan", reg.notes || "-"]
                 ].map(([l, v]) => (
                   <tr key={l} className="border-b border-muted/30">
-                    <td className="py-2 pr-4 text-muted-foreground w-44">{l}</td>
-                    <td className="py-2 font-medium">{v}</td>
+                    <td className="py-2 pr-4 text-muted-foreground w-44 align-top">{l}</td>
+                    <td className="py-2 font-medium">
+                      {typeof v === "object" ? (
+                        <div>
+                          <div>{v.label}</div>
+                          {v.sub && <div className="text-xs text-muted-foreground font-normal">{v.sub}</div>}
+                        </div>
+                      ) : v}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -152,23 +177,32 @@ const CashRegisterCurrent = () => {
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-lg font-semibold mb-4">Tutup Kasir</h2>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>
-                  Saldo Akhir <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    Rp
-                  </span>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={closingBalance}
-                    onChange={(e) => setClosingBalance(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Saldo Akhir <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
+                      <Coins size={16} />
+                    </div>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={formatIDR(rawClosing === "0" ? "" : rawClosing)}
+                      placeholder="Rp 0"
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/[^0-9]/g, "");
+                        setRawClosing(cleaned || "0");
+                      }}
+                      className="pl-10 h-12 text-lg font-semibold tabular-nums"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {closingBalance > 0
+                      ? `Tercatat: ${formatIDR(closingBalance)}`
+                      : "Masukkan jumlah saldo akhir"}
+                  </p>
                 </div>
-              </div>
               <Button onClick={() => setCloseModal(true)} variant="destructive">
                 <X size={16} className="mr-1" /> Tutup Kasir
               </Button>
@@ -182,7 +216,7 @@ const CashRegisterCurrent = () => {
         open={closeModal}
         onOpenChange={(o) => !o && setCloseModal(false)}
         title="Tutup Kasir?"
-        description="Pastikan saldo akhir sudah benar. Kasir tidak bisa dibuka kembali."
+        description={`Pastikan saldo akhir (${formatIDR(closingBalance)}) sudah benar. Kasir tidak bisa dibuka kembali.`}
         confirmText="Ya, Tutup"
         onConfirm={() => closeMut.mutate()}
       />

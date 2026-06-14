@@ -35,11 +35,6 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
     groupedLabels[g.id || g.name] = g.name || t("page.cashier.variant.groupName");
   });
 
-  const allSelected = options.every((g) => {
-    const key = g.id || g.name;
-    return selected[key] && selected[key].length > 0;
-  });
-
   const selectedVariants = Object.values(selected).flat();
   const basePrice = Number(product.price || product.harga || 0);
   const extraPrice = selectedVariants.reduce((sum, o) => sum + Number(o.price || 0), 0);
@@ -117,7 +112,7 @@ const VariantModal = ({ product, onConfirm, onClose }) => {
           <Button variant="outline" onClick={onClose}>
             {t("common.cancel")}
           </Button>
-          <Button onClick={() => onConfirm(product, selectedVariants)} disabled={!allSelected}>
+          <Button onClick={() => onConfirm(product, selectedVariants)}>
             {t("page.cashier.variant.add")} {formatCurrencyRupiah(totalPrice)}
           </Button>
         </div>

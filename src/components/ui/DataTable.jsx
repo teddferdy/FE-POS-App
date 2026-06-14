@@ -61,7 +61,13 @@ const DataTable = ({
         {
           header: (
             <Checkbox
-              checked={currentPageSelectableIds.length === 0 ? false : isSomeSelected ? "indeterminate" : isAllSelected}
+              checked={
+                currentPageSelectableIds.length === 0
+                  ? false
+                  : isSomeSelected
+                    ? "indeterminate"
+                    : isAllSelected
+              }
               disabled={currentPageSelectableIds.length === 0}
               onCheckedChange={toggleSelectAll}
             />
@@ -91,7 +97,8 @@ const DataTable = ({
                     "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
                     col.align === "right" && "text-right",
                     col.align === "center" && "text-center",
-                    col.stickyRight && "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                    col.stickyRight &&
+                      "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
                     col.className
                   )}>
                   {col.header}
@@ -125,7 +132,8 @@ const DataTable = ({
                     "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
                     col.align === "right" && "text-right",
                     col.align === "center" && "text-center",
-                    col.stickyRight && "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                    col.stickyRight &&
+                      "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
                     col.className
                   )}>
                   {col.header}
@@ -152,10 +160,10 @@ const DataTable = ({
                         key={colIndex}
                         onClick={isCheckboxCol ? (e) => e.stopPropagation() : undefined}
                         className={cn(
-                          "px-6 py-4",
+                          "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-center",
                           col.align === "right" && "text-right",
-                          col.align === "center" && "text-center",
-                          col.stickyRight && "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                          col.stickyRight &&
+                            "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
                           col.className
                         )}>
                         {col.render
@@ -274,18 +282,19 @@ const DataTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/50 text-muted-foreground">
-              {allColumns.map((col, i) => (
-                <th
-                  key={i}
-                  className={cn(
-                    "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
-                    col.align === "right" && "text-right",
-                    col.align === "center" && "text-center",
-                    col.stickyRight && "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]"
-                  )}>
-                  {col.header}
-                </th>
-              ))}
+                {allColumns.map((col, i) => (
+                  <th
+                    key={i}
+                    className={cn(
+                      "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
+                      col.align === "right" && "text-right",
+                      col.align === "center" && "text-center",
+                      col.stickyRight &&
+                        "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]"
+                    )}>
+                    {col.header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -294,13 +303,13 @@ const DataTable = ({
                   {allColumns.map((col, colIdx) => (
                     <td
                       key={colIdx}
-                        className={cn(
-                          "px-6 py-4",
-                          col.align === "right" && "text-right",
-                          col.align === "center" && "text-center",
-                          col.stickyRight && "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
-                          col.className
-                        )}>
+                      className={cn(
+                        "px-6 py-4 text-center",
+                        col.align === "right" && "text-right",
+                        col.stickyRight &&
+                          "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                        col.className
+                      )}>
                       <Skeleton className={cn("h-4", colIdx === 0 ? "w-24" : "w-32")} />
                     </td>
                   ))}

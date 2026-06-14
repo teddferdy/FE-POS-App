@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, Store } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { getCashRegisterHistory } from "@/services/cash-register";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
+
+const formatIDR = (num) => {
+  if (!num && num !== 0) return "-";
+  return "Rp " + Number(num).toLocaleString("id-ID");
+};
 
 const statusCfg = {
   open: { label: "Buka", class: "bg-green-100 text-green-800" },
@@ -16,14 +23,23 @@ const CashRegisterHistory = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const storeId = cookie?.activeStore || user?.store;
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const defaultStoreId = cookie?.activeStore || user?.store;
+  const [selectedStore, setSelectedStore] = useState(defaultStoreId);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
+  const { data: stores } = useQuery(
+    ["all-stores"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const storeList = stores?.data || stores || [];
+
   const { data, isLoading } = useQuery(
-    ["cash-register-history", page, limit, storeId],
-    () => getCashRegisterHistory({ page, limit, store: storeId }),
-    { keepPreviousData: true, enabled: !!storeId }
+    ["cash-register-history", page, limit, selectedStore],
+    () => getCashRegisterHistory({ page, limit, store: selectedStore }),
+    { keepPreviousData: true, enabled: !!selectedStore }
   );
 
   const items = data?.data || [];
@@ -32,39 +48,72 @@ const CashRegisterHistory = () => {
 
   const columns = [
     {
-      header: "Dibuka Oleh",
-      render: (item) => <span className="text-sm">{item.openedByData?.name || "-"}</span>
-    },
-    {
-      header: "Dibuka",
+      header: "Toko",
       render: (item) => (
-        <span className="text-xs">{new Date(item.openedAt).toLocaleString("id")}</span>
+        <div className="text-sm">
+          <div>{item.storeData?.name || "-"}</div>
+          {item.storeData?.address && (
+            <div className="text-[10px] text-muted-foreground">
+              {[item.storeData.address, item.storeData.city].filter(Boolean).join(", ")}
+            </div>
+          )}
+        </div>
       )
     },
     {
-      header: "Ditutup",
+      header: "Dibuka Oleh",
+      render: (item) => <span className="text-sm">{item.userData?.fullName || "-"}</span>
+    },
+    {
+      header: "Buka",
       render: (item) => (
-        <span className="text-xs">
-          {item.closedAt ? new Date(item.closedAt).toLocaleString("id") : "-"}
-        </span>
+        <div className="text-xs">
+          <div>{new Date(item.openedAt).toLocaleDateString("id")}</div>
+          <div className="text-muted-foreground">{new Date(item.openedAt).toTimeString().slice(0, 8)}</div>
+        </div>
+      )
+    },
+    {
+      header: "Tutup",
+      render: (item) => (
+        <div className="text-xs">
+          {item.closedAt ? (
+            <>
+              <div>{new Date(item.closedAt).toLocaleDateString("id")}</div>
+              <div className="text-muted-foreground">{new Date(item.closedAt).toTimeString().slice(0, 8)}</div>
+            </>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
       )
     },
     {
       header: "Saldo Awal",
       align: "right",
       render: (item) => (
-        <span className="font-mono text-sm">
-          Rp {parseInt(item.openingBalance).toLocaleString("id")}
-        </span>
+        <span className="font-mono text-sm">{formatIDR(item.openingBalance)}</span>
       )
     },
     {
       header: "Penjualan",
       align: "right",
       render: (item) => (
-        <span className="font-mono text-sm">
-          Rp {parseInt(item.totalSales || 0).toLocaleString("id")}
-        </span>
+        <span className="font-mono text-sm">{formatIDR(item.totalSales)}</span>
+      )
+    },
+    {
+      header: "Pengeluaran",
+      align: "right",
+      render: (item) => (
+        <span className="font-mono text-sm">{formatIDR(item.totalExpenses)}</span>
+      )
+    },
+    {
+      header: "Saldo Akhir",
+      align: "right",
+      render: (item) => (
+        <span className="font-mono text-sm">{formatIDR(item.closingBalance)}</span>
       )
     },
     {
@@ -88,7 +137,10 @@ const CashRegisterHistory = () => {
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-primary"
-          onClick={() => navigate(`/cash-register/current?id=${item.id}`)}>
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate("/cash-register/history/detail", { state: { item } });
+          }}>
           <Eye size={15} />
         </Button>
       )
@@ -117,12 +169,31 @@ const CashRegisterHistory = () => {
           <h1 className="text-2xl font-bold">Riwayat Kasir</h1>
           <p className="text-sm text-muted-foreground mt-1">Riwayat buka/tutup kasir</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/cash-register/current")}
-          className="shrink-0 gap-2">
-          <ArrowLeft size={16} /> Kembali
-        </Button>
+        <div className="flex items-center gap-2">
+          {isSuperAdmin && (
+            <div className="w-56">
+              <Select
+                value={String(selectedStore)}
+                onValueChange={(v) => { setSelectedStore(Number(v)); setPage(1); }}>
+                <SelectTrigger className="h-9 text-sm">
+                  <Store size={14} className="mr-1" />
+                  <SelectValue placeholder="Pilih toko" />
+                </SelectTrigger>
+                <SelectContent>
+                  {storeList.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => navigate("/cash-register/current")}
+            className="shrink-0 gap-2">
+            <ArrowLeft size={16} /> Kembali
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -130,6 +201,7 @@ const CashRegisterHistory = () => {
         data={items}
         isLoading={isLoading}
         emptyMessage="Tidak ada riwayat kasir"
+        onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
     </div>

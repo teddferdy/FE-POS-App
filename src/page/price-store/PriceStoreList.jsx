@@ -85,6 +85,20 @@ const PriceStoreList = () => {
 
   const columns = [
     {
+      header: "Gambar",
+      render: (item) => (
+        item.image ? (
+          <img src={item.image} alt={item.nameProduct} className="w-10 h-10 object-cover rounded" />
+        ) : (
+          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
+        )
+      )
+    },
+    {
+      header: "Barcode",
+      render: (item) => <span className="text-xs font-mono">{item.barcode || "-"}</span>
+    },
+    {
       header: "Produk",
       render: (item) => (
         <div>
@@ -94,10 +108,38 @@ const PriceStoreList = () => {
       )
     },
     {
+      header: "Kategori",
+      render: (item) => (
+        <span className="text-xs">{item.nameCategory || item.categoryData?.name || "-"}</span>
+      )
+    },
+    {
+      header: "Brand",
+      render: (item) => <span className="text-xs">{item.brand || "-"}</span>
+    },
+    {
+      header: "Stok",
+      align: "right",
+      render: (item) => <span className="text-xs font-mono">{item.stock ?? 0}</span>
+    },
+    {
+      header: "Satuan",
+      render: (item) => <span className="text-xs">{item.unit || "-"}</span>
+    },
+    {
+      header: "Harga Modal",
+      align: "right",
+      render: (item) => (
+        <span className="font-mono text-xs">
+          Rp {parseInt(item.costPrice || 0).toLocaleString("id")}
+        </span>
+      )
+    },
+    {
       header: "Harga Default",
       align: "right",
       render: (item) => (
-        <span className="font-mono text-sm">
+        <span className="font-mono text-xs">
           Rp {parseInt(item.sellingPrice || 0).toLocaleString("id")}
         </span>
       )
@@ -120,7 +162,7 @@ const PriceStoreList = () => {
             />
           </div>
         ) : (
-          <span className="font-mono text-sm">
+          <span className="font-mono text-xs">
             {prices[item.id] !== undefined
               ? `Rp ${parseInt(prices[item.id]).toLocaleString("id")}`
               : "-"}

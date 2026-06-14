@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Store, ShoppingBag, Clock, QrCode } from "lucide-react";
-
-const API = process.env.REACT_APP_API_URL || "";
+import { axiosInstance } from "@/services";
 
 const statusLabel = {
   pending: "Menunggu",
@@ -23,16 +22,17 @@ const formatCurrency = (val) => `Rp${(val || 0).toLocaleString("id-ID")}`;
 const CustomerDisplay = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table");
+  const storeId = searchParams.get("store");
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     if (!tableId) return;
     try {
-      const res = await fetch(`${API}/order/get-orders?store=&table=${tableId}`);
-      if (!res.ok) throw new Error("Gagal memuat pesanan");
-      const data = await res.json();
-      const activeOrders = (data.data || []).filter(
+      const res = await axiosInstance.get(
+        `/order/get-orders?store=${storeId || ""}&table=${tableId}`
+      );
+      const activeOrders = (res.data?.data || []).filter(
         o => !["paid", "cancelled", "void"].includes(o.status)
       );
       setOrders(activeOrders);
@@ -40,7 +40,7 @@ const CustomerDisplay = () => {
     } catch (e) {
       setError(e.message);
     }
-  }, [tableId]);
+  }, [tableId, storeId]);
 
   useEffect(() => {
     fetchOrders();

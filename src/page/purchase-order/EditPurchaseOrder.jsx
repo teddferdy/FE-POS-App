@@ -39,7 +39,7 @@ const EditPurchaseOrder = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(null);
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
@@ -64,7 +64,7 @@ const EditPurchaseOrder = () => {
     setOrderTime(
       po.orderDate ? format(new Date(po.orderDate), "HH:mm") : format(new Date(), "HH:mm")
     );
-    setDueDate(po.dueDate ? format(new Date(po.dueDate), "yyyy-MM-dd") : "");
+    setDueDate(po.dueDate ? new Date(po.dueDate) : null);
     if (po.items) {
       setItems(
         po.items.map((item) => ({
@@ -216,6 +216,10 @@ const EditPurchaseOrder = () => {
       toast.error("Pilih jam", { description: "Pilih jam purchase order" });
       return;
     }
+    if (!dueDate) {
+      toast.error("Pilih jatuh tempo", { description: "Pilih tanggal jatuh tempo" });
+      return;
+    }
     if (items.length === 0 || !items[0].name?.trim()) {
       toast.error("Item kosong", { description: "Tambahkan minimal satu item" });
       return;
@@ -226,7 +230,7 @@ const EditPurchaseOrder = () => {
       notes,
       pic: picId,
       discount,
-      dueDate: dueDate || null,
+      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       orderDate: (() => {
         const d = new Date(orderDate);
         const [hours, minutes] = (orderTime || "00:00").split(":");
@@ -437,14 +441,9 @@ const EditPurchaseOrder = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Jatuh Tempo
+                Jatuh Tempo <span className="text-destructive">*</span>
               </label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="h-10"
-              />
+              <DatePicker date={dueDate} setDate={setDueDate} />
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>

@@ -1011,7 +1011,17 @@ const AddProduct = () => {
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                                 Rp
                               </span>
-                              <Input type="number" placeholder="0" className="pl-10" {...field} />
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                className="pl-10"
+                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(raw ? Number(raw) : "");
+                                }}
+                              />
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1027,7 +1037,17 @@ const AddProduct = () => {
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                                 Rp
                               </span>
-                              <Input type="number" placeholder="0" className="pl-10" {...field} />
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                className="pl-10"
+                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(raw ? Number(raw) : "");
+                                }}
+                              />
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1095,10 +1115,14 @@ const AddProduct = () => {
                                 Rp
                               </span>
                               <Input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
-                                value={tier.price}
-                                onChange={(e) => updatePriceTier(tier.id, "price", e.target.value)}
+                                value={Number(tier.price).toLocaleString("id-ID")}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
+                                }}
                                 className="h-9 text-sm pl-8"
                               />
                             </div>
@@ -1298,17 +1322,19 @@ const AddProduct = () => {
                                         Rp
                                       </span>
                                       <Input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         placeholder="0"
-                                        value={opt.price}
-                                        onChange={(e) =>
+                                        value={Number(opt.price).toLocaleString("id-ID")}
+                                        onChange={(e) => {
+                                          const raw = e.target.value.replace(/[^0-9]/g, "");
                                           updateVariantOption(
                                             group.id,
                                             idx,
                                             "price",
-                                            e.target.value
-                                          )
-                                        }
+                                            raw ? Number(raw) : 0
+                                          );
+                                        }}
                                         className="h-9 text-sm pl-8"
                                       />
                                     </div>
@@ -1415,12 +1441,14 @@ const AddProduct = () => {
                                       Rp
                                     </span>
                                     <Input
-                                      type="number"
+                                      type="text"
+                                      inputMode="numeric"
                                       placeholder="0"
-                                      value={mod.price}
-                                      onChange={(e) =>
-                                        updateModifierItem(mod.id, "price", e.target.value)
-                                      }
+                                      value={Number(mod.price).toLocaleString("id-ID")}
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                                        updateModifierItem(mod.id, "price", raw ? Number(raw) : 0);
+                                      }}
                                       className="h-9 text-sm pl-8"
                                     />
                                   </div>

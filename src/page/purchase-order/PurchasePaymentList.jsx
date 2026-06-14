@@ -34,7 +34,11 @@ const PurchasePaymentList = () => {
       render: (p) => (
         <span className="text-muted-foreground">
           {p.paymentDate
-            ? new Date(p.paymentDate).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })
+            ? new Date(p.paymentDate).toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })
             : "-"}
         </span>
       )
@@ -55,7 +59,6 @@ const PurchasePaymentList = () => {
     },
     {
       header: "Jumlah",
-      align: "right",
       render: (p) => (
         <span className="font-medium">Rp {Number(p.amount).toLocaleString("id-ID")}</span>
       )
@@ -73,14 +76,31 @@ const PurchasePaymentList = () => {
     },
     {
       header: "Catatan",
-      render: (p) => <span className="text-sm text-muted-foreground max-w-[150px] block truncate">{p.notes || "-"}</span>
+      render: (p) => (
+        <span className="text-sm text-muted-foreground max-w-[150px] block truncate">
+          {p.notes || "-"}
+        </span>
+      )
+    },
+    {
+      header: "Aksi",
+      render: (p) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => navigate(`/purchase-order/detail?id=${p.purchaseOrderData?.id || p.purchaseOrder}`)}>
+          Detail
+        </Button>
+      )
     }
   ];
 
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
@@ -103,7 +123,9 @@ const PurchasePaymentList = () => {
         <div className="flex items-center gap-2 text-sm">
           <Wallet size={16} className="text-muted-foreground" />
           <span className="text-muted-foreground">Total Pembayaran:</span>
-          <span className="font-bold text-lg">Rp {Number(totalAmount).toLocaleString("id-ID")}</span>
+          <span className="font-bold text-lg">
+            Rp {Number(totalAmount).toLocaleString("id-ID")}
+          </span>
         </div>
       </Card>
 

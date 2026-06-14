@@ -19,7 +19,7 @@ import { useThemeStore } from "@/state/theme";
 const CashierPage = () => {
   const { t } = useTranslation();
   const [cookie, setCookie] = useCookies();
-  const store = cookie?.store;
+  const store = cookie?.store || cookie?.activeStore || cookie?.user?.store;
   const user = useMemo(() => {
     const fromSession = () => {
       try {
@@ -241,6 +241,7 @@ const CashierPage = () => {
             subtotal={subtotal}
             store={store}
             cashierName={userName}
+            cashierId={user?.id || user?.ID}
             onComplete={handleCheckoutComplete}
           />
         )}

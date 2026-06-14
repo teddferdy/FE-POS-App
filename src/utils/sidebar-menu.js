@@ -154,6 +154,22 @@ export const sidebarMenuSuperAdmin = [
     actions: []
   },
   {
+    title: "Transaksi",
+    i18nKey: "sidebar.transaksi",
+    href: "",
+    icon: CreditCard,
+    children: [
+      {
+        title: "Diskon",
+        i18nKey: "sidebar.diskon",
+        href: "/discount-list",
+        icon: BadgePercent,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
     title: "Karyawan",
     i18nKey: "sidebar.karyawan",
     href: "",
@@ -385,6 +401,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/table-list",
         icon: Table,
         actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
       }
     ],
     actions: []

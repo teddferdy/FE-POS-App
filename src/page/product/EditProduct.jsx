@@ -113,7 +113,7 @@ const EditProduct = () => {
   const { data: productData, isLoading: loadingProduct } = useQuery(
     ["product-edit", productId],
     () => getProductById(productId),
-    { enabled: !!productId }
+    { enabled: !!productId, refetchOnMount: true }
   );
   const product = productData?.data || {};
 
@@ -178,7 +178,9 @@ const EditProduct = () => {
       conversionFactor: z.coerce.number().min(1).default(1),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
-      isAvailable: z.boolean().default(true)
+      isAvailable: z.boolean().default(true),
+      isOption: z.boolean().default(false),
+      hasModifiers: z.boolean().default(false)
     });
   }, []);
 
@@ -202,7 +204,9 @@ const EditProduct = () => {
       conversionFactor: 1,
       point: "",
       status: true,
-      isAvailable: true
+      isAvailable: true,
+      isOption: false,
+      hasModifiers: false
     }
   });
 
@@ -226,7 +230,9 @@ const EditProduct = () => {
         conversionFactor: product.conversionFactor ?? 1,
         point: product.point ?? "",
         status: product.status === "active" || product.status === true,
-        isAvailable: product.isAvailable ?? true
+        isAvailable: product.isAvailable ?? true,
+        isOption: !!product.isOption,
+        hasModifiers: !!product.hasModifiers
       });
       if (product.isOption && product.options) {
         const parsed =
@@ -245,6 +251,9 @@ const EditProduct = () => {
             : product.priceTiers;
         setPriceTiers(Array.isArray(parsed) ? parsed : []);
       }
+      if (product.image) {
+        setPreviewImage(product.image);
+      }
     }
   }, [product, form]);
 
@@ -257,7 +266,7 @@ const EditProduct = () => {
       const store =
         Array.isArray(product.store) && product.store.length > 0
           ? product.store[0]
-          : product.store || null;
+          : null;
       if (store) {
         checkStockOpnameExists(store)
           .then((res) => setNoStockOpname(!res?.data?.exists))
@@ -272,7 +281,7 @@ const EditProduct = () => {
     const store =
       Array.isArray(product.store) && product.store.length > 0
         ? product.store[0]
-        : product.store || null;
+        : null;
     if (store) {
       getStockOpnameCompositionItems(store)
         .then((res) => setCompositionOptions(res?.data || []))
@@ -294,6 +303,7 @@ const EditProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["products"]);
       queryClient.invalidateQueries(["product-detail"]);
+      queryClient.invalidateQueries(["product-edit", productId]);
       setIsSubmitting(false);
       setSuccessModal(true);
     },
@@ -329,7 +339,7 @@ const EditProduct = () => {
   };
 
   const addVariantGroup = () => {
-    setVariantGroups((prev) => [...prev, { id: Date.now(), name: "", options: [""] }]);
+    setVariantGroups((prev) => [...prev, { id: Date.now(), name: "", options: [{ name: "", price: 0, stock: 0 }] }]);
     form.setValue("isOption", true);
   };
 
@@ -344,15 +354,15 @@ const EditProduct = () => {
 
   const addVariantOption = (groupId) => {
     setVariantGroups((prev) =>
-      prev.map((g) => (g.id === groupId ? { ...g, options: [...g.options, ""] } : g))
+      prev.map((g) => (g.id === groupId ? { ...g, options: [...g.options, { name: "", price: 0, stock: 0 }] } : g))
     );
   };
 
-  const updateVariantOption = (groupId, index, value) => {
+  const updateVariantOption = (groupId, index, field, value) => {
     setVariantGroups((prev) =>
       prev.map((g) =>
         g.id === groupId
-          ? { ...g, options: g.options.map((opt, i) => (i === index ? value : opt)) }
+          ? { ...g, options: g.options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)) }
           : g
       )
     );
@@ -999,7 +1009,17 @@ const EditProduct = () => {
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                                 Rp
                               </span>
-                              <Input type="number" placeholder="0" className="pl-10" {...field} />
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                className="pl-10"
+                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(raw ? Number(raw) : "");
+                                }}
+                              />
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1015,7 +1035,17 @@ const EditProduct = () => {
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                                 Rp
                               </span>
-                              <Input type="number" placeholder="0" className="pl-10" {...field} />
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                className="pl-10"
+                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(raw ? Number(raw) : "");
+                                }}
+                              />
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1083,10 +1113,14 @@ const EditProduct = () => {
                                 Rp
                               </span>
                               <Input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
-                                value={tier.price}
-                                onChange={(e) => updatePriceTier(tier.id, "price", e.target.value)}
+                                value={Number(tier.price).toLocaleString("id-ID")}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, "");
+                                  updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
+                                }}
                                 className="h-9 text-sm pl-8"
                               />
                             </div>
@@ -1247,11 +1281,36 @@ const EditProduct = () => {
                                       placeholder={t("page.product.form.optionPlaceholder", {
                                         number: idx + 1
                                       })}
-                                      value={opt}
+                                      value={opt.name}
                                       onChange={(e) =>
-                                        updateVariantOption(group.id, idx, e.target.value)
+                                        updateVariantOption(group.id, idx, "name", e.target.value)
                                       }
-                                      className="h-9 text-sm"
+                                      className="h-9 text-sm flex-1"
+                                    />
+                                    <div className="relative w-28 shrink-0">
+                                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                        Rp
+                                      </span>
+                                      <Input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="0"
+                                        value={Number(opt.price || 0).toLocaleString("id-ID")}
+                                        onChange={(e) => {
+                                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                                          updateVariantOption(group.id, idx, "price", raw ? Number(raw) : 0);
+                                        }}
+                                        className="h-9 text-sm pl-8"
+                                      />
+                                    </div>
+                                    <Input
+                                      type="number"
+                                      placeholder={t("page.product.form.variantStockPlaceholder")}
+                                      value={opt.stock ?? 0}
+                                      onChange={(e) =>
+                                        updateVariantOption(group.id, idx, "stock", e.target.value)
+                                      }
+                                      className="h-9 text-sm w-20 shrink-0"
                                     />
                                     {group.options.length > 1 && (
                                       <Button
@@ -1357,12 +1416,14 @@ const EditProduct = () => {
                                       Rp
                                     </span>
                                     <Input
-                                      type="number"
+                                      type="text"
+                                      inputMode="numeric"
                                       placeholder="0"
-                                      value={mod.price}
-                                      onChange={(e) =>
-                                        updateModifierItem(mod.id, "price", e.target.value)
-                                      }
+                                      value={Number(mod.price).toLocaleString("id-ID")}
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                                        updateModifierItem(mod.id, "price", raw ? Number(raw) : 0);
+                                      }}
                                       className="h-9 text-sm pl-10"
                                     />
                                   </div>

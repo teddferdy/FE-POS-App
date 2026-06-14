@@ -7,6 +7,7 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { sendInvoiceWA, sendInvoiceEmail } from "@/services/invoice";
+import { printViaBrowser } from "@/utils/thermalPrint";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -16,15 +17,19 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const [emailAddr, setEmailAddr] = useState(data?.memberEmail || data?.email || "");
   const [sending, setSending] = useState(false);
 
-  const invoiceNumber = data?.invoice || data?.invoiceNumber || data?.noInvoice || "-";
+  const invoiceNumber = data?.invoice || data?.invoiceNumber || data?.orderNumber || data?.noInvoice || "-";
   const items = data?.items || [];
-  const subtotal = data?.subtotal || 0;
+  const rawSubtotal = data?.rawSubtotal || data?.subTotal || 0;
   const serviceCharge = data?.serviceCharge || 0;
-  const paid = data?.paid || subtotal;
+  const discountAmount = data?.discountAmount || 0;
+  const total = data?.totalPrice || data?.total || data?.subtotal || rawSubtotal;
+  const paid = data?.paid || total;
   const change = data?.change || 0;
   const paymentMethod = data?.paymentMethod || "Cash";
   const memberName = data?.memberName || null;
   const tableName = data?.tableName || null;
+  const cashierName = data?.cashierName || data?.cashier || "";
+  const storeName = data?.storeName || "Toko";
   const date = data?.createdAt
     ? new Date(data.createdAt).toLocaleString("id-ID")
     : new Date().toLocaleString("id-ID");
@@ -34,10 +39,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     setSending(true);
     try {
       const res = await sendInvoiceWA({
-        invoice: invoiceNumber,
-        phone: waPhone,
-        store: data?.store,
-        total: subtotal
+        orderId: data?.id,
+        phone: waPhone
       });
       if (res?.data?.waLink) {
         window.open(res.data.waLink, "_blank");
@@ -57,10 +60,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     setSending(true);
     try {
       await sendInvoiceEmail({
-        invoice: invoiceNumber,
-        email: emailAddr,
-        store: data?.store,
-        total: subtotal
+        orderId: data?.id,
+        email: emailAddr
       });
       toast?.success?.(t("page.cashier.receipt.toast.emailSuccess"));
       setShowSendEmail(false);
@@ -70,9 +71,34 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
     setSending(false);
   };
 
+  const handlePrint = () => {
+    printViaBrowser({
+      storeName,
+      orderNumber: invoiceNumber,
+      cashier: cashierName,
+      customer: memberName || "Umum",
+      date: new Date().toLocaleString("id-ID"),
+      items: items.map((i) => ({
+        name: i.name || i.productName,
+        qty: i.count || i.quantity,
+        price: i.price,
+        total: i.totalPrice || i.total || i.price * (i.count || i.quantity)
+      })),
+      subtotal: rawSubtotal,
+      discount: discountAmount,
+      serviceCharge: serviceCharge,
+      tax: 0,
+      total,
+      paymentMethod,
+      cashAmount: paid,
+      changeAmount: change,
+      footer: "Terima kasih atas kunjungan Anda"
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg max-h-[96vh] overflow-y-auto">
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold">{t("page.cashier.receipt.title")}</h3>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
@@ -127,8 +153,14 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
           <div className="border-t border-dashed border-border pt-3 space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t("page.cashier.receipt.subtotal")}</span>
-              <span>{formatCurrencyRupiah(subtotal)}</span>
+              <span>{formatCurrencyRupiah(rawSubtotal)}</span>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t("page.cashier.receipt.discount")}</span>
+                <span className="text-red-500">-{formatCurrencyRupiah(discountAmount)}</span>
+              </div>
+            )}
             {serviceCharge > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Biaya Layanan (5%)</span>
@@ -152,8 +184,8 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               </div>
             )}
             <div className="flex justify-between text-base font-bold border-t border-border pt-2 mt-2">
-              <span>{t("page.cashier.total")}</span>
-              <span className="text-primary">{formatCurrencyRupiah(subtotal)}</span>
+              <span>{t("page.cashier.receipt.total")}</span>
+              <span className="text-primary">{formatCurrencyRupiah(total)}</span>
             </div>
           </div>
         </div>
@@ -168,7 +200,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               <Mail size={14} className="mr-1.5" />
               {t("page.cashier.receipt.sendEmail")}
             </Button>
-            <Button variant="outline" className="flex-1" onClick={() => window.print()}>
+            <Button variant="outline" className="flex-1" onClick={handlePrint}>
               <Printer size={14} className="mr-1.5" />
               {t("common.print")}
             </Button>

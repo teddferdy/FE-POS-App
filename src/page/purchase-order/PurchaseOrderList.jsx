@@ -132,7 +132,9 @@ const PurchaseOrderList = () => {
       await downloadPurchaseOrderTemplate();
       toast.success("Template diunduh");
     } catch (err) {
-      toast.error("Gagal mengunduh template", { description: err?.response?.data?.message || err.message });
+      toast.error("Gagal mengunduh template", {
+        description: err?.response?.data?.message || err.message
+      });
     }
   };
 
@@ -202,7 +204,11 @@ const PurchaseOrderList = () => {
     {
       header: "Jatuh Tempo",
       render: (po) => {
-        const isOverdue = po.dueDate && po.status !== "received" && po.status !== "cancelled" && new Date(po.dueDate) < new Date(new Date().toDateString());
+        const isOverdue =
+          po.dueDate &&
+          po.status !== "received" &&
+          po.status !== "cancelled" &&
+          new Date(po.dueDate) < new Date(new Date().toDateString());
         return (
           <span className={isOverdue ? "text-red-600 font-medium" : "text-muted-foreground"}>
             {po.dueDate
@@ -260,17 +266,29 @@ const PurchaseOrderList = () => {
         const remaining = total - paid;
         if (total === 0) return <span className="text-xs text-muted-foreground">-</span>;
         if (paid >= total) {
-          return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Lunas</span>;
+          return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              Lunas
+            </span>
+          );
         }
         if (paid > 0) {
           return (
             <div className="flex flex-col items-center gap-0.5">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Sebagian</span>
-              <span className="text-xs text-muted-foreground">Rp {Number(remaining).toLocaleString("id-ID")}</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                Sebagian
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Rp {Number(remaining).toLocaleString("id-ID")}
+              </span>
             </div>
           );
         }
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">Belum</span>;
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+            Belum
+          </span>
+        );
       }
     },
     {
@@ -432,7 +450,11 @@ const PurchaseOrderList = () => {
             <Download size={14} />
             Export
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImportModal(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setImportModal(true)}>
             <Upload size={14} />
             Import
           </Button>
@@ -621,43 +643,49 @@ const PurchaseOrderList = () => {
           document.body
         )}
 
-      {importModal && createPortal(
-        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-          <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
-            <div className="px-6 py-4 border-b border-border">
-              <h3 className="text-lg font-semibold">Import PO</h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
-                <Download size={15} />
-                Download Template Excel
-              </Button>
-              <div className="border-t border-border pt-4">
-                <label className="text-sm font-medium text-foreground block mb-2">
-                  Upload File Excel
-                </label>
-                <Input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={(e) => setImportFile(e.target.files[0])}
-                />
-                {importFile && (
-                  <p className="text-xs text-muted-foreground mt-1">{importFile.name}</p>
-                )}
+      {importModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-lg font-semibold">Import PO</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
+                  <Download size={15} />
+                  Download Template Excel
+                </Button>
+                <div className="border-t border-border pt-4">
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    Upload File Excel
+                  </label>
+                  <Input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={(e) => setImportFile(e.target.files[0])}
+                  />
+                  {importFile && (
+                    <p className="text-xs text-muted-foreground mt-1">{importFile.name}</p>
+                  )}
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setImportModal(false);
+                    setImportFile(null);
+                  }}>
+                  Batal
+                </Button>
+                <Button onClick={handleImport} disabled={!importFile || importLoading}>
+                  {importLoading ? "Mengupload..." : "Import"}
+                </Button>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-              <Button variant="outline" onClick={() => { setImportModal(false); setImportFile(null); }}>
-                Batal
-              </Button>
-              <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                {importLoading ? "Mengupload..." : "Import"}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

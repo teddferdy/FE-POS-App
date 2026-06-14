@@ -4,14 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Eye, Package } from "lucide-react";
-import { getAllIngredients, deleteIngredient } from "@/services/ingredient";
+import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload } from "lucide-react";
+import { getAllIngredients, deleteIngredient, downloadIngredientTemplate, downloadIngredientExcel } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import ImportIngredientModal from "./components/ImportIngredientModal";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -25,6 +26,9 @@ const IngredientList = () => {
   const [cookie] = useCookies();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [importModal, setImportModal] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
+  const [downloadingData, setDownloadingData] = useState(false);
 
   const user = cookie?.user;
   const MENU_KEY = "/ingredient";
@@ -167,9 +171,48 @@ const IngredientList = () => {
           <p className="text-sm text-muted-foreground mt-1">Kelola bahan baku & material</p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-ingredient")} className="gap-2">
-            <Plus size={18} /> Tambah Bahan Baku
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              disabled={downloadingTemplate}
+              onClick={async () => {
+                setDownloadingTemplate(true);
+                try {
+                  await downloadIngredientTemplate();
+                  toast.success("Berhasil", { description: "Template berhasil diunduh" });
+                } catch (err) {
+                  toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+                } finally {
+                  setDownloadingTemplate(false);
+                }
+              }}
+              className="gap-2">
+              <Download size={16} /> Template
+            </Button>
+            <Button
+              variant="outline"
+              disabled={downloadingData}
+              onClick={async () => {
+                setDownloadingData(true);
+                try {
+                  await downloadIngredientExcel();
+                  toast.success("Berhasil", { description: "Data berhasil diunduh" });
+                } catch (err) {
+                  toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+                } finally {
+                  setDownloadingData(false);
+                }
+              }}
+              className="gap-2">
+              <Download size={16} /> Export
+            </Button>
+            <Button variant="outline" onClick={() => setImportModal(true)} className="gap-2">
+              <Upload size={16} /> Import
+            </Button>
+            <Button onClick={() => navigate("/add-ingredient")} className="gap-2">
+              <Plus size={18} /> Tambah Bahan Baku
+            </Button>
+          </div>
         )}
       </div>
 
@@ -213,6 +256,12 @@ const IngredientList = () => {
         description="Data yang dihapus tidak dapat dikembalikan."
         confirmText="Ya, Hapus"
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
+      />
+
+      <ImportIngredientModal
+        open={importModal}
+        onOpenChange={setImportModal}
+        onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
       />
 
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,8 +31,8 @@ const formSchema = z.object({
 const EditSupplier = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const supplierId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
 
@@ -71,6 +71,7 @@ const EditSupplier = () => {
 
   const updateMutation = useMutation(editSupplier, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["suppliers"]);
       setSuccessModal(true);
     },
     onError: (err) => {

@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import Modal from "@/components/organism/modal";
-
-const API = process.env.REACT_APP_API_URL || "";
+import { axiosInstance } from "@/services";
 
 const CustomerOrder = () => {
   const [searchParams] = useSearchParams();
@@ -32,36 +31,46 @@ const CustomerOrder = () => {
       setLoading(false);
       return;
     }
-    fetch(`${API}/order/customer-menu?store=${storeId}`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.data) {
-          setProducts(res.data.products || []);
-          setCategories(res.data.categories || []);
+    axiosInstance
+      .get(`/order/customer-menu?store=${storeId}`)
+      .then((res) => {
+        if (res.data?.data) {
+          setProducts(res.data.data.products || []);
+          setCategories(res.data.data.categories || []);
         }
       })
-      .catch(e => console.error(e))
+      .catch((e) => {
+        console.error(e);
+        toast.error("Gagal memuat menu", {
+          description: e?.response?.data?.message || e.message
+        });
+      })
       .finally(() => setLoading(false));
   }, [storeId]);
 
   const filteredProducts = activeCategory === "all"
     ? products
-    : products.filter(p => Number(p.category) === Number(activeCategory));
+    : products.filter(p => String(p.category || p.categoryId) === String(activeCategory));
+
+  const prodName = (p) => p.name || p.nameProduct || "-";
+  const prodPrice = (p) => Number(p.sellingPrice || p.price || 0);
+  const prodId = (p) => p.id || p.productId;
 
   const addToCart = (product) => {
+    const pid = prodId(product);
     setCart(prev => {
-      const existing = prev.find(item => item.productId === product.id);
+      const existing = prev.find(item => item.productId === pid);
       if (existing) {
         return prev.map(item =>
-          item.productId === product.id
+          item.productId === pid
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
       return [...prev, {
-        productId: product.id,
-        productName: product.name,
-        price: product.sellingPrice || product.price,
+        productId: pid,
+        productName: prodName(product),
+        price: prodPrice(product),
         quantity: 1,
         notes: ""
       }];
@@ -89,33 +98,30 @@ const CustomerOrder = () => {
     if (!storeId || cart.length === 0) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${API}/order/customer-create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          store: Number(storeId),
-          tableId: tableId ? Number(tableId) : null,
-          items: cart.map(item => ({
-            productId: item.productId,
-            productName: item.productName,
-            price: item.price,
-            quantity: item.quantity,
-            notes: item.notes || null
-          })),
-          customerName: customerName || null,
-        })
+      const res = await axiosInstance.post("/order/customer-create", {
+        store: Number(storeId),
+        tableId: tableId ? Number(tableId) : null,
+        items: cart.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          price: item.price,
+          quantity: item.quantity,
+          notes: item.notes || null
+        })),
+        customerName: customerName || null,
       });
-      const data = await res.json();
-      if (res.ok) {
-        setOrderNumber(data.data?.orderNumber || "");
-        setSuccessModal(true);
-        setCart([]);
-        setCustomerName("");
-      } else {
-        toast.error("Gagal", { description: data.message || "Gagal memesan" });
+      if (res.data?.data?.orderNumber) {
+        setOrderNumber(res.data.data.orderNumber);
+      } else if (res.data?.orderNumber) {
+        setOrderNumber(res.data.orderNumber);
       }
+      setSuccessModal(true);
+      setCart([]);
+      setCustomerName("");
     } catch (e) {
-      toast.error("Gagal", { description: e.message });
+      toast.error("Gagal", {
+        description: e?.response?.data?.message || e.message || "Gagal memesan"
+      });
     } finally {
       setSubmitting(false);
     }
@@ -193,14 +199,14 @@ const CustomerOrder = () => {
           <p className="text-center text-muted-foreground py-8">Tidak ada produk</p>
         ) : (
           filteredProducts.map(product => (
-            <Card key={product.id} className="p-4 flex gap-4 items-center">
+            <Card key={prodId(product)} className="p-4 flex gap-4 items-center">
               <div className="w-16 h-16 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl flex-shrink-0">
-                {product.name?.charAt(0)?.toUpperCase()}
+                {prodName(product).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm truncate">{product.name}</h3>
+                <h3 className="font-semibold text-sm truncate">{prodName(product)}</h3>
                 <p className="text-orange-600 font-bold text-sm mt-0.5">
-                  Rp{(product.sellingPrice || product.price)?.toLocaleString("id-ID")}
+                  Rp{prodPrice(product).toLocaleString("id-ID")}
                 </p>
               </div>
               <Button

@@ -17,6 +17,7 @@ export const generateReceiptHTML = (data) => {
     storeName = "TOKO ANDA",
     storeAddress = "",
     storePhone = "",
+    logo = "",
     memberName = "",
     memberTier = "",
     memberPoints = 0,
@@ -27,6 +28,7 @@ export const generateReceiptHTML = (data) => {
     items = [],
     subtotal = 0,
     discount = 0,
+    serviceCharge = 0,
     tax = 0,
     total = 0,
     paymentMethod = "Tunai",
@@ -94,6 +96,7 @@ export const generateReceiptHTML = (data) => {
         <span>Subtotal</span><span>${formatCurrency(subtotal)}</span>
       </div>
       ${discount > 0 ? `<div style="display:flex;justify-content:space-between"><span>Diskon</span><span>-${formatCurrency(discount)}</span></div>` : ""}
+      ${serviceCharge > 0 ? `<div style="display:flex;justify-content:space-between"><span>Biaya Layanan</span><span>${formatCurrency(serviceCharge)}</span></div>` : ""}
       ${tax > 0 ? `<div style="display:flex;justify-content:space-between"><span>Pajak</span><span>${formatCurrency(tax)}</span></div>` : ""}
       <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:1px solid #000;padding-top:4px;margin-top:4px">
         <span>TOTAL</span><span>${formatCurrency(total)}</span>

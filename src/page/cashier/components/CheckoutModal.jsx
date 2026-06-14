@@ -16,7 +16,7 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000];
 
-const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplete }) => {
+const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId, onComplete }) => {
   const { t } = useTranslation();
   const [paymentTypeId, setPaymentTypeId] = useState("");
   const [amountReceived, setAmountReceived] = useState("");
@@ -28,9 +28,9 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
   const [notes, setNotes] = useState("");
 
   const { data: paymentsData } = useQuery(
-    ["type-payment", store],
-    () => getAllTypePayment({ store }),
-    { enabled: !!store }
+    ["type-payment"],
+    () => getAllTypePayment({}),
+    { staleTime: 60000 }
   );
   const payments = paymentsData?.data || paymentsData || [];
 
@@ -68,15 +68,17 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
         addMemberPoints(selectedMember.id || selectedMember._id, {
           orderId: result.id || result._id,
           points: Math.floor(subtotal / 10000),
-          description: `Pembelian ${result.invoice || result.invoiceNumber || ""}`
+          description: `Pembelian ${result.orderNumber || ""}`
         }).catch(() => {});
       }
       handleAddPaymentTypePoints(paymentTypeId, result);
       onComplete({
         ...result,
         items: [...items],
+        rawSubtotal: subtotal,
         subtotal: finalTotal,
         serviceCharge,
+        discountAmount,
         paid: Number(amountReceived) || finalTotal,
         change: Math.max(0, (Number(amountReceived) || finalTotal) - finalTotal),
         paymentMethod: payments.find((p) => (p.id || p._id) === paymentTypeId)?.name || "Cash",
@@ -134,23 +136,20 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
     }));
 
     const memberPayload = selectedMember
-      ? { member: selectedMember.id || selectedMember._id, memberName: selectedMember.name }
+      ? { customerId: selectedMember.id || selectedMember._id, customerName: selectedMember.name }
       : {};
 
     const payload = {
-      store,
-      cashier: cashierName,
+      store: Number(store),
+      cashierId: Number(cashierId),
+      cashierName,
       items: orderItems,
-      paymentMethod: paymentTypeId,
-      total: finalTotal,
-      amountPaid: Number(amountReceived) || finalTotal,
-      change,
-      ...memberPayload,
-      ...(selectedTable ? { table: selectedTable } : {}),
-      serviceChargeRate: 5,
-      serviceChargeAmount: serviceCharge,
-      ...(selectedDiscount ? { discount: selectedDiscount, discountAmount } : {}),
-      ...(notes ? { notes } : {})
+      paymentMethod: payments.find((p) => (p.id || p._id) === paymentTypeId)?.name || "Cash",
+      totalPrice: finalTotal,
+      notes: notes || undefined,
+      ...(selectedTable ? { tableId: Number(selectedTable) } : {}),
+      ...(selectedDiscount ? { discountId: Number(selectedDiscount), discountAmount } : {}),
+      ...memberPayload
     };
 
     orderMutation.mutate(payload);
@@ -223,12 +222,15 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, onComplet
                 Rp
               </span>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="0"
-                value={amountReceived}
-                onChange={(e) => setAmountReceived(e.target.value)}
+                value={amountReceived ? Number(amountReceived).toLocaleString("id-ID") : ""}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "");
+                  setAmountReceived(raw);
+                }}
                 className="pl-10 h-11 text-lg font-semibold"
-                min="0"
               />
             </div>
             <div className="flex gap-1.5 mt-2 flex-wrap">

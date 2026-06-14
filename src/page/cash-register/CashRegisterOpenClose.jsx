@@ -1,29 +1,51 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { DollarSign, X } from "lucide-react";
+import { DollarSign, X, Wallet, Coins, Landmark } from "lucide-react";
 import { openCashRegister } from "@/services/cash-register";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const formatIDR = (num) => {
+  if (!num && num !== 0) return "";
+  return "Rp " + Number(num).toLocaleString("id-ID");
+};
+
+const parseIDR = (str) => {
+  if (!str) return 0;
+  return Number(str.replace(/[^0-9]/g, "")) || 0;
+};
+
+const quickAmounts = [100000, 200000, 500000, 1000000, 2000000, 5000000];
 
 const CashRegisterOpenClose = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
 
-  const [openingBalance, setOpeningBalance] = useState("0");
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
+  const locations = locationsData?.data || [];
+
+  const [selectedStore, setSelectedStore] = useState(cookie?.activeStore || user?.store || "");
+  const [rawBalance, setRawBalance] = useState("0");
   const [notes, setNotes] = useState("");
+
+  const numericBalance = parseIDR(rawBalance);
 
   const openMut = useMutation(
     () =>
       openCashRegister({
-        storeId: parseInt(user?.store),
+        storeId: parseInt(selectedStore),
         openedBy: user?.id,
-        openingBalance: parseFloat(openingBalance) || 0,
+        openingBalance: numericBalance,
         notes
       }),
     {
@@ -42,54 +64,138 @@ const CashRegisterOpenClose = () => {
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
+          className="hover:text-foreground transition-colors">
           Dashboard
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">Buka Kasir</span>
       </nav>
 
-      <div>
-        <h1 className="text-2xl font-bold">Buka Kasir</h1>
-        <p className="text-sm text-muted-foreground mt-1">Mulai shift kasir</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Buka Kasir</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Mulai shift kasir — input uang awal di laci
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
+          <Wallet size={20} />
+          <span className="text-sm">{user?.name || user?.username}</span>
+        </div>
       </div>
 
-      <div className="max-w-lg bg-card p-6 rounded-xl border border-border space-y-4">
-        <div className="space-y-2">
-          <Label>
-            Saldo Awal <span className="text-destructive">*</span>
-          </Label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              Rp
-            </span>
-            <Input
-              type="number"
-              min="0"
-              value={openingBalance}
-              onChange={(e) => setOpeningBalance(e.target.value)}
-              className="pl-10"
-            />
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent px-6 py-5 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Landmark size={20} className="text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold truncate">Saldo Awal Kasir</h2>
+                <p className="text-xs text-muted-foreground">
+                  Isi jumlah uang yang ada di laci kasir saat ini
+                </p>
+              </div>
+            </div>
+            {isSuperAdmin && (
+              <div className="shrink-0 w-full sm:w-56">
+                <select
+                  value={selectedStore}
+                  onChange={(e) => setSelectedStore(e.target.value)}
+                  className="w-full h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
+                  <option value="" disabled>
+                    Pilih toko
+                  </option>
+                  {locations?.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
-        <div className="space-y-2">
-          <Label>Catatan</Label>
-          <textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder="Catatan (opsional)"
-          />
-        </div>
-        <div className="flex items-center justify-between gap-4 pt-4 border-t">
-          <Button variant="outline" onClick={() => navigate("/dashboard-super-admin")}>
-            <X size={16} className="mr-1" /> Batal
-          </Button>
-          <Button onClick={() => openMut.mutate()} disabled={openMut.isLoading}>
-            <DollarSign size={16} className="mr-1" />{" "}
-            {openMut.isLoading ? "Membuka..." : "Buka Kasir"}
-          </Button>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Jumlah Uang <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
+                    <Coins size={16} />
+                  </div>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatIDR(rawBalance === "0" ? "" : rawBalance)}
+                    placeholder="Rp 0"
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^0-9]/g, "");
+                      setRawBalance(cleaned || "0");
+                    }}
+                    className="pl-10 h-12 text-lg font-semibold tabular-nums"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {numericBalance > 0
+                    ? `Tercatat: ${formatIDR(numericBalance)}`
+                    : "Masukkan jumlah saldo awal"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground font-normal">Cepat pilih</Label>
+                <div className="flex flex-wrap gap-2">
+                  {quickAmounts.map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setRawBalance(String(amount))}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                        numericBalance === amount
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                      }`}>
+                      {formatIDR(amount)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Catatan</Label>
+                <textarea
+                  rows={4}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-shadow resize-none"
+                  placeholder="Catatan (opsional)"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/dashboard-super-admin")}
+                  className="gap-1.5">
+                  <X size={16} /> Batal
+                </Button>
+                <Button
+                  onClick={() => openMut.mutate()}
+                  disabled={openMut.isLoading || numericBalance <= 0}
+                  className="gap-1.5">
+                  <DollarSign size={16} />
+                  {openMut.isLoading ? "Membuka..." : `Buka Kasir — ${formatIDR(numericBalance)}`}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
