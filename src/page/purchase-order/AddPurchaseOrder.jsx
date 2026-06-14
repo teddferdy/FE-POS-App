@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
@@ -24,7 +24,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
 const poSchema = z.object({
-  store: z.string().min(1, "Pilih store/lokasi"),
+  store: z.number().min(1, "Pilih store/lokasi"),
   supplier: z.number().min(1, "Pilih supplier"),
   pic: z.number().min(1, "Pilih PIC"),
   orderDate: z.date({ required_error: "Pilih tanggal PO" }),
@@ -125,6 +125,8 @@ const AddPurchaseOrder = () => {
     { value: "porsi", label: "Porsi" }
   ];
 
+  const queryClient = useQueryClient();
+
   const addSupplierMutation = useMutation(addSupplier, {
     onSuccess: (res) => {
       const newSupplier = res.data || res;
@@ -142,6 +144,7 @@ const AddPurchaseOrder = () => {
 
   const createMutation = useMutation(addPurchaseOrder, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["purchase-orders"]);
       toast.success("Berhasil", { description: "Purchase Order berhasil dibuat" });
       navigate("/purchase-order");
     },
@@ -283,7 +286,9 @@ const AddPurchaseOrder = () => {
                     setErrors((prev) => ({ ...prev, store: undefined }));
                   }}
                   className={`w-full h-10 px-3 rounded-lg border text-sm outline-none focus:ring-1 transition-colors ${
-                    errors.store ? "border-destructive focus:ring-destructive/20" : "border-border focus:ring-primary/20 focus:border-primary"
+                    errors.store
+                      ? "border-destructive focus:ring-destructive/20"
+                      : "border-border focus:ring-primary/20 focus:border-primary"
                   } bg-background`}>
                   <option value="">Pilih Store</option>
                   {locations.map((loc) => (
@@ -311,7 +316,9 @@ const AddPurchaseOrder = () => {
                   onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
                   className={`h-10 ${errors.supplier ? "border-destructive" : ""}`}
                 />
-                {errors.supplier && <p className="text-xs text-destructive mt-1">{errors.supplier}</p>}
+                {errors.supplier && (
+                  <p className="text-xs text-destructive mt-1">{errors.supplier}</p>
+                )}
                 {showSupplierList && (
                   <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     {filteredSuppliers.length > 0 ? (
@@ -333,18 +340,19 @@ const AddPurchaseOrder = () => {
                         Ketik untuk mencari supplier
                       </p>
                     )}
-                    {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
-                      <button
-                        type="button"
-                        onMouseDown={() => {
-                          addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
-                        }}
-                        disabled={addSupplierMutation.isLoading}
-                        className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                        <Plus size={15} />
-                        Tambah &quot;{supplierSearch}&quot;
-                      </button>
-                    )}
+                    {supplierSearch &&
+                      !filteredSuppliers.some((s) => s.name === supplierSearch) && (
+                        <button
+                          type="button"
+                          onMouseDown={() => {
+                            addSupplierMutation.mutate({ name: supplierSearch, isActive: true });
+                          }}
+                          disabled={addSupplierMutation.isLoading}
+                          className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
+                          <Plus size={15} />
+                          Tambah &quot;{supplierSearch}&quot;
+                        </button>
+                      )}
                   </div>
                 )}
               </div>
@@ -416,22 +424,46 @@ const AddPurchaseOrder = () => {
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Tanggal PO <span className="text-destructive">*</span>
                 </label>
-                <DatePicker date={orderDate} setDate={(d) => { setOrderDate(d); setErrors((prev) => ({ ...prev, orderDate: undefined })); }} />
-                {errors.orderDate && <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>}
+                <DatePicker
+                  date={orderDate}
+                  setDate={(d) => {
+                    setOrderDate(d);
+                    setErrors((prev) => ({ ...prev, orderDate: undefined }));
+                  }}
+                />
+                {errors.orderDate && (
+                  <p className="text-xs text-destructive mt-1">{errors.orderDate}</p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Jam <span className="text-destructive">*</span>
                 </label>
-                <TimePicker value={orderTime} onChange={(v) => { setOrderTime(v); setErrors((prev) => ({ ...prev, orderTime: undefined })); }} />
-                {errors.orderTime && <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>}
+                <TimePicker
+                  value={orderTime}
+                  onChange={(v) => {
+                    setOrderTime(v);
+                    setErrors((prev) => ({ ...prev, orderTime: undefined }));
+                  }}
+                />
+                {errors.orderTime && (
+                  <p className="text-xs text-destructive mt-1">{errors.orderTime}</p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Jatuh Tempo <span className="text-destructive">*</span>
                 </label>
-                <DatePicker date={dueDate} setDate={(d) => { setDueDate(d); setErrors((prev) => ({ ...prev, dueDate: undefined })); }} />
-                {errors.dueDate && <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>}
+                <DatePicker
+                  date={dueDate}
+                  setDate={(d) => {
+                    setDueDate(d);
+                    setErrors((prev) => ({ ...prev, dueDate: undefined }));
+                  }}
+                />
+                {errors.dueDate && (
+                  <p className="text-xs text-destructive mt-1">{errors.dueDate}</p>
+                )}
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
@@ -458,7 +490,12 @@ const AddPurchaseOrder = () => {
                   <p className="text-xs text-emerald-100">Daftar barang yang akan dipesan</p>
                 </div>
               </div>
-              <Button type="button" variant="secondary" size="sm" className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0" onClick={addItem}>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
+                onClick={addItem}>
                 <Plus size={15} />
                 Tambah Item
               </Button>
@@ -613,9 +650,14 @@ const AddPurchaseOrder = () => {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-xs text-muted-foreground">Total setelah diskon</p>
-              <p className="text-sm font-semibold">Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}</p>
+              <p className="text-sm font-semibold">
+                Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+              </p>
             </div>
-            <Button type="submit" disabled={createMutation.isLoading} className="gap-2 min-w-[140px] shadow-md">
+            <Button
+              type="submit"
+              disabled={createMutation.isLoading}
+              className="gap-2 min-w-[140px] shadow-md">
               {createMutation.isLoading ? (
                 <Loading size="sm" className="text-white" />
               ) : (
