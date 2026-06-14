@@ -23,8 +23,8 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err instanceof AxiosError) {
-      const isLoginEndpoint = err.config?.url?.includes("/auth/login");
-      if (err.response?.status === 401 && !sessionExpiredFired && !isLoginEndpoint) {
+      const isPublicAuth = err.config?.url === "/auth/login" || err.config?.url === "/auth/register";
+      if (err.response?.status === 401 && !sessionExpiredFired && !isPublicAuth) {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         sessionExpiredFired = true;
         window.dispatchEvent(new CustomEvent("auth:session-expired"));
