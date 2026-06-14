@@ -1,10 +1,31 @@
 /* eslint-disable react/prop-types */
+import { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
+
+const STORE_COLORS = [
+  "#3B82F6", "#F59E0B", "#10B981", "#EF4444",
+  "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"
+];
 
 const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
   const salesChart = data?.salesChart || [];
   const stores = data?.stores || [];
+  const storeSalesChart = data?.storeSalesChart || [];
+  const hasMultipleStores = storeSalesChart.length > 1;
+
   const maxSales = Math.max(...salesChart.map((s) => Number(s.sales) || 0), 1);
+
+  const dateStoreMap = useMemo(() => {
+    if (!hasMultipleStores) return {};
+    const map = {};
+    for (const store of storeSalesChart) {
+      for (const d of store.data) {
+        if (!map[d.date]) map[d.date] = {};
+        map[d.date][store.storeId] = Number(d.sales) || 0;
+      }
+    }
+    return map;
+  }, [storeSalesChart, hasMultipleStores]);
 
   return (
     <div className="space-y-6">
@@ -85,20 +106,56 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
               {t("page.report.sales.revenueTrendDesc")}
             </p>
           </div>
+          {hasMultipleStores && (
+            <div className="flex flex-wrap gap-3">
+              {storeSalesChart.map((s, i) => (
+                <div key={s.storeId} className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: STORE_COLORS[i % STORE_COLORS.length] }} />
+                  <span className="text-xs font-medium text-muted-foreground">{s.storeName}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="relative h-[300px] w-full bg-muted/30 rounded-lg overflow-hidden">
           {salesChart.length > 0 ? (
-            <div className="absolute inset-0 flex items-end px-4 pb-4 gap-2">
+            <div className="absolute inset-0 flex items-end px-4 pb-4 gap-0.5">
               {salesChart.map((item, i) => {
-                const h = maxSales > 0 ? (Number(item.sales) / maxSales) * 100 : 0;
+                const totalSales = Number(item.sales) || 0;
+                const h = maxSales > 0 ? (totalSales / maxSales) * 100 : 0;
+                const dateStr = item.date;
+                const perStore = hasMultipleStores && dateStoreMap[dateStr]
+                  ? storeSalesChart.map((s, si) => ({
+                      storeId: s.storeId,
+                      storeName: s.storeName,
+                      sales: dateStoreMap[dateStr][s.storeId] || 0,
+                      color: STORE_COLORS[si % STORE_COLORS.length]
+                    }))
+                  : [];
+
                 return (
-                  <div key={i} className="flex-1 relative group">
+                  <div key={i} className="flex-1 relative group flex flex-col justify-end h-full">
                     <div
-                      className="w-full rounded-t-lg transition-all duration-300 bg-blue-500/20 hover:bg-blue-500"
+                      className="w-full rounded-t-lg overflow-hidden transition-all duration-300"
                       style={{ height: `${Math.max(h, 1)}%` }}>
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background px-2 py-0.5 rounded text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        {formatCurrency(item.sales)}
-                      </div>
+                      {hasMultipleStores && perStore.length > 0 ? (
+                        perStore.map((ps) => {
+                          const segH = totalSales > 0 ? (ps.sales / totalSales) * 100 : 0;
+                          return segH > 0 ? (
+                            <div
+                              key={ps.storeId}
+                              className="w-full transition-all duration-200 hover:brightness-110"
+                              style={{ height: `${segH}%`, backgroundColor: ps.color }}
+                              title={`${ps.storeName}: ${formatCurrency(ps.sales)}`}
+                            />
+                          ) : null;
+                        })
+                      ) : (
+                        <div className="w-full h-full bg-blue-500/20 hover:bg-blue-500 transition-all duration-300" />
+                      )}
+                    </div>
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background px-2 py-0.5 rounded text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      {formatCurrency(totalSales)}
                     </div>
                   </div>
                 );
