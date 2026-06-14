@@ -69,25 +69,6 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-card border border-border rounded-lg p-1 flex">
-            {periods.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setPeriod(p.label)}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  period === p.label
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}>
-                {t(`page.report.sales.${p.label.toLowerCase()}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
@@ -156,6 +137,22 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
               ))}
             </div>
           )}
+        </div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-card border border-border rounded-lg p-1 flex">
+            {periods.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => setPeriod(p.label)}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  period === p.label
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}>
+                {t(`page.report.sales.${p.label.toLowerCase()}`)}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="h-[300px] w-full">
           {chartData.length > 0 ? (
