@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Undo2,
   Eye,
+  Wallet,
   Upload,
   Download
 } from "lucide-react";
@@ -28,9 +29,20 @@ import {
   downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
 import { getAllLocation } from "@/services/location";
+import { recordPayment } from "@/services/purchase-payment";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 
 const statusMap = {
@@ -68,6 +80,30 @@ const PurchaseOrderList = () => {
   const [importModal, setImportModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [payModal, setPayModal] = useState(false);
+  const [payPo, setPayPo] = useState(null);
+  const [payForm, setPayForm] = useState({
+    amount: "",
+    paymentDate: undefined,
+    paymentMethod: "cash",
+    reference: "",
+    notes: ""
+  });
+
+  const payMutation = useMutation(recordPayment, {
+    onSuccess: () => {
+      toast.success("Pembayaran berhasil dicatat");
+      queryClient.invalidateQueries(["purchase-orders"]);
+      setPayModal(false);
+      setPayPo(null);
+      setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
+    },
+    onError: (err) => {
+      toast.error("Gagal mencatat pembayaran", {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
 
   const { data: poDetail } = useQuery(
     ["po-detail", returPo?.id],
@@ -314,6 +350,20 @@ const PurchaseOrderList = () => {
             title="Detail PO">
             <Eye size={15} />
           </Button>
+          {po.status !== "cancelled" && (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600"
+              onClick={() => {
+                setPayPo(po);
+                setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
+                setPayModal(true);
+              }}
+              title="Bayar">
+              <Wallet size={15} />
+            </Button>
+          )}
           {po.status === "pending" && (
             <>
               <Button
@@ -686,6 +736,126 @@ const PurchaseOrderList = () => {
           </div>,
           document.body
         )}
+
+      {payModal && payPo && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+          <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-semibold">Catat Pembayaran</h3>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">No. PO</p>
+                  <p className="font-medium">{payPo.orderNumber || `PO-${payPo.id}`}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Supplier</p>
+                  <p className="font-medium">{payPo.supplierData?.name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="font-medium">Rp {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString("id-ID")}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Sisa</p>
+                  <p className="font-medium text-red-500">
+                    Rp {Number((payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)).toLocaleString("id-ID")}
+                  </p>
+                </div>
+              </div>
+              <hr className="border-t border-border" />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Jumlah Pembayaran <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={payForm.amount ? Number(payForm.amount).toLocaleString("id-ID") : ""}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      setPayForm({ ...payForm, amount: raw ? Number(raw) : "" });
+                    }}
+                    className="pl-10 h-11 text-base"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Tanggal Bayar</Label>
+                  <DatePicker date={payForm.paymentDate} setDate={(date) => setPayForm({...payForm, paymentDate: date})} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Metode Pembayaran</Label>
+                  <Select
+                    value={payForm.paymentMethod}
+                    onValueChange={(value) => setPayForm({ ...payForm, paymentMethod: value })}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-[90]">
+                      <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="transfer">Transfer</SelectItem>
+                      <SelectItem value="giro">Giro</SelectItem>
+                      <SelectItem value="other">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <hr className="border-t border-border" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Referensi</Label>
+                  <Input
+                    placeholder="No. invoice / referensi"
+                    value={payForm.reference}
+                    onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Catatan</Label>
+                  <Input
+                    placeholder="Catatan tambahan"
+                    value={payForm.notes}
+                    onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
+                    className="h-11"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setPayModal(false); setPayPo(null); }}>
+                Batal
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!payForm.amount || Number(payForm.amount) <= 0) {
+                    toast.error("Jumlah pembayaran harus diisi");
+                    return;
+                  }
+                  payMutation.mutate({
+                    purchaseOrder: payPo.id,
+                    supplier: payPo.supplier,
+                    amount: Number(payForm.amount),
+                    paymentDate: payForm.paymentDate ? format(payForm.paymentDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+                    paymentMethod: payForm.paymentMethod,
+                    reference: payForm.reference,
+                    notes: payForm.notes
+                  });
+                }}
+                disabled={payMutation.isLoading}>
+                {payMutation.isLoading ? "Memproses..." : "Simpan"}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
