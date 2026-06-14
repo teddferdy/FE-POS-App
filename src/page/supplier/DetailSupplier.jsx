@@ -13,6 +13,8 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const statusMap = {
   pending: { label: "Menunggu", class: "bg-yellow-100 text-yellow-800" },
@@ -31,7 +33,7 @@ const DetailSupplier = () => {
 
   const [paymentModal, setPaymentModal] = useState(false);
   const [payAmount, setPayAmount] = useState("");
-  const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
+  const [payDate, setPayDate] = useState(new Date());
   const [payMethod, setPayMethod] = useState("cash");
   const [payRef, setPayRef] = useState("");
   const [payNotes, setPayNotes] = useState("");
@@ -268,7 +270,7 @@ const DetailSupplier = () => {
             purchaseOrder: null,
             supplier: parseInt(id),
             amount: parseFloat(payAmount),
-            paymentDate: payDate,
+            paymentDate: format(payDate, "yyyy-MM-dd"),
             paymentMethod: payMethod,
             reference: payRef,
             notes: payNotes
@@ -289,7 +291,7 @@ const DetailSupplier = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Tanggal Bayar</Label>
-              <Input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
+              <DatePicker date={payDate} setDate={setPayDate} />
             </div>
             <div className="space-y-2">
               <Label>Metode</Label>

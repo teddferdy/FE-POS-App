@@ -5,6 +5,7 @@ import { getProfitLoss } from "@/services/report"
 import { Card, CardContent } from "@/components/ui/card"
 import PageHeader from "@/components/ui/PageHeader"
 import { format } from "date-fns"
+import { DatePicker } from "@/components/ui/date-picker"
 
 const ProfitLossReport = () => {
   const { t } = useTranslation()
@@ -37,12 +38,8 @@ const ProfitLossReport = () => {
         title="Laporan Laba Rugi"
         description="Ringkasan pendapatan, HPP, dan laba kotor">
         <div className="flex items-center gap-2">
-          <input type="date" value={format(startDate, "yyyy-MM-dd")}
-            onChange={e => setStartDate(new Date(e.target.value))}
-            className="h-9 px-3 bg-background border border-border rounded-lg text-sm" />
-          <input type="date" value={format(endDate, "yyyy-MM-dd")}
-            onChange={e => setEndDate(new Date(e.target.value))}
-            className="h-9 px-3 bg-background border border-border rounded-lg text-sm" />
+          <DatePicker date={startDate} setDate={setStartDate} />
+          <DatePicker date={endDate} setDate={setEndDate} />
         </div>
       </PageHeader>
 

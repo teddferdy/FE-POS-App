@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/table";
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -56,8 +58,8 @@ const StockHistory = () => {
   const [limit] = useState(20);
   const [productFilter, setProductFilter] = useState("");
   const [referenceFilter, setReferenceFilter] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(undefined);
+  const [endDate, setEndDate] = useState(undefined);
   const [searchProduct] = useState("");
 
   const { data, isLoading } = useQuery(
@@ -68,8 +70,8 @@ const StockHistory = () => {
         limit,
         product: productFilter || undefined,
         referenceType: referenceFilter || undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined
+        startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
+        endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
       }),
     { keepPreviousData: true }
   );
@@ -192,29 +194,13 @@ const StockHistory = () => {
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
               {t("page.stockHistory.filter.startDate")}
             </label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                setPage(1);
-              }}
-              className="h-10"
-            />
+            <DatePicker date={startDate} setDate={(date) => { setStartDate(date); setPage(1); }} />
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
               {t("page.stockHistory.filter.endDate")}
             </label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                setPage(1);
-              }}
-              className="h-10"
-            />
+            <DatePicker date={endDate} setDate={(date) => { setEndDate(date); setPage(1); }} />
           </div>
         </div>
       </Card>

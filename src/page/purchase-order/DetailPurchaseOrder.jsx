@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
@@ -11,10 +11,10 @@ import {
   Package,
   Wallet,
   Trash2,
-  Plus,
-  CalendarIcon
+  Plus
 } from "lucide-react";
 import { format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 import { getPurchaseOrderById } from "@/services/purchase-order";
 import { getPaymentsByPO, recordPayment, deletePayment } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
@@ -59,8 +59,6 @@ const DetailPurchaseOrder = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
-  const dateInputRef = useRef(null);
-
   const { data, isLoading } = useQuery(
     ["purchase-order-detail", id],
     () => getPurchaseOrderById(id),
@@ -83,7 +81,7 @@ const DetailPurchaseOrder = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentForm, setPaymentForm] = useState({
     amount: "",
-    paymentDate: "",
+    paymentDate: undefined,
     paymentMethod: "cash",
     reference: "",
     notes: ""
@@ -104,7 +102,7 @@ const DetailPurchaseOrder = () => {
       setPaymentModalOpen(false);
       setPaymentForm({
         amount: "",
-        paymentDate: "",
+        paymentDate: undefined,
         paymentMethod: "cash",
         reference: "",
         notes: ""
@@ -138,7 +136,7 @@ const DetailPurchaseOrder = () => {
       purchaseOrder: po.id,
       supplier: po.supplier,
       amount: Number(paymentForm.amount),
-      paymentDate: paymentForm.paymentDate || format(new Date(), "yyyy-MM-dd"),
+      paymentDate: paymentForm.paymentDate ? format(paymentForm.paymentDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       paymentMethod: paymentForm.paymentMethod,
       reference: paymentForm.reference,
       notes: paymentForm.notes
@@ -489,18 +487,7 @@ const DetailPurchaseOrder = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Tanggal Bayar</Label>
-              <div
-                className="relative cursor-pointer"
-                onClick={() => dateInputRef.current?.showPicker()}>
-                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  ref={dateInputRef}
-                  type="date"
-                  value={paymentForm.paymentDate}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
-                  className="h-11 pl-10 pr-3 [color-scheme:light] dark:[color-scheme:dark] cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden"
-                />
-              </div>
+              <DatePicker date={paymentForm.paymentDate} setDate={(date) => setPaymentForm({...paymentForm, paymentDate: date})} />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Metode Pembayaran</Label>

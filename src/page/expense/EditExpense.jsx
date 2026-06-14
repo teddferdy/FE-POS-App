@@ -22,12 +22,14 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
   description: z.string().min(1, "Deskripsi wajib diisi"),
   amount: z.coerce.number().min(1, "Jumlah wajib diisi"),
-  date: z.string().min(1, "Tanggal wajib diisi"),
+  date: z.date({ required_error: "Tanggal wajib diisi" }),
   notes: z.string().optional().or(z.literal(""))
 });
 
@@ -63,7 +65,7 @@ const EditExpense = () => {
       categoryId: "",
       description: "",
       amount: "",
-      date: "",
+      date: undefined,
       notes: ""
     }
   });
@@ -75,7 +77,7 @@ const EditExpense = () => {
           expenseItem.categoryId || expenseItem.category?.id || expenseItem.category?._id || "",
         description: expenseItem.description || "",
         amount: expenseItem.amount ?? "",
-        date: expenseItem.date ? expenseItem.date.split("T")[0] : "",
+        date: expenseItem.date ? new Date(expenseItem.date) : undefined,
         notes: expenseItem.notes || ""
       });
     }
@@ -93,7 +95,8 @@ const EditExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    updateMutation.mutate({ id, ...values, status: saveAsDraft ? "draft" : "active" });
+    const payload = { id, ...values, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
+    updateMutation.mutate(payload);
   };
 
   if (!id) {
@@ -239,7 +242,7 @@ const EditExpense = () => {
                     <FormLabel>
                       Tanggal <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input type="date" {...field} />
+                    <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
                 )}

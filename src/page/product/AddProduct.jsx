@@ -44,6 +44,8 @@ import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 
 import UserGuide from "@/components/organism/UserGuide";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -437,7 +439,11 @@ const AddProduct = () => {
     }
 
     if (hasBatch && batches.length > 0) {
-      payload.append("batches", JSON.stringify(batches));
+      const formattedBatches = batches.map(b => ({
+        ...b,
+        expiryDate: b.expiryDate ? format(b.expiryDate, "yyyy-MM-dd") : null
+      }));
+      payload.append("batches", JSON.stringify(formattedBatches));
     }
 
     if (composition.length > 0) {
@@ -1190,18 +1196,7 @@ const AddProduct = () => {
                                   }}
                                   className="h-9 text-sm flex-1"
                                 />
-                                <Input
-                                  type="date"
-                                  value={batch.expiryDate}
-                                  onChange={(e) => {
-                                    setBatches((prev) =>
-                                      prev.map((b, i) =>
-                                        i === idx ? { ...b, expiryDate: e.target.value } : b
-                                      )
-                                    );
-                                  }}
-                                  className="h-9 text-sm w-40 shrink-0"
-                                />
+                                <DatePicker date={batch.expiryDate} setDate={(date) => setBatches((prev) => prev.map((b, i) => i === idx ? { ...b, expiryDate: date } : b))} />
                                 <Input
                                   type="number"
                                   placeholder={t("page.product.form.batchStockPlaceholder")}
@@ -1238,7 +1233,7 @@ const AddProduct = () => {
                             onClick={() =>
                               setBatches((prev) => [
                                 ...prev,
-                                { id: Date.now(), batchNumber: "", expiryDate: "", stock: "" }
+                                { id: Date.now(), batchNumber: "", expiryDate: undefined, stock: "" }
                               ])
                             }>
                             <Plus size={15} /> {t("page.product.form.addBatch")}

@@ -21,12 +21,14 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
   description: z.string().min(1, "Deskripsi wajib diisi"),
   amount: z.coerce.number().min(1, "Jumlah wajib diisi"),
-  date: z.string().min(1, "Tanggal wajib diisi"),
+  date: z.date({ required_error: "Tanggal wajib diisi" }),
   notes: z.string().optional().or(z.literal(""))
 });
 
@@ -46,7 +48,7 @@ const AddExpense = () => {
       categoryId: "",
       description: "",
       amount: "",
-      date: new Date().toISOString().split("T")[0],
+      date: new Date(),
       notes: ""
     }
   });
@@ -63,7 +65,8 @@ const AddExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    createMutation.mutate({ ...values, status: saveAsDraft ? "draft" : "active" });
+    const payload = { ...values, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
+    createMutation.mutate(payload);
   };
 
   return (
@@ -164,7 +167,7 @@ const AddExpense = () => {
                     <FormLabel>
                       Tanggal <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input type="date" {...field} />
+                    <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
                 )}

@@ -11,6 +11,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const EditMember = () => {
   const { t } = useTranslation();
@@ -45,7 +47,7 @@ const EditMember = () => {
       name: member.name || "",
       email: member.email || "",
       phoneNumber: member.phoneNumber || member.phone || "",
-      birthDate: member.birthDate || "",
+      birthDate: member.birthDate ? new Date(member.birthDate) : undefined,
       gender: member.gender || "male",
       address: member.address || "",
       tier: member.tier || ""
@@ -82,7 +84,7 @@ const EditMember = () => {
       nameMember: form.name,
       phoneNumber: form.phoneNumber,
       email: form.email,
-      birthDate: form.birthDate,
+      birthDate: form.birthDate ? format(form.birthDate, "yyyy-MM-dd") : "",
       gender: form.gender,
       address: form.address,
       tier: form.tier,
@@ -175,12 +177,9 @@ const EditMember = () => {
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Tanggal Lahir
                   </label>
-                  <input
-                    name="birthDate"
-                    type="date"
-                    value={form.birthDate}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
+                  <DatePicker
+                    date={form.birthDate}
+                    setDate={(date) => setForm({ ...form, birthDate: date })}
                   />
                 </div>
                 <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5">
@@ -339,7 +338,7 @@ const EditMember = () => {
             nameMember: form.name,
             phoneNumber: form.phoneNumber,
             email: form.email,
-            birthDate: form.birthDate,
+            birthDate: form.birthDate ? format(form.birthDate, "yyyy-MM-dd") : "",
             gender: form.gender,
             address: form.address,
             tier: form.tier,

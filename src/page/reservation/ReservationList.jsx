@@ -12,6 +12,8 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const STATUS_MAP = {
   pending: { label: "Menunggu", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
@@ -27,13 +29,13 @@ const ReservationList = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [dateFilter, setDateFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState(undefined);
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading } = useQuery(
     ["reservations", page, limit, dateFilter, statusFilter],
-    () => getReservations({ page, limit, date: dateFilter || undefined, status: statusFilter !== "all" ? statusFilter : undefined }),
+    () => getReservations({ page, limit, date: dateFilter ? format(dateFilter, "yyyy-MM-dd") : undefined, status: statusFilter !== "all" ? statusFilter : undefined }),
     { keepPreviousData: true }
   );
 
@@ -131,14 +133,8 @@ const ReservationList = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative w-full sm:w-60">
-          <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
-            className="pl-9 h-10"
-          />
+        <div className="w-full sm:w-60">
+          <DatePicker date={dateFilter} setDate={(date) => { setDateFilter(date); setPage(1); }} />
         </div>
         <select
           value={statusFilter}

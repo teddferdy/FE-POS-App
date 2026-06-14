@@ -10,6 +10,8 @@ import { createReservation, getAvailableTables } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -29,7 +31,7 @@ const formSchema = z.object({
   customerPhone: z.string().optional().or(z.literal("")),
   customerEmail: z.string().optional().or(z.literal("")),
   guestCount: z.coerce.number().min(1, "Minimal 1 tamu"),
-  reservationDate: z.string().min(1, "Tanggal reservasi wajib diisi"),
+  reservationDate: z.date({ required_error: "Tanggal reservasi wajib diisi" }),
   startTime: z.string().min(1, "Jam mulai wajib diisi"),
   endTime: z.string().optional().or(z.literal("")),
   tableId: z.string().optional().or(z.literal("")),
@@ -51,7 +53,7 @@ const AddReservation = () => {
       customerPhone: "",
       customerEmail: "",
       guestCount: 2,
-      reservationDate: "",
+      reservationDate: undefined,
       startTime: "",
       endTime: "",
       tableId: "none",
@@ -73,7 +75,7 @@ const AddReservation = () => {
     setLoadingTables(true);
     try {
       const res = await getAvailableTables({
-        date: reservationDate,
+        date: reservationDate ? format(reservationDate, "yyyy-MM-dd") : "",
         startTime,
         endTime: endTime || undefined,
       });
@@ -98,7 +100,7 @@ const AddReservation = () => {
       customerPhone: values.customerPhone || null,
       customerEmail: values.customerEmail || null,
       guestCount: Number(values.guestCount),
-      reservationDate: values.reservationDate,
+      reservationDate: values.reservationDate ? format(values.reservationDate, "yyyy-MM-dd") : "",
       startTime: values.startTime,
       endTime: values.endTime || null,
       tableId: values.tableId && values.tableId !== "none" ? Number(values.tableId) : null,
@@ -162,7 +164,7 @@ const AddReservation = () => {
               <FormField control={form.control} name="reservationDate" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tanggal <span className="text-destructive">*</span></FormLabel>
-                  <Input type="date" {...field} />
+                  <DatePicker date={field.value} setDate={field.onChange} />
                   <FormMessage />
                 </FormItem>
               )} />
