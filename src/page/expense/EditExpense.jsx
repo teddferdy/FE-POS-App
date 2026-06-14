@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
-import { getAllExpenses, editExpense, getExpenseCategories } from "@/services/expense";
+import { getExpenseById, editExpense, getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,7 @@ const formSchema = z.object({
 });
 
 const EditExpense = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -43,21 +44,17 @@ const EditExpense = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const user = cookie?.user;
-  const locationParam = user?.store || "";
 
   const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
   const categories = categoriesData?.data || categoriesData || [];
 
-  const { data, isLoading } = useQuery(
-    ["expenses-all", locationParam],
-    () => getAllExpenses({ location: locationParam, page: 1, limit: 9999 }),
+  const { data: expenseData, isLoading } = useQuery(
+    ["expense", id],
+    () => getExpenseById(id),
     { enabled: !!id }
   );
 
-  const expenseItem = useMemo(() => {
-    if (!data?.data) return {};
-    return data.data.find((item) => item.id === id || item._id === id) || {};
-  }, [data, id]);
+  const expenseItem = expenseData?.data || {};
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -74,7 +71,7 @@ const EditExpense = () => {
     if (expenseItem?.id) {
       form.reset({
         categoryId:
-          expenseItem.categoryId || expenseItem.category?.id || expenseItem.category?._id || "",
+          String(expenseItem.category ?? expenseItem.categoryData?.id ?? ""),
         description: expenseItem.description || "",
         amount: expenseItem.amount ?? "",
         date: expenseItem.date ? new Date(expenseItem.date) : undefined,
@@ -85,6 +82,7 @@ const EditExpense = () => {
 
   const updateMutation = useMutation(editExpense, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["expenses"]);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -95,7 +93,9 @@ const EditExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const payload = { id, ...values, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
+    const { categoryId, ...rest } = values;
+    const store = cookie?.user?.store || "";
+    const payload = { id, ...rest, store, category: categoryId, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
     updateMutation.mutate(payload);
   };
 
@@ -109,9 +109,7 @@ const EditExpense = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
-      </div>
+      <Loading fullscreen size="lg" label="Memuat data..." />
     );
   }
 
@@ -190,7 +188,7 @@ const EditExpense = () => {
                           </SelectItem>
                         ) : (
                           categories.map((cat) => (
-                            <SelectItem key={cat.id || cat._id} value={cat.id || cat._id}>
+                            <SelectItem key={cat.id || cat._id} value={String(cat.id || cat._id)}>
                               {cat.name}
                             </SelectItem>
                           ))
@@ -220,16 +218,24 @@ const EditExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Jumlah <span className="text-destructive">*</span>
+                      Jumlah (Rp) <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input
-                      type="number"
-                      placeholder="Masukkan jumlah biaya"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                      }}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                        Rp
+                      </span>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        className="pl-10"
+                        value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                          field.onChange(raw ? Number(raw) : "");
+                        }}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

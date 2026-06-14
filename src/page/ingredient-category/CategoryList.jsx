@@ -153,9 +153,7 @@ const CategoryList = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loading />
-          </div>
+          <Loading fullscreen size="lg" label="Memuat data..." />
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Package size={48} className="mx-auto mb-4 opacity-30" />

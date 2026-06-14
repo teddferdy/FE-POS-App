@@ -207,7 +207,7 @@ const NotificationPage = () => {
       </PageHeader>
 
       {isLoading ? (
-        <Loading fullscreen size="lg" label="Loading..." />
+        <Loading fullscreen size="lg" label="Memuat data..." />
       ) : (
         <>
           <div className="space-y-2">

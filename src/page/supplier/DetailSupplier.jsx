@@ -82,9 +82,7 @@ const DetailSupplier = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
-      </div>
+      <Loading fullscreen size="lg" label="Memuat data..." />
     );
   }
 
@@ -242,9 +240,7 @@ const DetailSupplier = () => {
       </div>
 
       {loadingPayments ? (
-        <div className="flex items-center justify-center py-12">
-          <Loading />
-        </div>
+        <Loading fullscreen size="lg" label="Memuat data..." />
       ) : (
         <DataTable
           columns={poColumns}

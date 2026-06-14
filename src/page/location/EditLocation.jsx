@@ -462,9 +462,7 @@ const EditLocation = () => {
 
   if (locationLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
-      </div>
+      <Loading fullscreen size="lg" label="Memuat data..." />
     );
   }
 

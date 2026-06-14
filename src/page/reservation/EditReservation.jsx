@@ -127,7 +127,7 @@ const EditReservation = () => {
   };
 
   if (!id) return <div className="p-10 text-center text-muted-foreground">ID reservasi tidak ditemukan</div>;
-  if (isLoading) return <div className="p-10 flex justify-center"><Loading /></div>;
+  if (isLoading) return <Loading fullscreen size="lg" label="Memuat data..." />;
   if (!reservation) return <div className="p-10 text-center text-muted-foreground">Reservasi tidak ditemukan</div>;
 
   return (

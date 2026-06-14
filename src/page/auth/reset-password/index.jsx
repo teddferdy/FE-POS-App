@@ -346,7 +346,7 @@ const ResetPasswordPage = () => {
       <PolicyDialog type="privacy" open={privacyOpen} onOpenChange={setPrivacyOpen} />
       <PolicyDialog type="terms" open={termsOpen} onOpenChange={setTermsOpen} />
       <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="reset-password" />
-      {isLoading && <Loading fullscreen size="lg" label="Loading..." />}
+      {isLoading && <Loading fullscreen size="lg" label="Memuat data..." />}
     </>
   );
 };

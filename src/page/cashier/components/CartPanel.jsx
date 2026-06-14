@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
-import { Plus, Minus, ShoppingCart, Pencil } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Pencil, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
@@ -17,6 +17,7 @@ const CartPanel = ({
   const { t } = useTranslation();
   const [editingPrice, setEditingPrice] = useState(null);
   const [editValue, setEditValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleQtyChange = (item, newVal) => {
     const qty = parseInt(newVal, 10);
@@ -25,7 +26,19 @@ const CartPanel = ({
     if (diff > 0) {
       for (let i = 0; i < diff; i++) onIncrement(item);
     } else if (diff < 0) {
+      if (qty === 0) {
+        setDeleteTarget(item);
+        return;
+      }
       for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
+    }
+  };
+
+  const handleDecrementClick = (item) => {
+    if (item.count <= 1) {
+      setDeleteTarget(item);
+    } else {
+      onDecrement(item);
     }
   };
 
@@ -91,7 +104,7 @@ const CartPanel = ({
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
-                    onClick={() => onDecrement(item)}
+                    onClick={() => handleDecrementClick(item)}
                     className="w-7 h-7 flex items-center justify-center rounded-md border border-border hover:bg-accent transition-colors">
                     <Minus size={13} />
                   </button>
@@ -113,7 +126,7 @@ const CartPanel = ({
                     {formatCurrencyRupiah(item.totalPrice || 0)}
                   </p>
                   <button
-                    onClick={() => onDelete(item)}
+                    onClick={() => setDeleteTarget(item)}
                     className="text-xs text-red-500 hover:text-red-600 mt-0.5">
                     {t("common.delete")}
                   </button>
@@ -123,6 +136,39 @@ const CartPanel = ({
           })
         )}
       </div>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base">Hapus Item</h3>
+                <p className="text-sm text-muted-foreground">
+                  Yakin ingin menghapus <strong>{deleteTarget.name}</strong> dari pesanan?
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-accent transition-colors">
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(deleteTarget);
+                  setDeleteTarget(null);
+                }}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-border p-4 space-y-3 shrink-0">
         <div className="flex justify-between text-sm">

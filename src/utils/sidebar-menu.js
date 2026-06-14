@@ -165,6 +165,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/discount-list",
         icon: BadgePercent,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Piutang (AR)",
+        i18nKey: "sidebar.piutang",
+        href: "/accounts-receivable",
+        icon: Receipt,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -306,6 +313,29 @@ export const sidebarMenuSuperAdmin = [
         icon: ArrowRightLeft,
         children: [],
         actions: ["view", "add", "delete"]
+      }
+    ],
+    actions: []
+  },
+  {
+    title: "Pengeluaran",
+    i18nKey: "sidebar.pengeluaran",
+    href: "",
+    icon: Receipt,
+    children: [
+      {
+        title: "Kategori Pengeluaran",
+        i18nKey: "sidebar.kategoriPengeluaran",
+        href: "/expense-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Pengeluaran",
+        i18nKey: "sidebar.daftarPengeluaran",
+        href: "/expense",
+        icon: Receipt,
+        actions: ["add", "edit", "view", "approve"]
       }
     ],
     actions: []
@@ -540,6 +570,13 @@ export const sidebarMenuAdmin = [
         href: "/discount-list",
         icon: Percent,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Piutang (AR)",
+        i18nKey: "sidebar.piutang",
+        href: "/accounts-receivable",
+        icon: Receipt,
+        actions: ["view"]
       }
     ],
     actions: []

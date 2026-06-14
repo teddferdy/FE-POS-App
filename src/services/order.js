@@ -13,6 +13,9 @@ export const getOrdersByStore = async (payload) => {
   if (payload?.limit) params.set("limit", payload.limit);
   if (payload?.date) params.set("date", payload.date);
   if (payload?.status) params.set("status", payload.status);
+  if (payload?.paymentStatus) params.set("paymentStatus", payload.paymentStatus);
+  if (payload?.startDate) params.set("startDate", payload.startDate);
+  if (payload?.endDate) params.set("endDate", payload.endDate);
   const { data, status } = await axiosInstance.get(`/order/get-orders?${params.toString()}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;

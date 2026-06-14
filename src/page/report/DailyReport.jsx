@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { getDailyReport } from "@/services/report"
 import { Card } from "@/components/ui/card"
 import PageHeader from "@/components/ui/PageHeader"
+import { Loading } from "@/components/ui/loading"
 import { format } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
 
@@ -36,7 +37,7 @@ const DailyReport = () => {
       </PageHeader>
 
       {isLoading ? (
-        <div className="text-center p-12 text-muted-foreground">Loading...</div>
+        <Loading fullscreen size="lg" label="Memuat data laporan harian..." />
       ) : reports.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-12 text-center">
           <p className="text-muted-foreground">Belum ada data laporan harian</p>

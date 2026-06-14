@@ -93,9 +93,7 @@ const RoleManagement = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loading />
-          </div>
+          <Loading fullscreen size="lg" label="Memuat data..." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">

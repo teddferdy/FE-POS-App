@@ -180,9 +180,7 @@ const StoreGeospatial = () => {
 
       <Card className="overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center h-[500px]">
-            <Loading />
-          </div>
+          <Loading fullscreen size="lg" label="Memuat data..." />
         ) : (
           <div className="relative z-0 h-[500px]">
             <style>{`

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
-import { X, User, CreditCard, Table2, Percent } from "lucide-react";
+import { X, User, CreditCard, Table2, Percent, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberResults, setShowMemberResults] = useState(false);
   const [selectedTable, setSelectedTable] = useState("");
+  const [orderType, setOrderType] = useState("dine_in");
   const [selectedDiscount, setSelectedDiscount] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -143,11 +144,12 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
       store: Number(store),
       cashierId: Number(cashierId),
       cashierName,
+      orderType,
       items: orderItems,
       paymentMethod: payments.find((p) => (p.id || p._id) === paymentTypeId)?.name || "Cash",
       totalPrice: finalTotal,
       notes: notes || undefined,
-      ...(selectedTable ? { tableId: Number(selectedTable) } : {}),
+      ...(orderType === "dine_in" && selectedTable ? { tableId: Number(selectedTable) } : {}),
       ...(selectedDiscount ? { discountId: Number(selectedDiscount), discountAmount } : {}),
       ...memberPayload
     };
@@ -259,7 +261,33 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
             </div>
           )}
 
-          {tables.length > 0 && (
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">Tipe Pesanan</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setOrderType("dine_in"); setSelectedTable(""); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1 ${
+                  orderType === "dine_in"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:bg-accent"
+                }`}>
+                <UtensilsCrossed size={16} />
+                Dine In
+              </button>
+              <button
+                onClick={() => { setOrderType("take_away"); setSelectedTable(""); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1 ${
+                  orderType === "take_away"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:bg-accent"
+                }`}>
+                <ShoppingBag size={16} />
+                Take Away
+              </button>
+            </div>
+          </div>
+
+          {orderType === "dine_in" && tables.length > 0 && (
             <div>
               <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
                 <Table2 size={14} /> {t("page.cashier.modal.table")}

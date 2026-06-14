@@ -47,6 +47,12 @@ const EditTypePayment = () => {
 
   const item = detailData?.data || {};
 
+  useEffect(() => {
+    if (item?.isSystem) {
+      navigate("/type-payment-list")
+    }
+  }, [item, navigate])
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -106,9 +112,7 @@ const EditTypePayment = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
-      </div>
+      <Loading fullscreen size="lg" label="Memuat data..." />
     );
   }
 

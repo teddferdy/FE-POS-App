@@ -61,7 +61,8 @@ import EditMember from "./page/member/EditMember";
 import MemberTier from "./page/member-tier";
 
 // Report
-import GlobalReport from "./page/report/GlobalReport";
+import SalesReportPage from "./page/report/SalesReportPage";
+import BestSellingReportPage from "./page/report/BestSellingReportPage";
 import DailyReport from "./page/report/DailyReport";
 import ProfitLossReport from "./page/report/ProfitLossReport";
 import CashFlowReport from "./page/report/CashFlowReport";
@@ -184,6 +185,10 @@ import TableList from "./page/table/TableList";
 // Notification
 import NotificationPage from "./page/notification/NotificationPage";
 
+// Accounts Receivable
+import AccountsReceivableList from "./page/accounts-receivable/AccountsReceivableList";
+import AccountsReceivableDetail from "./page/accounts-receivable/AccountsReceivableDetail";
+
 // Discount
 import DiscountList from "./page/discount/DiscountList";
 import AddDiscount from "./page/discount/AddDiscount";
@@ -209,6 +214,7 @@ import EditExpenseCategory from "./page/expense-category/EditExpenseCategory";
 import ExpenseList from "./page/expense/ExpenseList";
 import AddExpense from "./page/expense/AddExpense";
 import EditExpense from "./page/expense/EditExpense";
+import DetailExpense from "./page/expense/DetailExpense";
 
 import Support from "./page/support";
 
@@ -292,6 +298,12 @@ function App() {
           <Route path="/discount-list" element={withLayout(<DiscountList />)} />
           <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
           <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
+
+          <Route path="/accounts-receivable" element={withLayout(<AccountsReceivableList />)} />
+          <Route
+            path="/accounts-receivable/detail"
+            element={withLayout(<AccountsReceivableDetail />)}
+          />
 
           <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
           <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
@@ -416,13 +428,14 @@ function App() {
           <Route path="/expense" element={withLayout(<ExpenseList />)} />
           <Route path="/add-expense" element={withLayout(<AddExpense />)} />
           <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
+          <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
 
           <Route path="/support" element={withLayout(<Support />)} />
 
           <Route path="/profile" element={withLayout(<ProfilePage />)} />
 
-          <Route path="/report/sales" element={withLayout(<GlobalReport />)} />
-          <Route path="/best-selling" element={withLayout(<GlobalReport />)} />
+          <Route path="/report/sales" element={withLayout(<SalesReportPage />)} />
+          <Route path="/best-selling" element={withLayout(<BestSellingReportPage />)} />
           <Route path="/report/daily" element={withLayout(<DailyReport />)} />
           <Route path="/report/profit-loss" element={withLayout(<ProfitLossReport />)} />
           <Route path="/report/cash-flow" element={withLayout(<CashFlowReport />)} />

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { getProfitLoss } from "@/services/report"
 import { Card, CardContent } from "@/components/ui/card"
 import PageHeader from "@/components/ui/PageHeader"
+import { Loading } from "@/components/ui/loading"
 import { format } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
 
@@ -44,7 +45,7 @@ const ProfitLossReport = () => {
       </PageHeader>
 
       {isLoading ? (
-        <div className="text-center p-12 text-muted-foreground">Loading...</div>
+        <Loading fullscreen size="lg" label="Memuat data laba rugi..." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {summaryCards.map(card => (

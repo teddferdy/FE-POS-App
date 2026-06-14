@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -20,6 +20,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { getDashboardSummary } from "@/services/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const FILTERS = [
+  { key: "daily", label: "Harian" },
+  { key: "weekly", label: "Mingguan" },
+  { key: "monthly", label: "Bulanan" }
+];
 
 const statusBadge = (status) => {
   const s = (status || "Paid").toLowerCase();
@@ -45,71 +51,61 @@ const statusBadge = (status) => {
   );
 };
 
-const fallbackChart = [
-  { day: "Sen", value: 0 },
-  { day: "Sel", value: 0 },
-  { day: "Rab", value: 0 },
-  { day: "Kam", value: 0 },
-  { day: "Jum", value: 0 },
-  { day: "Sab", value: 0 },
-  { day: "Min", value: 0 }
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const store = cookie?.store;
-  // const user = cookie?.user;
-  // const role = user?.role || user?.type || "";
   const { t } = useTranslation();
+  const [chartFilter, setChartFilter] = useState("weekly");
 
   const { data: dashData, isLoading } = useQuery(
-    ["dashboard-summary", store],
-    () => getDashboardSummary({ store }),
+    ["dashboard-summary", store, chartFilter],
+    () => getDashboardSummary({ store, filter: chartFilter }),
     { enabled: true }
   );
 
   const d = dashData?.data || dashData || {};
 
-  const revenue = d.revenue || {};
-  const orders = d.orders || {};
-  const members = d.members || {};
+  const totalSales = d.totalSales || 0;
+  const totalOrders = d.totalOrders || 0;
+  const totalProducts = d.totalProducts || 0;
+  const totalMembers = d.totalMembers || 0;
   const summaryCards = [
     {
       label: t("page.dashboard.revenue"),
-      value: formatCurrencyRupiah(revenue.total || 0),
-      trend: revenue.trend || t("page.dashboard.trendVsYesterday"),
-      trendUp: (revenue.trend || "").includes("+"),
+      value: formatCurrencyRupiah(totalSales),
+      trend: t("page.dashboard.trendVsYesterday"),
+      trendUp: totalSales > 0,
       icon: DollarSign,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.orderCount"),
-      value: String(orders.total || d.totalOrders || 0),
-      trend: orders.trend || t("page.dashboard.trendWeekly"),
-      trendUp: (orders.trend || "").includes("+"),
+      value: String(totalOrders),
+      trend: t("page.dashboard.trendWeekly"),
+      trendUp: totalOrders > 0,
       icon: ShoppingCart,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.activeProducts"),
-      value: String(d.activeProducts || d.totalProducts || 0),
-      trend: d.productTrend || `${d.activeProducts || 0} ${t("page.dashboard.items")}`,
+      value: String(totalProducts),
+      trend: `${totalProducts} ${t("page.dashboard.items")}`,
       trendUp: true,
       icon: Package,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.memberCount"),
-      value: String(members.total || d.totalMembers || 0),
-      trend: members.trend || t("page.dashboard.trendLoyalty"),
-      trendUp: (members.trend || "").includes("+"),
+      value: String(totalMembers),
+      trend: t("page.dashboard.trendLoyalty"),
+      trendUp: totalMembers > 0,
       icon: Users,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.lowStock"),
-      value: String(d.lowStock || d.lowStockCount || 0),
+      value: String(d.lowStock || 0),
       trend: d.lowStock ? t("page.dashboard.restockNow") : t("page.dashboard.safe"),
       trendUp: !d.lowStock,
       icon: AlertTriangle,
@@ -118,8 +114,51 @@ const Dashboard = () => {
     }
   ];
 
-  const chartData = d.weeklyRevenue || d.chartData || fallbackChart;
-  const bestSelling = d.bestSelling || d.topProducts || [];
+  const rawChart = d.salesChart || [];
+  const buildChartData = () => {
+    const map = {}
+    rawChart.forEach(item => {
+      const dt = new Date(item.date)
+      if (chartFilter === "daily") {
+        map[dt.getHours()] = Number(item.sales) || 0
+      } else if (chartFilter === "monthly") {
+        map[dt.getDate()] = Number(item.sales) || 0
+      } else {
+        map[dt.getDay()] = Number(item.sales) || 0
+      }
+    })
+
+    const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+    const result = []
+
+    if (chartFilter === "daily") {
+      for (let h = 8; h <= 22; h++) {
+        result.push({ day: `${String(h).padStart(2, "0")}:00`, value: map[h] || 0 })
+      }
+    } else if (chartFilter === "monthly") {
+      const now = new Date()
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+      for (let d = 1; d <= lastDay; d++) {
+        result.push({ day: String(d), value: map[d] || 0 })
+      }
+    } else {
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const monday = new Date(today)
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday)
+        d.setDate(monday.getDate() + i)
+        result.push({
+          day: `${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`,
+          value: map[d.getDay()] || 0
+        })
+      }
+    }
+    return result
+  }
+  const chartData = buildChartData();
+  const bestSelling = d.bestSellers || [];
   const recentOrders = d.recentOrders || [];
 
   return (
@@ -240,13 +279,29 @@ const Dashboard = () => {
               data-tour="dashboard-chart"
               className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
               <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-border">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">
-                    {t("page.dashboard.chartTitle")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("page.dashboard.chartSubtitle")}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("page.dashboard.chartTitle")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t(`page.dashboard.chartSubtitle${chartFilter === "daily" ? "Daily" : chartFilter === "monthly" ? "Monthly" : "Weekly"}`)}
+                    </p>
+                  </div>
+                  <div className="flex bg-muted rounded-lg p-0.5">
+                    {FILTERS.map((f) => (
+                      <button
+                        key={f.key}
+                        onClick={() => setChartFilter(f.key)}
+                        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                          chartFilter === f.key
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
                   <Download size={14} />
@@ -346,7 +401,9 @@ const Dashboard = () => {
                   {t("page.dashboard.recentOrdersSubtitle")}
                 </p>
               </div>
-              <button className="text-sm font-semibold text-primary hover:underline">
+              <button
+                className="text-sm font-semibold text-primary hover:underline"
+                onClick={() => navigate("/report/sales")}>
                 {t("page.dashboard.viewAll")}
               </button>
             </div>
@@ -405,7 +462,9 @@ const Dashboard = () => {
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
-                            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                            <button
+                              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                              onClick={() => navigate("/report/sales")}>
                               <Eye size={16} />
                             </button>
                             <button className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">

@@ -68,7 +68,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
               <SelectTrigger className="pr-1.5 focus:ring-0">
                 <SelectValue>{selected?.props?.children}</SelectValue>
               </SelectTrigger>
-              <SelectContent position="popper">
+              <SelectContent position="popper" className="z-[200]">
                 <ScrollArea className="h-80">
                   {options.map((option, id) => (
                     <SelectItem
@@ -100,6 +100,12 @@ function DatePicker({
   toYear = 2999,
   captionLayout = "dropdown"
 }) {
+  const [month, setMonth] = React.useState(date || new Date());
+
+  React.useEffect(() => {
+    if (date) setMonth(date);
+  }, [date]);
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -114,11 +120,16 @@ function DatePicker({
           {date ? format(date, "dd MMM yyyy") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 overflow-visible" align="start">
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={(d) => {
+            setDate(d);
+            if (d) setMonth(d);
+          }}
+          month={month}
+          onMonthChange={setMonth}
           initialFocus
           captionLayout={captionLayout}
           fromYear={fromYear}

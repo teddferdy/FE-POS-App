@@ -120,7 +120,7 @@ const DetailGoodsReceipt = () => {
                 {receipt.items?.length > 0 ? (
                   receipt.items.map((item, i) => (
                     <tr key={i} className="border-b border-muted/20">
-                      <td className="py-2">{item.productData?.nameProduct || "-"}</td>
+                      <td className="py-2">{item.productData?.nameProduct || item.ingredientName || "-"}</td>
                       <td className="py-2 text-right font-mono">{item.qtyReceived}</td>
                       <td className="py-2 text-center">{item.unit || "pcs"}</td>
                       <td className="py-2">{item.conditionNotes || "-"}</td>

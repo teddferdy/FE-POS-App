@@ -199,12 +199,14 @@ const DetailTypePayment = () => {
           <ArrowLeft size={16} />
           Kembali
         </Button>
-        <Button
-          onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}
-          className="gap-2 shadow-md">
-          <Edit size={16} />
-          Edit
-        </Button>
+        {!item.isSystem && (
+          <Button
+            onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}
+            className="gap-2 shadow-md">
+            <Edit size={16} />
+            Edit
+          </Button>
+        )}
       </div>
     </div>
   );

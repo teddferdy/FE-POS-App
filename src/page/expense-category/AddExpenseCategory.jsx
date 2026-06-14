@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +23,7 @@ const formSchema = z.object({
 const AddExpenseCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
@@ -37,6 +38,7 @@ const AddExpenseCategory = () => {
 
   const createMutation = useMutation(addExpenseCategory, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["expense-categories"]);
       setSuccessModal(true);
     },
     onError: (err) => {

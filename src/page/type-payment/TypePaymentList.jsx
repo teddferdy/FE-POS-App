@@ -159,7 +159,7 @@ const TypePaymentList = () => {
               <Eye size={15} />
             </Button>
           )}
-          {canAccess(user, MENU_KEY, "edit") && (
+          {canAccess(user, MENU_KEY, "edit") && !row.isSystem && (
             <Button
               variant="ghost"
               size="icon"
@@ -168,7 +168,7 @@ const TypePaymentList = () => {
               <Edit size={15} />
             </Button>
           )}
-          {canAccess(user, MENU_KEY, "delete") && (
+          {canAccess(user, MENU_KEY, "delete") && !row.isSystem && (
             <Button
               variant="ghost"
               size="icon"

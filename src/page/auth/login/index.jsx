@@ -346,7 +346,7 @@ const LoginPage = () => {
       </div>
       <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="login" />
 
-      {isLoading && <Loading fullscreen size="lg" label="Loading..." />}
+      {isLoading && <Loading fullscreen size="lg" label="Memuat data..." />}
     </>
   );
 };

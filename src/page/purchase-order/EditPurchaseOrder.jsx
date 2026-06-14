@@ -258,11 +258,7 @@ const EditPurchaseOrder = () => {
   }
 
   if (loadingPo) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
-      </div>
-    );
+    return <Loading fullscreen size="lg" label="Memuat data..." />;
   }
 
   if (!po) {

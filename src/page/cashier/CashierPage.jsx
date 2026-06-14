@@ -88,7 +88,7 @@ const CashierPage = () => {
     const sku = (p.sku || "").toLowerCase();
     const q = search.toLowerCase();
     const matchesSearch = !search || name.includes(q) || sku.includes(q);
-    const cat = p.category?.id || p.category?._id || p.categoryId?.id || p.categoryId?._id || "";
+    const cat = p.category?.id || p.category?._id || p.category || p.categoryId?.id || p.categoryId?._id || "";
     const matchesCategory = !categoryId || cat === categoryId;
     return matchesSearch && matchesCategory;
   });
@@ -198,28 +198,39 @@ const CashierPage = () => {
             />
           </div>
 
-          <div
-            className={`${
-              showCartMobile ? "fixed inset-0 z-40 flex" : "hidden"
-            } lg:relative lg:flex lg:w-[380px] xl:w-[420px] border-l border-border bg-card`}>
-            {showCartMobile && (
+          {/* Mobile cart overlay */}
+          {showCartMobile && (
+            <div className="fixed inset-0 z-50 lg:hidden">
               <div
-                className="fixed inset-0 bg-black/50 lg:hidden"
+                className="fixed inset-0 bg-black/50"
                 onClick={() => setShowCartMobile(false)}
               />
-            )}
-            <div
-              className={`${
-                showCartMobile ? "relative ml-auto" : ""
-              } w-full max-w-md lg:max-w-none bg-card flex flex-col h-full`}>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border lg:hidden">
-                <h2 className="font-semibold">
-                  {t("page.cashier.orderCount", { count: totalItems })}
-                </h2>
-                <Button variant="ghost" size="icon" onClick={() => setShowCartMobile(false)}>
-                  <X size={18} />
-                </Button>
+              <div className="fixed right-0 top-0 h-screen sm:max-w-md w-4/5 bg-card animate-in slide-in-from-right duration-300 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+                  <h2 className="font-semibold">
+                    {t("page.cashier.orderCount", { count: totalItems })}
+                  </h2>
+                  <Button variant="ghost" size="icon" onClick={() => setShowCartMobile(false)}>
+                    <X size={18} />
+                  </Button>
+                </div>
+                <CartPanel
+                  items={cart.order}
+                  subtotal={subtotal}
+                  onIncrement={cart.incrementOrder}
+                  onDecrement={cart.decrementOrder}
+                  onDelete={cart.handleDeleteOrder}
+                  onCheckout={() => setCheckoutOpen(true)}
+                  totalItems={totalItems}
+                  onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+                />
               </div>
+            </div>
+          )}
+
+          {/* Desktop cart sidebar */}
+          <div className="hidden lg:relative lg:flex lg:w-[380px] xl:w-[420px] border-l border-border bg-card">
+            <div className="w-full bg-card flex flex-col h-full">
               <CartPanel
                 items={cart.order}
                 subtotal={subtotal}

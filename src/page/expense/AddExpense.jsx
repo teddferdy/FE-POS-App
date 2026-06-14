@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { addExpense, getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ const formSchema = z.object({
 });
 
 const AddExpense = () => {
+  const queryClient = useQueryClient();
+  const [cookie] = useCookies();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
@@ -55,6 +58,7 @@ const AddExpense = () => {
 
   const createMutation = useMutation(addExpense, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["expenses"]);
       setSuccessModal(true);
     },
     onError: (err) => {
@@ -65,7 +69,9 @@ const AddExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const payload = { ...values, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
+    const { categoryId, ...rest } = values;
+    const store = cookie?.user?.store || "";
+    const payload = { ...rest, store, category: categoryId, date: values.date ? format(values.date, "yyyy-MM-dd") : "", status: saveAsDraft ? "draft" : "active" };
     createMutation.mutate(payload);
   };
 
@@ -115,7 +121,7 @@ const AddExpense = () => {
                           </SelectItem>
                         ) : (
                           categories.map((cat) => (
-                            <SelectItem key={cat.id || cat._id} value={cat.id || cat._id}>
+                            <SelectItem key={cat.id || cat._id} value={String(cat.id || cat._id)}>
                               {cat.name}
                             </SelectItem>
                           ))
@@ -145,16 +151,24 @@ const AddExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Jumlah <span className="text-destructive">*</span>
+                      Jumlah (Rp) <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input
-                      type="number"
-                      placeholder="Masukkan jumlah biaya"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                      }}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                        Rp
+                      </span>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        className="pl-10"
+                        value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                          field.onChange(raw ? Number(raw) : "");
+                        }}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
