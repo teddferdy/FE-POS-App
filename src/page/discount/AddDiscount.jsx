@@ -4,11 +4,13 @@ import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
 import { addDiscount } from "@/services/discount";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -37,8 +39,8 @@ const formSchema = z.object({
   promoType: z.string().default("standard"),
   type: z.string().min(1, "Tipe diskon wajib dipilih"),
   value: z.coerce.number().min(1, "Nilai diskon wajib diisi").optional().or(z.literal("")),
-  startDate: z.string().min(1, "Tanggal mulai wajib diisi"),
-  endDate: z.string().optional().or(z.literal("")),
+  startDate: z.date({ required_error: "Tanggal mulai wajib diisi" }),
+  endDate: z.date().nullable().optional(),
   minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
   description: z.string().optional().or(z.literal("")),
   isActive: z.boolean().default(true),
@@ -74,8 +76,8 @@ const AddDiscount = () => {
       promoType: "standard",
       type: "",
       value: "",
-      startDate: "",
-      endDate: "",
+      startDate: undefined,
+      endDate: undefined,
       minPurchase: "",
       description: "",
       isActive: true,
@@ -154,8 +156,8 @@ const AddDiscount = () => {
             ? "nominal"
             : values.type,
       value: isAdvanced ? 0 : Number(values.value),
-      startDate: values.startDate,
-      endDate: values.endDate || null,
+      startDate: values.startDate ? format(values.startDate, "yyyy-MM-dd") : "",
+      endDate: values.endDate ? format(values.endDate, "yyyy-MM-dd") : null,
       minimumOrder: values.minPurchase || 0,
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
@@ -494,7 +496,7 @@ const AddDiscount = () => {
                     <FormLabel>
                       Tanggal Mulai <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input type="date" {...field} />
+                    <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -505,7 +507,7 @@ const AddDiscount = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tanggal Berakhir</FormLabel>
-                    <Input type="date" {...field} />
+                    <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
                 )}
