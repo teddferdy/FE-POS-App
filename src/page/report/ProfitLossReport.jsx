@@ -7,6 +7,7 @@ import PageHeader from "@/components/ui/PageHeader"
 import { Loading } from "@/components/ui/loading"
 import { format } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
+import { formatCurrency } from "@/utils/reportUtils"
 
 const ProfitLossReport = () => {
   const { t } = useTranslation()
@@ -22,11 +23,11 @@ const ProfitLossReport = () => {
   const pl = data?.data || {}
 
   const summaryCards = [
-    { label: "Total Revenue", value: pl.totalRevenue, color: "text-green-600" },
-    { label: "Net Revenue", value: pl.netRevenue, color: "text-blue-600" },
-    { label: "Total HPP", value: pl.totalHpp, color: "text-orange-600" },
-    { label: "Gross Profit", value: pl.grossProfit, color: "text-purple-600" },
-    { label: "Margin %", value: pl.marginPersen != null ? `${pl.marginPersen}%` : null, color: "text-primary" },
+    { labelKey: "page.report.profitLoss.card.totalRevenue", value: pl.totalRevenue, color: "text-green-600" },
+    { labelKey: "page.report.profitLoss.card.netRevenue", value: pl.netRevenue, color: "text-blue-600" },
+    { labelKey: "page.report.profitLoss.card.totalHpp", value: pl.totalHpp, color: "text-orange-600" },
+    { labelKey: "page.report.profitLoss.card.grossProfit", value: pl.grossProfit, color: "text-purple-600" },
+    { labelKey: "page.report.profitLoss.card.margin", value: pl.marginPersen != null ? `${pl.marginPersen}%` : null, color: "text-primary" },
   ]
 
   return (
@@ -34,10 +35,11 @@ const ProfitLossReport = () => {
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.home" },
-          { label: "Laporan Laba Rugi" }
+          { i18nKey: "page.report.profitLoss.title" }
         ]}
-        title="Laporan Laba Rugi"
-        description="Ringkasan pendapatan, HPP, dan laba kotor">
+        title={t("page.report.profitLoss.title")}
+        description={t("page.report.profitLoss.description")}
+      >
         <div className="flex items-center gap-2">
           <DatePicker date={startDate} setDate={setStartDate} />
           <DatePicker date={endDate} setDate={setEndDate} />
@@ -45,17 +47,17 @@ const ProfitLossReport = () => {
       </PageHeader>
 
       {isLoading ? (
-        <Loading fullscreen size="lg" label="Memuat data laba rugi..." />
+        <Loading fullscreen size="lg" label={t("page.report.profitLoss.loading")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {summaryCards.map(card => (
-            <Card key={card.label}>
+            <Card key={card.labelKey}>
               <CardContent className="p-5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{card.label}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t(card.labelKey)}</p>
                 <p className={`text-xl font-bold ${card.color}`}>
                   {card.value != null
                     ? typeof card.value === "number"
-                      ? `Rp ${Number(card.value).toLocaleString()}`
+                      ? formatCurrency(card.value)
                       : card.value
                     : "-"}
                 </p>

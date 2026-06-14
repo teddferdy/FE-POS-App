@@ -7,6 +7,7 @@ import PageHeader from "@/components/ui/PageHeader"
 import { Loading } from "@/components/ui/loading"
 import { format } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
+import { formatCurrency } from "@/utils/reportUtils"
 
 const DailyReport = () => {
   const { t } = useTranslation()
@@ -26,10 +27,11 @@ const DailyReport = () => {
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.home" },
-          { label: "Laporan Harian" }
+          { i18nKey: "page.report.daily.title" }
         ]}
-        title="Laporan Harian"
-        description="Rekap penjualan dan operasional harian">
+        title={t("page.report.daily.title")}
+        description={t("page.report.daily.description")}
+      >
         <div className="flex items-center gap-2">
           <DatePicker date={startDate} setDate={setStartDate} />
           <DatePicker date={endDate} setDate={setEndDate} />
@@ -37,10 +39,10 @@ const DailyReport = () => {
       </PageHeader>
 
       {isLoading ? (
-        <Loading fullscreen size="lg" label="Memuat data laporan harian..." />
+        <Loading fullscreen size="lg" label={t("page.report.daily.loading")} />
       ) : reports.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-12 text-center">
-          <p className="text-muted-foreground">Belum ada data laporan harian</p>
+          <p className="text-muted-foreground">{t("page.report.daily.noData")}</p>
         </div>
       ) : (
         <Card className="overflow-hidden">
@@ -48,14 +50,14 @@ const DailyReport = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/60 border-b">
-                  <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase">Tanggal</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Transaksi</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Penjualan</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">HPP</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Food Cost</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Gross Profit</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Net Profit</th>
-                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">Covers</th>
+                  <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.date")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.transactions")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.sales")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.hpp")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.foodCost")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.grossProfit")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.netProfit")}</th>
+                  <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.daily.table.covers")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,11 +65,11 @@ const DailyReport = () => {
                   <tr key={r.id} className="border-b border-muted/30 hover:bg-muted/15">
                     <td className="px-3 py-3">{r.tanggal}</td>
                     <td className="px-3 py-3 text-right">{r.totalTransaksi}</td>
-                    <td className="px-3 py-3 text-right">Rp {Number(r.totalPenjualanBersih).toLocaleString()}</td>
-                    <td className="px-3 py-3 text-right">Rp {Number(r.totalHpp).toLocaleString()}</td>
+                    <td className="px-3 py-3 text-right">{formatCurrency(r.totalPenjualanBersih)}</td>
+                    <td className="px-3 py-3 text-right">{formatCurrency(r.totalHpp)}</td>
                     <td className="px-3 py-3 text-right">{r.foodCostPersen}%</td>
-                    <td className="px-3 py-3 text-right">Rp {Number(r.grossProfit).toLocaleString()}</td>
-                    <td className="px-3 py-3 text-right font-semibold">Rp {Number(r.netProfit).toLocaleString()}</td>
+                    <td className="px-3 py-3 text-right">{formatCurrency(r.grossProfit)}</td>
+                    <td className="px-3 py-3 text-right font-semibold">{formatCurrency(r.netProfit)}</td>
                     <td className="px-3 py-3 text-right">{r.totalCovers}</td>
                   </tr>
                 ))}
