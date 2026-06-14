@@ -79,7 +79,7 @@ const BestSellerTab = ({ t, data }) => {
                   <div className="flex justify-between text-xs font-semibold">
                     <span className="text-foreground">{item.name}</span>
                     <span className="font-mono text-muted-foreground">
-                      {formatNumber(item.sold)} unit
+                      {formatNumber(item.sold)} {t("page.report.bestSeller.unit")}
                     </span>
                   </div>
                   <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
@@ -178,7 +178,7 @@ const BestSellerTab = ({ t, data }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm font-mono text-foreground">
-                      {formatNumber(item.sold)} unit
+                      {formatNumber(item.sold)} {t("page.report.bestSeller.unit")}
                     </td>
                     <td className="px-4 py-4 text-sm font-mono text-foreground">
                       {formatCurrency(item.revenue)}
