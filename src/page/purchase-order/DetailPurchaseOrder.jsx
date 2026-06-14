@@ -353,10 +353,12 @@ const DetailPurchaseOrder = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-foreground">Pembayaran</h3>
-              <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
-                <Plus size={14} className="mr-1" />
-                Bayar
-              </Button>
+              {remaining > 0 && (
+                <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
+                  <Plus size={14} className="mr-1" />
+                  Bayar
+                </Button>
+              )}
             </div>
             {payments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Belum ada pembayaran</p>
