@@ -79,6 +79,8 @@ const DetailPurchaseOrder = () => {
 
   const queryClient = useQueryClient();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
   const [paymentForm, setPaymentForm] = useState({
     amount: "",
     paymentDate: undefined,
@@ -393,9 +395,8 @@ const DetailPurchaseOrder = () => {
                             size="icon"
                             className="h-7 w-7 text-muted-foreground hover:text-destructive"
                             onClick={() => {
-                              if (window.confirm("Hapus pembayaran ini?")) {
-                                deletePaymentMutation.mutate(p.id);
-                              }
+                              setPaymentToDelete(p);
+                              setDeleteModalOpen(true);
                             }}>
                             <Trash2 size={13} />
                           </Button>
@@ -445,6 +446,19 @@ const DetailPurchaseOrder = () => {
           </Card>
         </div>
       </div>
+
+      <Modal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        type="confirm"
+        title="Hapus Pembayaran"
+        description={`Yakin ingin menghapus pembayaran Rp ${Number(paymentToDelete?.amount || 0).toLocaleString("id-ID")}?`}
+        confirmText="Hapus"
+        confirmVariant="destructive"
+        onConfirm={() => {
+          if (paymentToDelete) deletePaymentMutation.mutate(paymentToDelete.id);
+        }}
+      />
 
       <Modal
         open={paymentModalOpen}
