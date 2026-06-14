@@ -23,7 +23,10 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err instanceof AxiosError) {
-      const isPublicAuth = err.config?.url === "/auth/login" || err.config?.url === "/auth/register";
+      const isPublicAuth =
+        err.config?.url === "/auth/login" ||
+        err.config?.url === "/auth/register" ||
+        err.config?.url === "/auth/reset-password";
       if (err.response?.status === 401 && !sessionExpiredFired && !isPublicAuth) {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         sessionExpiredFired = true;
