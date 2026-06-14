@@ -78,10 +78,9 @@ const IngredientList = () => {
       render: (item) => {
         const base = item.baseUnit || item.unit || "pcs";
         const factor = item.conversionFactor || 1;
-        if (factor === 1 && base === (item.unit || "pcs")) return <span className="text-muted-foreground text-xs">-</span>;
         return (
           <span className="text-xs text-muted-foreground">
-            1 {item.unit} = {factor} {base}
+            1 {item.unit || "pcs"} = {factor} {base}
           </span>
         );
       }
