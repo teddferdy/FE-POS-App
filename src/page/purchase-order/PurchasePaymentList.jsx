@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Wallet, Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Wallet } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
+import { TipsCard } from "@/components/ui/tips-card";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const PurchasePaymentList = () => {
   const { t } = useTranslation();
@@ -66,7 +72,12 @@ const PurchasePaymentList = () => {
     {
       header: t("page.purchasePayment.list.columns.method"),
       render: (p) => {
-        const labels = { cash: t("page.purchaseOrder.paymentMethod.cash"), transfer: t("page.purchaseOrder.paymentMethod.transfer"), giro: t("page.purchaseOrder.paymentMethod.giro"), other: t("page.purchaseOrder.paymentMethod.other") };
+        const labels = {
+          cash: t("page.purchaseOrder.paymentMethod.cash"),
+          transfer: t("page.purchaseOrder.paymentMethod.transfer"),
+          giro: t("page.purchaseOrder.paymentMethod.giro"),
+          other: t("page.purchaseOrder.paymentMethod.other")
+        };
         return <span className="text-sm">{labels[p.paymentMethod] || p.paymentMethod || "-"}</span>;
       }
     },
@@ -88,7 +99,9 @@ const PurchasePaymentList = () => {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => navigate(`/purchase-order/detail?id=${p.purchaseOrderData?.id || p.purchaseOrder}`)}>
+          onClick={() =>
+            navigate(`/purchase-order/detail?id=${p.purchaseOrderData?.id || p.purchaseOrder}`)
+          }>
           {t("page.purchasePayment.list.detailButton")}
         </Button>
       )
@@ -97,46 +110,78 @@ const PurchasePaymentList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.purchasePayment.list.title")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.purchasePayment.list.title")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.purchasePayment.list.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.purchasePayment.list.description")}</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.purchasePayment.list.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.purchasePayment.list.description")}
+            </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <Card className="p-5">
-        <div className="flex items-center gap-2 text-sm">
-          <Wallet size={16} className="text-muted-foreground" />
-          <span className="text-muted-foreground">{t("page.purchasePayment.list.totalLabel")}:</span>
-          <span className="font-bold text-lg">
-            Rp {Number(totalAmount).toLocaleString("id-ID")}
-          </span>
-        </div>
-      </Card>
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <Card className="p-5">
+          <div className="flex items-center gap-2 text-sm">
+            <Wallet size={16} className="text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {t("page.purchasePayment.list.totalLabel")}:
+            </span>
+            <span className="font-bold text-lg">
+              Rp {Number(totalAmount).toLocaleString("id-ID")}
+            </span>
+          </div>
+        </Card>
+      </motion.div>
 
-      <DataTable
-        columns={columns}
-        data={payments}
-        isLoading={isLoading}
-        emptyMessage={t("page.purchasePayment.list.empty")}
-        emptyIcon={Wallet}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="space-y-4">
+        <DataTable
+          columns={columns}
+          data={payments}
+          isLoading={isLoading}
+          emptyMessage={t("page.purchasePayment.list.empty")}
+          emptyIcon={Wallet}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+        />
+      </motion.div>
+
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <TipsCard
+          tips={[
+            t("page.purchasePayment.list.tips.1"),
+            t("page.purchasePayment.list.tips.2"),
+            t("page.purchasePayment.list.tips.3"),
+            t("page.purchasePayment.list.tips.4")
+          ]}
+        />
+      </motion.div>
     </div>
   );
 };

@@ -27,9 +27,9 @@ const LowStock = () => {
   const user = cookie?.user;
   const role = user?.role || user?.type || "";
 
-   const { data, isLoading } = useQuery(["low-stock"], () => getLowStockProducts(), {
-     staleTime: 30 * 1000
-   });
+  const { data, isLoading } = useQuery(["low-stock"], () => getLowStockProducts(), {
+    staleTime: 30 * 1000
+  });
 
   const lowStockData = data?.data || {};
   const products = lowStockData.products || [];
@@ -98,21 +98,41 @@ const LowStock = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead><Skeleton className="h-3 w-24" /></TableHead>
-                    <TableHead className="text-right"><Skeleton className="h-3 w-20 ml-auto" /></TableHead>
-                    <TableHead className="text-right"><Skeleton className="h-3 w-16 ml-auto" /></TableHead>
-                    <TableHead><Skeleton className="h-3 w-12" /></TableHead>
-                    <TableHead><Skeleton className="h-3 w-14" /></TableHead>
+                    <TableHead>
+                      <Skeleton className="h-3 w-24" />
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <Skeleton className="h-3 w-20 ml-auto" />
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <Skeleton className="h-3 w-16 ml-auto" />
+                    </TableHead>
+                    <TableHead>
+                      <Skeleton className="h-3 w-12" />
+                    </TableHead>
+                    <TableHead>
+                      <Skeleton className="h-3 w-14" />
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {[...Array(4)].map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-10" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-36" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-12 ml-auto" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-4 w-12 ml-auto" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-10" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

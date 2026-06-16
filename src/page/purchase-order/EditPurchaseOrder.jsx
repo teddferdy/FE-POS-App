@@ -597,11 +597,7 @@ const EditPurchaseOrder = () => {
             <X size={18} /> {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
-            {updateMutation.isLoading ? (
-              <Loading size="sm" className="text-white" />
-            ) : (
-              <Save size={18} />
-            )}
+            <Save size={18} />
             {updateMutation.isLoading ? t("common.saving") : t("page.purchaseOrder.edit.saveChanges")}
           </Button>
         </div>
@@ -617,6 +613,7 @@ const EditPurchaseOrder = () => {
         cancelText={t("page.purchaseOrder.edit.cancelModalCancel")}
         onConfirm={() => navigate("/purchase-order")}
       />
+      {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

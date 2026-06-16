@@ -442,7 +442,7 @@ const AddProduct = () => {
     }
 
     if (hasBatch && batches.length > 0) {
-      const formattedBatches = batches.map(b => ({
+      const formattedBatches = batches.map((b) => ({
         ...b,
         expiryDate: b.expiryDate ? format(b.expiryDate, "yyyy-MM-dd") : null
       }));
@@ -812,7 +812,9 @@ const AddProduct = () => {
                             <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
                             <Input type="number" min="1" {...field} />
                             <p className="text-xs text-muted-foreground">
-                              {t("page.product.form.conversionFactorHelper", { value: field.value })}
+                              {t("page.product.form.conversionFactorHelper", {
+                                value: field.value
+                              })}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -913,7 +915,8 @@ const AddProduct = () => {
                       <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                         <Package size={18} className="text-primary" />
                         <h3 className="text-base font-semibold text-foreground">
-                          {t("page.product.form.composition")} <span className="text-destructive">*</span>
+                          {t("page.product.form.composition")}{" "}
+                          <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <div className="space-y-3">
@@ -926,7 +929,9 @@ const AddProduct = () => {
                                     value={c.name}
                                     onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
                                     className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                    <option value="">{t("page.product.form.selectIngredient")}</option>
+                                    <option value="">
+                                      {t("page.product.form.selectIngredient")}
+                                    </option>
                                     {compositionOptions.map((opt, i) => (
                                       <option key={i} value={opt.name}>
                                         {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -1025,7 +1030,9 @@ const AddProduct = () => {
                                 inputMode="numeric"
                                 placeholder="0"
                                 className="pl-10"
-                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/[^0-9]/g, "");
                                   field.onChange(raw ? Number(raw) : "");
@@ -1051,7 +1058,9 @@ const AddProduct = () => {
                                 inputMode="numeric"
                                 placeholder="0"
                                 className="pl-10"
-                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/[^0-9]/g, "");
                                   field.onChange(raw ? Number(raw) : "");
@@ -1213,7 +1222,16 @@ const AddProduct = () => {
                                   }}
                                   className="h-9 text-sm flex-1"
                                 />
-                                <DatePicker date={batch.expiryDate} setDate={(date) => setBatches((prev) => prev.map((b, i) => i === idx ? { ...b, expiryDate: date } : b))} />
+                                <DatePicker
+                                  date={batch.expiryDate}
+                                  setDate={(date) =>
+                                    setBatches((prev) =>
+                                      prev.map((b, i) =>
+                                        i === idx ? { ...b, expiryDate: date } : b
+                                      )
+                                    )
+                                  }
+                                />
                                 <Input
                                   type="number"
                                   placeholder={t("page.product.form.batchStockPlaceholder")}
@@ -1250,7 +1268,12 @@ const AddProduct = () => {
                             onClick={() =>
                               setBatches((prev) => [
                                 ...prev,
-                                { id: Date.now(), batchNumber: "", expiryDate: undefined, stock: "" }
+                                {
+                                  id: Date.now(),
+                                  batchNumber: "",
+                                  expiryDate: undefined,
+                                  stock: ""
+                                }
                               ])
                             }>
                             <Plus size={15} /> {t("page.product.form.addBatch")}
@@ -1680,11 +1703,7 @@ const AddProduct = () => {
                     {t("page.product.form.saveDraft")}
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
-                    {isSubmitting ? (
-                      <Loading size="sm" className="text-white" />
-                    ) : (
-                      <Save size={18} />
-                    )}
+                    <Save size={18} />
                     {t("page.product.form.save")}
                   </Button>
                 </>

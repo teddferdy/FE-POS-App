@@ -354,19 +354,21 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
         {/* Left */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1">
           <button
             onClick={onMenuToggle}
             className="lg:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Menu size={20} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground hidden sm:block">{t("header.appName")}</h1>
+            <h1 className="text-lg font-bold text-foreground hidden sm:block">
+              {t("header.appName")}
+            </h1>
           </div>
           <button
             data-tour="header-search"
             onClick={onOpenPalette}
-            className="hidden md:flex items-center gap-2 bg-muted/50 hover:bg-accent px-3 py-1.5 rounded-lg lg:rounded-full border border-border transition-colors text-muted-foreground text-sm">
+            className="hidden md:flex items-center gap-2 bg-muted/50 hover:bg-accent px-5 lg:px-6 py-1.5 rounded-lg lg:rounded-full border border-border transition-colors text-muted-foreground text-sm w-full max-w-xs lg:max-w-sm">
             <Search size={14} className="lg:size-[16px] shrink-0" />
             <span className="text-[11px] lg:text-sm">{t("header.search")}</span>
             <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-background rounded border border-border ml-4">

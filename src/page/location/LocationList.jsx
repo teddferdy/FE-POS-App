@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Eye, Store, Map } from "lucide-react";
 import { toast } from "sonner";
 import { getAllLocationTable, deleteLocation } from "@/services/location";
@@ -54,6 +55,16 @@ const LocationList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const categories = data?.categories || [];
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const handleDelete = (id) => {
     setDeleteTarget(id);
@@ -163,6 +174,48 @@ const LocationList = () => {
       }
     },
     {
+      header: t("page.location.table.createdAt"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {loc.createdAt
+            ? new Date(loc.createdAt).toLocaleDateString("id-ID", {
+                day: "numeric", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+              })
+            : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.updatedAt"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {loc.updatedAt
+            ? new Date(loc.updatedAt).toLocaleDateString("id-ID", {
+                day: "numeric", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+              })
+            : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.createdBy"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.location.table.modifiedBy"),
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "right",
       render: (loc) => (
@@ -223,8 +276,13 @@ const LocationList = () => {
         )}
       </PageHeader>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          variants={item}
           data-tour="location-stat-total"
           className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
@@ -242,8 +300,9 @@ const LocationList = () => {
           <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">store</span>
           </div>
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          variants={item}
           data-tour="location-stat-active"
           className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
@@ -264,8 +323,9 @@ const LocationList = () => {
           <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">check_circle</span>
           </div>
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          variants={item}
           data-tour="location-stat-inactive"
           className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
           <div>
@@ -283,8 +343,9 @@ const LocationList = () => {
           <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">cancel</span>
           </div>
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          variants={item}
           data-tour="location-stat-cities"
           className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
           <div>
@@ -302,10 +363,15 @@ const LocationList = () => {
           <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-3xl">location_city</span>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div data-tour="location-table">
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        data-tour="location-table">
         <DataTable
           columns={columns}
           data={filteredLocations}
@@ -381,8 +447,13 @@ const LocationList = () => {
             onPageChange: setPage
           }}
         />
-      </div>
+      </motion.div>
 
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}>
       {/* Map Preview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div
@@ -403,6 +474,7 @@ const LocationList = () => {
           </div>
         </div>
       </div>
+      </motion.div>
 
       <Modal
         type="confirm"

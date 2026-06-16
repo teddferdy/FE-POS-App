@@ -7,7 +7,13 @@ import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 
 const formatIDR = (num) => {
@@ -26,11 +32,9 @@ const CashRegisterHistory = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const { data: stores } = useQuery(
-    ["all-stores"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: stores } = useQuery(["all-stores"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const storeList = stores?.data || stores || [];
 
   const { data, isLoading } = useQuery(
@@ -44,8 +48,14 @@ const CashRegisterHistory = () => {
   const totalPages = data?.pagination?.totalPages || 1;
 
   const statusCfg = {
-    open: { label: t("page.cashRegister.history.statusOpen"), class: "bg-green-100 text-green-800" },
-    closed: { label: t("page.cashRegister.history.statusClosed"), class: "bg-gray-100 text-gray-800" }
+    open: {
+      label: t("page.cashRegister.history.statusOpen"),
+      class: "bg-green-100 text-green-800"
+    },
+    closed: {
+      label: t("page.cashRegister.history.statusClosed"),
+      class: "bg-gray-100 text-gray-800"
+    }
   };
 
   const columns = [
@@ -71,7 +81,9 @@ const CashRegisterHistory = () => {
       render: (item) => (
         <div className="text-xs">
           <div>{new Date(item.openedAt).toLocaleDateString("id")}</div>
-          <div className="text-muted-foreground">{new Date(item.openedAt).toTimeString().slice(0, 8)}</div>
+          <div className="text-muted-foreground">
+            {new Date(item.openedAt).toTimeString().slice(0, 8)}
+          </div>
         </div>
       )
     },
@@ -82,7 +94,9 @@ const CashRegisterHistory = () => {
           {item.closedAt ? (
             <>
               <div>{new Date(item.closedAt).toLocaleDateString("id")}</div>
-              <div className="text-muted-foreground">{new Date(item.closedAt).toTimeString().slice(0, 8)}</div>
+              <div className="text-muted-foreground">
+                {new Date(item.closedAt).toTimeString().slice(0, 8)}
+              </div>
             </>
           ) : (
             <span className="text-muted-foreground">-</span>
@@ -93,30 +107,22 @@ const CashRegisterHistory = () => {
     {
       header: t("page.cashRegister.history.openingBalance"),
       align: "right",
-      render: (item) => (
-        <span className="font-mono text-sm">{formatIDR(item.openingBalance)}</span>
-      )
+      render: (item) => <span className="font-mono text-sm">{formatIDR(item.openingBalance)}</span>
     },
     {
       header: t("page.cashRegister.history.sales"),
       align: "right",
-      render: (item) => (
-        <span className="font-mono text-sm">{formatIDR(item.totalSales)}</span>
-      )
+      render: (item) => <span className="font-mono text-sm">{formatIDR(item.totalSales)}</span>
     },
     {
       header: t("page.cashRegister.history.expenses"),
       align: "right",
-      render: (item) => (
-        <span className="font-mono text-sm">{formatIDR(item.totalExpenses)}</span>
-      )
+      render: (item) => <span className="font-mono text-sm">{formatIDR(item.totalExpenses)}</span>
     },
     {
       header: t("page.cashRegister.history.closingBalance"),
       align: "right",
-      render: (item) => (
-        <span className="font-mono text-sm">{formatIDR(item.closingBalance)}</span>
-      )
+      render: (item) => <span className="font-mono text-sm">{formatIDR(item.closingBalance)}</span>
     },
     {
       header: t("page.cashRegister.history.status"),
@@ -164,26 +170,35 @@ const CashRegisterHistory = () => {
           {t("page.cashRegister.history.breadcrumbCashier")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.cashRegister.history.breadcrumb")}</span>
+        <span className="text-primary font-semibold">
+          {t("page.cashRegister.history.breadcrumb")}
+        </span>
       </nav>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{t("page.cashRegister.history.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.cashRegister.history.desc")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.cashRegister.history.desc")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {isSuperAdmin && (
             <div className="w-56">
               <Select
                 value={String(selectedStore)}
-                onValueChange={(v) => { setSelectedStore(Number(v)); setPage(1); }}>
+                onValueChange={(v) => {
+                  setSelectedStore(Number(v));
+                  setPage(1);
+                }}>
                 <SelectTrigger className="h-9 text-sm">
                   <Store size={14} className="mr-1" />
                   <SelectValue placeholder={t("page.cashRegister.history.selectStore")} />
                 </SelectTrigger>
                 <SelectContent>
                   {storeList.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

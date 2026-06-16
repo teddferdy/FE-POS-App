@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import {
+  useQuery,
+  useMutation
+  // useQueryClient
+} from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -9,7 +13,13 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
@@ -25,13 +35,13 @@ const statusColors = {
 const TableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const MENU_KEY = "/table";
-  const isSuperAdmin = user?.role === "super_admin";
-  const locationParam = isSuperAdmin ? searchParams.get("location") : (user?.store?.toString() || "");
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const locationParam = isSuperAdmin ? searchParams.get("location") : user?.store?.toString() || "";
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -44,10 +54,7 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const { data: locationsData } = useQuery(
-    ["allLocations"],
-    getAllLocation
-  );
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || [];
 
   const { data, isLoading, refetch } = useQuery(
@@ -142,11 +149,7 @@ const TableList = () => {
               <Edit size={15} />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setQrTarget(row)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQrTarget(row)}>
             <QrCode size={15} />
           </Button>
           {canAccess(user, MENU_KEY, "delete") && (
@@ -203,8 +206,12 @@ const TableList = () => {
               <Store size={32} className="text-muted-foreground" />
             </div>
             <div>
-              <p className="text-lg font-semibold text-foreground">{t("page.table.noStore.title")}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t("page.table.noStore.description")}</p>
+              <p className="text-lg font-semibold text-foreground">
+                {t("page.table.noStore.title")}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("page.table.noStore.description")}
+              </p>
             </div>
             <Button onClick={() => navigate("/add-location")}>
               {t("page.table.noStore.action")}
@@ -213,49 +220,53 @@ const TableList = () => {
         </Card>
       ) : (
         <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.available ?? 0}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
-          <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.reserved ?? 0}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.occupied ?? 0}</p>
-        </Card>
-      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">
+                {data?.stats?.available ?? 0}
+              </p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
+              <p className="text-2xl font-bold text-yellow-600 mt-1">
+                {data?.stats?.reserved ?? 0}
+              </p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.occupied ?? 0}</p>
+            </Card>
+          </div>
 
-      <div className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder={t("page.table.list.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
-        />
-      </div>
+          <div className="relative w-full sm:w-72">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder={t("page.table.list.search")}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 h-10"
+            />
+          </div>
 
-      <DataTable
-        columns={columns}
-        data={tables}
-        isLoading={isLoading}
-        emptyIcon={Sofa}
-        emptyMessage={t("page.table.list.empty")}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+          <DataTable
+            columns={columns}
+            data={tables}
+            isLoading={isLoading}
+            emptyIcon={Sofa}
+            emptyMessage={t("page.table.list.empty")}
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
         </>
       )}
 

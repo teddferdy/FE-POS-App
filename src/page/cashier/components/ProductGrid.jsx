@@ -198,7 +198,7 @@ const ProductGrid = ({
 
       <div className="flex-1 overflow-y-auto p-3 lg:p-4">
         {isLoading ? (
-          <Loading />
+          <Loading fullscreen={false} />
         ) : products.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

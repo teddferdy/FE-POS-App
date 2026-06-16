@@ -52,12 +52,16 @@ const CashRegisterOpenClose = () => {
       }),
     {
       onSuccess: () => {
-        toast.success(t("page.cashRegister.openClose.success"), { description: t("page.cashRegister.openClose.openedDesc") });
+        toast.success(t("page.cashRegister.openClose.success"), {
+          description: t("page.cashRegister.openClose.openedDesc")
+        });
         queryClient.invalidateQueries(["cash-register"]);
         navigate("/cash-register/current");
       },
       onError: (err) =>
-        toast.error(t("page.cashRegister.openClose.fail"), { description: err?.response?.data?.message || err.message })
+        toast.error(t("page.cashRegister.openClose.fail"), {
+          description: err?.response?.data?.message || err.message
+        })
     }
   );
 
@@ -70,7 +74,9 @@ const CashRegisterOpenClose = () => {
           {t("page.cashRegister.openClose.breadcrumbDashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.cashRegister.openClose.breadcrumb")}</span>
+        <span className="text-primary font-semibold">
+          {t("page.cashRegister.openClose.breadcrumb")}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -94,7 +100,9 @@ const CashRegisterOpenClose = () => {
                 <Landmark size={20} className="text-primary" />
               </div>
               <div className="min-w-0">
-                <h2 className="font-semibold truncate">{t("page.cashRegister.openClose.openingBalanceTitle")}</h2>
+                <h2 className="font-semibold truncate">
+                  {t("page.cashRegister.openClose.openingBalanceTitle")}
+                </h2>
                 <p className="text-xs text-muted-foreground">
                   {t("page.cashRegister.openClose.openingBalanceDesc")}
                 </p>
@@ -125,7 +133,8 @@ const CashRegisterOpenClose = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  {t("page.cashRegister.openClose.amountLabel")} <span className="text-destructive">*</span>
+                  {t("page.cashRegister.openClose.amountLabel")}{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
@@ -151,7 +160,9 @@ const CashRegisterOpenClose = () => {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground font-normal">{t("page.cashRegister.openClose.quickSelect")}</Label>
+                <Label className="text-xs text-muted-foreground font-normal">
+                  {t("page.cashRegister.openClose.quickSelect")}
+                </Label>
                 <div className="flex flex-wrap gap-2">
                   {quickAmounts.map((amount) => (
                     <button
@@ -172,7 +183,9 @@ const CashRegisterOpenClose = () => {
 
             <div className="flex flex-col justify-between gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("page.cashRegister.openClose.notesLabel")}</Label>
+                <Label className="text-sm font-medium">
+                  {t("page.cashRegister.openClose.notesLabel")}
+                </Label>
                 <textarea
                   rows={4}
                   value={notes}
@@ -193,7 +206,11 @@ const CashRegisterOpenClose = () => {
                   disabled={openMut.isLoading || numericBalance <= 0}
                   className="gap-1.5">
                   <DollarSign size={16} />
-                  {openMut.isLoading ? t("page.cashRegister.openClose.opening") : t("page.cashRegister.openClose.openWithAmount", { amount: formatIDR(numericBalance) })}
+                  {openMut.isLoading
+                    ? t("page.cashRegister.openClose.opening")
+                    : t("page.cashRegister.openClose.openWithAmount", {
+                        amount: formatIDR(numericBalance)
+                      })}
                 </Button>
               </div>
             </div>

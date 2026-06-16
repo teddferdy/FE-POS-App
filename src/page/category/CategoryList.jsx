@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
   getAllCategoryTable,
@@ -127,6 +128,16 @@ const CategoryList = () => {
       (cat.code || cat.idCategory || "").toLowerCase().includes(q)
     );
   });
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const stats = [
     {
@@ -385,10 +396,15 @@ const CategoryList = () => {
         )}
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat) => (
-          <div
+          <motion.div
             key={stat.label}
+            variants={item}
             data-tour={stat.dataTour}
             className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
             <div className="flex justify-between items-start w-full mb-4">
@@ -411,11 +427,16 @@ const CategoryList = () => {
             <h3 className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
               {stat.value}
             </h3>
-          </div>
+            </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div data-tour="category-table">
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        data-tour="category-table">
         <DataTable
           columns={columns}
           data={filtered}
@@ -466,9 +487,14 @@ const CategoryList = () => {
           pagination={{ page, totalPages, total, onPageChange: setPage }}
           rowClassName={() => "group"}
         />
-      </div>
+      </motion.div>
 
-      <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
         <div className="flex items-center gap-2 mb-3">
           <span className="material-symbols-outlined opacity-80">lightbulb</span>
           <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
@@ -493,7 +519,7 @@ const CategoryList = () => {
             <span>{t("page.category.tips.4")}</span>
           </li>
         </ul>
-      </div>
+      </motion.div>
 
       <Modal
         type="confirm"

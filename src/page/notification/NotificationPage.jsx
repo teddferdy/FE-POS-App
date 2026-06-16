@@ -12,7 +12,11 @@ import {
   DollarSign,
   Tag,
   Truck,
-  FileText
+  FileText,
+  Clock,
+  Fingerprint,
+  Hash,
+  Store
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import PageHeader from "@/components/ui/PageHeader";
@@ -20,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { getAllNotifications, markAsRead, markAllAsRead } from "@/services/notification";
 import { useSocket } from "@/services/socket";
+import Modal from "@/components/organism/modal";
 
 const typeIcons = {
   employee_created: {
@@ -150,6 +155,7 @@ const NotificationPage = () => {
   const queryClient = useQueryClient();
   const { newNotification, setNewNotification } = useSocket() || {};
   const [page, setPage] = useState(1);
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
   const { data, isLoading } = useQuery(
     ["notifications", page],
@@ -187,6 +193,26 @@ const NotificationPage = () => {
     if (hours < 24) return `${hours}h`;
     const days = Math.floor(hours / 24);
     return `${days}d`;
+  };
+
+  const formatFullDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch {
+      return "-";
+    }
+  };
+
+  const handleViewDetail = (notif) => {
+    setSelectedNotif(notif);
+    if (!notif.isRead) readMutate(notif.id);
   };
 
   return (
@@ -228,7 +254,8 @@ const NotificationPage = () => {
                 return (
                   <div
                     key={notif.id}
-                    className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-colors ${
+                    onClick={() => handleViewDetail(notif)}
+                    className={`group relative flex items-start gap-4 p-4 rounded-xl border transition-colors cursor-pointer ${
                       !notif.isRead
                         ? "bg-primary/5 border-primary/20"
                         : "bg-card border-border hover:bg-accent/50"
@@ -253,7 +280,10 @@ const NotificationPage = () => {
                     </div>
                     {!notif.isRead && (
                       <button
-                        onClick={() => readMutate(notif.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          readMutate(notif.id);
+                        }}
                         className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
                         <X size={14} />
                       </button>
@@ -287,6 +317,100 @@ const NotificationPage = () => {
           )}
         </>
       )}
+
+      <Modal
+        open={!!selectedNotif}
+        onOpenChange={(open) => {
+          if (!open) setSelectedNotif(null);
+        }}
+        type="detail"
+        title={selectedNotif?.title || ""}>
+        {selectedNotif && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3 pb-4 border-b">
+              {(() => {
+                const cfg = typeIcons[selectedNotif.type] || defaultIcon;
+                const Icon = cfg.icon;
+                return (
+                  <div className={`p-3 rounded-full ${cfg.bg} ${cfg.color}`}>
+                    <Icon size={22} />
+                  </div>
+                );
+              })()}
+              <div>
+                <h3 className="text-lg font-semibold">{selectedNotif.title}</h3>
+                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                  {selectedNotif.type}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground mb-1 font-medium">Description</p>
+              <p className="text-sm">{selectedNotif.description}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Hash size={14} />
+                <span>
+                  ID: <strong className="text-foreground">{selectedNotif.id}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User size={14} />
+                <span>
+                  Created By:{" "}
+                  <strong className="text-foreground">{selectedNotif.createdBy ?? "-"}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Store size={14} />
+                <span>
+                  Store:{" "}
+                  <strong className="text-foreground">{selectedNotif.storeName ?? "-"}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Fingerprint size={14} />
+                <span>
+                  Reference:{" "}
+                  <strong className="text-foreground">
+                    {selectedNotif.referenceType} #{selectedNotif.referenceId}
+                  </strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock size={14} />
+                <span>
+                  Created:{" "}
+                  <strong className="text-foreground">
+                    {formatFullDate(selectedNotif.createdAt)}
+                  </strong>
+                </span>
+              </div>
+            </div>
+
+            {selectedNotif.updatedAt && selectedNotif.updatedAt !== selectedNotif.createdAt && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
+                <Clock size={14} />
+                <span>
+                  Updated:{" "}
+                  <strong className="text-foreground">
+                    {formatFullDate(selectedNotif.updatedAt)}
+                  </strong>
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setSelectedNotif(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

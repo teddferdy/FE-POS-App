@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Upload, Download, Package } from "lucide-react";
 import { toast } from "sonner";
 import { getAllProductTable, deleteProduct } from "@/services/product";
@@ -250,6 +251,16 @@ const ProductList = () => {
     }
   ];
 
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
+
   return (
     <div data-tour="page-products" className="space-y-6">
       {/* Breadcrumb */}
@@ -282,7 +293,11 @@ const ProductList = () => {
       </nav>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <motion.div
+        variants={item}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.product.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.product.list.description")}</p>
@@ -310,9 +325,13 @@ const ProductList = () => {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
-      <div
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
         data-tour="product-search"
         className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
         <div className="flex-1 w-full relative">
@@ -349,9 +368,14 @@ const ProductList = () => {
             <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
           </select>
         </div>
-      </div>
+      </motion.div>
 
-      <div data-tour="product-table">
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        data-tour="product-table">
         <DataTable
           columns={columns}
           data={filteredProducts}
@@ -365,7 +389,7 @@ const ProductList = () => {
             onPageChange: setPage
           }}
         />
-      </div>
+      </motion.div>
 
       <Modal
         type="confirm"

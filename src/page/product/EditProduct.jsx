@@ -267,9 +267,7 @@ const EditProduct = () => {
   useEffect(() => {
     if (tipeProduk === "bahan_baku") {
       const store =
-        Array.isArray(product.store) && product.store.length > 0
-          ? product.store[0]
-          : null;
+        Array.isArray(product.store) && product.store.length > 0 ? product.store[0] : null;
       if (store) {
         checkStockOpnameExists(store)
           .then((res) => setNoStockOpname(!res?.data?.exists))
@@ -282,9 +280,7 @@ const EditProduct = () => {
 
   useEffect(() => {
     const store =
-      Array.isArray(product.store) && product.store.length > 0
-        ? product.store[0]
-        : null;
+      Array.isArray(product.store) && product.store.length > 0 ? product.store[0] : null;
     if (store) {
       getStockOpnameCompositionItems(store)
         .then((res) => setCompositionOptions(res?.data || []))
@@ -312,7 +308,8 @@ const EditProduct = () => {
     },
     onError: (err) => {
       toast.error(t("page.product.form.failed"), {
-        description: err?.response?.data?.message || err.message || t("page.product.form.failedEditProduct")
+        description:
+          err?.response?.data?.message || err.message || t("page.product.form.failedEditProduct")
       });
       setIsSubmitting(false);
     }
@@ -320,7 +317,9 @@ const EditProduct = () => {
 
   const updateStorePriceMutation = useMutation(updateProductPriceByStore, {
     onSuccess: () => {
-      toast.success(t("page.product.form.success"), { description: t("page.product.form.storePriceUpdated") });
+      toast.success(t("page.product.form.success"), {
+        description: t("page.product.form.storePriceUpdated")
+      });
       queryClient.invalidateQueries(["product-store-prices"]);
       setSavingStoreId(null);
     },
@@ -342,7 +341,10 @@ const EditProduct = () => {
   };
 
   const addVariantGroup = () => {
-    setVariantGroups((prev) => [...prev, { id: Date.now(), name: "", options: [{ name: "", price: 0, stock: 0 }] }]);
+    setVariantGroups((prev) => [
+      ...prev,
+      { id: Date.now(), name: "", options: [{ name: "", price: 0, stock: 0 }] }
+    ]);
     form.setValue("isOption", true);
   };
 
@@ -357,7 +359,9 @@ const EditProduct = () => {
 
   const addVariantOption = (groupId) => {
     setVariantGroups((prev) =>
-      prev.map((g) => (g.id === groupId ? { ...g, options: [...g.options, { name: "", price: 0, stock: 0 }] } : g))
+      prev.map((g) =>
+        g.id === groupId ? { ...g, options: [...g.options, { name: "", price: 0, stock: 0 }] } : g
+      )
     );
   };
 
@@ -365,7 +369,10 @@ const EditProduct = () => {
     setVariantGroups((prev) =>
       prev.map((g) =>
         g.id === groupId
-          ? { ...g, options: g.options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)) }
+          ? {
+              ...g,
+              options: g.options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt))
+            }
           : g
       )
     );
@@ -536,9 +543,7 @@ const EditProduct = () => {
   };
 
   if (loadingProduct) {
-    return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
-    );
+    return <Loading fullscreen size="lg" label="Memuat data..." />;
   }
 
   if (!productId || (!loadingProduct && !product.id)) {
@@ -864,7 +869,9 @@ const EditProduct = () => {
                               onChange={field.onChange}
                               placeholder={t("page.product.form.baseUnitPlaceholder")}
                             />
-                            <p className="text-xs text-muted-foreground mt-1">{t("page.product.form.baseUnitHelper")}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("page.product.form.baseUnitHelper")}
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -876,7 +883,11 @@ const EditProduct = () => {
                           <FormItem>
                             <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
                             <Input type="number" min="1" {...field} />
-                            <p className="text-xs text-muted-foreground">{t("page.product.form.conversionFactorHelper", { value: field.value })}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.product.form.conversionFactorHelper", {
+                                value: field.value
+                              })}
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -904,7 +915,8 @@ const EditProduct = () => {
                       <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                         <Package size={18} className="text-primary" />
                         <h3 className="text-base font-semibold text-foreground">
-                          {t("page.product.form.composition")} <span className="text-destructive">*</span>
+                          {t("page.product.form.composition")}{" "}
+                          <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <div className="space-y-3">
@@ -917,7 +929,9 @@ const EditProduct = () => {
                                     value={c.name}
                                     onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
                                     className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                    <option value="">{t("page.product.form.selectIngredient")}</option>
+                                    <option value="">
+                                      {t("page.product.form.selectIngredient")}
+                                    </option>
                                     {compositionOptions.map((opt, i) => (
                                       <option key={i} value={opt.name}>
                                         {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -1016,7 +1030,9 @@ const EditProduct = () => {
                                 inputMode="numeric"
                                 placeholder="0"
                                 className="pl-10"
-                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/[^0-9]/g, "");
                                   field.onChange(raw ? Number(raw) : "");
@@ -1042,7 +1058,9 @@ const EditProduct = () => {
                                 inputMode="numeric"
                                 placeholder="0"
                                 className="pl-10"
-                                value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/[^0-9]/g, "");
                                   field.onChange(raw ? Number(raw) : "");
@@ -1221,11 +1239,7 @@ const EditProduct = () => {
                                   disabled={savingStoreId === sp.storeId}
                                   onClick={() => handleSaveStorePrice(sp.storeId, sp.price)}
                                   className="h-9 shrink-0">
-                                  {savingStoreId === sp.storeId ? (
-                                    <Loading size="sm" />
-                                  ) : (
-                                    t("page.product.form.saveStorePrice")
-                                  )}
+                                  {t("page.product.form.saveStorePrice")}
                                 </Button>
                               </div>
                             </div>
@@ -1314,7 +1328,12 @@ const EditProduct = () => {
                                         value={Number(opt.price || 0).toLocaleString("id-ID")}
                                         onChange={(e) => {
                                           const raw = e.target.value.replace(/[^0-9]/g, "");
-                                          updateVariantOption(group.id, idx, "price", raw ? Number(raw) : 0);
+                                          updateVariantOption(
+                                            group.id,
+                                            idx,
+                                            "price",
+                                            raw ? Number(raw) : 0
+                                          );
                                         }}
                                         className="h-9 text-sm pl-8"
                                       />
@@ -1655,11 +1674,7 @@ const EditProduct = () => {
                     {t("page.product.form.saveDraft")}
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
-                    {isSubmitting ? (
-                      <Loading size="sm" className="text-white" />
-                    ) : (
-                      <Save size={18} />
-                    )}
+                    <Save size={18} />
                     {t("page.product.form.saveEdit")}
                   </Button>
                 </>
@@ -1704,6 +1719,7 @@ const EditProduct = () => {
       />
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.product.form.savingEdit")} />}
+      {savingStoreId && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 const sizes = {
@@ -50,15 +51,7 @@ const ProgressBar = ({ value, className }) => (
 
 const Loading = React.forwardRef(
   (
-    {
-      className,
-      size = "default",
-      label,
-      fullscreen = false,
-      variant = "ring",
-      progress,
-      ...props
-    },
+    { className, size = "default", label, fullscreen = true, variant = "ring", progress, ...props },
     ref
   ) => {
     const sizeClass = sizes[size] || sizes.default;
@@ -83,11 +76,7 @@ const Loading = React.forwardRef(
         {...props}>
         {indicator}
         {label && (
-          <p
-            className={cn(
-              "font-medium text-muted-foreground/80 tracking-wide",
-              sizeClass.text
-            )}>
+          <p className={cn("font-medium text-muted-foreground/80 tracking-wide", sizeClass.text)}>
             {label}
           </p>
         )}
@@ -101,7 +90,7 @@ const Loading = React.forwardRef(
 
     if (!fullscreen) return content;
 
-    return (
+    return createPortal(
       <div
         className="fixed inset-0 z-[80] flex items-center justify-center bg-background/60 backdrop-blur-sm"
         style={{ animation: "loading-fade-in 0.2s ease-out" }}>
@@ -119,7 +108,8 @@ const Loading = React.forwardRef(
             </>
           )}
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 );

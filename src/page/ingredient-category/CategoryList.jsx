@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { Plus, Package } from "lucide-react";
 import { getAllIngredientCategory, deleteIngredientCategory } from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,16 @@ const CategoryList = () => {
       iconColor: "text-red-700 dark:text-red-300"
     }
   ];
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const columns = [
     {
@@ -173,9 +184,13 @@ const CategoryList = () => {
         )}
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-card p-6 rounded-xl border border-border shadow-sm">
+          <motion.div key={stat.label} variants={item} className="bg-card p-6 rounded-xl border border-border shadow-sm">
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center ${stat.iconColor}`}>
                 <stat.icon size={24} />
@@ -185,36 +200,48 @@ const CategoryList = () => {
                 <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               </div>
             </div>
-          </div>
+            </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        isLoading={isLoading}
-        emptyMessage={t("page.ingredientCategory.list.emptyText")}
-        emptyIcon={Package}
-        toolbar={
-          <div className="p-4 pb-0">
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-              className="max-w-xs h-10"
-            />
-          </div>
-        }
-      />
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          isLoading={isLoading}
+          emptyMessage={t("page.ingredientCategory.list.emptyText")}
+          emptyIcon={Package}
+          toolbar={
+            <div className="p-4 pb-0">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                className="max-w-xs h-10"
+              />
+            </div>
+          }
+        />
+      </motion.div>
 
-      <TipsCard
-        tips={[
-          t("page.ingredientCategory.list.tips.1"),
-          t("page.ingredientCategory.list.tips.2"),
-          t("page.ingredientCategory.list.tips.3"),
-          t("page.ingredientCategory.list.tips.4")
-        ]}
-      />
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}>
+        <TipsCard
+          tips={[
+            t("page.ingredientCategory.list.tips.1"),
+            t("page.ingredientCategory.list.tips.2"),
+            t("page.ingredientCategory.list.tips.3"),
+            t("page.ingredientCategory.list.tips.4")
+          ]}
+        />
+      </motion.div>
 
       <Modal
         type="confirm"

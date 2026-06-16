@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import {
   TrendingUp,
   TrendingDown,
@@ -161,6 +162,16 @@ const Dashboard = () => {
   const bestSelling = d.bestSellers || [];
   const recentOrders = d.recentOrders || [];
 
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
+
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -187,54 +198,14 @@ const Dashboard = () => {
                 <Skeleton className="h-[220px] w-full rounded-lg" />
               </div>
             </div>
-            <div className="lg:col-span-4 bg-card rounded-xl border border-border overflow-hidden">
-              <div className="p-5 border-b border-border">
-                <Skeleton className="h-5 w-32 mb-2" />
-                <Skeleton className="h-3 w-44" />
-              </div>
-              <div className="divide-y divide-border">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-9 w-9 rounded-lg" />
-                      <div>
-                        <Skeleton className="h-4 w-28 mb-1" />
-                        <Skeleton className="h-3 w-20" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-5 w-10 rounded" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="p-5 border-b border-border">
-              <Skeleton className="h-5 w-36 mb-2" />
-              <Skeleton className="h-3 w-48" />
-            </div>
-            <div className="p-5">
-              <div className="flex gap-4 pb-3 border-b border-border mb-3">
-                {[...Array(7)].map((_, i) => (
-                  <Skeleton key={i} className="h-4 flex-1" />
-                ))}
-              </div>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex gap-4 py-3 border-b border-border">
-                  {[...Array(7)].map((_, j) => (
-                    <Skeleton
-                      key={j}
-                      className={`h-4 ${j === 0 ? "w-24" : j === 6 ? "w-16" : "flex-1"}`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
           </div>
         </>
       ) : (
         <>
-          <div
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
             data-tour="dashboard-stats"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {summaryCards.map((card) => {
@@ -243,8 +214,9 @@ const Dashboard = () => {
               const isMember = card.icon === Users;
               const isClickable = isLowStock || isMember;
               return (
-                <div
+                <motion.div
                   key={card.label}
+                  variants={item}
                   onClick={
                     isLowStock
                       ? () => navigate("/low-stock-all")
@@ -269,12 +241,17 @@ const Dashboard = () => {
                     {card.trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                     <span className="text-xs font-medium">{card.trend}</span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+            </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div
               data-tour="dashboard-chart"
               className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">
@@ -398,9 +375,13 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
             data-tour="dashboard-orders"
             className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
@@ -489,7 +470,7 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         </>
       )}
     </div>

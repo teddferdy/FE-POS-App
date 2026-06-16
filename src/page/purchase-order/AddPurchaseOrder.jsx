@@ -658,11 +658,7 @@ const AddPurchaseOrder = () => {
               type="submit"
               disabled={createMutation.isLoading}
               className="gap-2 min-w-[140px] shadow-md">
-              {createMutation.isLoading ? (
-                <Loading size="sm" className="text-white" />
-              ) : (
-                <Save size={18} />
-              )}
+              <Save size={18} />
               {createMutation.isLoading ? t("common.saving") : t("page.purchaseOrder.add.savePo")}
             </Button>
           </div>
@@ -679,6 +675,7 @@ const AddPurchaseOrder = () => {
         cancelText={t("page.purchaseOrder.add.cancelModalBack")}
         onConfirm={() => navigate("/purchase-order")}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

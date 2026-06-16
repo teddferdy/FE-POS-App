@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -44,6 +45,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
+import { TipsCard } from "@/components/ui/tips-card";
 
 const PurchaseOrderList = () => {
   const { t } = useTranslation();
@@ -65,6 +67,18 @@ const PurchaseOrderList = () => {
       label: t("page.purchaseOrder.status.cancelled"),
       class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
     }
+  };
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
   };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -96,7 +110,13 @@ const PurchaseOrderList = () => {
       queryClient.invalidateQueries(["purchase-orders"]);
       setPayModal(false);
       setPayPo(null);
-      setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
+      setPayForm({
+        amount: "",
+        paymentDate: undefined,
+        paymentMethod: "cash",
+        reference: "",
+        notes: ""
+      });
     },
     onError: (err) => {
       toast.error(t("page.purchaseOrder.detail.toast.paymentRecordFailed"), {
@@ -147,7 +167,9 @@ const PurchaseOrderList = () => {
       }),
     {
       onSuccess: () => {
-        toast.success(t("common.success"), { description: t("page.purchaseOrder.detail.toast.returnSuccess") });
+        toast.success(t("common.success"), {
+          description: t("page.purchaseOrder.detail.toast.returnSuccess")
+        });
         queryClient.invalidateQueries(["purchase-orders"]);
         setReturModal(false);
         setReturPo(null);
@@ -155,7 +177,9 @@ const PurchaseOrderList = () => {
         setReturItems([]);
       },
       onError: (err) => {
-        toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
+        toast.error(t("common.failed"), {
+          description: err?.response?.data?.message || err.message
+        });
       }
     }
   );
@@ -179,7 +203,9 @@ const PurchaseOrderList = () => {
       await downloadPurchaseOrderExcel();
       toast.success(t("page.purchaseOrder.detail.toast.excelDownloaded"));
     } catch (err) {
-      toast.error(t("page.purchaseOrder.detail.toast.excelDownloadFailed"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.purchaseOrder.detail.toast.excelDownloadFailed"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   };
 
@@ -193,7 +219,9 @@ const PurchaseOrderList = () => {
       setImportModal(false);
       setImportFile(null);
     } catch (err) {
-      toast.error(t("page.purchaseOrder.detail.toast.importFailed"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.purchaseOrder.detail.toast.importFailed"), {
+        description: err?.response?.data?.message || err.message
+      });
     } finally {
       setImportLoading(false);
     }
@@ -366,20 +394,27 @@ const PurchaseOrderList = () => {
             title={t("page.purchaseOrder.list.action.detail")}>
             <Eye size={15} />
           </Button>
-          {po.status !== "cancelled" && (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-green-600"
-              onClick={() => {
-                setPayPo(po);
-                setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
-                setPayModal(true);
-              }}
-              title={t("page.purchaseOrder.list.action.pay")}>
-              <Wallet size={15} />
-            </Button>
-          )}
+          {po.status !== "cancelled" &&
+            (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                onClick={() => {
+                  setPayPo(po);
+                  setPayForm({
+                    amount: "",
+                    paymentDate: undefined,
+                    paymentMethod: "cash",
+                    reference: "",
+                    notes: ""
+                  });
+                  setPayModal(true);
+                }}
+                title={t("page.purchaseOrder.list.action.pay")}>
+                <Wallet size={15} />
+              </Button>
+            )}
           {po.status === "pending" && (
             <>
               <Button
@@ -433,17 +468,23 @@ const PurchaseOrderList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.purchaseOrder.list.title")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.purchaseOrder.list.title")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.purchaseOrder.list.title")}
@@ -458,83 +499,113 @@ const PurchaseOrderList = () => {
             {t("breadcrumb.add")}
           </Button>
         )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.title")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.status")}</p>
-          <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.pending ?? 0}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.received ?? 0}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.delete")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.cancelled ?? 0}</p>
-        </Card>
-      </div>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.title")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.status")}</p>
+            <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.pending ?? 0}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.received ?? 0}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.delete")}</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.cancelled ?? 0}</p>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        {isSuperAdmin && (
-          <select
-            value={storeFilter}
-            onChange={(e) => {
-              setStoreFilter(e.target.value);
-              setPage(1);
-            }}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-            <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
-            {(locations?.data || []).map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
-              </option>
-            ))}
-          </select>
-        )}
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9 h-10"
-          />
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="space-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {isSuperAdmin && (
+            <select
+              value={storeFilter}
+              onChange={(e) => {
+                setStoreFilter(e.target.value);
+                setPage(1);
+              }}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+              <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
+              {(locations?.data || []).map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <div className="relative w-full sm:w-72">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 h-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
+              <Download size={14} />
+              {t("page.purchaseOrder.list.export")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setImportModal(true)}>
+              <Upload size={14} />
+              {t("page.purchaseOrder.list.import")}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
-            <Download size={14} />
-            {t("page.purchaseOrder.list.export")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => setImportModal(true)}>
-            <Upload size={14} />
-            {t("page.purchaseOrder.list.import")}
-          </Button>
-        </div>
-      </div>
 
-      <DataTable
-        columns={columns}
-        data={orders}
-        isLoading={isLoading}
-        emptyMessage={t("page.purchaseOrder.list.empty")}
-        emptyIcon={Package}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+        <DataTable
+          columns={columns}
+          data={orders}
+          isLoading={isLoading}
+          emptyMessage={t("page.purchaseOrder.list.empty")}
+          emptyIcon={Package}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+        />
+      </motion.div>
+
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <TipsCard
+          tips={[
+            t("page.purchaseOrder.list.tips.1"),
+            t("page.purchaseOrder.list.tips.2"),
+            t("page.purchaseOrder.list.tips.3"),
+            t("page.purchaseOrder.list.tips.4")
+          ]}
+        />
+      </motion.div>
 
       {returModal &&
         returPo &&
@@ -542,24 +613,34 @@ const PurchaseOrderList = () => {
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
             <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.detail.returModalTitle")}</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.detail.returModalTitle")}
+                </h3>
               </div>
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poNumber")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.poNumber")}
+                    </p>
                     <p className="font-medium">{returPo.orderNumber || `PO-${returPo.id}`}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.supplier")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.supplier")}
+                    </p>
                     <p className="font-medium">{returPo.supplierData?.name || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.pic")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.pic")}
+                    </p>
                     <p className="font-medium">{returPo.picData?.fullName || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poDate")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.poDate")}
+                    </p>
                     <p className="font-medium">
                       {returPo.orderDate
                         ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
@@ -571,7 +652,9 @@ const PurchaseOrderList = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poTime")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.poTime")}
+                    </p>
                     <p className="font-medium">
                       {returPo.orderDate
                         ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
@@ -582,14 +665,18 @@ const PurchaseOrderList = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.store")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.returInfo.store")}
+                    </p>
                     <p className="font-medium">{returPo.storeData?.name || "-"}</p>
                   </div>
                 </div>
 
                 {returItems.length > 0 && (
                   <div>
-                    <p className="text-sm font-semibold text-foreground mb-2">{t("page.purchaseOrder.list.returInfo.itemTitle")}</p>
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      {t("page.purchaseOrder.list.returInfo.itemTitle")}
+                    </p>
                     <div className="overflow-x-auto border rounded-lg">
                       <table className="w-full text-sm">
                         <thead>
@@ -655,7 +742,9 @@ const PurchaseOrderList = () => {
                 )}
 
                 <div>
-                  <label className="text-sm text-muted-foreground block mb-1">{t("page.purchaseOrder.list.returInfo.reasonLabel")}</label>
+                  <label className="text-sm text-muted-foreground block mb-1">
+                    {t("page.purchaseOrder.list.returInfo.reasonLabel")}
+                  </label>
                   <textarea
                     className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
@@ -691,7 +780,9 @@ const PurchaseOrderList = () => {
                         notes: ""
                       }));
                     if (itemsToReturn.length === 0) {
-                      toast.error(t("page.purchaseOrder.list.returInfo.validationTitle"), { description: t("page.purchaseOrder.list.returInfo.validationDesc") });
+                      toast.error(t("page.purchaseOrder.list.returInfo.validationTitle"), {
+                        description: t("page.purchaseOrder.list.returInfo.validationDesc")
+                      });
                       return;
                     }
                     returnMutation.mutate({
@@ -701,7 +792,9 @@ const PurchaseOrderList = () => {
                     });
                   }}
                   disabled={!returReason.trim() || returnMutation.isLoading}>
-                  {returnMutation.isLoading ? t("common.processing") : t("page.purchaseOrder.list.returInfo.confirmButton")}
+                  {returnMutation.isLoading
+                    ? t("common.processing")
+                    : t("page.purchaseOrder.list.returInfo.confirmButton")}
                 </Button>
               </div>
             </div>
@@ -714,7 +807,9 @@ const PurchaseOrderList = () => {
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
             <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
               <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.list.importModalTitle")}</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.list.importModalTitle")}
+                </h3>
               </div>
               <div className="p-6 space-y-4">
                 <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
@@ -753,125 +848,172 @@ const PurchaseOrderList = () => {
           document.body
         )}
 
-      {payModal && payPo && createPortal(
-        <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-          <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-border">
-              <h3 className="text-lg font-semibold">{t("page.purchaseOrder.detail.recordPaymentTitle")}</h3>
+      {payModal &&
+        payPo &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.detail.recordPaymentTitle")}
+                </h3>
+              </div>
+              <div className="p-6 space-y-5">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.payInfo.poNumber")}
+                    </p>
+                    <p className="font-medium">{payPo.orderNumber || `PO-${payPo.id}`}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.payInfo.supplier")}
+                    </p>
+                    <p className="font-medium">{payPo.supplierData?.name || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.payInfo.total")}
+                    </p>
+                    <p className="font-medium">
+                      Rp{" "}
+                      {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.purchaseOrder.list.payInfo.remaining")}
+                    </p>
+                    <p className="font-medium text-red-500">
+                      Rp{" "}
+                      {Number(
+                        (payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)
+                      ).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-t border-border" />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {t("page.purchaseOrder.detail.paymentAmount")}{" "}
+                    <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                      Rp
+                    </span>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={payForm.amount ? Number(payForm.amount).toLocaleString("id-ID") : ""}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, "");
+                        setPayForm({ ...payForm, amount: raw ? Number(raw) : "" });
+                      }}
+                      className="pl-10 h-11 text-base"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("page.purchaseOrder.detail.paymentDate")}
+                    </Label>
+                    <DatePicker
+                      date={payForm.paymentDate}
+                      setDate={(date) => setPayForm({ ...payForm, paymentDate: date })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("page.purchaseOrder.detail.paymentMethod")}
+                    </Label>
+                    <Select
+                      value={payForm.paymentMethod}
+                      onValueChange={(value) => setPayForm({ ...payForm, paymentMethod: value })}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="z-[90]">
+                        <SelectItem value="cash">
+                          {t("page.purchaseOrder.paymentMethod.cash")}
+                        </SelectItem>
+                        <SelectItem value="transfer">
+                          {t("page.purchaseOrder.paymentMethod.transfer")}
+                        </SelectItem>
+                        <SelectItem value="giro">
+                          {t("page.purchaseOrder.paymentMethod.giro")}
+                        </SelectItem>
+                        <SelectItem value="other">
+                          {t("page.purchaseOrder.paymentMethod.other")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <hr className="border-t border-border" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("page.purchaseOrder.detail.reference")}
+                    </Label>
+                    <Input
+                      placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
+                      value={payForm.reference}
+                      onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {t("page.purchaseOrder.detail.notes")}
+                    </Label>
+                    <Input
+                      placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
+                      value={payForm.notes}
+                      onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPayModal(false);
+                    setPayPo(null);
+                  }}>
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (!payForm.amount || Number(payForm.amount) <= 0) {
+                      toast.error(t("page.purchaseOrder.detail.validation.paymentRequired"));
+                      return;
+                    }
+                    payMutation.mutate({
+                      purchaseOrder: payPo.id,
+                      supplier: payPo.supplier,
+                      amount: Number(payForm.amount),
+                      paymentDate: payForm.paymentDate
+                        ? format(payForm.paymentDate, "yyyy-MM-dd")
+                        : format(new Date(), "yyyy-MM-dd"),
+                      paymentMethod: payForm.paymentMethod,
+                      reference: payForm.reference,
+                      notes: payForm.notes
+                    });
+                  }}
+                  disabled={payMutation.isLoading}>
+                  {payMutation.isLoading ? t("common.processing") : t("common.save")}
+                </Button>
+              </div>
             </div>
-            <div className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.poNumber")}</p>
-                  <p className="font-medium">{payPo.orderNumber || `PO-${payPo.id}`}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.supplier")}</p>
-                  <p className="font-medium">{payPo.supplierData?.name || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.total")}</p>
-                  <p className="font-medium">Rp {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString("id-ID")}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.remaining")}</p>
-                  <p className="font-medium text-red-500">
-                    Rp {Number((payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)).toLocaleString("id-ID")}
-                  </p>
-                </div>
-              </div>
-              <hr className="border-t border-border" />
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("page.purchaseOrder.detail.paymentAmount")} <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={payForm.amount ? Number(payForm.amount).toLocaleString("id-ID") : ""}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9]/g, "");
-                      setPayForm({ ...payForm, amount: raw ? Number(raw) : "" });
-                    }}
-                    className="pl-10 h-11 text-base"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.paymentDate")}</Label>
-                  <DatePicker date={payForm.paymentDate} setDate={(date) => setPayForm({...payForm, paymentDate: date})} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.paymentMethod")}</Label>
-                  <Select
-                    value={payForm.paymentMethod}
-                    onValueChange={(value) => setPayForm({ ...payForm, paymentMethod: value })}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[90]">
-                      <SelectItem value="cash">{t("page.purchaseOrder.paymentMethod.cash")}</SelectItem>
-                      <SelectItem value="transfer">{t("page.purchaseOrder.paymentMethod.transfer")}</SelectItem>
-                      <SelectItem value="giro">{t("page.purchaseOrder.paymentMethod.giro")}</SelectItem>
-                      <SelectItem value="other">{t("page.purchaseOrder.paymentMethod.other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <hr className="border-t border-border" />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.reference")}</Label>
-                  <Input
-                    placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
-                    value={payForm.reference}
-                    onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.notes")}</Label>
-                  <Input
-                    placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
-                    value={payForm.notes}
-                    onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
-                    className="h-11"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-              <Button variant="outline" onClick={() => { setPayModal(false); setPayPo(null); }}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                onClick={() => {
-                  if (!payForm.amount || Number(payForm.amount) <= 0) {
-                    toast.error(t("page.purchaseOrder.detail.validation.paymentRequired"));
-                    return;
-                  }
-                  payMutation.mutate({
-                    purchaseOrder: payPo.id,
-                    supplier: payPo.supplier,
-                    amount: Number(payForm.amount),
-                    paymentDate: payForm.paymentDate ? format(payForm.paymentDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-                    paymentMethod: payForm.paymentMethod,
-                    reference: payForm.reference,
-                    notes: payForm.notes
-                  });
-                }}
-                disabled={payMutation.isLoading}>
-                {payMutation.isLoading ? t("common.processing") : t("common.save")}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

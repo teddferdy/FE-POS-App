@@ -40,14 +40,12 @@ const AddCategory = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
 
-  const role = user?.role || "";
+  const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({
@@ -267,9 +265,15 @@ const AddCategory = () => {
                               }`}>
                               {loc.name}
                               {isChecked && (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                  stroke="currentColor" strokeWidth="2.5"
-                                  strokeLinecap="round" strokeLinejoin="round">
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round">
                                   <polyline points="20 6 9 17 4 12" />
                                 </svg>
                               )}
