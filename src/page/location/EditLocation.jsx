@@ -47,6 +47,7 @@ import {
 import Modal from "@/components/organism/modal";
 import LocationMapPicker from "@/components/ui/location-map-picker";
 import { Combobox } from "@/components/ui/combobox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { editLocation, getLocationById } from "@/services/location";
 import {
   getProvinces,
@@ -1065,12 +1066,26 @@ const EditLocation = () => {
                   <div className="border border-border rounded-lg p-4 bg-muted/20 space-y-3">
                     {socialLinks.map((link, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <Input
-                          placeholder={t("page.location.form.socialPlatform")}
-                          value={link.platform}
-                          onChange={(e) => updateSocial(idx, "platform", e.target.value)}
-                          className="flex-1"
-                        />
+                          <Select
+                            value={link.platform}
+                            onValueChange={(val) => updateSocial(idx, "platform", val)}>
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder={t("page.location.form.socialPlatform")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Instagram">Instagram</SelectItem>
+                              <SelectItem value="Facebook">Facebook</SelectItem>
+                              <SelectItem value="Twitter / X">Twitter / X</SelectItem>
+                              <SelectItem value="TikTok">TikTok</SelectItem>
+                              <SelectItem value="YouTube">YouTube</SelectItem>
+                              <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                              <SelectItem value="Telegram">Telegram</SelectItem>
+                              <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                              <SelectItem value="Shopee">Shopee</SelectItem>
+                              <SelectItem value="Tokopedia">Tokopedia</SelectItem>
+                              <SelectItem value="Website">Website</SelectItem>
+                            </SelectContent>
+                          </Select>
                         <Input
                           placeholder={t("page.location.form.socialAccount")}
                           value={link.account}
