@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { X, Save } from "lucide-react";
 import { getExpenseById, editExpense, getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ const formSchema = z.object({
 });
 
 const EditExpense = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -86,8 +88,8 @@ const EditExpense = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengupdate biaya"
+      toast.error(t("page.expense.edit.fail"), {
+        description: err?.response?.data?.message || err.message || t("page.expense.edit.failDesc")
       });
     }
   });
@@ -102,21 +104,21 @@ const EditExpense = () => {
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID biaya tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.expense.edit.idNotFound")}</p>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
+      <Loading fullscreen size="lg" label={t("page.expense.edit.loading")} />
     );
   }
 
   if (!expenseItem?.id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Biaya tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.expense.edit.notFound")}</p>
       </div>
     );
   }
@@ -127,40 +129,40 @@ const EditExpense = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("page.expense.edit.breadcrumbDashboard")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/expense")}
           className="hover:text-foreground transition-colors">
-          Biaya
+          {t("page.expense.edit.breadcrumbList")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Biaya</span>
+        <span className="text-primary font-semibold">{t("page.expense.edit.breadcrumb")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Biaya</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit data pengeluaran.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.edit.desc")}</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("page.expense.edit.cancel")}
           </Button>
           <Button
             variant="outline"
             onClick={() => setDraftModal(true)}
             disabled={updateMutation.isLoading}>
-            Simpan sebagai Draft
+            {t("page.expense.edit.saveDraft")}
           </Button>
           <Button
             onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {updateMutation.isLoading ? t("page.expense.edit.saving") : t("page.expense.edit.save")}
           </Button>
         </div>
       </div>
@@ -175,16 +177,16 @@ const EditExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Kategori <span className="text-destructive">*</span>
+                      {t("page.expense.edit.categoryLabel")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori" />
+                        <SelectValue placeholder={t("page.expense.edit.categoryPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.length === 0 ? (
                           <SelectItem value="__none" disabled>
-                            Tidak ada kategori
+                            {t("page.expense.edit.noCategory")}
                           </SelectItem>
                         ) : (
                           categories.map((cat) => (
@@ -205,9 +207,9 @@ const EditExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Deskripsi <span className="text-destructive">*</span>
+                      {t("page.expense.edit.descriptionLabel")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan deskripsi biaya" {...field} />
+                    <Input placeholder={t("page.expense.edit.descriptionPlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -218,7 +220,7 @@ const EditExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Jumlah (Rp) <span className="text-destructive">*</span>
+                      {t("page.expense.edit.amountLabel")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
@@ -227,7 +229,7 @@ const EditExpense = () => {
                       <Input
                         type="text"
                         inputMode="numeric"
-                        placeholder="0"
+                        placeholder={t("page.expense.edit.amountPlaceholder")}
                         className="pl-10"
                         value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
                         onChange={(e) => {
@@ -246,7 +248,7 @@ const EditExpense = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tanggal <span className="text-destructive">*</span>
+                      {t("page.expense.edit.dateLabel")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
@@ -259,8 +261,8 @@ const EditExpense = () => {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Catatan</FormLabel>
-                  <Textarea placeholder="Catatan tambahan" rows={3} {...field} />
+                  <FormLabel>{t("page.expense.edit.notesLabel")}</FormLabel>
+                  <Textarea placeholder={t("page.expense.edit.notesPlaceholder")} rows={3} {...field} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -273,27 +275,27 @@ const EditExpense = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.expense.edit.modalCancelTitle")}
+        description={t("page.expense.edit.modalCancelDesc")}
+        confirmText={t("page.expense.edit.modalCancelConfirm")}
         onConfirm={() => navigate("/expense")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Biaya berhasil diupdate."
-        confirmText="Kembali ke Daftar"
+        title={t("page.expense.edit.modalSuccessTitle")}
+        description={t("page.expense.edit.modalSuccessDesc")}
+        confirmText={t("page.expense.edit.modalSuccessConfirm")}
         onConfirm={() => navigate("/expense")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.expense.edit.modalDraftTitle")}
+        description={t("page.expense.edit.modalDraftDesc")}
+        confirmText={t("page.expense.edit.modalDraftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

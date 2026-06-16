@@ -50,12 +50,12 @@ const AddMemberTier = () => {
 
   const createMutation = useMutation(addMemberTier, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Tier berhasil ditambahkan" });
+      toast.success(t("page.memberTier.add.toastSuccess"), { description: t("page.memberTier.add.toastSuccessDesc") });
       queryClient.invalidateQueries(["member-tiers"]);
       navigate("/member-tier");
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.memberTier.add.toastError"), { description: err?.response?.data?.message || err.message })
   });
 
   const handleInputChange = (field, value) => {
@@ -316,8 +316,8 @@ const AddMemberTier = () => {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formData.isActive
-                        ? "Tier ini aktif dan dapat digunakan."
-                        : "Tier ini tidak aktif."}
+                        ? t("page.memberTier.add.activeDesc")
+                        : t("page.memberTier.add.inactiveDesc")}
                     </p>
                   </div>
                 </div>
@@ -354,10 +354,10 @@ const AddMemberTier = () => {
                     {t("page.memberTier.add.previewBadge")}
                   </p>
                   <h4 className="text-lg font-bold text-foreground">
-                    {formData.tierName || "Gold Member"}
+                    {formData.tierName || t("page.memberTier.add.goldMember")}
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    Mulai dari{" "}
+                    {t("page.memberTier.add.startFrom")}{" "}
                     {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
                       "id-ID"
                     )}{" "}
@@ -388,7 +388,7 @@ const AddMemberTier = () => {
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={createMutation.isLoading}>
-              Simpan sebagai Draft
+              {t("page.memberTier.add.saveDraft")}
             </Button>
             <Button
               onClick={() => handleSave(false)}
@@ -414,9 +414,9 @@ const AddMemberTier = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.memberTier.add.draftModalTitle")}
+        description={t("page.memberTier.add.draftModalDesc")}
+        confirmText={t("page.memberTier.add.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           createMutation.mutate({

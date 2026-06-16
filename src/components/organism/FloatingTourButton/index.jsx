@@ -30,7 +30,7 @@ const FloatingTourButton = () => {
     <div className="fixed bottom-6 right-6 z-30 flex items-end gap-2 animate-in slide-in-from-bottom-4 fade-in duration-500">
       <button
         onClick={handleDismiss}
-        title="Sembunyikan"
+        title={t("tour.hide")}
         className="mb-1 p-1.5 rounded-full bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-accent shadow-md transition-colors">
         <X size={14} />
       </button>
@@ -44,9 +44,9 @@ const FloatingTourButton = () => {
         </div>
         <div className="flex flex-col items-start leading-tight">
           <span className="text-[10px] font-medium opacity-80 uppercase tracking-wider">
-            BisaNota
+            {t("tour.brand")}
           </span>
-          <span className="text-sm font-semibold">Mulai Tur Panduan</span>
+          <span className="text-sm font-semibold">{t("tour.startGuide")}</span>
         </div>
       </button>
     </div>

@@ -1,14 +1,25 @@
 /* eslint-disable react/prop-types */
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from "recharts";
 
 const STORE_COLORS = [
-  "#3B82F6", "#F59E0B", "#10B981", "#EF4444",
-  "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"
+  "#3B82F6",
+  "#F59E0B",
+  "#10B981",
+  "#EF4444",
+  "#8B5CF6",
+  "#EC4899",
+  "#06B6D4",
+  "#F97316"
 ];
 
 const CustomTooltip = ({ active, payload, label, t }) => {
@@ -34,7 +45,7 @@ const CustomTooltip = ({ active, payload, label, t }) => {
   );
 };
 
-const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
+const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
   const salesChart = data?.salesChart || [];
   const stores = data?.stores || [];
   const storeSalesChart = data?.storeSalesChart || [];
@@ -131,7 +142,10 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
             <div className="flex flex-wrap gap-3">
               {storeSalesChart.map((s, i) => (
                 <div key={s.storeId} className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: STORE_COLORS[i % STORE_COLORS.length] }} />
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: STORE_COLORS[i % STORE_COLORS.length] }}
+                  />
                   <span className="text-xs font-medium text-muted-foreground">{s.storeName}</span>
                 </div>
               ))}
@@ -159,19 +173,33 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <defs>
-                  {hasMultipleStores
-                    ? storeSalesChart.map((s, i) => (
-                        <linearGradient key={s.storeId} id={`gradient-${s.storeId}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={STORE_COLORS[i % STORE_COLORS.length]} stopOpacity={0.3} />
-                          <stop offset="95%" stopColor={STORE_COLORS[i % STORE_COLORS.length]} stopOpacity={0.05} />
-                        </linearGradient>
-                      ))
-                    : (
-                      <linearGradient id="gradient-single" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                  {hasMultipleStores ? (
+                    storeSalesChart.map((s, i) => (
+                      <linearGradient
+                        key={s.storeId}
+                        id={`gradient-${s.storeId}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor={STORE_COLORS[i % STORE_COLORS.length]}
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={STORE_COLORS[i % STORE_COLORS.length]}
+                          stopOpacity={0.05}
+                        />
                       </linearGradient>
-                    )}
+                    ))
+                  ) : (
+                    <linearGradient id="gradient-single" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                    </linearGradient>
+                  )}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis
@@ -187,28 +215,28 @@ const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
                   tickFormatter={(v) => formatCurrency(v)}
                 />
                 <Tooltip content={<CustomTooltip t={t} />} />
-                {hasMultipleStores
-                  ? storeSalesChart.map((s, i) => (
-                      <Area
-                        key={s.storeId}
-                        type="monotone"
-                        dataKey={s.storeName}
-                        stackId="1"
-                        stroke={STORE_COLORS[i % STORE_COLORS.length]}
-                        fill={`url(#gradient-${s.storeId})`}
-                        strokeWidth={2}
-                      />
-                    ))
-                  : (
+                {hasMultipleStores ? (
+                  storeSalesChart.map((s, i) => (
                     <Area
+                      key={s.storeId}
                       type="monotone"
-                      dataKey="total"
+                      dataKey={s.storeName}
                       stackId="1"
-                      stroke="#3B82F6"
-                      fill="url(#gradient-single)"
+                      stroke={STORE_COLORS[i % STORE_COLORS.length]}
+                      fill={`url(#gradient-${s.storeId})`}
                       strokeWidth={2}
                     />
-                  )}
+                  ))
+                ) : (
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    stackId="1"
+                    stroke="#3B82F6"
+                    fill="url(#gradient-single)"
+                    strokeWidth={2}
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           ) : (

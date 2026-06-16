@@ -103,9 +103,7 @@ const EditPosition = () => {
   }
 
   if (positionsLoading) {
-    return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
-    );
+    return <Loading fullscreen size="lg" label={t("common.loading")} />;
   }
 
   if (!position) {
@@ -281,7 +279,7 @@ const EditPosition = () => {
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={editMutation.isLoading}>
-              Simpan sebagai Draft
+              {t("page.position.button.saveDraft")}
             </Button>
             <Button
               type="submit"
@@ -298,9 +296,9 @@ const EditPosition = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.position.edit.draftTitle")}
+        description={t("page.position.edit.draftDescription")}
+        confirmText={t("page.position.edit.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           editMutation.mutate({

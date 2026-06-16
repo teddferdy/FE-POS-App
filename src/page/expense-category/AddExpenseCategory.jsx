@@ -15,11 +15,6 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama kategori wajib diisi"),
-  description: z.string().optional().or(z.literal(""))
-});
-
 const AddExpenseCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -27,6 +22,11 @@ const AddExpenseCategory = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.expenseCategory.add.validation.nameRequired")),
+    description: z.string().optional().or(z.literal(""))
+  });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -42,9 +42,11 @@ const AddExpenseCategory = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("page.expenseCategory.add.toast.error"), {
         description:
-          err?.response?.data?.message || err.message || "Gagal menambahkan kategori biaya"
+          err?.response?.data?.message ||
+          err.message ||
+          t("page.expenseCategory.add.toast.errorDescription")
       });
     }
   });
@@ -75,8 +77,12 @@ const AddExpenseCategory = () => {
       </nav>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Tambah Kategori Biaya</h1>
-        <p className="text-sm text-muted-foreground mt-1">Tambah kategori biaya baru.</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          {t("page.expenseCategory.add.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {t("page.expenseCategory.add.description")}
+        </p>
       </div>
 
       <Card className="p-6">
@@ -89,9 +95,10 @@ const AddExpenseCategory = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Kategori <span className="text-destructive">*</span>
+                      {t("page.expenseCategory.add.name")}{" "}
+                      <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama kategori" {...field} />
+                    <Input placeholder={t("page.expenseCategory.add.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -101,8 +108,12 @@ const AddExpenseCategory = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deskripsi</FormLabel>
-                    <Textarea placeholder="Deskripsi kategori biaya" rows={3} {...field} />
+                    <FormLabel>{t("page.expenseCategory.add.description")}</FormLabel>
+                    <Textarea
+                      placeholder={t("page.expenseCategory.add.descriptionPlaceholder")}
+                      rows={3}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -111,21 +122,21 @@ const AddExpenseCategory = () => {
             <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
               <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
                 <X size={18} />
-                Batal
+                {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={createMutation.isLoading}>
-                  Simpan sebagai Draft
+                  {t("page.expenseCategory.add.saveAsDraft")}
                 </Button>
                 <Button
                   onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                   disabled={createMutation.isLoading}
                   className="gap-2">
                   <Save size={18} />
-                  {createMutation.isLoading ? "Menyimpan..." : "Simpan"}
+                  {createMutation.isLoading ? t("button.saving") : t("button.save")}
                 </Button>
               </div>
             </div>
@@ -137,27 +148,27 @@ const AddExpenseCategory = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.expenseCategory.add.cancelTitle")}
+        description={t("page.expenseCategory.add.cancelDescription")}
+        confirmText={t("page.expenseCategory.add.cancelConfirm")}
         onConfirm={() => navigate("/expense-category")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Kategori biaya berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("page.expenseCategory.add.successTitle")}
+        description={t("page.expenseCategory.add.successDescription")}
+        confirmText={t("page.expenseCategory.add.successConfirm")}
         onConfirm={() => navigate("/expense-category")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.expenseCategory.add.draftTitle")}
+        description={t("page.expenseCategory.add.draftDescription")}
+        confirmText={t("page.expenseCategory.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

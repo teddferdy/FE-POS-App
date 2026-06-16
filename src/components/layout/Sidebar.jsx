@@ -265,9 +265,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <div className="mb-6 px-2 flex items-center justify-between">
         <div
           className={`overflow-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-full"}`}>
-          <h1 className="text-base font-bold text-foreground truncate">Metro Retail</h1>
+          <h1 className="text-base font-bold text-foreground truncate">{t("sidebar.brandName")}</h1>
           <p className="text-[10px] text-muted-foreground tracking-wider uppercase truncate">
-            Terminal #0124
+            {t("sidebar.terminalId")}
           </p>
         </div>
         <button

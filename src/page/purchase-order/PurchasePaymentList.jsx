@@ -30,7 +30,7 @@ const PurchasePaymentList = () => {
 
   const columns = [
     {
-      header: "Tanggal",
+      header: t("page.purchasePayment.list.columns.date"),
       render: (p) => (
         <span className="text-muted-foreground">
           {p.paymentDate
@@ -44,11 +44,11 @@ const PurchasePaymentList = () => {
       )
     },
     {
-      header: "Supplier",
+      header: t("page.purchasePayment.list.columns.supplier"),
       render: (p) => p.supplierData?.name || "-"
     },
     {
-      header: "No. PO",
+      header: t("page.purchasePayment.list.columns.poNumber"),
       render: (p) => (
         <span
           className="font-medium text-primary cursor-pointer hover:underline"
@@ -58,24 +58,24 @@ const PurchasePaymentList = () => {
       )
     },
     {
-      header: "Jumlah",
+      header: t("page.purchasePayment.list.columns.amount"),
       render: (p) => (
         <span className="font-medium">Rp {Number(p.amount).toLocaleString("id-ID")}</span>
       )
     },
     {
-      header: "Metode",
+      header: t("page.purchasePayment.list.columns.method"),
       render: (p) => {
-        const labels = { cash: "Tunai", transfer: "Transfer", giro: "Giro", other: "Lainnya" };
+        const labels = { cash: t("page.purchaseOrder.paymentMethod.cash"), transfer: t("page.purchaseOrder.paymentMethod.transfer"), giro: t("page.purchaseOrder.paymentMethod.giro"), other: t("page.purchaseOrder.paymentMethod.other") };
         return <span className="text-sm">{labels[p.paymentMethod] || p.paymentMethod || "-"}</span>;
       }
     },
     {
-      header: "Referensi",
+      header: t("page.purchasePayment.list.columns.reference"),
       render: (p) => <span className="text-sm text-muted-foreground">{p.reference || "-"}</span>
     },
     {
-      header: "Catatan",
+      header: t("page.purchasePayment.list.columns.notes"),
       render: (p) => (
         <span className="text-sm text-muted-foreground max-w-[150px] block truncate">
           {p.notes || "-"}
@@ -83,13 +83,13 @@ const PurchasePaymentList = () => {
       )
     },
     {
-      header: "Aksi",
+      header: t("page.purchasePayment.list.columns.actions"),
       render: (p) => (
         <Button
           size="sm"
           variant="outline"
           onClick={() => navigate(`/purchase-order/detail?id=${p.purchaseOrderData?.id || p.purchaseOrder}`)}>
-          Detail
+          {t("page.purchasePayment.list.detailButton")}
         </Button>
       )
     }
@@ -104,7 +104,7 @@ const PurchasePaymentList = () => {
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Riwayat Pembayaran</span>
+        <span className="text-primary font-semibold">{t("page.purchasePayment.list.title")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -113,8 +113,8 @@ const PurchasePaymentList = () => {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Riwayat Pembayaran</h1>
-            <p className="text-sm text-muted-foreground mt-1">Semua pembayaran purchase order</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.purchasePayment.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.purchasePayment.list.description")}</p>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ const PurchasePaymentList = () => {
       <Card className="p-5">
         <div className="flex items-center gap-2 text-sm">
           <Wallet size={16} className="text-muted-foreground" />
-          <span className="text-muted-foreground">Total Pembayaran:</span>
+          <span className="text-muted-foreground">{t("page.purchasePayment.list.totalLabel")}:</span>
           <span className="font-bold text-lg">
             Rp {Number(totalAmount).toLocaleString("id-ID")}
           </span>
@@ -133,7 +133,7 @@ const PurchasePaymentList = () => {
         columns={columns}
         data={payments}
         isLoading={isLoading}
-        emptyMessage="Belum ada pembayaran"
+        emptyMessage={t("page.purchasePayment.list.empty")}
         emptyIcon={Wallet}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />

@@ -23,27 +23,27 @@ import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 
-const poSchema = z.object({
-  store: z.number().min(1, "Pilih store/lokasi"),
-  supplier: z.number().min(1, "Pilih supplier"),
-  pic: z.number().min(1, "Pilih PIC"),
-  orderDate: z.date({ required_error: "Pilih tanggal PO" }),
-  orderTime: z.string().min(1, "Pilih jam PO"),
-  dueDate: z.date({ required_error: "Pilih tanggal jatuh tempo" }),
-  items: z
-    .array(
-      z.object({
-        name: z.string().min(1, "Nama barang wajib diisi"),
-        qty: z.number().min(1, "Qty minimal 1"),
-        price: z.number().min(0, "Harga tidak valid"),
-        unit: z.string().min(1)
-      })
-    )
-    .min(1, "Tambahkan minimal satu item")
-});
-
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
+
+  const poSchema = z.object({
+    store: z.number().min(1, t("page.purchaseOrder.add.validation.store")),
+    supplier: z.number().min(1, t("page.purchaseOrder.add.validation.supplier")),
+    pic: z.number().min(1, t("page.purchaseOrder.add.validation.pic")),
+    orderDate: z.date({ required_error: t("page.purchaseOrder.add.validation.orderDate") }),
+    orderTime: z.string().min(1, t("page.purchaseOrder.add.validation.orderTime")),
+    dueDate: z.date({ required_error: t("page.purchaseOrder.add.validation.dueDate") }),
+    items: z
+      .array(
+        z.object({
+          name: z.string().min(1, t("page.purchaseOrder.add.validation.itemName")),
+          qty: z.number().min(1, t("page.purchaseOrder.add.validation.qty")),
+          price: z.number().min(0, t("page.purchaseOrder.add.validation.price")),
+          unit: z.string().min(1)
+        })
+      )
+      .min(1, t("page.purchaseOrder.add.validation.minItem"))
+  });
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -104,25 +104,25 @@ const AddPurchaseOrder = () => {
     ingredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
   const unitOptions = [
-    { value: "pcs", label: "Pcs" },
-    { value: "item", label: "Item" },
-    { value: "unit", label: "Unit" },
-    { value: "buah", label: "Buah" },
-    { value: "pasang", label: "Pasang" },
-    { value: "set", label: "Set" },
-    { value: "lusin", label: "Lusin" },
-    { value: "pack", label: "Pack" },
-    { value: "box", label: "Box" },
-    { value: "karton", label: "Karton" },
-    { value: "kg", label: "Kg" },
-    { value: "gram", label: "Gram" },
-    { value: "liter", label: "Liter" },
-    { value: "ml", label: "Ml" },
-    { value: "meter", label: "Meter" },
-    { value: "cm", label: "Cm" },
-    { value: "cup", label: "Cup" },
-    { value: "gelas", label: "Gelas" },
-    { value: "porsi", label: "Porsi" }
+    { value: "pcs", label: t("page.product.form.unit.pcs") },
+    { value: "item", label: t("page.product.form.unit.item") },
+    { value: "unit", label: t("page.product.form.unit.unit") },
+    { value: "buah", label: t("page.product.form.unit.buah") },
+    { value: "pasang", label: t("page.product.form.unit.pasang") },
+    { value: "set", label: t("page.product.form.unit.set") },
+    { value: "lusin", label: t("page.product.form.unit.lusin") },
+    { value: "pack", label: t("page.product.form.unit.pack") },
+    { value: "box", label: t("page.product.form.unit.box") },
+    { value: "karton", label: t("page.product.form.unit.karton") },
+    { value: "kg", label: t("page.product.form.unit.kg") },
+    { value: "gram", label: t("page.product.form.unit.gram") },
+    { value: "liter", label: t("page.product.form.unit.liter") },
+    { value: "ml", label: t("page.product.form.unit.ml") },
+    { value: "meter", label: t("page.product.form.unit.meter") },
+    { value: "cm", label: t("page.product.form.unit.cm") },
+    { value: "cup", label: t("page.product.form.unit.cup") },
+    { value: "gelas", label: t("page.product.form.unit.gelas") },
+    { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
 
   const queryClient = useQueryClient();
@@ -133,10 +133,10 @@ const AddPurchaseOrder = () => {
       setSupplierSearch(newSupplier.name);
       setSupplierId(newSupplier.id || newSupplier._id);
       setShowSupplierList(false);
-      toast.success("Supplier berhasil ditambahkan");
+      toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
     },
     onError: (err) => {
-      toast.error("Gagal tambah supplier", {
+      toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -145,11 +145,11 @@ const AddPurchaseOrder = () => {
   const createMutation = useMutation(addPurchaseOrder, {
     onSuccess: () => {
       queryClient.invalidateQueries(["purchase-orders"]);
-      toast.success("Berhasil", { description: "Purchase Order berhasil dibuat" });
+      toast.success(t("common.success"), { description: t("page.purchaseOrder.add.toast.poCreated") });
       navigate("/purchase-order");
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -208,7 +208,7 @@ const AddPurchaseOrder = () => {
         if (!fieldErrors[path]) fieldErrors[path] = err.message;
       });
       setErrors(fieldErrors);
-      toast.error("Validasi gagal", {
+      toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
         description: fieldErrors[Object.keys(fieldErrors)[0]]
       });
       return;
@@ -268,8 +268,8 @@ const AddPurchaseOrder = () => {
                 <ShoppingCart size={18} className="text-white" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white">Informasi Supplier</h3>
-                <p className="text-xs text-blue-100">Detail supplier dan tanggal purchase order</p>
+                <h3 className="text-base font-semibold text-white">{t("page.purchaseOrder.add.supplierSection")}</h3>
+                <p className="text-xs text-blue-100">{t("page.purchaseOrder.add.supplierSectionDesc")}</p>
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ const AddPurchaseOrder = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  Store / Lokasi <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
                 </label>
                 <select
                   value={selectedStore}
@@ -290,7 +290,7 @@ const AddPurchaseOrder = () => {
                       ? "border-destructive focus:ring-destructive/20"
                       : "border-border focus:ring-primary/20 focus:border-primary"
                   } bg-background`}>
-                  <option value="">Pilih Store</option>
+                  <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id}>
                       {loc.name}
@@ -301,10 +301,10 @@ const AddPurchaseOrder = () => {
               </div>
               <div className="relative">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  Supplier <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.supplier")} <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  placeholder="Cari atau ketik nama supplier..."
+                  placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
                   value={supplierSearch}
                   onChange={(e) => {
                     setSupplierSearch(e.target.value);
@@ -333,11 +333,11 @@ const AddPurchaseOrder = () => {
                       ))
                     ) : supplierSearch ? (
                       <p className="p-3 text-xs text-muted-foreground text-center">
-                        Tidak ada supplier ditemukan
+                        {t("page.purchaseOrder.add.noSupplierFound")}
                       </p>
                     ) : (
                       <p className="p-3 text-xs text-muted-foreground text-center">
-                        Ketik untuk mencari supplier
+                        {t("page.purchaseOrder.add.typeToSearchSupplier")}
                       </p>
                     )}
                     {supplierSearch &&
@@ -350,7 +350,7 @@ const AddPurchaseOrder = () => {
                           disabled={addSupplierMutation.isLoading}
                           className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
                           <Plus size={15} />
-                          Tambah &quot;{supplierSearch}&quot;
+                          {t("page.purchaseOrder.add.addSupplier")} &quot;{supplierSearch}&quot;
                         </button>
                       )}
                   </div>
@@ -358,14 +358,14 @@ const AddPurchaseOrder = () => {
               </div>
               <div className="relative">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  PIC <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
                 </label>
                 {employees.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
                     <div className="text-center">
-                      <p className="text-sm font-medium text-foreground">Belum ada pegawai</p>
+                      <p className="text-sm font-medium text-foreground">{t("page.purchaseOrder.add.noEmployee")}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Tambah pegawai terlebih dahulu
+                        {t("page.purchaseOrder.add.addEmployeeFirst")}
                       </p>
                     </div>
                     <Button
@@ -375,13 +375,13 @@ const AddPurchaseOrder = () => {
                       onClick={() => navigate("/add-employee")}
                       className="gap-2">
                       <Plus size={15} />
-                      Tambah Pegawai
+                      {t("page.purchaseOrder.add.addEmployee")}
                     </Button>
                   </div>
                 ) : (
                   <>
                     <Input
-                      placeholder="Cari atau ketik nama PIC..."
+                      placeholder={t("page.purchaseOrder.add.picPlaceholder")}
                       value={picSearch}
                       onChange={(e) => {
                         setPicSearch(e.target.value);
@@ -408,11 +408,11 @@ const AddPurchaseOrder = () => {
                           ))
                         ) : picSearch ? (
                           <p className="p-3 text-xs text-muted-foreground text-center">
-                            Tidak ada pegawai ditemukan
+                            {t("page.purchaseOrder.add.noEmployeeFound")}
                           </p>
                         ) : (
                           <p className="p-3 text-xs text-muted-foreground text-center">
-                            Ketik untuk mencari pegawai
+                            {t("page.purchaseOrder.add.typeToSearchPic")}
                           </p>
                         )}
                       </div>
@@ -422,7 +422,7 @@ const AddPurchaseOrder = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  Tanggal PO <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
                 </label>
                 <DatePicker
                   date={orderDate}
@@ -437,7 +437,7 @@ const AddPurchaseOrder = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  Jam <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
                 </label>
                 <TimePicker
                   value={orderTime}
@@ -452,7 +452,7 @@ const AddPurchaseOrder = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  Jatuh Tempo <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.add.dueDate")} <span className="text-destructive">*</span>
                 </label>
                 <DatePicker
                   date={dueDate}
@@ -466,9 +466,9 @@ const AddPurchaseOrder = () => {
                 )}
               </div>
               <div className="md:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("page.purchaseOrder.add.notes")}</label>
                 <Textarea
-                  placeholder="Catatan untuk supplier (opsional)"
+                  placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="min-h-[80px] resize-none"
@@ -486,8 +486,8 @@ const AddPurchaseOrder = () => {
                   <Package size={18} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-white">Item Barang</h3>
-                  <p className="text-xs text-emerald-100">Daftar barang yang akan dipesan</p>
+                  <h3 className="text-base font-semibold text-white">{t("page.purchaseOrder.add.itemSection")}</h3>
+                  <p className="text-xs text-emerald-100">{t("page.purchaseOrder.add.itemSectionDesc")}</p>
                 </div>
               </div>
               <Button
@@ -497,7 +497,7 @@ const AddPurchaseOrder = () => {
                 className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
                 onClick={addItem}>
                 <Plus size={15} />
-                Tambah Item
+                {t("page.purchaseOrder.add.addItem")}
               </Button>
             </div>
           </div>
@@ -506,7 +506,7 @@ const AddPurchaseOrder = () => {
 
             {items.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan barang.
+                {t("page.purchaseOrder.add.noItem")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -517,7 +517,7 @@ const AddPurchaseOrder = () => {
                     </span>
                     <div className="relative flex-1 min-w-0">
                       <Input
-                        placeholder="Nama barang / bahan baku"
+                        placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
                         value={item.name}
                         onChange={(e) => {
                           updateItem(idx, "name", e.target.value);
@@ -533,7 +533,7 @@ const AddPurchaseOrder = () => {
                         <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                           {!item.name ? (
                             <p className="p-3 text-xs text-muted-foreground text-center">
-                              Ketik untuk mencari bahan baku
+                              {t("page.purchaseOrder.add.typeToSearchIngredient")}
                             </p>
                           ) : getFilteredIngredients(item.name).length > 0 ? (
                             getFilteredIngredients(item.name).map((ing) => (
@@ -555,14 +555,14 @@ const AddPurchaseOrder = () => {
                             ))
                           ) : (
                             <p className="p-3 text-xs text-muted-foreground text-center">
-                              Tidak ada bahan baku ditemukan. Gunakan teks bebas.
+                              {t("page.purchaseOrder.add.noIngredientFound")}
                             </p>
                           )}
                         </div>
                       )}
                     </div>
                     <Input
-                      placeholder="Qty"
+                      placeholder={t("page.purchaseOrder.add.qty")}
                       value={item.qty || ""}
                       onChange={(e) =>
                         updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
@@ -580,7 +580,7 @@ const AddPurchaseOrder = () => {
                       ))}
                     </select>
                     <Input
-                      placeholder="Rp 0"
+                      placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
                       value={item.price ? formatIDR(item.price) : ""}
                       onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
                       className="h-9 text-sm w-36 shrink-0"
@@ -606,16 +606,16 @@ const AddPurchaseOrder = () => {
             <div className="bg-muted/40 rounded-xl p-5 mt-4">
               <div className="flex flex-col items-end space-y-2">
                 <div className="flex items-center gap-3">
-                  <label className="text-sm text-muted-foreground font-medium">Diskon</label>
+                  <label className="text-sm text-muted-foreground font-medium">{t("page.purchaseOrder.add.discount")}</label>
                   <Input
-                    placeholder="Rp 0"
+                    placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
                     value={discount ? formatIDR(discount) : ""}
                     onChange={(e) => setDiscount(parseIDR(e.target.value))}
                     className="h-9 text-sm w-36 text-right"
                   />
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Total Harga</p>
+                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.add.totalPrice")}</p>
                   <p className="text-2xl font-bold text-foreground">
                     Rp {totalAmount.toLocaleString("id-ID")}
                   </p>
@@ -625,7 +625,7 @@ const AddPurchaseOrder = () => {
                     <div className="w-full border-t border-border my-1" />
                     <div className="text-right">
                       <p className="text-sm font-medium text-red-500">
-                        Diskon - Rp {discount.toLocaleString("id-ID")}
+                        {t("page.purchaseOrder.add.discountLabel")} - Rp {discount.toLocaleString("id-ID")}
                       </p>
                       <p className="text-xl font-bold text-foreground">
                         Rp {finalAmount.toLocaleString("id-ID")}
@@ -645,11 +645,11 @@ const AddPurchaseOrder = () => {
             onClick={() => setCancelModal(true)}
             className="gap-2">
             <X size={18} />
-            Batal
+            {t("common.cancel")}
           </Button>
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-xs text-muted-foreground">Total setelah diskon</p>
+              <p className="text-xs text-muted-foreground">{t("page.purchaseOrder.add.totalAfterDiscount")}</p>
               <p className="text-sm font-semibold">
                 Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
               </p>
@@ -663,7 +663,7 @@ const AddPurchaseOrder = () => {
               ) : (
                 <Save size={18} />
               )}
-              {createMutation.isLoading ? "Menyimpan..." : "Simpan PO"}
+              {createMutation.isLoading ? t("common.saving") : t("page.purchaseOrder.add.savePo")}
             </Button>
           </div>
         </div>
@@ -673,10 +673,10 @@ const AddPurchaseOrder = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Data yang sudah diisi tidak akan disimpan."
-        confirmText="Ya, Batalkan"
-        cancelText="Lanjutkan"
+        title={t("page.purchaseOrder.add.cancelModalTitle")}
+        description={t("page.purchaseOrder.add.cancelModalDesc")}
+        confirmText={t("page.purchaseOrder.add.cancelModalConfirm")}
+        cancelText={t("page.purchaseOrder.add.cancelModalBack")}
         onConfirm={() => navigate("/purchase-order")}
       />
     </div>

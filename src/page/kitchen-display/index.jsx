@@ -7,6 +7,7 @@ import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 import { Clock, ChefHat, CheckCircle2, Bell, CookingPot, Utensils, ListOrdered } from "lucide-react";
 
 const statusConfig = {
@@ -53,6 +54,7 @@ const timeAgo = (date) => {
 };
 
 const KitchenDisplay = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -147,7 +149,7 @@ const KitchenDisplay = () => {
   if (!storeId) {
     return (
       <div className="flex items-center justify-center h-[80vh] text-muted-foreground">
-        <p>Toko belum dipilih</p>
+        <p>{t("page.kitchenDisplay.noStore")}</p>
       </div>
     );
   }
@@ -157,9 +159,9 @@ const KitchenDisplay = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ChefHat className="text-primary" /> Dapur
+            <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Monitor pesanan masuk real-time</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.kitchenDisplay.subtitle")}</p>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <Bell size={16} />
@@ -189,7 +191,7 @@ const KitchenDisplay = () => {
                 <div className={`flex items-center justify-between px-4 py-3 rounded-t-xl border ${cfg.color}`}>
                   <div className="flex items-center gap-2 font-semibold">
                     <Icon size={18} />
-                    {cfg.label}
+                    {t(`page.kitchenDisplay.status.${colStatus}`)}
                   </div>
                   <Badge className={cfg.badge}>{colOrders.length}</Badge>
                 </div>
@@ -197,7 +199,7 @@ const KitchenDisplay = () => {
                   {colOrders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-32 text-muted-foreground text-sm">
                       <ListOrdered size={32} className="mb-2 opacity-30" />
-                      Tidak ada pesanan
+                      {t("page.kitchenDisplay.noOrders")}
                     </div>
                   ) : (
                     colOrders.map((order) => {
@@ -237,7 +239,7 @@ const KitchenDisplay = () => {
                                   </p>
                                   {item.notes && (
                                     <p className="text-[11px] text-muted-foreground truncate">
-                                      Catatan: {item.notes}
+                                      {t("page.kitchenDisplay.notesLabel")}: {item.notes}
                                     </p>
                                   )}
                                   {item.modifiers?.length > 0 && (
@@ -258,7 +260,7 @@ const KitchenDisplay = () => {
                                     })
                                   }
                                 >
-                                  {cfg.nextLabel}
+                                  {t(`page.kitchenDisplay.nextLabel.${colStatus}`)}
                                 </Button>
                               </div>
                             ))}

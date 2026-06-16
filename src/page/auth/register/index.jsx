@@ -139,14 +139,14 @@ const RegisterPage = () => {
     onMutate: () => setIsSubmitting(true),
     onSuccess: () => {
       setIsSubmitting(false);
-      toast.success("Success", {
-        description: "Account created successfully"
+      toast.success(t("page.register.toast.success"), {
+        description: t("page.register.toast.successDescription")
       });
       setTimeout(() => navigate("/"), 1500);
     },
     onError: (err) => {
       setIsSubmitting(false);
-      toast.error("Failed", {
+      toast.error(t("page.register.toast.failed"), {
         description: err.message
       });
     }
@@ -311,11 +311,8 @@ const RegisterPage = () => {
                           <AlertTriangle className="h-5 w-5 text-warning" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-warning">Belum Ada Lokasi Toko</h3>
-                          <p className="text-sm text-warning/80">
-                            Belum ada lokasi toko yang tersedia. Silakan hubungi administrator untuk
-                            menambahkan lokasi toko terlebih dahulu sebelum dapat mendaftar.
-                          </p>
+                          <h3 className="font-medium text-warning">{t("page.register.noLocationTitle")}</h3>
+                          <p className="text-sm text-warning/80">{t("page.register.noLocationDescription")}</p>
                         </div>
                       </div>
                     </div>

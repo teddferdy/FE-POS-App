@@ -56,11 +56,11 @@ const EmployeeList = () => {
 
   const deleteMutation = useMutation(deleteEmployee, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Karyawan berhasil dihapus" });
+      toast.success(t("page.employee.list.toast.success"), { description: t("page.employee.list.toast.successDescription") });
       queryClient.invalidateQueries(["employees"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("page.employee.list.toast.error"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -86,7 +86,7 @@ const EmployeeList = () => {
 
   const columns = [
     {
-      header: "Foto",
+      header: t("page.employee.list.photo"),
       render: (row) => (
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border">
           {row.image ? (
@@ -123,7 +123,7 @@ const EmployeeList = () => {
         return (
           <span
             className={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getPositionClass(position)}`}>
-            {position === "kasir" ? "Kasir" : position.charAt(0).toUpperCase() + position.slice(1)}
+            {position === "kasir" ? t("page.employee.list.kasir") : position.charAt(0).toUpperCase() + position.slice(1)}
           </span>
         );
       }
@@ -164,7 +164,7 @@ const EmployeeList = () => {
             <button
               onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-              title="Lihat Detail">
+              title={t("page.employee.list.viewDetail")}>
               <span className="material-symbols-outlined text-lg">visibility</span>
             </button>
           )}
@@ -172,7 +172,7 @@ const EmployeeList = () => {
             <button
               onClick={() => navigate(`/edit-employee?id=${row.id}`)}
               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
-              title="Edit Karyawan">
+              title={t("page.employee.list.editEmployee")}>
               <span className="material-symbols-outlined text-lg">edit</span>
             </button>
           )}
@@ -180,7 +180,7 @@ const EmployeeList = () => {
             <button
               onClick={() => handleDelete(row)}
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-              title="Hapus Karyawan">
+              title={t("page.employee.list.deleteEmployee")}>
               <span className="material-symbols-outlined text-lg">delete</span>
             </button>
           )}
@@ -271,7 +271,7 @@ const EmployeeList = () => {
           columns={columns}
           data={employees}
           isLoading={isLoading}
-          emptyMessage="Tidak ada karyawan ditemukan"
+          emptyMessage={t("page.employee.list.empty")}
           toolbar={
             <div className="flex flex-wrap gap-4 items-center justify-between">
               <div className="flex flex-wrap gap-4 items-center flex-grow">
@@ -280,7 +280,7 @@ const EmployeeList = () => {
                     search
                   </span>
                   <Input
-                    placeholder="Cari nama, ID, atau email..."
+                    placeholder={t("page.employee.list.searchPlaceholder")}
                     value={search}
                     onChange={(e) => {
                       setSearch(e.target.value);
@@ -297,7 +297,7 @@ const EmployeeList = () => {
                       setPage(1);
                     }}
                     className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                    <option value="">Semua Toko/Cabang</option>
+                    <option value="">{t("page.employee.list.allStores")}</option>
                     {locationData?.map((loc) => (
                       <option key={loc.id} value={loc.id.replace("loc-", "")}>
                         {loc.name}
@@ -311,12 +311,12 @@ const EmployeeList = () => {
                       setPage(1);
                     }}
                     className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                    <option value="">Semua Jabatan</option>
-                    <option value="manager">Manager</option>
-                    <option value="kasir">Kasir</option>
-                    <option value="admin">Admin</option>
-                    <option value="staff">Staff</option>
-                    <option value="supervisor">Supervisor</option>
+                    <option value="">{t("page.employee.list.allPositions")}</option>
+                    <option value="manager">{t("page.employee.list.manager")}</option>
+                    <option value="kasir">{t("page.employee.list.kasir")}</option>
+                    <option value="admin">{t("page.employee.list.admin")}</option>
+                    <option value="staff">{t("page.employee.list.staff")}</option>
+                    <option value="supervisor">{t("page.employee.list.supervisor")}</option>
                   </select>
                 </div>
               </div>
@@ -360,8 +360,8 @@ const EmployeeList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`Hapus ${deleteTarget?.name || "Data"}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.employee.list.deleteTitle", { name: deleteTarget?.name || t("page.employee.list.data") })}
+        confirmText={t("page.employee.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />
     </div>

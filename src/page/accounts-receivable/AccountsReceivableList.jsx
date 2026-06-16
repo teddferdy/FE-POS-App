@@ -19,6 +19,8 @@ const STATUS_LABELS = {
   OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
 };
 
+const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OVERDUE: "overdue" };
+
 const AccountsReceivableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -42,11 +44,11 @@ const AccountsReceivableList = () => {
     ({ id, payload }) => recordARPayment(id, payload),
     {
       onSuccess: () => {
-        toast.success("Pembayaran berhasil dicatat");
+        toast.success(t("page.accountsReceivable.list.toast.paymentSuccess"));
         setPayModal(null);
         setPayAmount("");
       },
-      onError: (err) => toast.error(err?.message || "Gagal mencatat pembayaran")
+      onError: (err) => toast.error(err?.message || t("page.accountsReceivable.list.toast.paymentError"))
     }
   );
 
@@ -59,7 +61,7 @@ const AccountsReceivableList = () => {
 
   const columns = [
     {
-      header: "Invoice",
+      header: t("page.accountsReceivable.list.header.invoice"),
       render: (ar) => (
         <span
           className="font-medium text-primary cursor-pointer hover:underline"
@@ -69,46 +71,47 @@ const AccountsReceivableList = () => {
       )
     },
     {
-      header: "Pelanggan",
+      header: t("page.accountsReceivable.list.header.pelanggan"),
       render: (ar) => ar.customerName || ar.orderData?.customerName || "-"
     },
     {
-      header: "Total",
+      header: t("page.accountsReceivable.list.header.total"),
       render: (ar) => formatCurrencyRupiah(ar.totalAmount || 0)
     },
     {
-      header: "Terbayar",
+      header: t("page.accountsReceivable.list.header.terbayar"),
       render: (ar) => formatCurrencyRupiah(ar.paidAmount || 0)
     },
     {
-      header: "Sisa",
+      header: t("page.accountsReceivable.list.header.sisa"),
       render: (ar) => (
         <span className="font-semibold">{formatCurrencyRupiah(ar.outstandingAmount || 0)}</span>
       )
     },
     {
-      header: "Jatuh Tempo",
+      header: t("page.accountsReceivable.list.header.jatuhTempo"),
       render: (ar) =>
         ar.dueDate
           ? new Date(ar.dueDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
           : "-"
     },
     {
-      header: "Status",
+      header: t("page.accountsReceivable.list.header.status"),
       render: (ar) => {
-        const st = ar.status === 'OVERDUE' || (ar.status !== 'PAID' && ar.overdueDays > 0)
-          ? STATUS_LABELS.OVERDUE
-          : STATUS_LABELS[ar.status] || STATUS_LABELS.UNPAID;
+        const rawStatus = ar.status === 'OVERDUE' || (ar.status !== 'PAID' && ar.overdueDays > 0)
+          ? "OVERDUE"
+          : ar.status || "UNPAID";
+        const st = STATUS_LABELS[rawStatus] || STATUS_LABELS.UNPAID;
         return (
           <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${st.color}`}>
-            {st.label}
+            {t(`page.accountsReceivable.list.status.${statusLabelKeys[rawStatus] || rawStatus.toLowerCase()}`)}
             {ar.overdueDays > 0 && ` (+${ar.overdueDays}h)`}
           </span>
         );
       }
     },
     {
-      header: "Aksi",
+      header: t("page.accountsReceivable.list.header.aksi"),
       render: (ar) =>
         ar.status !== "PAID" && (
           <Button
@@ -118,7 +121,7 @@ const AccountsReceivableList = () => {
               setPayModal(ar);
               setPayAmount(String(ar.outstandingAmount || 0));
             }}>
-            <Wallet size={14} className="mr-1" /> Bayar
+            <Wallet size={14} className="mr-1" /> {t("page.accountsReceivable.list.payButton")}
           </Button>
         )
     }
@@ -131,7 +134,7 @@ const AccountsReceivableList = () => {
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Piutang (AR)</span>
+        <span className="text-primary font-semibold">{t("page.accountsReceivable.list.breadcrumb")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -140,15 +143,15 @@ const AccountsReceivableList = () => {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Piutang (Accounts Receivable)</h1>
-            <p className="text-sm text-muted-foreground mt-1">Kelola tagihan piutang customer</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.accountsReceivable.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.accountsReceivable.list.subtitle")}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Total Piutang</p>
+          <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.list.totalPiutang")}</p>
           <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
         </Card>
         {Object.entries(agingBuckets).map(([key, bucket]) => (
@@ -169,7 +172,7 @@ const AccountsReceivableList = () => {
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border text-muted-foreground hover:bg-accent"
             }`}>
-            {s ? (STATUS_LABELS[s]?.label || s) : "Semua"}
+            {s ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`) : t("page.accountsReceivable.list.filterAll")}
           </button>
         ))}
       </div>
@@ -178,7 +181,7 @@ const AccountsReceivableList = () => {
         columns={columns}
         data={arList}
         isLoading={isLoading}
-        emptyMessage="Belum ada piutang"
+        emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
         emptyIcon={Receipt}
         pagination={{ page, totalPages: pagination.totalPages || 1, total: pagination.total || 0, onPageChange: setPage }}
       />
@@ -187,16 +190,16 @@ const AccountsReceivableList = () => {
         <Modal
           open={!!payModal}
           onOpenChange={() => { setPayModal(null); setPayAmount(""); }}
-          title="Catat Pembayaran"
-          description={`Invoice: ${payModal.invoiceNo} | Sisa: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
-          confirmText="Simpan"
+          title={t("page.accountsReceivable.list.modal.title")}
+          description={`${t("page.accountsReceivable.list.modal.invoice")}: ${payModal.invoiceNo} | ${t("page.accountsReceivable.list.modal.sisa")}: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
+          confirmText={t("page.accountsReceivable.list.modal.confirm")}
           onConfirm={() => {
             if (!payAmount || Number(payAmount) <= 0) {
-              toast.error("Masukkan jumlah pembayaran");
+              toast.error(t("page.accountsReceivable.list.validation.noAmount"));
               return;
             }
             if (Number(payAmount) > Number(payModal.outstandingAmount)) {
-              toast.error("Jumlah melebihi sisa piutang");
+              toast.error(t("page.accountsReceivable.list.validation.exceedsAmount"));
               return;
             }
             payMutation.mutate({ id: payModal.id, payload: { amount: payAmount } });
@@ -204,12 +207,12 @@ const AccountsReceivableList = () => {
           loading={payMutation.isLoading}>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Jumlah Pembayaran</label>
+              <label className="text-sm font-medium">{t("page.accountsReceivable.list.modal.amountLabel")}</label>
               <Input
                 type="number"
                 value={payAmount}
                 onChange={(e) => setPayAmount(e.target.value)}
-                placeholder="Masukkan jumlah"
+                placeholder={t("page.accountsReceivable.list.modal.amountPlaceholder")}
               />
             </div>
           </div>

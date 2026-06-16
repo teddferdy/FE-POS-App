@@ -146,6 +146,7 @@ const AddProduct = () => {
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
+      redeemPoints: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true)
     });
@@ -171,6 +172,7 @@ const AddProduct = () => {
       baseUnit: "pcs",
       conversionFactor: 1,
       point: "",
+      redeemPoints: "",
       status: true,
       isAvailable: true
     }
@@ -349,7 +351,7 @@ const AddProduct = () => {
           ? t("page.product.form.requiredStep1")
           : t("page.product.form.requiredStep2");
       if (currentStep === 1 && values.tipeProduk === "bahan_baku" && composition.length === 0) {
-        msg = "Tambah minimal satu bahan baku di komposisi sebelum lanjut.";
+        msg = t("page.product.form.requiredComposition");
       }
       toast.error(t("page.product.form.completeData"), { description: msg });
       return;
@@ -381,8 +383,8 @@ const AddProduct = () => {
 
     if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
       if (composition.length === 0) {
-        toast.error("Komposisi wajib diisi", {
-          description: "Tambah minimal satu bahan baku untuk produk ini"
+        toast.error(t("page.product.form.compositionRequired"), {
+          description: t("page.product.form.compositionRequiredDesc")
         });
         setIsSubmitting(false);
         return;
@@ -392,8 +394,8 @@ const AddProduct = () => {
         if (storeToCheck) {
           const res = await checkStockOpnameExists(storeToCheck);
           if (!res?.data?.exists) {
-            toast.warning("Belum ada stok opname", {
-              description: "Disarankan melakukan stok opname untuk bahan baku terlebih dahulu"
+            toast.warning(t("page.product.form.noStockOpname"), {
+              description: t("page.product.form.noStockOpnameDesc")
             });
           }
         }
@@ -423,6 +425,7 @@ const AddProduct = () => {
     payload.append("baseUnit", values.baseUnit);
     payload.append("conversionFactor", values.conversionFactor || 1);
     if (values.point !== "") payload.append("point", values.point);
+    if (values.redeemPoints !== "") payload.append("redeemPoints", values.redeemPoints);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("tipeProduk", values.tipeProduk);
@@ -690,10 +693,10 @@ const AddProduct = () => {
                                 </span>
                                 <div>
                                   <p className="text-xs font-semibold text-amber-800">
-                                    Belum ada stok opname
+                                    {t("page.product.form.noStockOpname")}
                                   </p>
                                   <p className="text-[11px] text-amber-700 mt-0.5">
-                                    Harap lakukan stok opname untuk bahan baku ini terlebih dahulu
+                                    {t("page.product.form.noStockOpnameWarning")}
                                   </p>
                                 </div>
                               </div>
@@ -779,22 +782,22 @@ const AddProduct = () => {
                         name="baseUnit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Base Unit</FormLabel>
+                            <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
                             <Combobox
                               options={[
-                                { value: "pcs", label: "Pcs" },
-                                { value: "gram", label: "Gram" },
-                                { value: "ml", label: "Ml" },
-                                { value: "cm", label: "Cm" },
-                                { value: "buah", label: "Buah" },
-                                { value: "lembar", label: "Lembar" }
+                                { value: "pcs", label: t("page.product.form.baseUnitPcs") },
+                                { value: "gram", label: t("page.product.form.baseUnitGram") },
+                                { value: "ml", label: t("page.product.form.baseUnitMl") },
+                                { value: "cm", label: t("page.product.form.baseUnitCm") },
+                                { value: "buah", label: t("page.product.form.baseUnitBuah") },
+                                { value: "lembar", label: t("page.product.form.baseUnitLembar") }
                               ]}
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Pilih base unit"
+                              placeholder={t("page.product.form.baseUnitPlaceholder")}
                             />
                             <p className="text-xs text-muted-foreground mt-1">
-                              Satuan terkecil untuk stok
+                              {t("page.product.form.baseUnitHelper")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -806,10 +809,10 @@ const AddProduct = () => {
                         name="conversionFactor"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Faktor Konversi</FormLabel>
+                            <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
                             <Input type="number" min="1" {...field} />
                             <p className="text-xs text-muted-foreground">
-                              1 unit = {field.value} base unit
+                              {t("page.product.form.conversionFactorHelper", { value: field.value })}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -853,10 +856,10 @@ const AddProduct = () => {
                                   <div className="text-center flex flex-col items-center gap-2">
                                     <Package size={28} className="text-muted-foreground/60" />
                                     <p className="text-sm font-medium text-foreground">
-                                      Belum ada pajak
+                                      {t("page.product.form.noTax")}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      Tambah pajak terlebih dahulu di Pengaturan
+                                      {t("page.product.form.noTaxDesc")}
                                     </p>
                                   </div>
                                   <Button
@@ -866,7 +869,7 @@ const AddProduct = () => {
                                     onClick={() => navigate("/tax-list")}
                                     className="gap-2">
                                     <span className="material-symbols-outlined text-base">add</span>
-                                    Tambah Pajak
+                                    {t("page.product.form.addTax")}
                                   </Button>
                                 </div>
                               ) : (
@@ -910,7 +913,7 @@ const AddProduct = () => {
                       <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                         <Package size={18} className="text-primary" />
                         <h3 className="text-base font-semibold text-foreground">
-                          Komposisi <span className="text-destructive">*</span>
+                          {t("page.product.form.composition")} <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <div className="space-y-3">
@@ -923,7 +926,7 @@ const AddProduct = () => {
                                     value={c.name}
                                     onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
                                     className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                    <option value="">Pilih bahan</option>
+                                    <option value="">{t("page.product.form.selectIngredient")}</option>
                                     {compositionOptions.map((opt, i) => (
                                       <option key={i} value={opt.name}>
                                         {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -936,7 +939,7 @@ const AddProduct = () => {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    placeholder="Qty"
+                                    placeholder={t("page.product.form.qty")}
                                     value={c.qty}
                                     onChange={(e) => updateComposition(c.id, "qty", e.target.value)}
                                     className="h-9 text-sm"
@@ -944,7 +947,7 @@ const AddProduct = () => {
                                 </div>
                                 <div className="w-20 shrink-0">
                                   <Input
-                                    placeholder="Unit"
+                                    placeholder={t("page.product.form.unitLabel")}
                                     value={c.unit}
                                     onChange={(e) =>
                                       updateComposition(c.id, "unit", e.target.value)
@@ -965,7 +968,7 @@ const AddProduct = () => {
                           ))
                         ) : (
                           <p className="text-xs text-muted-foreground">
-                            Belum ada komposisi. Tambah bahan baku dari stok opname.
+                            {t("page.product.form.compositionEmpty")}
                           </p>
                         )}
                         {compositionOptions.length === 0 ? (
@@ -975,7 +978,7 @@ const AddProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={() => navigate("/add-stock-opname")}>
-                            <Plus size={15} /> Tambah Stok Opname Dulu
+                            <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
                           </Button>
                         ) : (
                           <Button
@@ -984,7 +987,7 @@ const AddProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={addComposition}>
-                            <Plus size={15} /> Tambah Bahan
+                            <Plus size={15} /> {t("page.product.form.addIngredient")}
                           </Button>
                         )}
                       </div>
@@ -1090,6 +1093,20 @@ const AddProduct = () => {
                             <Input type="number" placeholder="0" {...field} />
                             <p className="text-[11px] text-muted-foreground mt-1">
                               {t("page.product.form.pointInfo")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="redeemPoints"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.product.form.redeemPoints")}</FormLabel>
+                            <Input type="number" placeholder="0" {...field} />
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              {t("page.product.form.redeemPointsInfo")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -1411,7 +1428,7 @@ const AddProduct = () => {
                                     e.target.value = "";
                                   }}
                                   className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                  <option value="">Ambil dari stok opname...</option>
+                                  <option value="">{t("page.product.form.fromStockOpname")}</option>
                                   {compositionOptions.map((opt, i) => (
                                     <option key={i} value={opt.name}>
                                       {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -1566,7 +1583,7 @@ const AddProduct = () => {
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
-                                    Status{" "}
+                                    {t("page.product.form.statusLabel")}{" "}
                                     {field.value
                                       ? t("page.product.form.active")
                                       : t("page.product.form.inactive")}
@@ -1660,7 +1677,7 @@ const AddProduct = () => {
                     disabled={isSubmitting}
                     className="gap-2">
                     <Save size={18} />
-                    Simpan sebagai Draft
+                    {t("page.product.form.saveDraft")}
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
                     {isSubmitting ? (
@@ -1701,9 +1718,9 @@ const AddProduct = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.product.form.saveDraftTitle")}
+        description={t("page.product.form.saveDraftDesc")}
+        confirmText={t("page.product.form.saveDraftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

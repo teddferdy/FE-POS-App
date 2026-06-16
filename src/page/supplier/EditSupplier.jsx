@@ -19,17 +19,17 @@ import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama supplier wajib diisi"),
-  contactPerson: z.string().optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
-  email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const EditSupplier = () => {
   const { t } = useTranslation();
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.supplier.validation.nameRequired")),
+    contactPerson: z.string().optional().or(z.literal("")),
+    phone: z.string().optional().or(z.literal("")),
+    email: z.string().email(t("page.supplier.validation.emailInvalid")).optional().or(z.literal("")),
+    address: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -100,7 +100,7 @@ const EditSupplier = () => {
 
   if (isLoading) {
     return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
+      <Loading fullscreen size="lg" label={t("common.loading")} />
     );
   }
 

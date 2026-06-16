@@ -161,15 +161,15 @@ const EditProduct = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      nameProduct: z.string().min(1, "Nama produk wajib diisi"),
+      nameProduct: z.string().min(1, t("page.product.form.requiredName")),
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
-      category: z.string().min(1, "Kategori wajib dipilih"),
+      category: z.string().min(1, t("page.product.form.requiredCategory")),
       tipeProduk: z.string().default("menu"),
       supplier: z.string().optional().or(z.literal("")),
       tax: z.string().optional().or(z.literal("")),
       description: z.string().optional().or(z.literal("")),
-      price: z.coerce.number().min(1, "Harga jual harus diisi"),
+      price: z.coerce.number().min(1, t("page.product.form.requiredPrice")),
       costPrice: z.coerce.number().min(0).optional().or(z.literal("")),
       stock: z.coerce.number().min(0).optional().or(z.literal("")),
       minStock: z.coerce.number().min(0).optional().or(z.literal("")),
@@ -177,6 +177,7 @@ const EditProduct = () => {
       baseUnit: z.string().default("pcs"),
       conversionFactor: z.coerce.number().min(1).default(1),
       point: z.coerce.number().min(0).optional().or(z.literal("")),
+      redeemPoints: z.coerce.number().min(0).optional().or(z.literal("")),
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true),
       isOption: z.boolean().default(false),
@@ -203,6 +204,7 @@ const EditProduct = () => {
       baseUnit: "pcs",
       conversionFactor: 1,
       point: "",
+      redeemPoints: "",
       status: true,
       isAvailable: true,
       isOption: false,
@@ -229,6 +231,7 @@ const EditProduct = () => {
         baseUnit: product.baseUnit || product.unit || "pcs",
         conversionFactor: product.conversionFactor ?? 1,
         point: product.point ?? "",
+        redeemPoints: product.redeemPoints ?? "",
         status: product.status === "active" || product.status === true,
         isAvailable: product.isAvailable ?? true,
         isOption: !!product.isOption,
@@ -308,8 +311,8 @@ const EditProduct = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengubah produk"
+      toast.error(t("page.product.form.failed"), {
+        description: err?.response?.data?.message || err.message || t("page.product.form.failedEditProduct")
       });
       setIsSubmitting(false);
     }
@@ -317,13 +320,13 @@ const EditProduct = () => {
 
   const updateStorePriceMutation = useMutation(updateProductPriceByStore, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Harga toko berhasil diperbarui" });
+      toast.success(t("page.product.form.success"), { description: t("page.product.form.storePriceUpdated") });
       queryClient.invalidateQueries(["product-store-prices"]);
       setSavingStoreId(null);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || "Gagal memperbarui harga toko"
+      toast.error(t("page.product.form.failed"), {
+        description: err?.response?.data?.message || t("page.product.form.storePriceUpdateFailed")
       });
       setSavingStoreId(null);
     }
@@ -408,12 +411,12 @@ const EditProduct = () => {
       const values = form.getValues();
       let msg =
         currentStep === 1
-          ? "Lengkapi field wajib (Nama Produk & Kategori) sebelum lanjut."
-          : "Lengkapi field wajib (Harga Jual) sebelum lanjut.";
+          ? t("page.product.form.requiredStep1Edit")
+          : t("page.product.form.requiredStep2Edit");
       if (currentStep === 1 && values.tipeProduk === "bahan_baku" && composition.length === 0) {
-        msg = "Tambah minimal satu bahan baku di komposisi sebelum lanjut.";
+        msg = t("page.product.form.requiredComposition");
       }
-      toast.error("Lengkapi Data", { description: msg });
+      toast.error(t("page.product.form.completeData"), { description: msg });
       return;
     }
     setCurrentStep((prev) => Math.min(prev + 1, 3));
@@ -465,8 +468,8 @@ const EditProduct = () => {
   const onSubmit = async (values, saveAsDraft = false) => {
     if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
       if (composition.length === 0) {
-        toast.error("Komposisi wajib diisi", {
-          description: "Tambah minimal satu bahan baku untuk produk ini"
+        toast.error(t("page.product.form.compositionRequired"), {
+          description: t("page.product.form.compositionRequiredDesc")
         });
         return;
       }
@@ -478,8 +481,8 @@ const EditProduct = () => {
         if (store) {
           const res = await checkStockOpnameExists(store);
           if (!res?.data?.exists) {
-            toast.warning("Belum ada stok opname", {
-              description: "Disarankan melakukan stok opname untuk bahan baku terlebih dahulu"
+            toast.warning(t("page.product.form.noStockOpname"), {
+              description: t("page.product.form.noStockOpnameDesc")
             });
           }
         }
@@ -508,6 +511,7 @@ const EditProduct = () => {
     payload.append("baseUnit", values.baseUnit);
     payload.append("conversionFactor", values.conversionFactor || 1);
     if (values.point) payload.append("point", values.point);
+    if (values.redeemPoints) payload.append("redeemPoints", values.redeemPoints);
     if (values.description) payload.append("description", values.description);
     payload.append("status", saveAsDraft ? "draft" : values.status ? "active" : "inactive");
     payload.append("isAvailable", values.isAvailable);
@@ -733,10 +737,10 @@ const EditProduct = () => {
                                   <div className="text-center flex flex-col items-center gap-2">
                                     <Package size={28} className="text-muted-foreground/60" />
                                     <p className="text-sm font-medium text-foreground">
-                                      Belum ada pajak
+                                      {t("page.product.form.noTax")}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      Tambah pajak terlebih dahulu di Pengaturan
+                                      {t("page.product.form.noTaxDesc")}
                                     </p>
                                   </div>
                                   <Button
@@ -746,7 +750,7 @@ const EditProduct = () => {
                                     onClick={() => navigate("/tax-list")}
                                     className="gap-2">
                                     <span className="material-symbols-outlined text-base">add</span>
-                                    Tambah Pajak
+                                    {t("page.product.form.addTax")}
                                   </Button>
                                 </div>
                               ) : (
@@ -812,10 +816,10 @@ const EditProduct = () => {
                                 </span>
                                 <div>
                                   <p className="text-xs font-semibold text-amber-800">
-                                    Belum ada stok opname
+                                    {t("page.product.form.noStockOpname")}
                                   </p>
                                   <p className="text-[11px] text-amber-700 mt-0.5">
-                                    Harap lakukan stok opname untuk bahan baku ini terlebih dahulu
+                                    {t("page.product.form.noStockOpnameWarning")}
                                   </p>
                                 </div>
                               </div>
@@ -846,21 +850,21 @@ const EditProduct = () => {
                         name="baseUnit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Base Unit</FormLabel>
+                            <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
                             <Combobox
                               options={[
-                                { value: "pcs", label: "Pcs" },
-                                { value: "gram", label: "Gram" },
-                                { value: "ml", label: "Ml" },
-                                { value: "cm", label: "Cm" },
-                                { value: "buah", label: "Buah" },
-                                { value: "lembar", label: "Lembar" }
+                                { value: "pcs", label: t("page.product.form.baseUnitPcs") },
+                                { value: "gram", label: t("page.product.form.baseUnitGram") },
+                                { value: "ml", label: t("page.product.form.baseUnitMl") },
+                                { value: "cm", label: t("page.product.form.baseUnitCm") },
+                                { value: "buah", label: t("page.product.form.baseUnitBuah") },
+                                { value: "lembar", label: t("page.product.form.baseUnitLembar") }
                               ]}
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Pilih base unit"
+                              placeholder={t("page.product.form.baseUnitPlaceholder")}
                             />
-                            <p className="text-xs text-muted-foreground mt-1">Satuan terkecil untuk stok</p>
+                            <p className="text-xs text-muted-foreground mt-1">{t("page.product.form.baseUnitHelper")}</p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -870,9 +874,9 @@ const EditProduct = () => {
                         name="conversionFactor"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Faktor Konversi</FormLabel>
+                            <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
                             <Input type="number" min="1" {...field} />
-                            <p className="text-xs text-muted-foreground">1 unit = {field.value} base unit</p>
+                            <p className="text-xs text-muted-foreground">{t("page.product.form.conversionFactorHelper", { value: field.value })}</p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -900,7 +904,7 @@ const EditProduct = () => {
                       <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                         <Package size={18} className="text-primary" />
                         <h3 className="text-base font-semibold text-foreground">
-                          Komposisi <span className="text-destructive">*</span>
+                          {t("page.product.form.composition")} <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <div className="space-y-3">
@@ -913,7 +917,7 @@ const EditProduct = () => {
                                     value={c.name}
                                     onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
                                     className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                    <option value="">Pilih bahan</option>
+                                    <option value="">{t("page.product.form.selectIngredient")}</option>
                                     {compositionOptions.map((opt, i) => (
                                       <option key={i} value={opt.name}>
                                         {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -926,7 +930,7 @@ const EditProduct = () => {
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    placeholder="Qty"
+                                    placeholder={t("page.product.form.qty")}
                                     value={c.qty}
                                     onChange={(e) => updateComposition(c.id, "qty", e.target.value)}
                                     className="h-9 text-sm"
@@ -934,7 +938,7 @@ const EditProduct = () => {
                                 </div>
                                 <div className="w-20 shrink-0">
                                   <Input
-                                    placeholder="Unit"
+                                    placeholder={t("page.product.form.unitLabel")}
                                     value={c.unit}
                                     onChange={(e) =>
                                       updateComposition(c.id, "unit", e.target.value)
@@ -955,7 +959,7 @@ const EditProduct = () => {
                           ))
                         ) : (
                           <p className="text-xs text-muted-foreground">
-                            Belum ada komposisi. Tambah bahan baku dari stok opname.
+                            {t("page.product.form.compositionEmpty")}
                           </p>
                         )}
                         {compositionOptions.length === 0 ? (
@@ -965,7 +969,7 @@ const EditProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={() => navigate("/add-stock-opname")}>
-                            <Plus size={15} /> Tambah Stok Opname Dulu
+                            <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
                           </Button>
                         ) : (
                           <Button
@@ -974,7 +978,7 @@ const EditProduct = () => {
                             size="sm"
                             className="gap-1"
                             onClick={addComposition}>
-                            <Plus size={15} /> Tambah Bahan
+                            <Plus size={15} /> {t("page.product.form.addIngredient")}
                           </Button>
                         )}
                       </div>
@@ -1080,6 +1084,20 @@ const EditProduct = () => {
                             <Input type="number" placeholder="0" {...field} />
                             <p className="text-[11px] text-muted-foreground mt-1">
                               {t("page.product.form.pointInfo")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="redeemPoints"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("page.product.form.redeemPoints")}</FormLabel>
+                            <Input type="number" placeholder="0" {...field} />
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              {t("page.product.form.redeemPointsInfo")}
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -1388,7 +1406,7 @@ const EditProduct = () => {
                                   e.target.value = "";
                                 }}
                                 className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                <option value="">Ambil dari stok opname...</option>
+                                <option value="">{t("page.product.form.fromStockOpname")}</option>
                                 {compositionOptions.map((opt, i) => (
                                   <option key={i} value={opt.name}>
                                     {opt.name} {opt.unit ? `(${opt.unit})` : ""}
@@ -1543,7 +1561,7 @@ const EditProduct = () => {
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-foreground">
-                                    Status{" "}
+                                    {t("page.product.form.statusLabel")}{" "}
                                     {field.value
                                       ? t("page.product.form.active")
                                       : t("page.product.form.inactive")}
@@ -1634,7 +1652,7 @@ const EditProduct = () => {
                     disabled={isSubmitting}
                     className="gap-2 shadow-md">
                     <Save size={18} />
-                    Simpan sebagai Draft
+                    {t("page.product.form.saveDraft")}
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
                     {isSubmitting ? (
@@ -1675,9 +1693,9 @@ const EditProduct = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.product.form.saveDraftTitle")}
+        description={t("page.product.form.saveDraftDesc")}
+        confirmText={t("page.product.form.saveDraftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

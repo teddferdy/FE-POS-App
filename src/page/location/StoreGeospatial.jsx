@@ -173,14 +173,14 @@ const StoreGeospatial = () => {
             </select>
           </div>
           <p className="text-xs text-muted-foreground self-center ml-auto">
-            Menampilkan {locationsWithCoords.length} dari {allLocations.length} lokasi
+            {t("page.location.map.showing", { count: locationsWithCoords.length, total: allLocations.length })}
           </p>
         </div>
       </Card>
 
       <Card className="overflow-hidden">
         {isLoading ? (
-          <Loading fullscreen size="lg" label="Memuat data..." />
+          <Loading fullscreen size="lg" label={t("common.loading")} />
         ) : (
           <div className="relative z-0 h-[500px]">
             <style>{`
@@ -237,7 +237,7 @@ const StoreGeospatial = () => {
                                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                                   : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                               }`}>
-                              {isActive ? "Active" : "Inactive"}
+                              {isActive ? t("common.active") : t("common.inactive")}
                             </span>
                           </div>
                           <p className="text-[10px] text-muted-foreground font-mono">
@@ -250,7 +250,7 @@ const StoreGeospatial = () => {
                           className="w-full mt-3 h-8 text-xs gap-1"
                           onClick={() => handleOpenRoute(lat, lng)}>
                           <Navigation size={12} />
-                          Buka Rute
+                          {t("page.location.map.openRoute")}
                         </Button>
                       </div>
                     </Popup>
@@ -264,14 +264,14 @@ const StoreGeospatial = () => {
 
       <Card className="p-4">
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Legend:</span>
+          <span className="font-semibold text-foreground">{t("page.location.map.legend")}:</span>
           <div className="flex items-center gap-1.5">
             <img
               src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
               className="w-4 h-5"
               alt="active"
             />
-            <span>Aktif</span>
+            <span>{t("page.location.map.active")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <img
@@ -279,7 +279,7 @@ const StoreGeospatial = () => {
               className="w-4 h-5"
               alt="inactive"
             />
-            <span>Tidak Aktif</span>
+            <span>{t("page.location.map.inactive")}</span>
           </div>
           <div className="flex items-center gap-2 ml-4">
             {Object.entries(categoryColors).map(([cat, cls]) => (

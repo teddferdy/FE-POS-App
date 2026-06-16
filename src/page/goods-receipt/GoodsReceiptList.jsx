@@ -3,16 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import {
-  Plus,
-  Search,
-  Eye,
-  Trash2,
-  FileText,
-  Download
-} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Plus, Search, Eye, Trash2, FileText, Download } from "lucide-react";
 import { canAccess } from "@/utils/permission";
-import { getAllGoodsReceipt, deleteGoodsReceipt, exportGoodsReceipt } from "@/services/goods-receipt";
+import {
+  getAllGoodsReceipt,
+  deleteGoodsReceipt,
+  exportGoodsReceipt
+} from "@/services/goods-receipt";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,22 +18,20 @@ import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import * as XLSX from "xlsx";
 
-const statusColors = {
+const statusMap = {
   draft: {
-    label: "Draft",
     class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
   },
   completed: {
-    label: "Completed",
     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
   },
   cancelled: {
-    label: "Cancelled",
     class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   }
 };
 
 const GoodsReceiptList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -93,23 +89,25 @@ const GoodsReceiptList = () => {
       });
       const rows = result?.data || [];
       const xlsData = rows.map((r, i) => ({
-        No: i + 1,
-        "No. Receipt": r.receiptNumber || "",
-        "PO Reference": r.purchaseOrderData?.orderNumber || "",
-        "Tanggal Terima": r.receivedDate
+        [t("page.goodsReceipt.list.export.no")]: i + 1,
+        [t("page.goodsReceipt.list.export.receiptNumber")]: r.receiptNumber || "",
+        [t("page.goodsReceipt.list.export.poReference")]: r.purchaseOrderData?.orderNumber || "",
+        [t("page.goodsReceipt.list.export.receivedDate")]: r.receivedDate
           ? new Date(r.receivedDate).toLocaleDateString("id")
           : "",
-        Store: r.storeData?.name || "",
-        Status: r.status || "",
-        "Jumlah Item": r.items?.length || 0
+        [t("page.goodsReceipt.list.export.store")]: r.storeData?.name || "",
+        [t("page.goodsReceipt.list.export.status")]: r.status || "",
+        [t("page.goodsReceipt.list.export.itemCount")]: r.items?.length || 0
       }));
       const ws = XLSX.utils.json_to_sheet(xlsData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "GoodsReceipt");
+      XLSX.utils.book_append_sheet(wb, ws, t("page.goodsReceipt.list.export.sheetName"));
       XLSX.writeFile(wb, `goods-receipt-${Date.now()}.xlsx`);
-      toast.success("Berhasil", { description: "Data berhasil di-export" });
+      toast.success(t("page.goodsReceipt.list.toast.exportSuccess"), {
+        description: t("page.goodsReceipt.list.toast.exportSuccessDesc")
+      });
     } catch (err) {
-      toast.error("Gagal", {
+      toast.error(t("page.goodsReceipt.list.toast.exportError"), {
         description: err?.response?.data?.message || err.message
       });
     } finally {
@@ -119,17 +117,21 @@ const GoodsReceiptList = () => {
 
   const deleteMutation = useMutation(deleteGoodsReceipt, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Goods receipt berhasil dihapus" });
+      toast.success(t("page.goodsReceipt.list.toast.deleteSuccess"), {
+        description: t("page.goodsReceipt.list.toast.deleteSuccessDesc")
+      });
       queryClient.invalidateQueries(["goods-receipts"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.goodsReceipt.list.toast.deleteError"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const columns = [
     {
-      header: "No. Receipt",
+      header: t("page.goodsReceipt.list.table.receiptNumber"),
       render: (item) => (
         <span className="font-mono text-xs font-bold text-primary">
           {item.receiptNumber || "-"}
@@ -137,13 +139,13 @@ const GoodsReceiptList = () => {
       )
     },
     {
-      header: "PO Reference",
+      header: t("page.goodsReceipt.list.table.poReference"),
       render: (item) => (
         <span className="text-xs">{item.purchaseOrderData?.orderNumber || "-"}</span>
       )
     },
     {
-      header: "Tanggal Terima",
+      header: t("page.goodsReceipt.list.table.receivedDate"),
       align: "center",
       render: (item) => (
         <span className="text-xs">
@@ -152,29 +154,29 @@ const GoodsReceiptList = () => {
       )
     },
     {
-      header: "Jumlah Item",
+      header: t("page.goodsReceipt.list.table.itemCount"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.items?.length || 0}</span>
     },
     {
-      header: "Store",
+      header: t("page.goodsReceipt.list.table.store"),
       render: (item) => <span className="text-sm">{item.storeData?.name || "-"}</span>
     },
     {
-      header: "Status",
+      header: t("page.goodsReceipt.list.table.status"),
       align: "center",
       render: (item) => {
-        const sc = statusColors[item.status] || statusColors.draft;
+        const sc = statusMap[item.status] || statusMap.draft;
         return (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
-            {sc.label}
+            {t(`page.goodsReceipt.list.status.${item.status || "draft"}`)}
           </span>
         );
       }
     },
     {
-      header: "Aksi",
+      header: t("page.goodsReceipt.list.table.actions"),
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
@@ -193,8 +195,20 @@ const GoodsReceiptList = () => {
               size="icon"
               className="h-8 w-8 text-blue-600"
               onClick={() => navigate(`/edit-goods-receipt?id=${item.id}`)}
-              title="Edit GR">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              title={t("page.goodsReceipt.list.editTitle")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
+              </svg>
             </Button>
           )}
           {item.status === "draft" && canAccess(user, MENU_KEY, "delete") && (
@@ -217,32 +231,50 @@ const GoodsReceiptList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Goods Receipt</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.goodsReceipt")}</span>
       </nav>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Goods Receipt</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.goodsReceipt.list.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola penerimaan barang dari purchase order
+            {t("page.goodsReceipt.list.description")}
           </p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
           <Button onClick={() => navigate("/add-goods-receipt")} className="shrink-0 gap-2">
-            <Plus size={16} /> Tambah Goods Receipt
+            <Plus size={16} /> {t("page.goodsReceipt.list.addButton")}
           </Button>
         )}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Total", value: stats.total ?? total, color: "text-primary" },
-          { label: "Draft", value: stats.draft ?? 0, color: "text-yellow-600" },
-          { label: "Completed", value: stats.completed ?? 0, color: "text-green-600" },
-          { label: "Cancelled", value: stats.cancelled ?? 0, color: "text-red-600" }
+          {
+            label: t("page.goodsReceipt.list.stats.total"),
+            value: stats.total ?? total,
+            color: "text-primary"
+          },
+          {
+            label: t("page.goodsReceipt.list.status.draft"),
+            value: stats.draft ?? 0,
+            color: "text-yellow-600"
+          },
+          {
+            label: t("page.goodsReceipt.list.status.completed"),
+            value: stats.completed ?? 0,
+            color: "text-green-600"
+          },
+          {
+            label: t("page.goodsReceipt.list.status.cancelled"),
+            value: stats.cancelled ?? 0,
+            color: "text-red-600"
+          }
         ].map((s, i) => (
           <div key={i} className="bg-card p-4 rounded-xl border border-border">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
@@ -255,18 +287,23 @@ const GoodsReceiptList = () => {
         columns={columns}
         data={filteredItems}
         isLoading={isLoading}
-        emptyMessage="Tidak ada data goods receipt"
+        emptyMessage={t("page.goodsReceipt.list.empty")}
         emptyIcon={FileText}
         toolbar={
           <div className="flex items-center gap-3">
             {isSuperAdmin && (
               <select
                 value={storeFilter}
-                onChange={(e) => { setStoreFilter(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setStoreFilter(e.target.value);
+                  setPage(1);
+                }}
                 className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="all">Semua Store</option>
+                <option value="all">{t("page.goodsReceipt.list.filter.allStores")}</option>
                 {(locations?.data || []).map((loc) => (
-                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
                 ))}
               </select>
             )}
@@ -277,10 +314,10 @@ const GoodsReceiptList = () => {
                 setPage(1);
               }}
               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">Semua Status</option>
-              {Object.entries(statusColors).map(([k, v]) => (
+              <option value="all">{t("page.goodsReceipt.list.filter.allStatuses")}</option>
+              {Object.keys(statusMap).map((k) => (
                 <option key={k} value={k}>
-                  {v.label}
+                  {t(`page.goodsReceipt.list.status.${k}`)}
                 </option>
               ))}
             </select>
@@ -290,7 +327,7 @@ const GoodsReceiptList = () => {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Cari No. Receipt, PO..."
+                placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -303,7 +340,7 @@ const GoodsReceiptList = () => {
               disabled={exportLoading}
               className="gap-1.5">
               <Download size={14} />
-              {exportLoading ? "..." : "Export"}
+              {exportLoading ? "..." : t("common.export")}
             </Button>
           </div>
         }
@@ -314,9 +351,9 @@ const GoodsReceiptList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Hapus Goods Receipt?"
-        description="Data yang dihapus tidak dapat dikembalikan."
-        confirmText="Ya, Hapus"
+        title={t("page.goodsReceipt.list.modal.deleteTitle")}
+        description={t("page.goodsReceipt.list.modal.deleteDescription")}
+        confirmText={t("page.goodsReceipt.list.modal.confirmDelete")}
         onConfirm={() => deleteMutation.mutate(deleteTarget)}
       />
     </div>

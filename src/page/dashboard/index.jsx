@@ -116,47 +116,47 @@ const Dashboard = () => {
 
   const rawChart = d.salesChart || [];
   const buildChartData = () => {
-    const map = {}
-    rawChart.forEach(item => {
-      const dt = new Date(item.date)
+    const map = {};
+    rawChart.forEach((item) => {
+      const dt = new Date(item.date);
       if (chartFilter === "daily") {
-        map[dt.getHours()] = Number(item.sales) || 0
+        map[dt.getHours()] = Number(item.sales) || 0;
       } else if (chartFilter === "monthly") {
-        map[dt.getDate()] = Number(item.sales) || 0
+        map[dt.getDate()] = Number(item.sales) || 0;
       } else {
-        map[dt.getDay()] = Number(item.sales) || 0
+        map[dt.getDay()] = Number(item.sales) || 0;
       }
-    })
+    });
 
-    const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
-    const result = []
+    const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+    const result = [];
 
     if (chartFilter === "daily") {
       for (let h = 8; h <= 22; h++) {
-        result.push({ day: `${String(h).padStart(2, "0")}:00`, value: map[h] || 0 })
+        result.push({ day: `${String(h).padStart(2, "0")}:00`, value: map[h] || 0 });
       }
     } else if (chartFilter === "monthly") {
-      const now = new Date()
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+      const now = new Date();
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
       for (let d = 1; d <= lastDay; d++) {
-        result.push({ day: String(d), value: map[d] || 0 })
+        result.push({ day: String(d), value: map[d] || 0 });
       }
     } else {
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const monday = new Date(today)
-      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
       for (let i = 0; i < 7; i++) {
-        const d = new Date(monday)
-        d.setDate(monday.getDate() + i)
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
         result.push({
           day: `${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`,
           value: map[d.getDay()] || 0
-        })
+        });
       }
     }
-    return result
-  }
+    return result;
+  };
   const chartData = buildChartData();
   const bestSelling = d.bestSellers || [];
   const recentOrders = d.recentOrders || [];
@@ -285,7 +285,9 @@ const Dashboard = () => {
                       {t("page.dashboard.chartTitle")}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {t(`page.dashboard.chartSubtitle${chartFilter === "daily" ? "Daily" : chartFilter === "monthly" ? "Monthly" : "Weekly"}`)}
+                      {t(
+                        `page.dashboard.chartSubtitle${chartFilter === "daily" ? "Daily" : chartFilter === "monthly" ? "Monthly" : "Weekly"}`
+                      )}
                     </p>
                   </div>
                   <div className="flex bg-muted rounded-lg p-0.5">
@@ -325,7 +327,12 @@ const Dashboard = () => {
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                      tickFormatter={(val) => {
+                        if (val >= 1000000) return `Rp${(val / 1000000).toFixed(1)}Jt`;
+                        if (val >= 1000) return `Rp${(val / 1000).toFixed(0)}K`;
+                        return `Rp${val}`;
+                      }}
                     />
                     <Tooltip
                       contentStyle={{
@@ -334,6 +341,10 @@ const Dashboard = () => {
                         borderRadius: "8px",
                         fontSize: "12px"
                       }}
+                      formatter={(value) => [
+                        formatCurrencyRupiah(value),
+                        t("page.dashboard.revenue")
+                      ]}
                     />
                     <Bar
                       dataKey="value"

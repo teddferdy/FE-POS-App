@@ -29,11 +29,11 @@ const ExpenseCategoryList = () => {
 
   const deleteMutation = useMutation(deleteExpenseCategory, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Kategori biaya berhasil dihapus" });
+      toast.success(t("page.expenseCategory.list.toast.success"), { description: t("page.expenseCategory.list.toast.successDescription") });
       queryClient.invalidateQueries(["expense-categories"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expenseCategory.list.toast.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -55,7 +55,7 @@ const ExpenseCategoryList = () => {
 
   const columns = [
     {
-      header: "Nama Kategori",
+      header: t("page.expenseCategory.list.name"),
       render: (row) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
@@ -66,7 +66,7 @@ const ExpenseCategoryList = () => {
       )
     },
     {
-      header: "Deskripsi",
+      header: t("page.expenseCategory.list.description"),
       render: (row) => (
         <span className="text-sm text-muted-foreground max-w-[300px] truncate block">
           {row.description || "-"}
@@ -74,7 +74,7 @@ const ExpenseCategoryList = () => {
       )
     },
     {
-      header: "Aksi",
+      header: t("page.expenseCategory.list.actions"),
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
@@ -132,7 +132,7 @@ const ExpenseCategoryList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Kategori</p>
+          <p className="text-sm text-muted-foreground">{t("page.expenseCategory.list.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{categories.length}</p>
         </Card>
       </div>
@@ -155,16 +155,16 @@ const ExpenseCategoryList = () => {
         data={filtered}
         isLoading={isLoading}
         emptyIcon={Tag}
-        emptyMessage="Tidak ada kategori biaya ditemukan"
+        emptyMessage={t("page.expenseCategory.list.empty")}
       />
 
       <Modal
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Kategori?"
-        description={`Yakin ingin menghapus kategori ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.expenseCategory.list.deleteTitle")}
+        description={t("page.expenseCategory.list.deleteDescription", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.expenseCategory.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />
     </div>

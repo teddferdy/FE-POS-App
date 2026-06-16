@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import PropTypes from "prop-types";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { uploadIngredientExcel } from "@/services/ingredient";
 
@@ -27,6 +28,7 @@ const formatFileSize = (bytes) => {
 };
 
 const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
+  const { t } = useTranslation();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const storeId = cookie?.activeStore || user?.store;
@@ -125,8 +127,12 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 <FileSpreadsheet size={22} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Import Bahan Baku</h2>
-                <p className="text-sm text-muted-foreground">Upload file Excel bahan baku</p>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {t("page.ingredient.import.title")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.ingredient.import.subtitle")}
+                </p>
               </div>
             </div>
             <button
@@ -164,9 +170,13 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    {dragOver ? "Lepaskan file di sini" : "Seret file ke sini atau klik untuk pilih"}
+                    {dragOver
+                      ? t("page.ingredient.import.dragActive")
+                      : t("page.ingredient.import.dragInactive")}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Format: .xlsx, .xls, .csv</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("page.ingredient.import.formatHint")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -196,12 +206,13 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
               <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <div className="flex items-center gap-2 mb-1">
                   <CheckCircle2 size={18} />
-                  <span className="font-medium">Import berhasil</span>
+                  <span className="font-medium">{t("page.ingredient.import.success")}</span>
                 </div>
                 {importResult && (
                   <p className="text-xs ml-6">
-                    {importResult.inserted} bahan baku baru ditambahkan
-                    {importResult.duplicates > 0 && `, ${importResult.duplicates} duplikat`}
+                    {t("page.ingredient.import.newAdded", { count: importResult.inserted })}
+                    {importResult.duplicates > 0 &&
+                      t("page.ingredient.import.duplicates", { count: importResult.duplicates })}
                   </p>
                 )}
               </div>
@@ -210,15 +221,21 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
               <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <div className="flex items-center gap-2 mb-1">
                   <AlertCircle size={18} />
-                  <span className="font-medium">Tidak ada data baru</span>
+                  <span className="font-medium">{t("page.ingredient.import.noNewData")}</span>
                 </div>
                 {importResult && importResult.errors?.length > 0 && (
                   <div className="ml-6 mt-1 space-y-0.5">
                     {importResult.errors.slice(0, 5).map((e, i) => (
-                      <p key={i} className="text-xs">{e}</p>
+                      <p key={i} className="text-xs">
+                        {e}
+                      </p>
                     ))}
                     {importResult.errors.length > 5 && (
-                      <p className="text-xs">...dan {importResult.errors.length - 5} error lainnya</p>
+                      <p className="text-xs">
+                        {t("page.ingredient.import.andMore", {
+                          count: importResult.errors.length - 5
+                        })}
+                      </p>
                     )}
                   </div>
                 )}
@@ -227,12 +244,14 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
             {uploadStatus === "error" && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
                 <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{uploadError || "Import gagal, periksa format file"}</span>
+                <span>{uploadError || t("page.ingredient.import.errorDefault")}</span>
               </div>
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={handleClose}>Batal</Button>
+              <Button variant="outline" onClick={handleClose}>
+                {t("page.ingredient.import.cancelButton")}
+              </Button>
               <Button
                 disabled={!file || uploading}
                 onClick={handleDirectUpload}
@@ -240,12 +259,12 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
                 {uploading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Mengupload...
+                    {t("page.ingredient.import.uploading")}
                   </>
                 ) : (
                   <>
                     <Database size={16} />
-                    Import
+                    {t("page.ingredient.import.importButton")}
                   </>
                 )}
               </Button>

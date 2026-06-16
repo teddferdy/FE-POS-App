@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getPurchaseReturnById } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +14,7 @@ const statusDetail = {
 };
 
 const DetailPurchaseReturn = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -34,9 +36,9 @@ const DetailPurchaseReturn = () => {
   if (!ret)
     return (
       <div className="p-6">
-        <p className="text-muted-foreground">Purchase return tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.purchaseReturn.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/purchase-return")} className="mt-4">
-          <ArrowLeft size={16} className="mr-1" /> Kembali
+          <ArrowLeft size={16} className="mr-1" /> {t("page.purchaseReturn.detail.back")}
         </Button>
       </div>
     );
@@ -49,38 +51,38 @@ const DetailPurchaseReturn = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.purchaseReturn.detail.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/purchase-return")} className="hover:text-foreground">
-          Purchase Return
+          {t("page.purchaseReturn.detail.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Detail</span>
+        <span className="text-primary font-semibold">{t("page.purchaseReturn.detail.breadcrumb.detail")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Detail Purchase Return</h1>
+          <h1 className="text-2xl font-bold">{t("page.purchaseReturn.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{ret.returnNumber}</p>
         </div>
         <Button variant="outline" onClick={() => navigate("/purchase-return")}>
-          <ArrowLeft size={16} className="mr-1" /> Kembali
+          <ArrowLeft size={16} className="mr-1" /> {t("page.purchaseReturn.detail.back")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">Informasi Retur</h2>
+            <h2 className="text-lg font-semibold mb-4">{t("page.purchaseReturn.detail.section.informasiRetur")}</h2>
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  ["Return No", ret.returnNumber],
-                  ["Store", ret.storeData?.name || "-"],
-                  ["Alasan", ret.reason || "-"],
-                  ["Dikembalikan Oleh", ret.returnedBy || ret.returnedByData?.name || "-"],
-                  ["Tanggal", new Date(ret.createdAt).toLocaleDateString("id")]
+                  [t("page.purchaseReturn.detail.field.returnNo"), ret.returnNumber],
+                  [t("page.purchaseReturn.detail.field.store"), ret.storeData?.name || "-"],
+                  [t("page.purchaseReturn.detail.field.reason"), ret.reason || "-"],
+                  [t("page.purchaseReturn.detail.field.returnedBy"), ret.returnedBy || ret.returnedByData?.name || "-"],
+                  [t("page.purchaseReturn.detail.field.date"), new Date(ret.createdAt).toLocaleDateString("id")]
                 ].map(([l, v]) => (
                   <tr key={l} className="border-b border-muted/30">
                     <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
@@ -92,14 +94,14 @@ const DetailPurchaseReturn = () => {
           </div>
 
           <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">Items</h2>
+            <h2 className="text-lg font-semibold mb-4">{t("page.purchaseReturn.detail.section.items")}</h2>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2">Produk</th>
-                  <th className="pb-2 text-right">Qty</th>
-                  <th className="pb-2 text-center">Unit</th>
-                  <th className="pb-2">Catatan</th>
+                  <th className="pb-2">{t("page.purchaseReturn.detail.table.product")}</th>
+                  <th className="pb-2 text-right">{t("page.purchaseReturn.detail.table.qty")}</th>
+                  <th className="pb-2 text-center">{t("page.purchaseReturn.detail.table.unit")}</th>
+                  <th className="pb-2">{t("page.purchaseReturn.detail.table.notes")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -115,7 +117,7 @@ const DetailPurchaseReturn = () => {
                 ) : (
                   <tr>
                     <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                      Tidak ada item
+                      {t("page.purchaseReturn.detail.table.noItems")}
                     </td>
                   </tr>
                 )}
@@ -127,7 +129,7 @@ const DetailPurchaseReturn = () => {
         <div className="space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Status
+              {t("page.purchaseReturn.detail.section.status")}
             </h2>
             <div
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>

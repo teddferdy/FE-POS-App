@@ -43,12 +43,16 @@ const AddShift = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
 
-  const { data: employeesData } = useQuery(["employees-for-shift"], () => getAllEmployee({ limit: 100 }), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: employeesData } = useQuery(
+    ["employees-for-shift"],
+    () => getAllEmployee({ limit: 100 }),
+    {
+      staleTime: 5 * 60 * 1000
+    }
+  );
   const employees = employeesData?.data || employeesData?.employees || [];
 
-   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
+  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({
@@ -86,9 +90,15 @@ const AddShift = () => {
     const current = form.getValues("karyawan") || [];
     const exists = current.find((e) => (e.id || e._id) === (emp.id || emp._id));
     if (exists) {
-      form.setValue("karyawan", current.filter((e) => (e.id || e._id) !== (emp.id || emp._id)));
+      form.setValue(
+        "karyawan",
+        current.filter((e) => (e.id || e._id) !== (emp.id || emp._id))
+      );
     } else {
-      form.setValue("karyawan", [...current, { id: emp.id || emp._id, name: emp.fullName || emp.name }]);
+      form.setValue("karyawan", [
+        ...current,
+        { id: emp.id || emp._id, name: emp.fullName || emp.name }
+      ]);
     }
   };
 
@@ -105,8 +115,14 @@ const AddShift = () => {
     const { status, karyawan, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      tanggal_mulai: values.tanggal_mulai instanceof Date ? values.tanggal_mulai.toISOString().split("T")[0] : values.tanggal_mulai,
-      tanggal_selesai: values.tanggal_selesai instanceof Date ? values.tanggal_selesai.toISOString().split("T")[0] : values.tanggal_selesai,
+      tanggal_mulai:
+        values.tanggal_mulai instanceof Date
+          ? values.tanggal_mulai.toISOString().split("T")[0]
+          : values.tanggal_mulai,
+      tanggal_selesai:
+        values.tanggal_selesai instanceof Date
+          ? values.tanggal_selesai.toISOString().split("T")[0]
+          : values.tanggal_selesai,
       karyawan: karyawan?.map((k) => k.id) || [],
       status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
@@ -135,9 +151,14 @@ const AddShift = () => {
                 name="nama_shift"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nama Shift <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>
+                      Nama Shift <span className="text-destructive">*</span>
+                    </FormLabel>
                     <div className="relative">
-                      <CalendarDays size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <CalendarDays
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
                       <Input placeholder="Contoh: Shift Pagi" className="pl-9" {...field} />
                     </div>
                     <FormMessage />
@@ -149,7 +170,9 @@ const AddShift = () => {
                 name="tipe_shift"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipe Shift <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>
+                      Tipe Shift <span className="text-destructive">*</span>
+                    </FormLabel>
                     <div className="flex gap-2">
                       {["harian", "mingguan"].map((t) => (
                         <button
@@ -177,15 +200,24 @@ const AddShift = () => {
               name="store"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Penempatan Toko <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>
+                    Penempatan Toko <span className="text-destructive">*</span>
+                  </FormLabel>
                   {locations.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
                       <Store size={28} className="text-muted-foreground/60" />
                       <div className="text-center">
                         <p className="text-sm font-medium text-foreground">Belum ada toko</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Tambah toko terlebih dahulu</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Tambah toko terlebih dahulu
+                        </p>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => navigate("/add-location")} className="gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/add-location")}
+                        className="gap-2">
                         <span className="material-symbols-outlined text-base">add</span>
                         Tambah Toko
                       </Button>
@@ -204,22 +236,24 @@ const AddShift = () => {
                                 ? "border-primary bg-primary/5 shadow-sm"
                                 : "border-border bg-background hover:border-primary/50 hover:bg-muted/20"
                             }`}>
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                              isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                            }`}>
+                            <div
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                isSelected
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-muted-foreground"
+                              }`}>
                               <Store size={18} />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className={`text-sm font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
+                              <p
+                                className={`text-sm font-medium truncate ${isSelected ? "text-primary" : "text-foreground"}`}>
                                 {loc.name || loc.storeName}
                               </p>
                               <p className="text-xs text-muted-foreground truncate">
                                 {loc.city || loc.address || ""}
                               </p>
                             </div>
-                            {isSelected && (
-                              <Check size={16} className="text-primary shrink-0" />
-                            )}
+                            {isSelected && <Check size={16} className="text-primary shrink-0" />}
                           </button>
                         );
                       })}
@@ -237,7 +271,9 @@ const AddShift = () => {
                 name="jam_mulai"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jam Mulai <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>
+                      Jam Mulai <span className="text-destructive">*</span>
+                    </FormLabel>
                     <TimePicker {...field} placeholder="Pilih jam mulai" />
                     <FormMessage />
                   </FormItem>
@@ -248,7 +284,9 @@ const AddShift = () => {
                 name="jam_selesai"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jam Selesai <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>
+                      Jam Selesai <span className="text-destructive">*</span>
+                    </FormLabel>
                     <TimePicker {...field} placeholder="Pilih jam selesai" />
                     <FormMessage />
                   </FormItem>
@@ -263,7 +301,9 @@ const AddShift = () => {
                 name="tanggal_mulai"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tanggal Mulai <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>
+                      Tanggal Mulai <span className="text-destructive">*</span>
+                    </FormLabel>
                     <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
@@ -275,14 +315,17 @@ const AddShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tanggal Selesai</FormLabel>
-                    <div className={`transition-all duration-200 ${tipeShift === "harian" ? "opacity-50" : ""}`}>
+                    <div
+                      className={`transition-all duration-200 ${tipeShift === "harian" ? "opacity-50" : ""}`}>
                       <DatePicker
                         date={field.value}
                         setDate={tipeShift === "mingguan" ? field.onChange : () => {}}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {tipeShift === "harian" ? "✏️ Hanya untuk shift mingguan" : "Atur tanggal berakhir shift"}
+                      {tipeShift === "harian"
+                        ? "✏️ Hanya untuk shift mingguan"
+                        : "Atur tanggal berakhir shift"}
                     </p>
                     <FormMessage />
                   </FormItem>
@@ -313,9 +356,14 @@ const AddShift = () => {
                     {selectedEmployees.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {selectedEmployees.map((emp) => (
-                          <span key={emp.id} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                          <span
+                            key={emp.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                             {emp.name}
-                            <button type="button" onClick={() => toggleEmployee(emp)} className="hover:text-destructive">
+                            <button
+                              type="button"
+                              onClick={() => toggleEmployee(emp)}
+                              className="hover:text-destructive">
                               <X size={12} />
                             </button>
                           </span>
@@ -329,8 +377,12 @@ const AddShift = () => {
                         <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20 m-2">
                           <Users size={28} className="text-muted-foreground/60" />
                           <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">Belum ada karyawan</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Tambah karyawan terlebih dahulu</p>
+                            <p className="text-sm font-medium text-foreground">
+                              Belum ada karyawan
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Tambah karyawan terlebih dahulu
+                            </p>
                           </div>
                           <Button
                             type="button"
@@ -344,7 +396,9 @@ const AddShift = () => {
                         </div>
                       ) : (
                         employees.map((emp) => {
-                          const isSelected = selectedEmployees.some((e) => e.id === (emp.id || emp._id));
+                          const isSelected = selectedEmployees.some(
+                            (e) => e.id === (emp.id || emp._id)
+                          );
                           return (
                             <label
                               key={emp.id || emp._id}
@@ -384,7 +438,11 @@ const AddShift = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Deskripsi</FormLabel>
-                  <Textarea placeholder="Catatan tambahan tentang shift ini..." rows={3} {...field} />
+                  <Textarea
+                    placeholder="Catatan tambahan tentang shift ini..."
+                    rows={3}
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -403,15 +461,20 @@ const AddShift = () => {
                         : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
                     }`}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${field.value ? "bg-green-600 text-white" : "bg-destructive/10 text-destructive"}`}>
-                        <span className="material-symbols-outlined text-lg">{field.value ? "check" : "close"}</span>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${field.value ? "bg-green-600 text-white" : "bg-destructive/10 text-destructive"}`}>
+                        <span className="material-symbols-outlined text-lg">
+                          {field.value ? "check" : "close"}
+                        </span>
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">
                           {field.value ? "Aktif" : "Tidak Aktif"}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {field.value ? "Shift ini aktif dan dapat digunakan." : "Shift ini tidak aktif."}
+                          {field.value
+                            ? "Shift ini aktif dan dapat digunakan."
+                            : "Shift ini tidak aktif."}
                         </p>
                       </div>
                     </div>
@@ -424,7 +487,11 @@ const AddShift = () => {
 
             {/* Actions */}
             <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-              <Button type="button" variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCancelModal(true)}
+                className="gap-2">
                 <X size={18} /> {t("breadcrumb.back")}
               </Button>
               <div className="flex gap-3">
@@ -446,9 +513,37 @@ const AddShift = () => {
         </Form>
       </Card>
 
-      <Modal type="confirm" open={cancelModal} onOpenChange={setCancelModal} title="Batalkan?" description="Perubahan yang belum disimpan akan hilang." confirmText="Ya, Batalkan" onConfirm={() => navigate("/shift")} />
-      <Modal type="success" open={successModal} onOpenChange={setSuccessModal} title="Berhasil!" description="Shift berhasil ditambahkan." confirmText="Kembali ke Daftar" onConfirm={() => navigate("/shift")} />
-      <Modal type="confirm" open={draftModal} onOpenChange={setDraftModal} title="Simpan sebagai Draft?" description="Data yang belum lengkap bisa dilengkapi nanti" confirmText="Ya, Simpan Draft" onConfirm={() => { setDraftModal(false); const values = form.getValues(); onSubmit(values, true); }} />
+      <Modal
+        type="confirm"
+        open={cancelModal}
+        onOpenChange={setCancelModal}
+        title="Batalkan?"
+        description="Perubahan yang belum disimpan akan hilang."
+        confirmText="Ya, Batalkan"
+        onConfirm={() => navigate("/shift")}
+      />
+      <Modal
+        type="success"
+        open={successModal}
+        onOpenChange={setSuccessModal}
+        title="Berhasil!"
+        description="Shift berhasil ditambahkan."
+        confirmText="Kembali ke Daftar"
+        onConfirm={() => navigate("/shift")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft?"
+        description="Data yang belum lengkap bisa dilengkapi nanti"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
+      />
     </div>
   );
 };

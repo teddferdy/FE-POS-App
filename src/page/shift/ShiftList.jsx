@@ -35,11 +35,11 @@ const ShiftList = () => {
 
   const deleteMutation = useMutation(deleteShift, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Shift berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.shift.toast.deleteSuccess") });
       queryClient.invalidateQueries(["shifts"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
     }
   });
 

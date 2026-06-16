@@ -623,6 +623,24 @@ const DetailProduct = () => {
               </div>
             </Card>
           )}
+          {product.redeemPoints > 0 && (
+            <Card>
+              <div className="p-5 border-b border-border bg-amber-50">
+                <div className="flex items-center gap-2">
+                  <Star size={16} className="text-amber-600" />
+                  <h3 className="font-semibold text-sm">
+                    {t("page.product.detail.redeemTitle")}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-5 text-center">
+                <p className="text-3xl font-bold text-amber-600">{product.redeemPoints}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("page.product.detail.redeemInfo")}
+                </p>
+              </div>
+            </Card>
+          )}
 
           {product.isAvailable !== undefined && (
             <Card>

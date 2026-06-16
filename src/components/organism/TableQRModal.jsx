@@ -1,10 +1,12 @@
 import React, { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import Modal from "@/components/organism/modal";
 
 const TableQRModal = ({ open, onOpenChange, table }) => {
+  const { t } = useTranslation();
   const qrRef = useRef(null);
 
   if (!table) return null;
@@ -18,7 +20,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>QR Code - ${table.name}</title>
+          <title>{t("tableQR.title", { name: table.name })}</title>
           <style>
             body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
             .print-area { text-align: center; }
@@ -29,7 +31,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
         <body>
           <div class="print-area">
             ${qrRef.current?.innerHTML || ""}
-            <p>Scan QR untuk memesan dari meja ${table.name}</p>
+            <p>{t("tableQR.scanToOrder", { name: table.name })}</p>
           </div>
           <script>window.onload = function() { window.print(); window.close(); }</script>
         </body>
@@ -43,14 +45,14 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
       type="custom"
       open={open}
       onOpenChange={onOpenChange}
-      title={`QR Code - ${table.name}`}
+      title={t("tableQR.title", { name: table.name })}
     >
       <div className="flex flex-col items-center gap-4 p-4">
         <div ref={qrRef} className="bg-white p-4 rounded-xl">
           <QRCodeSVG value={orderUrl} size={200} />
         </div>
         <p className="text-sm text-muted-foreground text-center">
-          Scan QR ini untuk memesan dari meja {table.name}
+          {t("tableQR.scanToOrder", { name: table.name })}
         </p>
         <div className="flex gap-2">
           <Button

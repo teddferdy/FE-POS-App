@@ -230,7 +230,7 @@ const MemberDetail = () => {
 
   const stats = [
     {
-      label: "Total Transaksi",
+      label: t("page.member.detail.totalTransactions"),
       value: formatCurrency(totalSpent),
       icon: "payments",
       iconBg: "bg-primary/10",
@@ -240,7 +240,7 @@ const MemberDetail = () => {
       trendColor: "text-secondary"
     },
     {
-      label: "Frekuensi Kunjungan",
+      label: t("page.member.detail.visitFrequency"),
       value: `${visitFrequency} kali`,
       icon: "calendar_month",
       iconBg: "bg-tertiary/10",
@@ -250,7 +250,7 @@ const MemberDetail = () => {
       trendColor: "text-secondary"
     },
     {
-      label: "Rata-rata Belanja",
+      label: t("page.member.detail.averageSpending"),
       value: formatCurrency(averageSpending),
       icon: "shopping_bag",
       iconBg: "bg-secondary/10",
@@ -315,7 +315,7 @@ const MemberDetail = () => {
                   calendar_today
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Joined Date</span>
+                  <span className="text-xs text-muted-foreground">{t("page.member.detail.joinedDate")}</span>
                   <span className="text-sm font-medium">{formattedJoinDate}</span>
                 </div>
               </div>
@@ -324,7 +324,7 @@ const MemberDetail = () => {
                   mail
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Email Address</span>
+                  <span className="text-xs text-muted-foreground">{t("page.member.detail.emailAddress")}</span>
                   <span className="text-sm font-medium">{email}</span>
                 </div>
               </div>
@@ -333,7 +333,7 @@ const MemberDetail = () => {
                   call
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Phone Number</span>
+                  <span className="text-xs text-muted-foreground">{t("page.member.detail.phoneNumber")}</span>
                   <span className="text-sm font-medium">{phone}</span>
                 </div>
               </div>
@@ -342,7 +342,7 @@ const MemberDetail = () => {
                   location_on
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Address</span>
+                  <span className="text-xs text-muted-foreground">{t("page.member.detail.address")}</span>
                   <span className="text-sm font-medium">{address}</span>
                 </div>
               </div>
@@ -355,7 +355,7 @@ const MemberDetail = () => {
                 <span className="material-symbols-outlined text-tertiary-fixed-dim">
                   workspace_premium
                 </span>
-                <span className="text-sm font-semibold">Membership Status</span>
+                <span className="text-sm font-semibold">{t("page.member.detail.membershipStatus")}</span>
               </div>
               <span
                 className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${level.bg}`}>

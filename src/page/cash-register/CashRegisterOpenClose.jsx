@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DollarSign, X, Wallet, Coins, Landmark } from "lucide-react";
 import { openCashRegister } from "@/services/cash-register";
@@ -23,6 +24,7 @@ const parseIDR = (str) => {
 const quickAmounts = [100000, 200000, 500000, 1000000, 2000000, 5000000];
 
 const CashRegisterOpenClose = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -50,12 +52,12 @@ const CashRegisterOpenClose = () => {
       }),
     {
       onSuccess: () => {
-        toast.success("Berhasil", { description: "Kasir dibuka" });
+        toast.success(t("page.cashRegister.openClose.success"), { description: t("page.cashRegister.openClose.openedDesc") });
         queryClient.invalidateQueries(["cash-register"]);
         navigate("/cash-register/current");
       },
       onError: (err) =>
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+        toast.error(t("page.cashRegister.openClose.fail"), { description: err?.response?.data?.message || err.message })
     }
   );
 
@@ -65,17 +67,17 @@ const CashRegisterOpenClose = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("page.cashRegister.openClose.breadcrumbDashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Buka Kasir</span>
+        <span className="text-primary font-semibold">{t("page.cashRegister.openClose.breadcrumb")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Buka Kasir</h1>
+          <h1 className="text-2xl font-bold">{t("page.cashRegister.openClose.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Mulai shift kasir — input uang awal di laci
+            {t("page.cashRegister.openClose.desc")}
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
@@ -92,9 +94,9 @@ const CashRegisterOpenClose = () => {
                 <Landmark size={20} className="text-primary" />
               </div>
               <div className="min-w-0">
-                <h2 className="font-semibold truncate">Saldo Awal Kasir</h2>
+                <h2 className="font-semibold truncate">{t("page.cashRegister.openClose.openingBalanceTitle")}</h2>
                 <p className="text-xs text-muted-foreground">
-                  Isi jumlah uang yang ada di laci kasir saat ini
+                  {t("page.cashRegister.openClose.openingBalanceDesc")}
                 </p>
               </div>
             </div>
@@ -105,7 +107,7 @@ const CashRegisterOpenClose = () => {
                   onChange={(e) => setSelectedStore(e.target.value)}
                   className="w-full h-9 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat pr-8">
                   <option value="" disabled>
-                    Pilih toko
+                    {t("page.cashRegister.openClose.selectStore")}
                   </option>
                   {locations?.map((loc) => (
                     <option key={loc.id} value={loc.id}>
@@ -123,7 +125,7 @@ const CashRegisterOpenClose = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Jumlah Uang <span className="text-destructive">*</span>
+                  {t("page.cashRegister.openClose.amountLabel")} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
@@ -133,7 +135,7 @@ const CashRegisterOpenClose = () => {
                     type="text"
                     inputMode="numeric"
                     value={formatIDR(rawBalance === "0" ? "" : rawBalance)}
-                    placeholder="Rp 0"
+                    placeholder={t("page.cashRegister.openClose.placeholder")}
                     onChange={(e) => {
                       const cleaned = e.target.value.replace(/[^0-9]/g, "");
                       setRawBalance(cleaned || "0");
@@ -143,13 +145,13 @@ const CashRegisterOpenClose = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {numericBalance > 0
-                    ? `Tercatat: ${formatIDR(numericBalance)}`
-                    : "Masukkan jumlah saldo awal"}
+                    ? `${t("page.cashRegister.openClose.recorded")} ${formatIDR(numericBalance)}`
+                    : t("page.cashRegister.openClose.enterOpeningBalance")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground font-normal">Cepat pilih</Label>
+                <Label className="text-xs text-muted-foreground font-normal">{t("page.cashRegister.openClose.quickSelect")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {quickAmounts.map((amount) => (
                     <button
@@ -170,13 +172,13 @@ const CashRegisterOpenClose = () => {
 
             <div className="flex flex-col justify-between gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Catatan</Label>
+                <Label className="text-sm font-medium">{t("page.cashRegister.openClose.notesLabel")}</Label>
                 <textarea
                   rows={4}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-shadow resize-none"
-                  placeholder="Catatan (opsional)"
+                  placeholder={t("page.cashRegister.openClose.notesPlaceholder")}
                 />
               </div>
               <div className="flex items-center justify-end gap-3">
@@ -184,14 +186,14 @@ const CashRegisterOpenClose = () => {
                   variant="outline"
                   onClick={() => navigate("/dashboard-super-admin")}
                   className="gap-1.5">
-                  <X size={16} /> Batal
+                  <X size={16} /> {t("page.cashRegister.openClose.cancel")}
                 </Button>
                 <Button
                   onClick={() => openMut.mutate()}
                   disabled={openMut.isLoading || numericBalance <= 0}
                   className="gap-1.5">
                   <DollarSign size={16} />
-                  {openMut.isLoading ? "Membuka..." : `Buka Kasir — ${formatIDR(numericBalance)}`}
+                  {openMut.isLoading ? t("page.cashRegister.openClose.opening") : t("page.cashRegister.openClose.openWithAmount", { amount: formatIDR(numericBalance) })}
                 </Button>
               </div>
             </div>

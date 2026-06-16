@@ -34,20 +34,20 @@ const ExpenseList = () => {
   const approveMutation = useMutation(approveExpense, {
     onSuccess: () => {
       queryClient.invalidateQueries(["expenses"]);
-      toast.success("Berhasil", { description: "Biaya telah disetujui" });
+      toast.success(t("page.expense.list.toast.approveSuccess"), { description: t("page.expense.list.toast.approveDescription") });
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expense.list.toast.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
   const rejectMutation = useMutation(rejectExpense, {
     onSuccess: () => {
       queryClient.invalidateQueries(["expenses"]);
-      toast.success("Berhasil", { description: "Biaya telah ditolak" });
+      toast.success(t("page.expense.list.toast.rejectSuccess"), { description: t("page.expense.list.toast.rejectDescription") });
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expense.list.toast.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -94,20 +94,20 @@ const ExpenseList = () => {
     if (status === "pending" || status === "need approve") {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-          Perlu Approve
+          {t("page.expense.list.statusPending")}
         </span>
       );
     }
     if (status === "rejected" || status === "ditolak") {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-          Ditolak
+          {t("page.expense.list.statusRejected")}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        Disetujui
+        {t("page.expense.list.statusApproved")}
       </span>
     );
   };
@@ -220,19 +220,19 @@ const ExpenseList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Biaya</p>
+          <p className="text-sm text-muted-foreground">{t("page.expense.list.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Perlu Approve</p>
+          <p className="text-sm text-muted-foreground">{t("page.expense.list.pending")}</p>
           <p className="text-2xl font-bold text-orange-600 mt-1">{pendingExpenses}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Disetujui</p>
+          <p className="text-sm text-muted-foreground">{t("page.expense.list.approved")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{approvedExpenses}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Ditolak</p>
+          <p className="text-sm text-muted-foreground">{t("page.expense.list.rejected")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{rejectedExpenses}</p>
         </Card>
       </div>
@@ -257,7 +257,7 @@ const ExpenseList = () => {
         columns={columns}
         data={filtered}
         isLoading={isLoading}
-        emptyMessage="Tidak ada biaya ditemukan"
+        emptyMessage={t("page.expense.list.empty")}
         emptyIcon={DollarSign}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />

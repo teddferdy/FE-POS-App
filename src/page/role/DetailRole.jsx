@@ -5,7 +5,11 @@ import { useQuery } from "react-query";
 import { ChevronDown, ChevronRight, Shield, ArrowLeft } from "lucide-react";
 import { getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import { parseAccessMenuToPermissions, findMenuPermission, normalizePermissionActions } from "@/utils/permission";
+import {
+  parseAccessMenuToPermissions,
+  findMenuPermission,
+  normalizePermissionActions
+} from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -25,8 +29,18 @@ const actionLabels = {
 };
 
 const allActionTypes = [
-  "view", "add", "edit", "delete", "import", "export",
-  "approve", "print", "edit-points", "edit-access", "reset-password", "update-status"
+  "view",
+  "add",
+  "edit",
+  "delete",
+  "import",
+  "export",
+  "approve",
+  "print",
+  "edit-points",
+  "edit-access",
+  "reset-password",
+  "update-status"
 ];
 
 const getLeafItemsGrouped = () => {
@@ -56,11 +70,9 @@ const DetailRole = () => {
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
 
-  const { data: roleData, isLoading } = useQuery(
-    ["role-by-id", id],
-    () => getRoleById(id),
-    { enabled: !!id }
-  );
+  const { data: roleData, isLoading } = useQuery(["role-by-id", id], () => getRoleById(id), {
+    enabled: !!id
+  });
 
   const role = roleData?.data || roleData;
   const permissions = useMemo(() => {
@@ -200,9 +212,7 @@ const DetailRole = () => {
           <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
             Edit Role
           </Button>
-          <Button onClick={() => navigate("/role-management")}>
-            Kembali
-          </Button>
+          <Button onClick={() => navigate("/role-management")}>Kembali</Button>
         </div>
       </div>
 
@@ -215,38 +225,50 @@ const DetailRole = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nama Role</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Nama Role
+                </label>
                 <p className="text-sm font-medium text-foreground mt-1">{role.name}</p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Deskripsi
+                </label>
                 <p className="text-sm text-foreground mt-1">{role.description || "-"}</p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipe</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Tipe
+                </label>
                 <p className="mt-1">
-                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
-                    role.roleType === "super_admin"
-                      ? "bg-red-100 text-red-700"
-                      : role.roleType === "admin"
-                        ? "bg-blue-100 text-blue-700"
-                        : role.roleType === "kasir"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-gray-100 text-gray-700"
-                  }`}>
+                  <span
+                    className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
+                      role.roleType === "super_admin"
+                        ? "bg-red-100 text-red-700"
+                        : role.roleType === "admin"
+                          ? "bg-blue-100 text-blue-700"
+                          : role.roleType === "kasir"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-700"
+                    }`}>
                     {role.roleType}
                   </span>
                 </p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Status
+                </label>
                 <p className="mt-1">
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                    role.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`} />
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                      role.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}>
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`}
+                    />
                     {role.status === "active" ? "Aktif" : "Nonaktif"}
                   </span>
                 </p>
@@ -298,7 +320,8 @@ const DetailRole = () => {
                                 Menu
                               </th>
                               {visibleActions.map((action) => (
-                                <th key={action}
+                                <th
+                                  key={action}
                                   className="px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center min-w-[60px]">
                                   {actionLabels[action] || action}
                                 </th>
@@ -308,13 +331,19 @@ const DetailRole = () => {
                           <tbody className="divide-y divide-border">
                             {group.items.map((item) => {
                               const itemActions = getVisibleActions(item.actions || []);
-                              const perm = normalizePermissionActions(findMenuPermission(permissions, item.href)) || {};
+                              const perm =
+                                normalizePermissionActions(
+                                  findMenuPermission(permissions, item.href)
+                                ) || {};
                               return (
                                 <tr key={item.href} className="hover:bg-muted/10 transition-colors">
                                   <td className="px-6 py-3">
                                     <div className="flex items-center gap-2">
                                       {item.icon && (
-                                        <item.icon size={16} className="text-muted-foreground shrink-0" />
+                                        <item.icon
+                                          size={16}
+                                          className="text-muted-foreground shrink-0"
+                                        />
                                       )}
                                       <span className="text-sm text-foreground">{item.title}</span>
                                     </div>
@@ -325,9 +354,13 @@ const DetailRole = () => {
                                     return (
                                       <td key={action} className="px-2 py-3 text-center">
                                         {isDisabled ? (
-                                          <span className="text-muted-foreground/30 text-xs">—</span>
+                                          <span className="text-muted-foreground/30 text-xs">
+                                            —
+                                          </span>
                                         ) : val ? (
-                                          <span className="text-green-600 text-lg font-bold">✓</span>
+                                          <span className="text-green-600 text-lg font-bold">
+                                            ✓
+                                          </span>
                                         ) : (
                                           <span className="text-red-400 text-lg">✗</span>
                                         )}

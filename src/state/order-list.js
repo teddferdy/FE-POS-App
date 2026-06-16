@@ -54,9 +54,13 @@ export const orderList = create(
 
       // Delete Product
       handleDeleteOrder: (deleteItems) => {
+        const deleteKey = deleteItems?.cartKey || deleteItems?.id;
         return set((state) => {
           return {
-            order: state.order.filter((items) => items?.id !== deleteItems?.id)
+            order: state.order.filter((items) => {
+              const itemKey = items?.cartKey || items?.id;
+              return itemKey !== deleteKey;
+            })
           };
         });
       },

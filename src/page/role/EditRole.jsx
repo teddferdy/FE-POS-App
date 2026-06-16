@@ -222,9 +222,7 @@ const EditRole = () => {
   };
 
   if (isLoadingRole) {
-    return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
-    );
+    return <Loading fullscreen size="lg" label="Memuat data..." />;
   }
 
   return (

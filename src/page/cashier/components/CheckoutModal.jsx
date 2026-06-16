@@ -1,7 +1,18 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
-import { X, User, CreditCard, Table2, Percent, UtensilsCrossed, ShoppingBag } from "lucide-react";
+import {
+  X,
+  User,
+  CreditCard,
+  Table2,
+  Percent,
+  UtensilsCrossed,
+  ShoppingBag,
+  Star,
+  Check
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +27,21 @@ import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 
 const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000];
 
+const slideUp = {
+  initial: { opacity: 0, y: 30, scale: 0.98 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", damping: 25, stiffness: 300 }
+  },
+  exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.15 } }
+};
+
+const stagger = {
+  animate: { transition: { staggerChildren: 0.05 } }
+};
+
 const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId, onComplete }) => {
   const { t } = useTranslation();
   const [paymentTypeId, setPaymentTypeId] = useState("");
@@ -27,12 +53,11 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
   const [orderType, setOrderType] = useState("dine_in");
   const [selectedDiscount, setSelectedDiscount] = useState("");
   const [notes, setNotes] = useState("");
+  const [redeemedItemKeys, setRedeemedItemKeys] = useState([]);
 
-  const { data: paymentsData } = useQuery(
-    ["type-payment"],
-    () => getAllTypePayment({}),
-    { staleTime: 60000 }
-  );
+  const { data: paymentsData } = useQuery(["type-payment"], () => getAllTypePayment({}), {
+    staleTime: 60000
+  });
   const payments = paymentsData?.data || paymentsData || [];
 
   const { data: tablesData } = useQuery(
@@ -66,11 +91,25 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
     onSuccess: (data) => {
       const result = data?.data || data;
       if (selectedMember) {
-        addMemberPoints(selectedMember.id || selectedMember._id, {
-          orderId: result.id || result._id,
-          points: Math.floor(subtotal / 10000),
-          description: `Pembelian ${result.orderNumber || ""}`
-        }).catch(() => {});
+        const earnedPoints = items.reduce((sum, item) => {
+          const key = item.cartKey || item.id;
+          if (redeemedItemKeys.includes(key)) return sum;
+          return sum + (item.point || 0) * (item.count || 0);
+        }, 0);
+        if (earnedPoints > 0) {
+          addMemberPoints(selectedMember.id || selectedMember._id, {
+            orderId: result.id || result._id,
+            points: earnedPoints,
+            description: `Pembelian ${result.orderNumber || ""}`
+          }).catch(() => {});
+        }
+        if (totalRedeemPoints > 0) {
+          addMemberPoints(selectedMember.id || selectedMember._id, {
+            orderId: result.id || result._id,
+            points: -totalRedeemPoints,
+            description: `Penukaran poin ${result.orderNumber || ""}`
+          }).catch(() => {});
+        }
       }
       handleAddPaymentTypePoints(paymentTypeId, result);
       onComplete({
@@ -84,6 +123,7 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
         change: Math.max(0, (Number(amountReceived) || finalTotal) - finalTotal),
         paymentMethod: payments.find((p) => (p.id || p._id) === paymentTypeId)?.name || "Cash",
         memberName: selectedMember?.name || null,
+        memberPhone: selectedMember?.phoneNumber || null,
         tableName: selectedTable
           ? tables.find((t) => (t.id || t._id) === selectedTable)?.name || selectedTable
           : null
@@ -107,19 +147,30 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
   };
 
   const discountObj = discounts.find((d) => (d.id || d._id) === selectedDiscount);
+  const redeemedAmount = items.reduce((sum, item) => {
+    const key = item.cartKey || item.id;
+    return redeemedItemKeys.includes(key)
+      ? sum + (item.totalPrice || item.price * item.count)
+      : sum;
+  }, 0);
+  const adjustedSubtotal = subtotal - redeemedAmount;
+  const totalRedeemPoints = items.reduce((sum, item) => {
+    const key = item.cartKey || item.id;
+    return redeemedItemKeys.includes(key) ? sum + (item.redeemPoints || 0) : sum;
+  }, 0);
   let discountAmount = 0;
   if (discountObj) {
     const discType = discountObj.type || discountObj.discountType || "percentage";
     const discValue = Number(discountObj.value || discountObj.discountValue || 0);
     if (discType === "percentage" || discType === "percent") {
-      discountAmount = Math.min(subtotal * (discValue / 100), subtotal);
+      discountAmount = Math.min(adjustedSubtotal * (discValue / 100), adjustedSubtotal);
     } else {
-      discountAmount = Math.min(discValue, subtotal);
+      discountAmount = Math.min(discValue, adjustedSubtotal);
     }
   }
   const SERVICE_CHARGE_RATE = 0.05;
-  const serviceCharge = Math.round(subtotal * SERVICE_CHARGE_RATE);
-  const finalTotal = subtotal - discountAmount + serviceCharge;
+  const serviceCharge = Math.round(adjustedSubtotal * SERVICE_CHARGE_RATE);
+  const finalTotal = adjustedSubtotal - discountAmount + serviceCharge;
 
   const change = Math.max(0, (Number(amountReceived) || 0) - finalTotal);
   const isComplete = paymentTypeId && (Number(amountReceived) || 0) >= finalTotal;
@@ -127,17 +178,26 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
   const handleSubmit = () => {
     if (!isComplete) return;
 
-    const orderItems = items.map((item) => ({
-      product: item.id,
-      productName: item.name,
-      quantity: item.count,
-      price: item.price,
-      subtotal: item.totalPrice,
-      ...(item.options && item.options.length > 0 ? { options: item.options } : {})
-    }));
+    const orderItems = items.map((item) => {
+      const key = item.cartKey || item.id;
+      const isRedeemed = redeemedItemKeys.includes(key);
+      return {
+        product: item.id,
+        productName: item.name,
+        quantity: item.count,
+        price: isRedeemed ? 0 : item.price,
+        subtotal: isRedeemed ? 0 : item.totalPrice,
+        ...(isRedeemed ? { redeemed: true, redeemPoints: item.redeemPoints } : {}),
+        ...(item.options && item.options.length > 0 ? { options: item.options } : {})
+      };
+    });
 
     const memberPayload = selectedMember
-      ? { customerId: selectedMember.id || selectedMember._id, customerName: selectedMember.name }
+      ? {
+          customerId: selectedMember.id || selectedMember._id,
+          customerName: selectedMember.name,
+          customerPhone: selectedMember.phoneNumber
+        }
       : {};
 
     const payload = {
@@ -158,184 +218,254 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg mt-4 sm:mt-8">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-base">{t("page.cashier.payment")}</h3>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+    <motion.div
+      variants={slideUp}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <motion.div className="bg-card/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-lg mt-4 sm:mt-8 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 bg-card/50">
+          <h3 className="font-semibold text-base flex items-center gap-2">
+            <div className="w-1.5 h-5 rounded-full bg-gradient-to-b from-primary to-primary/50" />
+            {t("page.cashier.payment")}
+          </h3>
+          <motion.button
+            whileHover={{ rotate: 90 }}
+            onClick={onClose}
+            className="h-8 w-8 rounded-xl hover:bg-accent/50 transition-colors flex items-center justify-center">
             <X size={16} />
-          </Button>
+          </motion.button>
         </div>
 
-        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
-          <div className="space-y-1">
+        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto scrollbar-thin">
+          <motion.div variants={stagger} className="space-y-1">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground/70">
                 {t("page.cashier.modal.totalShopping")}
               </span>
-              <span>{formatCurrencyRupiah(subtotal)}</span>
+              <span className="font-medium">{formatCurrencyRupiah(subtotal)}</span>
             </div>
+            {redeemedAmount > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground/70">
+                  {t("page.cashier.modal.redeemTitle")}
+                </span>
+                <span className="text-amber-500 font-medium">
+                  -{formatCurrencyRupiah(redeemedAmount)}
+                </span>
+              </div>
+            )}
             {discountAmount > 0 && (
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">{t("page.cashier.modal.discount")}</span>
-                <span className="text-red-500">-{formatCurrencyRupiah(discountAmount)}</span>
+                <span className="text-muted-foreground/70">{t("page.cashier.modal.discount")}</span>
+                <span className="text-red-500 font-medium">
+                  -{formatCurrencyRupiah(discountAmount)}
+                </span>
               </div>
             )}
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Biaya Layanan (5%)</span>
-              <span>{formatCurrencyRupiah(serviceCharge)}</span>
+              <span className="text-muted-foreground/70">
+                {t("page.cashier.modal.serviceCharge")}
+              </span>
+              <span className="font-medium">{formatCurrencyRupiah(serviceCharge)}</span>
             </div>
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <span className="font-semibold">{t("page.cashier.total")}</span>
-              <span className="text-2xl font-bold text-primary">{formatCurrencyRupiah(finalTotal)}</span>
+            <div className="flex justify-between items-center pt-2 border-t border-border/50">
+              <span className="font-semibold text-foreground/90">{t("page.cashier.total")}</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                {formatCurrencyRupiah(finalTotal)}
+              </span>
             </div>
-          </div>
+          </motion.div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
+            <label className="text-sm font-medium mb-2 block text-foreground/80">
               {t("page.cashier.modal.paymentMethod")}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {payments.map((p) => {
                 const pid = p.id || p._id;
+                const selected = paymentTypeId === pid;
                 return (
-                  <button
+                  <motion.button
                     key={pid}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setPaymentTypeId(pid)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
-                      paymentTypeId === pid
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-border text-muted-foreground hover:bg-accent"
+                    className={`relative flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 overflow-hidden ${
+                      selected
+                        ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
+                        : "border-border/50 text-muted-foreground hover:bg-accent/50 hover:border-border bg-muted/30"
                     }`}>
                     <CreditCard size={16} />
                     {p.name}
-                  </button>
+                    {selected && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                        <Check size={12} />
+                      </motion.span>
+                    )}
+                  </motion.button>
                 );
               })}
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
+            <label className="text-sm font-medium mb-2 block text-foreground/80">
               {t("page.cashier.modal.amountPaid")}
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                Rp
-              </span>
               <Input
                 type="text"
                 inputMode="numeric"
-                placeholder="0"
-                value={amountReceived ? Number(amountReceived).toLocaleString("id-ID") : ""}
+                placeholder="Rp0"
+                value={amountReceived ? `Rp${Number(amountReceived).toLocaleString("id-ID")}` : ""}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "");
+                  const raw = e.target.value.replace(/[^\d]/g, "");
                   setAmountReceived(raw);
                 }}
-                className="pl-10 h-11 text-lg font-semibold"
+                className="pl-3 h-11 text-lg font-semibold bg-muted/30 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl"
               />
             </div>
             <div className="flex gap-1.5 mt-2 flex-wrap">
               {QUICK_AMOUNTS.map((amount) => (
-                <button
+                <motion.button
                   key={amount}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setAmountReceived(String(amount))}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors">
+                  className={`px-3 py-1.5 text-xs font-medium rounded-xl border transition-all duration-200 ${
+                    Number(amountReceived) === amount
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20"
+                  }`}>
                   {formatCurrencyRupiah(amount)}
-                </button>
+                </motion.button>
               ))}
             </div>
-            {Number(amountReceived) > 0 && Number(amountReceived) < finalTotal && (
-              <p className="text-xs text-red-500 mt-1">{t("page.cashier.modal.amountShort")}</p>
-            )}
+            <AnimatePresence>
+              {Number(amountReceived) > 0 && Number(amountReceived) < finalTotal && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-xs text-red-400 mt-1">
+                  {t("page.cashier.modal.amountShort")}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
-          {Number(amountReceived) >= finalTotal && (
-            <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
-              <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                {t("page.cashier.change")}
-              </span>
-              <span className="text-lg font-bold text-green-700 dark:text-green-400">
-                {formatCurrencyRupiah(change)}
-              </span>
-            </div>
-          )}
+          <AnimatePresence>
+            {Number(amountReceived) >= finalTotal && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                  {t("page.cashier.change")}
+                </span>
+                <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                  {formatCurrencyRupiah(change)}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Tipe Pesanan</label>
+            <label className="text-sm font-medium mb-2 block text-foreground/80">
+              {t("page.cashier.modal.orderType")}
+            </label>
             <div className="flex gap-2">
-              <button
-                onClick={() => { setOrderType("dine_in"); setSelectedTable(""); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1 ${
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setOrderType("dine_in");
+                  setSelectedTable("");
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex-1 ${
                   orderType === "dine_in"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:bg-accent"
+                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
+                    : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/30"
                 }`}>
                 <UtensilsCrossed size={16} />
-                Dine In
-              </button>
-              <button
-                onClick={() => { setOrderType("take_away"); setSelectedTable(""); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1 ${
+                {t("page.cashier.modal.dineIn")}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setOrderType("take_away");
+                  setSelectedTable("");
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 flex-1 ${
                   orderType === "take_away"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:bg-accent"
+                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
+                    : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/30"
                 }`}>
                 <ShoppingBag size={16} />
-                Take Away
-              </button>
+                {t("page.cashier.modal.takeAway")}
+              </motion.button>
             </div>
           </div>
 
           {orderType === "dine_in" && tables.length > 0 && (
-            <div>
-              <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1.5 text-foreground/80">
                 <Table2 size={14} /> {t("page.cashier.modal.table")}
               </label>
               <div className="flex flex-wrap gap-1.5">
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedTable("")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
                     !selectedTable
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:bg-accent"
+                      ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-sm"
+                      : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20"
                   }`}>
                   {t("page.cashier.modal.none")}
-                </button>
+                </motion.button>
                 {tables.map((t) => {
                   const tid = t.id || t._id;
                   return (
-                    <button
+                    <motion.button
                       key={tid}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedTable(tid)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
                         selectedTable === tid
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border text-muted-foreground hover:bg-accent"
+                          ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-sm"
+                          : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20"
                       }`}>
                       {t.name || t.tableName || tid}
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {discounts.length > 0 && (
             <div>
-              <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1.5 text-foreground/80">
                 <Percent size={14} /> {t("page.cashier.modal.discount")}
               </label>
               <div className="flex flex-wrap gap-1.5">
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedDiscount("")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
                     !selectedDiscount
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:bg-accent"
+                      ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-sm"
+                      : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20"
                   }`}>
                   {t("page.cashier.modal.none")}
-                </button>
+                </motion.button>
                 {discounts.map((d) => {
                   const did = d.id || d._id;
                   const dType = d.type || d.discountType || "percentage";
@@ -345,16 +475,17 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
                       ? `${d.name || "Diskon"} (${formatCurrencyRupiah(dVal)})`
                       : `${d.name || "Diskon"} (${dVal}%)`;
                   return (
-                    <button
+                    <motion.button
                       key={did}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedDiscount(did)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
                         selectedDiscount === did
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border text-muted-foreground hover:bg-accent"
+                          ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-sm"
+                          : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20"
                       }`}>
                       {label}
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
@@ -362,13 +493,13 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
           )}
 
           <div>
-            <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+            <label className="text-sm font-medium mb-2 block flex items-center gap-1.5 text-foreground/80">
               <User size={14} /> {t("page.cashier.modal.member")}
             </label>
             <div className="relative">
               <User
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
               />
               <Input
                 placeholder={t("page.cashier.modal.memberSearch")}
@@ -379,51 +510,161 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
                   setSelectedMember(null);
                 }}
                 onFocus={() => setShowMemberResults(true)}
-                className="pl-9 h-10 text-sm"
+                className="pl-9 h-10 text-sm bg-muted/30 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl"
               />
             </div>
-            {selectedMember && (
-              <div className="mt-2 flex items-center gap-2 p-2 bg-primary/10 rounded-lg">
-                <User size={14} className="text-primary" />
-                <span className="text-sm font-medium">{selectedMember.name}</span>
-                <button
-                  onClick={() => {
-                    setSelectedMember(null);
-                    setMemberSearch("");
-                  }}
-                  className="ml-auto text-xs text-red-500">
-                  {t("common.delete")}
-                </button>
-              </div>
-            )}
-            {showMemberResults && memberSearch.length >= 2 && !selectedMember && (
-              <div className="mt-1 border border-border rounded-lg max-h-32 overflow-y-auto">
-                {members.length === 0 ? (
-                  <p className="p-2 text-xs text-muted-foreground">
-                    {t("page.cashier.modal.memberNotFound")}
-                  </p>
-                ) : (
-                  members.map((m) => (
-                    <button
-                      key={m.id || m._id}
+            <AnimatePresence>
+              {selectedMember && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="mt-2 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <User size={14} className="text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground/90">
+                      {selectedMember.name}
+                    </span>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
                       onClick={() => {
-                        setSelectedMember(m);
-                        setMemberSearch(m.name);
-                        setShowMemberResults(false);
+                        setSelectedMember(null);
+                        setMemberSearch("");
                       }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent flex items-center gap-2">
-                      <User size={14} className="text-muted-foreground" />
-                      <span className="font-medium">{m.name}</span>
-                      <span className="text-xs text-muted-foreground">{m.phoneNumber || ""}</span>
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
+                      className="ml-auto text-xs text-red-400 hover:text-red-500 transition-colors">
+                      {t("common.delete")}
+                    </motion.button>
+                  </div>
+                  <div className="flex items-center gap-2 pl-9 mt-0.5">
+                    <span className="text-xs text-muted-foreground/70">
+                      {t("page.cashier.modal.memberPoints")}:{" "}
+                      {Number(selectedMember.totalPoints || 0).toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {showMemberResults && memberSearch.length >= 2 && !selectedMember && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  className="mt-1 border border-border/50 rounded-xl overflow-hidden bg-card/90 backdrop-blur-sm shadow-lg">
+                  {members.length === 0 ? (
+                    <p className="p-3 text-xs text-muted-foreground/70">
+                      {t("page.cashier.modal.memberNotFound")}
+                    </p>
+                  ) : (
+                    members.map((m) => (
+                      <motion.button
+                        key={m.id || m._id}
+                        whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                        onClick={() => {
+                          setSelectedMember(m);
+                          setMemberSearch(m.name);
+                          setShowMemberResults(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-accent/30 transition-colors border-b border-border/20 last:border-0">
+                        <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
+                          <User size={14} className="text-muted-foreground/60" />
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground/90">{m.name}</span>
+                          {m.phoneNumber && (
+                            <span className="text-xs text-muted-foreground/60 ml-2">
+                              {m.phoneNumber}
+                            </span>
+                          )}
+                        </div>
+                      </motion.button>
+                    ))
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
+          {selectedMember && items.some((item) => item.redeemPoints > 0) && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-1.5">
+                <Star size={14} className="text-amber-500" />
+                {t("page.cashier.modal.redeemTitle")}
+              </label>
+              <div className="text-xs text-muted-foreground/70 mb-2">
+                {t("page.cashier.modal.redeemBalance")}:{" "}
+                {Number(selectedMember.totalPoints || 0).toLocaleString("id-ID")}
+              </div>
+              <div className="space-y-1.5">
+                {items.map((item, idx) => {
+                  if (!item.redeemPoints) return null;
+                  const key = item.cartKey || item.id || idx;
+                  const isRedeemed = redeemedItemKeys.includes(key);
+                  return (
+                    <motion.button
+                      key={key}
+                      whileHover={{ scale: 1.005 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        if (isRedeemed) {
+                          setRedeemedItemKeys((prev) => prev.filter((k) => k !== key));
+                        } else {
+                          const currentTotal = redeemedItemKeys.reduce((sum, k) => {
+                            const it = items.find(
+                              (i) => (i.cartKey || i.id || items.indexOf(i)) === k
+                            );
+                            return sum + (it?.redeemPoints || 0);
+                          }, 0);
+                          if (
+                            (selectedMember.totalPoints || 0) >=
+                            currentTotal + item.redeemPoints
+                          ) {
+                            setRedeemedItemKeys((prev) => [...prev, key]);
+                          } else {
+                            toast.error(t("page.cashier.modal.redeemInsufficient"));
+                          }
+                        }
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition-all duration-200 ${
+                        isRedeemed
+                          ? "bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                          : "border-border/50 text-muted-foreground hover:bg-accent/30 bg-muted/20"
+                      }`}>
+                      <span className="font-medium">{item.name}</span>
+                      <span
+                        className={`text-xs font-semibold flex items-center gap-1 ${
+                          isRedeemed ? "text-amber-600 dark:text-amber-400" : ""
+                        }`}>
+                        {isRedeemed && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center">
+                            <Check size={10} />
+                          </motion.span>
+                        )}
+                        {Number(item.redeemPoints).toLocaleString("id-ID")} poin
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+              {totalRedeemPoints > 0 && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                  {t("page.cashier.modal.redeemTotal")}:{" "}
+                  {Number(totalRedeemPoints).toLocaleString("id-ID")} poin
+                </motion.p>
+              )}
+            </motion.div>
+          )}
+
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
+            <label className="text-sm font-medium mb-2 block text-foreground/80">
               {t("page.cashier.modal.notes")}
             </label>
             <textarea
@@ -431,26 +672,39 @@ const CheckoutModal = ({ onClose, items, subtotal, store, cashierName, cashierId
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border/50 rounded-xl bg-muted/30 backdrop-blur-sm text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
             />
           </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-border flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+        <div className="px-5 py-4 border-t border-border/50 flex justify-end gap-2 bg-card/50">
+          <Button variant="outline" onClick={onClose} className="rounded-xl border-border/50">
             {t("common.cancel")}
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!isComplete || orderMutation.isLoading}
-            className="min-w-[140px]">
-            {orderMutation.isLoading
-              ? t("page.cashier.modal.processing")
-              : `${t("page.cashier.checkout")} ${formatCurrencyRupiah(finalTotal)}`}
-          </Button>
+          <motion.div
+            whileHover={isComplete ? { scale: 1.01 } : {}}
+            whileTap={isComplete ? { scale: 0.99 } : {}}>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isComplete || orderMutation.isLoading}
+              className="min-w-[140px] rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all">
+              {orderMutation.isLoading ? (
+                <span className="flex items-center gap-2">
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                  {t("page.cashier.modal.processing")}
+                </span>
+              ) : (
+                `${t("page.cashier.checkout")} ${formatCurrencyRupiah(finalTotal)}`
+              )}
+            </Button>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

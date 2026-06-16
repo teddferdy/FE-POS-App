@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { Save, X, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { transferStock } from "@/services/stock-transfer";
 import { getAllLocation } from "@/services/location";
@@ -15,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 
 const AddStockTransfer = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -49,11 +51,11 @@ const AddStockTransfer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!fromStore || !toStore || fromStore === toStore) {
-      toast.error("Validasi", { description: "Toko asal dan tujuan harus berbeda" });
+      toast.error(t("page.stockTransfer.add.toast.validation"), { description: t("page.stockTransfer.add.toast.storeMustDiff") });
       return;
     }
     if (!items[0].productId) {
-      toast.error("Validasi", { description: "Minimal 1 item harus diisi" });
+      toast.error(t("page.stockTransfer.add.toast.validation"), { description: t("page.stockTransfer.add.toast.minItem") });
       return;
     }
     setIsSubmitting(true);
@@ -72,11 +74,11 @@ const AddStockTransfer = () => {
             notes: it.notes
           }))
       });
-      toast.success("Berhasil", { description: "Stock transfer dibuat" });
+      toast.success(t("page.stockTransfer.add.toast.success"), { description: t("page.stockTransfer.add.toast.successDesc") });
       queryClient.invalidateQueries(["stock-transfers"]);
       navigate("/stock-transfer");
     } catch (err) {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.stockTransfer.add.toast.error"), { description: err?.response?.data?.message || err.message });
     } finally {
       setIsSubmitting(false);
     }
@@ -88,18 +90,18 @@ const AddStockTransfer = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.stockTransfer.add.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
-          Stock Transfer
+          {t("page.stockTransfer.add.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah</span>
+        <span className="text-primary font-semibold">{t("page.stockTransfer.add.breadcrumb.add")}</span>
       </nav>
       <div>
-        <h1 className="text-2xl font-bold">Tambah Stock Transfer</h1>
-        <p className="text-sm text-muted-foreground mt-1">Transfer stok antar toko</p>
+        <h1 className="text-2xl font-bold">{t("page.stockTransfer.add.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.stockTransfer.add.subtitle")}</p>
       </div>
 
       <form
@@ -108,13 +110,13 @@ const AddStockTransfer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>
-              Toko Asal <span className="text-destructive">*</span>
+              {t("page.stockTransfer.add.form.fromStore")} <span className="text-destructive">*</span>
             </Label>
             <select
               value={fromStore}
               onChange={(e) => setFromStore(e.target.value)}
               className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">Pilih Toko</option>
+              <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -124,13 +126,13 @@ const AddStockTransfer = () => {
           </div>
           <div className="space-y-2">
             <Label>
-              Toko Tujuan <span className="text-destructive">*</span>
+              {t("page.stockTransfer.add.form.toStore")} <span className="text-destructive">*</span>
             </Label>
             <select
               value={toStore}
               onChange={(e) => setToStore(e.target.value)}
               className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">Pilih Toko</option>
+              <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -141,31 +143,31 @@ const AddStockTransfer = () => {
         </div>
 
         <div className="space-y-2">
-          <Label>Dikirim Oleh</Label>
+          <Label>{t("page.stockTransfer.add.form.transferredBy")}</Label>
           <Input
             value={transferredBy}
             onChange={(e) => setTransferredBy(e.target.value)}
-            placeholder="Nama pengirim"
+            placeholder={t("page.stockTransfer.add.form.transferredByPlaceholder")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Items</Label>
+          <Label>{t("page.stockTransfer.add.form.items")}</Label>
           <div className="overflow-x-auto border rounded-lg">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/60 border-b">
                   <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    Produk
+                    {t("page.stockTransfer.add.table.product")}
                   </th>
                   <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                    Qty
+                    {t("page.stockTransfer.add.table.qty")}
                   </th>
                   <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                    Unit
+                    {t("page.stockTransfer.add.table.unit")}
                   </th>
                   <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    Catatan
+                    {t("page.stockTransfer.add.table.notes")}
                   </th>
                   <th className="w-10"></th>
                 </tr>
@@ -178,7 +180,7 @@ const AddStockTransfer = () => {
                         value={item.productId}
                         onChange={(e) => updateItem(idx, "productId", e.target.value)}
                         className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="">Pilih Produk</option>
+                        <option value="">{t("page.stockTransfer.add.table.selectProduct")}</option>
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.nameProduct}
@@ -230,37 +232,37 @@ const AddStockTransfer = () => {
             </table>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-            <Plus size={14} /> Tambah Item
+            <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
           </Button>
         </div>
 
         <div className="space-y-2">
-          <Label>Catatan</Label>
+          <Label>{t("page.stockTransfer.add.form.notes")}</Label>
           <Textarea
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Catatan transfer (opsional)"
+            placeholder={t("page.stockTransfer.add.form.notesPlaceholder")}
           />
         </div>
 
         <div className="flex items-center justify-between gap-4 pt-4 border-t">
           <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-            <X size={16} className="mr-1" /> Batal
+            <X size={16} className="mr-1" /> {t("page.stockTransfer.add.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            <Save size={16} className="mr-1" /> {isSubmitting ? "Menyimpan..." : "Simpan"}
+            <Save size={16} className="mr-1" /> {isSubmitting ? t("page.stockTransfer.add.saving") : t("page.stockTransfer.add.save")}
           </Button>
         </div>
       </form>
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("page.stockTransfer.add.saving")} />}
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={(o) => !o && setCancelModal(false)}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.stockTransfer.add.modal.cancelTitle")}
+        description={t("page.stockTransfer.add.modal.cancelDesc")}
+        confirmText={t("page.stockTransfer.add.modal.cancelConfirm")}
         onConfirm={() => {
           setCancelModal(false);
           navigate("/stock-transfer");

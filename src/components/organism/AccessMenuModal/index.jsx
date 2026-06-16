@@ -203,9 +203,9 @@ export default function AccessMenuModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Atur Izin Akses Tambahan</DialogTitle>
+          <DialogTitle>{t("accessMenu.additionalAccess")}</DialogTitle>
           <DialogDescription>
-            Atur izin akses tambahan untuk karyawan ini (di luar izin dari role).
+            {t("accessMenu.additionalAccessDescription")}
           </DialogDescription>
         </DialogHeader>
 

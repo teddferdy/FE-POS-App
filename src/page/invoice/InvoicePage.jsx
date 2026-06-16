@@ -106,11 +106,7 @@ const InvoicePreview = ({
       {showHeader && (
         <div className="text-center border-b-2 border-gray-300 pb-4 mb-3">
           {showLogo && logoUrl && (
-            <img
-              src={logoUrl}
-              alt="Logo"
-              className="max-h-16 mx-auto mb-2 object-contain"
-            />
+            <img src={logoUrl} alt="Logo" className="max-h-16 mx-auto mb-2 object-contain" />
           )}
           {showStoreName && (
             <h3 className="text-base font-bold uppercase tracking-tight text-gray-800">
@@ -286,11 +282,10 @@ const InvoicePage = () => {
     "";
   const postalCodeValue = postalCodes?.[0]?.kode_pos || locationDetail?.postalCode || "";
 
-  const { data: allLocations } = useQuery(
-    ["allLocations"],
-    getAllLocation,
-    { enabled: !!user && user?.roleType === "super_admin", staleTime: 60 * 1000 }
-  );
+  const { data: allLocations } = useQuery(["allLocations"], getAllLocation, {
+    enabled: !!user && user?.roleType === "super_admin",
+    staleTime: 60 * 1000
+  });
   const locations = allLocations?.data || allLocations || [];
   const allSelected = locations.length > 0 && selectedStores.length === locations.length;
 
@@ -348,9 +343,7 @@ const InvoicePage = () => {
   };
 
   const handleToggleStore = (id) => {
-    setSelectedStores((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelectedStores((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
   const handleSelectAll = (checked) => {
@@ -459,7 +452,7 @@ const InvoicePage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <ImagePlus size={18} className="text-primary" />
-                <h3 className="text-base font-semibold">Logo Invoice</h3>
+                <h3 className="text-base font-semibold">{t("page.invoice.logo")}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={showLogo} onCheckedChange={setShowLogo} />
@@ -468,11 +461,15 @@ const InvoicePage = () => {
             <div className="flex items-start gap-6">
               <div className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 shrink-0">
                 {logoPreview ? (
-                  <img src={logoPreview} alt="Logo preview" className="max-w-full max-h-full object-contain p-2" />
+                  <img
+                    src={logoPreview}
+                    alt="Logo preview"
+                    className="max-w-full max-h-full object-contain p-2"
+                  />
                 ) : (
                   <div className="text-center text-muted-foreground">
                     <ImagePlus size={28} className="mx-auto mb-1" />
-                    <p className="text-[10px]">Belum ada logo</p>
+                    <p className="text-[10px]">{t("page.invoice.noLogo")}</p>
                   </div>
                 )}
               </div>
@@ -491,7 +488,7 @@ const InvoicePage = () => {
                   onClick={() => logoInputRef.current?.click()}
                   className="gap-2">
                   <ImagePlus size={14} />
-                  {logoPreview ? "Ganti Logo" : "Pilih Logo"}
+                  {logoPreview ? t("page.invoice.changeLogo") : t("page.invoice.selectLogo")}
                 </Button>
                 {logoPreview && (
                   <Button
@@ -501,11 +498,11 @@ const InvoicePage = () => {
                     onClick={handleRemoveLogo}
                     className="gap-2 text-destructive">
                     <X size={14} />
-                    Hapus Logo
+                    {t("page.invoice.deleteLogo")}
                   </Button>
                 )}
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Format: PNG, JPG. Maks 5MB
+                  {t("page.invoice.logoFormat")}
                 </p>
               </div>
             </div>
@@ -515,7 +512,7 @@ const InvoicePage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <MapPin size={18} className="text-primary" />
-                <h3 className="text-base font-semibold">Alamat Toko</h3>
+                <h3 className="text-base font-semibold">{t("page.invoice.storeAddress")}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={showAddress} onCheckedChange={setShowAddress} />
@@ -523,25 +520,43 @@ const InvoicePage = () => {
             </div>
             {hasStore ? (
               <div className="divide-y divide-border">
-                <DetailRow icon={Store} label="Nama Toko" value={storeName} />
-                <DetailRow icon={MapPin} label="Alamat" value={locationDetail?.address} />
+                <DetailRow icon={Store} label={t("page.invoice.storeName")} value={storeName} />
+                <DetailRow
+                  icon={MapPin}
+                  label={t("page.invoice.address")}
+                  value={locationDetail?.address}
+                />
                 {locationDetail?.detailLocation && (
                   <DetailRow
                     icon={Globe}
-                    label="Detail Lokasi"
+                    label={t("page.invoice.locationDetail")}
                     value={locationDetail.detailLocation}
                   />
                 )}
-                <DetailRow icon={Building2} label="Provinsi" value={provinceName} />
-                <DetailRow icon={Building2} label="Kota/Kab" value={cityName} />
-                <DetailRow icon={Building2} label="Kecamatan" value={districtName} />
-                <DetailRow icon={Building2} label="Kelurahan" value={villageName} />
-                <DetailRow icon={Hash} label="Kode Pos" value={postalCodeValue} />
-                <DetailRow icon={Phone} label="Telepon" value={storePhone} />
-                <DetailRow icon={Mail} label="Email" value={storeEmail} />
+                <DetailRow
+                  icon={Building2}
+                  label={t("page.invoice.province")}
+                  value={provinceName}
+                />
+                <DetailRow icon={Building2} label={t("page.invoice.city")} value={cityName} />
+                <DetailRow
+                  icon={Building2}
+                  label={t("page.invoice.district")}
+                  value={districtName}
+                />
+                <DetailRow icon={Building2} label={t("page.invoice.village")} value={villageName} />
+                <DetailRow
+                  icon={Hash}
+                  label={t("page.invoice.postalCode")}
+                  value={postalCodeValue}
+                />
+                <DetailRow icon={Phone} label={t("page.invoice.phone")} value={storePhone} />
+                <DetailRow icon={Mail} label={t("page.invoice.email")} value={storeEmail} />
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">Tidak ada toko tersedia</p>
+              <p className="text-sm text-muted-foreground italic">
+                {t("page.invoice.noStoreAvailable")}
+              </p>
             )}
           </div>
 
@@ -549,18 +564,26 @@ const InvoicePage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Award size={18} className="text-yellow-600" />
-                <h3 className="text-base font-semibold">Informasi Member</h3>
+                <h3 className="text-base font-semibold">{t("page.invoice.memberInfo")}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={showMemberInfo} onCheckedChange={setShowMemberInfo} />
               </div>
             </div>
             <div className="divide-y divide-border">
-              <DetailRow icon={Medal} label="Nama Member" value={sampleMember.name} />
-              <DetailRow icon={Award} label="Tier Member" value={sampleMember.tier} />
+              <DetailRow
+                icon={Medal}
+                label={t("page.invoice.memberName")}
+                value={sampleMember.name}
+              />
+              <DetailRow
+                icon={Award}
+                label={t("page.invoice.memberTier")}
+                value={sampleMember.tier}
+              />
               <DetailRow
                 icon={Coins}
-                label="Total Poin"
+                label={t("page.invoice.totalPoints")}
                 value={Number(sampleMember.points).toLocaleString("id-ID")}
               />
             </div>
@@ -573,7 +596,7 @@ const InvoicePage = () => {
               className="flex-1 gap-2"
               size="lg">
               <RotateCcw size={16} />
-              Reset ke Default
+              {t("page.invoice.resetDefault")}
             </Button>
             <Button
               data-tour="invoice-save"
@@ -581,7 +604,7 @@ const InvoicePage = () => {
               disabled={isSaving}
               className="flex-1 gap-2"
               size="lg">
-              {isSaving ? "Menyimpan..." : "Simpan Pengaturan"}
+              {isSaving ? t("page.invoice.saving") : t("page.invoice.saveSettings")}
             </Button>
           </div>
         </div>
@@ -593,7 +616,7 @@ const InvoicePage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">visibility</span>
-                <h3 className="text-base font-semibold">Pratinjau Invoice</h3>
+                <h3 className="text-base font-semibold">{t("page.invoice.preview")}</h3>
               </div>
               <Button
                 variant="outline"
@@ -626,56 +649,50 @@ const InvoicePage = () => {
       <Dialog open={resetModalOpen} onOpenChange={setResetModalOpen}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>Reset Pengaturan Invoice</DialogTitle>
-            <DialogDescription>
-              Pilih toko yang ingin direset ke pengaturan default
-            </DialogDescription>
+            <DialogTitle>{t("page.invoice.resetTitle")}</DialogTitle>
+            <DialogDescription>{t("page.invoice.resetDescription")}</DialogDescription>
           </DialogHeader>
 
           <div className="py-2">
             {user?.roleType === "super_admin" && locations.length > 0 && (
               <label className="flex items-center gap-2 pb-3 mb-3 border-b border-border cursor-pointer">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={handleSelectAll}
-                />
-                <span className="text-sm font-medium">Pilih Semua</span>
+                <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
+                <span className="text-sm font-medium">{t("common.selectAll")}</span>
               </label>
             )}
 
             <ScrollArea className="max-h-[300px]">
               <div className="space-y-3">
-                {(user?.roleType === "super_admin" ? locations : [locationDetail]).filter(Boolean).map((loc) => (
-                  <label
-                    key={loc.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <Checkbox
-                      checked={selectedStores.includes(loc.id)}
-                      onCheckedChange={() => handleToggleStore(loc.id)}
-                    />
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Store size={16} className="text-muted-foreground shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{loc.name}</p>
-                        {loc.city && (
-                          <p className="text-xs text-muted-foreground truncate">{loc.city}</p>
-                        )}
+                {(user?.roleType === "super_admin" ? locations : [locationDetail])
+                  .filter(Boolean)
+                  .map((loc) => (
+                    <label
+                      key={loc.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                      <Checkbox
+                        checked={selectedStores.includes(loc.id)}
+                        onCheckedChange={() => handleToggleStore(loc.id)}
+                      />
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Store size={16} className="text-muted-foreground shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{loc.name}</p>
+                          {loc.city && (
+                            <p className="text-xs text-muted-foreground truncate">{loc.city}</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
               </div>
             </ScrollArea>
           </div>
 
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setResetModalOpen(false)}>
-              Tidak
+              {t("common.no")}
             </Button>
-            <Button onClick={handleConfirmReset}>
-              Ya, Reset
-            </Button>
+            <Button onClick={handleConfirmReset}>{t("page.invoice.yesReset")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

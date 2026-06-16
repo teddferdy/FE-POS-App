@@ -75,11 +75,11 @@ const MemberList = () => {
 
   const deleteMutation = useMutation(deleteMember, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Member berhasil dihapus" });
+      toast.success(t("page.member.list.toastSuccess"), { description: t("page.member.list.toastSuccessDesc") });
       queryClient.invalidateQueries(["members"]);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("page.member.list.toastError"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -173,7 +173,7 @@ const MemberList = () => {
                 navigate(`/edit-member?id=${member.id || member._id}`);
               }}
               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title="Edit Member">
+              title={t("page.member.list.editTitle")}>
               <span className="material-symbols-outlined text-lg">edit</span>
             </button>
           )}
@@ -181,7 +181,7 @@ const MemberList = () => {
             <button
               onClick={(e) => e.stopPropagation()}
               className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
-              title="Kelola Poin">
+              title={t("page.member.list.managePoints")}>
               <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
             </button>
           )}
@@ -192,7 +192,7 @@ const MemberList = () => {
                 handleDelete(member);
               }}
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-              title="Hapus Member">
+              title={t("page.member.list.deleteTitle")}>
               <span className="material-symbols-outlined text-lg">delete</span>
             </button>
           )}
@@ -225,13 +225,13 @@ const MemberList = () => {
           <div className="flex items-center gap-3 w-full">
             <PackageOpen size={20} className="text-muted-foreground" />
             <span className="text-sm text-muted-foreground flex-1">
-              Belum ada tier member. Buat tier terlebih dahulu untuk mengelompokkan member.
+              {t("page.member.list.noTier")}
             </span>
             <Button
               onClick={() => navigate("/add-member-tier")}
               className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
               <Plus size={16} />
-              Tambah Member Tier
+              {t("page.member.list.addMemberTier")}
             </Button>
           </div>
         ) : (
@@ -250,7 +250,7 @@ const MemberList = () => {
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
                 }`}>
-                Semua
+                {t("common.all")}
               </button>
               {tiers.map((tier) => (
                 <button
@@ -322,7 +322,7 @@ const MemberList = () => {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("modal.confirmDelete")}
-        confirmText="Ya, Hapus"
+        confirmText={t("page.member.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />
     </div>

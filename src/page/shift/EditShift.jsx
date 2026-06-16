@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getAllShift, editShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +18,15 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 
-const formSchema = z.object({
-  nama_shift: z.string().min(1, "Nama shift wajib diisi"),
-  jam_mulai: z.string().min(1, "Jam mulai wajib diisi"),
-  jam_selesai: z.string().min(1, "Jam selesai wajib diisi"),
-  deskripsi: z.string().optional().or(z.literal("")),
-  status: z.boolean().default(true)
-});
-
 const EditShift = () => {
+  const { t } = useTranslation();
+  const formSchema = z.object({
+    nama_shift: z.string().min(1, t("page.shift.edit.validation.namaShift")),
+    jam_mulai: z.string().min(1, t("page.shift.edit.validation.jamMulai")),
+    jam_selesai: z.string().min(1, t("page.shift.edit.validation.jamSelesai")),
+    deskripsi: z.string().optional().or(z.literal("")),
+    status: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const shiftId = searchParams.get("id");
@@ -74,8 +75,8 @@ const EditShift = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal mengupdate shift"
+      toast.error(t("page.shift.edit.toast.error"), {
+        description: err?.response?.data?.message || err.message || t("page.shift.edit.toast.errorDesc")
       });
     }
   });
@@ -92,14 +93,14 @@ const EditShift = () => {
   if (!shiftId) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID shift tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.shift.edit.noId")}</p>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
+      <Loading fullscreen size="lg" label={t("page.shift.edit.loading")} />
     );
   }
 
@@ -109,27 +110,27 @@ const EditShift = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("page.shift.edit.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/shift")}
           className="hover:text-foreground transition-colors">
-          Shift
+          {t("page.shift.edit.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Edit Shift</span>
+        <span className="text-primary font-semibold">{t("page.shift.edit.breadcrumb.edit")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Shift</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit data shift.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.shift.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.shift.edit.subtitle")}</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
             <X size={18} />
-            Batal
+            {t("page.shift.edit.cancel")}
           </Button>
           <Button
             variant="outline"
@@ -137,14 +138,14 @@ const EditShift = () => {
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            Simpan sebagai Draft
+            {t("page.shift.edit.saveDraft")}
           </Button>
           <Button
             onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
             disabled={updateMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan"}
+            {updateMutation.isLoading ? t("page.shift.edit.saving") : t("page.shift.edit.save")}
           </Button>
         </div>
       </div>
@@ -159,9 +160,9 @@ const EditShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Shift <span className="text-destructive">*</span>
+                      {t("page.shift.edit.form.namaShift")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama shift" {...field} />
+                    <Input placeholder={t("page.shift.edit.form.namaShiftPlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -173,9 +174,9 @@ const EditShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Jam Mulai <span className="text-destructive">*</span>
+                      {t("page.shift.edit.form.jamMulai")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <TimePicker {...field} placeholder="Pilih jam mulai" />
+                    <TimePicker {...field} placeholder={t("page.shift.edit.form.jamMulaiPlaceholder")} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -186,9 +187,9 @@ const EditShift = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Jam Selesai <span className="text-destructive">*</span>
+                      {t("page.shift.edit.form.jamSelesai")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <TimePicker {...field} placeholder="Pilih jam selesai" />
+                    <TimePicker {...field} placeholder={t("page.shift.edit.form.jamSelesaiPlaceholder")} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -199,8 +200,8 @@ const EditShift = () => {
               name="deskripsi"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
-                  <Textarea placeholder="Deskripsi shift" rows={3} {...field} />
+                  <FormLabel>{t("page.shift.edit.form.deskripsi")}</FormLabel>
+                  <Textarea placeholder={t("page.shift.edit.form.deskripsiPlaceholder")} rows={3} {...field} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -210,11 +211,11 @@ const EditShift = () => {
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>{t("page.shift.edit.form.status")}</FormLabel>
                   <div className="flex items-center gap-2 pt-1">
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
                     <span className="text-sm text-muted-foreground">
-                      {field.value ? "Aktif" : "Tidak Aktif"}
+                      {field.value ? t("page.shift.edit.form.active") : t("page.shift.edit.form.inactive")}
                     </span>
                   </div>
                   <FormMessage />
@@ -229,27 +230,27 @@ const EditShift = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.shift.edit.modal.cancelTitle")}
+        description={t("page.shift.edit.modal.cancelDesc")}
+        confirmText={t("page.shift.edit.modal.cancelConfirm")}
         onConfirm={() => navigate("/shift")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Shift berhasil diupdate."
-        confirmText="Kembali ke Daftar"
+        title={t("page.shift.edit.modal.successTitle")}
+        description={t("page.shift.edit.modal.successDesc")}
+        confirmText={t("page.shift.edit.modal.successConfirm")}
         onConfirm={() => navigate("/shift")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.shift.edit.modal.draftTitle")}
+        description={t("page.shift.edit.modal.draftDesc")}
+        confirmText={t("page.shift.edit.modal.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

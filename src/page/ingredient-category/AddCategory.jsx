@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Save, X } from "lucide-react";
 import {
   addIngredientCategory,
   getIngredientCategoryById,
-  editIngredientCategory,
+  editIngredientCategory
 } from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Form, FormField, FormItem, FormLabel, FormMessage
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 
@@ -26,6 +25,7 @@ const formSchema = z.object({
 });
 
 const AddCategory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -49,13 +49,15 @@ const AddCategory = () => {
         const d = res.data;
         form.reset({
           name: d.name || "",
-          isActive: d.status !== "inactive",
+          isActive: d.status !== "inactive"
         });
       },
       onError: () => {
-        toast.error("Gagal", { description: "Gagal memuat data kategori" });
+        toast.error(t("page.ingredientCategory.add.toastError"), {
+          description: t("page.ingredientCategory.add.toastErrorDesc")
+        });
         navigate("/ingredient-category");
-      },
+      }
     }
   );
 
@@ -65,10 +67,10 @@ const AddCategory = () => {
       setShowSuccess(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message,
+      toast.error(t("page.ingredientCategory.add.toastError"), {
+        description: err?.response?.data?.message || err.message
       });
-    },
+    }
   });
 
   const editMutation = useMutation(editIngredientCategory, {
@@ -77,16 +79,16 @@ const AddCategory = () => {
       setShowSuccess(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message,
+      toast.error(t("page.ingredientCategory.add.toastError"), {
+        description: err?.response?.data?.message || err.message
       });
-    },
+    }
   });
 
   const onSubmit = (values) => {
     const payload = {
       name: values.name.trim(),
-      status: values.isActive,
+      status: values.isActive
     };
     if (isEdit) {
       editMutation.mutate({ ...payload, id: editId });
@@ -102,26 +104,29 @@ const AddCategory = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <span>Pengaturan</span>
+            <span>{t("page.ingredientCategory.add.breadcrumbSettings")}</span>
             <span>/</span>
             <button
               onClick={() => navigate("/ingredient-category")}
-              className="hover:text-primary transition-colors"
-            >
-              Kategori Bahan Baku
+              className="hover:text-primary transition-colors">
+              {t("page.ingredientCategory.add.breadcrumbCategory")}
             </button>
             <span>/</span>
             <span className="text-primary font-semibold">
-              {isEdit ? "Edit Kategori" : "Tambah Kategori"}
+              {isEdit
+                ? t("page.ingredientCategory.add.breadcrumbEdit")
+                : t("page.ingredientCategory.add.breadcrumbAdd")}
             </span>
           </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            {isEdit ? "Edit Kategori" : "Tambah Kategori"} Bahan Baku
+            {isEdit
+              ? t("page.ingredientCategory.add.titleEdit")
+              : t("page.ingredientCategory.add.titleAdd")}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             {isEdit
-              ? "Ubah data kategori bahan baku"
-              : "Buat kategori baru untuk bahan baku"}
+              ? t("page.ingredientCategory.add.subtitleEdit")
+              : t("page.ingredientCategory.add.subtitleAdd")}
           </p>
         </div>
       </div>
@@ -137,11 +142,12 @@ const AddCategory = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Nama Kategori <span className="text-destructive">*</span>
+                        {t("page.ingredientCategory.add.namaKategori")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <Input
                         {...field}
-                        placeholder="Contoh: Bahan Kering, Bumbu Dapur"
+                        placeholder={t("page.ingredientCategory.add.placeholderNama")}
                         className="h-12"
                       />
                       <FormMessage />
@@ -156,34 +162,36 @@ const AddCategory = () => {
                   name="isActive"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</FormLabel>
+                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.ingredientCategory.add.status")}
+                      </FormLabel>
                       <div
                         className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
                           form.watch("isActive")
                             ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
                             : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                        }`}
-                      >
+                        }`}>
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${
                               form.watch("isActive")
                                 ? "bg-green-600 text-white"
                                 : "bg-destructive/10 text-destructive"
-                            }`}
-                          >
+                            }`}>
                             <span className="material-symbols-outlined text-lg">
                               {form.watch("isActive") ? "check" : "close"}
                             </span>
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground">
-                              {form.watch("isActive") ? "Aktif" : "Tidak Aktif"}
+                              {form.watch("isActive")
+                                ? t("page.ingredientCategory.add.active")
+                                : t("page.ingredientCategory.add.inactive")}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {form.watch("isActive")
-                                ? "Kategori dapat digunakan"
-                                : "Tidak muncul di pilihan"}
+                                ? t("page.ingredientCategory.add.statusActiveDesc")
+                                : t("page.ingredientCategory.add.statusInactiveDesc")}
                             </p>
                           </div>
                         </div>
@@ -199,12 +207,40 @@ const AddCategory = () => {
                 <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-base">info</span>
-                    <span className="text-sm font-semibold text-primary">Tips Penamaan Kategori</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {t("page.ingredientCategory.add.tipsPenamaan")}
+                    </span>
                   </div>
                   <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                    <p>Gunakan nama kategori yang <span className="text-foreground font-medium">spesifik dan deskriptif</span>, contoh: <span className="text-foreground font-medium">&quot;Bumbu Dapur&quot;</span> atau <span className="text-foreground font-medium">&quot;Bahan Kering&quot;</span>.</p>
-                    <p>Kelompokkan bahan baku yang <span className="text-foreground font-medium">sejenis</span> untuk memudahkan pencarian dan pengelolaan stok.</p>
-                    <p>Kategori yang <span className="text-foreground font-medium">nonaktif</span> tidak akan muncul di pilihan saat menambah atau mengedit bahan baku.</p>
+                    <p>
+                      {t("page.ingredientCategory.add.tip1a")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredientCategory.add.tip1b")}
+                      </span>{" "}
+                      {t("page.ingredientCategory.add.tip1c")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredientCategory.add.tip1d")}
+                      </span>{" "}
+                      {t("page.ingredientCategory.add.tip1e")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredientCategory.add.tip1f")}
+                      </span>
+                      .
+                    </p>
+                    <p>
+                      {t("page.ingredientCategory.add.tip2a")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredientCategory.add.tip2b")}
+                      </span>{" "}
+                      {t("page.ingredientCategory.add.tip2c")}
+                    </p>
+                    <p>
+                      {t("page.ingredientCategory.add.tip3a")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredientCategory.add.tip3b")}
+                      </span>{" "}
+                      {t("page.ingredientCategory.add.tip3c")}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -212,35 +248,35 @@ const AddCategory = () => {
           </div>
 
           <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowCancel(true)}
-            >
+            <Button type="button" variant="outline" onClick={() => setShowCancel(true)}>
               <X size={16} className="mr-1" />
-              Batal
+              {t("page.ingredientCategory.add.cancelButton")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               <Save size={16} className="mr-1" />
               {isSubmitting
-                ? "Menyimpan..."
+                ? t("page.ingredientCategory.add.savingButton")
                 : isEdit
-                ? "Simpan Perubahan"
-                : "Simpan"}
+                  ? t("page.ingredientCategory.add.saveChangesButton")
+                  : t("page.ingredientCategory.add.saveButton")}
             </Button>
           </div>
         </form>
       </Form>
 
       {(isSubmitting || loadingData) && (
-        <Loading fullscreen size="lg" label="Memproses..." />
+        <Loading fullscreen size="lg" label={t("page.ingredientCategory.add.loadingLabel")} />
       )}
 
       <Modal
         type="success"
         open={showSuccess}
         onOpenChange={setShowSuccess}
-        title={isEdit ? "Kategori Diperbarui" : "Kategori Berhasil Dibuat"}
+        title={
+          isEdit
+            ? t("page.ingredientCategory.add.modalSuccessTitleEdit")
+            : t("page.ingredientCategory.add.modalSuccessTitleAdd")
+        }
         onConfirm={() => {
           queryClient.invalidateQueries(["ingredient-categories"]);
           navigate("/ingredient-category");
@@ -251,9 +287,9 @@ const AddCategory = () => {
         type="confirm"
         open={showCancel}
         onOpenChange={setShowCancel}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang"
-        confirmText="Ya, Batalkan"
+        title={t("page.ingredientCategory.add.cancelModalTitle")}
+        description={t("page.ingredientCategory.add.cancelModalDesc")}
+        confirmText={t("page.ingredientCategory.add.cancelModalConfirm")}
         onConfirm={() => navigate("/ingredient-category")}
       />
     </div>

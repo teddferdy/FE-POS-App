@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,29 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Combobox } from "@/components/ui/combobox";
-import {
-  Form, FormField, FormItem, FormLabel, FormMessage
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-
-const unitOptions = [
-  { value: "pcs", label: "Pcs" }, { value: "buah", label: "Buah" },
-  { value: "kg", label: "Kg" }, { value: "gram", label: "Gram" },
-  { value: "liter", label: "Liter" }, { value: "ml", label: "Ml" },
-  { value: "meter", label: "Meter" }, { value: "cm", label: "Cm" },
-  { value: "lusin", label: "Lusin" }, { value: "pack", label: "Pack" },
-  { value: "box", label: "Box" }, { value: "karton", label: "Karton" }
-];
-
-const baseUnitOptions = [
-  { value: "pcs", label: "Pcs" },
-  { value: "gram", label: "Gram" },
-  { value: "ml", label: "Ml" },
-  { value: "cm", label: "Cm" },
-  { value: "buah", label: "Buah" },
-  { value: "lembar", label: "Lembar" }
-];
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -48,26 +29,51 @@ const conversionHints = {
   pack: { base: "pcs", factor: 5 }
 };
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama bahan baku harus diisi"),
-  supplier: z.string().nullable(),
-  category: z.string().nullable(),
-  unit: z.string(),
-  baseUnit: z.string(),
-  conversionFactor: z.number(),
-  stock: z.number(),
-  minStock: z.number(),
-  costPrice: z.number(),
-  isActive: z.boolean()
-});
-
 const EditIngredient = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
+
+  const unitOptions = [
+    { value: "pcs", label: t("page.ingredient.form.unitPcs") },
+    { value: "buah", label: t("page.ingredient.form.unitBuah") },
+    { value: "kg", label: t("page.ingredient.form.unitKg") },
+    { value: "gram", label: t("page.ingredient.form.unitGram") },
+    { value: "liter", label: t("page.ingredient.form.unitLiter") },
+    { value: "ml", label: t("page.ingredient.form.unitMl") },
+    { value: "meter", label: t("page.ingredient.form.unitMeter") },
+    { value: "cm", label: t("page.ingredient.form.unitCm") },
+    { value: "lusin", label: t("page.ingredient.form.unitLusin") },
+    { value: "pack", label: t("page.ingredient.form.unitPack") },
+    { value: "box", label: t("page.ingredient.form.unitBox") },
+    { value: "karton", label: t("page.ingredient.form.unitKarton") }
+  ];
+
+  const baseUnitOptions = [
+    { value: "pcs", label: t("page.ingredient.form.unitPcs") },
+    { value: "gram", label: t("page.ingredient.form.unitGram") },
+    { value: "ml", label: t("page.ingredient.form.unitMl") },
+    { value: "cm", label: t("page.ingredient.form.unitCm") },
+    { value: "buah", label: t("page.ingredient.form.unitBuah") },
+    { value: "lembar", label: t("page.ingredient.form.unitLembar") }
+  ];
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.ingredient.form.nameRequired")),
+    supplier: z.string().nullable(),
+    category: z.string().nullable(),
+    unit: z.string(),
+    baseUnit: z.string(),
+    conversionFactor: z.number(),
+    stock: z.number(),
+    minStock: z.number(),
+    costPrice: z.number(),
+    isActive: z.boolean()
+  });
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown"],
@@ -140,12 +146,16 @@ const EditIngredient = () => {
 
   const mutation = useMutation((payload) => editIngredient(id, payload), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Bahan baku berhasil diubah" });
+      toast.success(t("page.ingredient.edit.toastSuccess"), {
+        description: t("page.ingredient.edit.toastEditDesc")
+      });
       queryClient.invalidateQueries(["ingredients"]);
       navigate("/ingredient");
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.ingredient.edit.toastError"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -160,29 +170,49 @@ const EditIngredient = () => {
   };
 
   const convLabel =
-    watchUnit === "kg" ? "Contoh: 1 Kg = 1000 Gram" :
-    watchUnit === "liter" ? "Contoh: 1 Liter = 1000 Ml" :
-    watchUnit === "meter" ? "Contoh: 1 Meter = 100 Cm" :
-    watchUnit === "lusin" ? "Contoh: 1 Lusin = 12 Pcs" :
-    watchUnit === "karton" ? "Contoh: 1 Karton = 50 Pcs" :
-    watchUnit === "box" ? "Contoh: 1 Box = 10 Pcs" :
-    watchUnit === "pack" ? "Contoh: 1 Pack = 5 Pcs" :
-    "Unit ini tidak memiliki konversi otomatis";
+    watchUnit === "kg"
+      ? t("page.ingredient.form.convKg")
+      : watchUnit === "liter"
+        ? t("page.ingredient.form.convLiter")
+        : watchUnit === "meter"
+          ? t("page.ingredient.form.convMeter")
+          : watchUnit === "lusin"
+            ? t("page.ingredient.form.convLusin")
+            : watchUnit === "karton"
+              ? t("page.ingredient.form.convKarton")
+              : watchUnit === "box"
+                ? t("page.ingredient.form.convBox")
+                : watchUnit === "pack"
+                  ? t("page.ingredient.form.convPack")
+                  : t("page.ingredient.form.convNoAuto");
 
-  if (loadingData) return <Loading fullscreen size="lg" label="Memuat data..." />;
+  if (loadingData)
+    return <Loading fullscreen size="lg" label={t("page.ingredient.edit.loadingData")} />;
 
   return (
     <div>
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-            <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-primary transition-colors">Dashboard</button>
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-primary transition-colors">
+              {t("page.ingredient.edit.breadcrumbDashboard")}
+            </button>
             <span>/</span>
-            <button onClick={() => navigate("/ingredient")} className="hover:text-primary transition-colors">Bahan Baku</button>
+            <button
+              onClick={() => navigate("/ingredient")}
+              className="hover:text-primary transition-colors">
+              {t("page.ingredient.edit.breadcrumbIngredient")}
+            </button>
             <span>/</span>
-            <span className="text-primary font-semibold">Edit</span>
+            <span className="text-primary font-semibold">
+              {t("page.ingredient.edit.breadcrumbEdit")}
+            </span>
           </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Bahan Baku</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.ingredient.edit.title")}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">{form.watch("name")}</p>
         </div>
       </div>
@@ -193,7 +223,9 @@ const EditIngredient = () => {
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8 space-y-6">
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">Informasi Bahan Baku</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.ingredient.add.sectionInformasi")}
+                  </h3>
                   <div className="space-y-6">
                     <FormField
                       control={form.control}
@@ -201,9 +233,14 @@ const EditIngredient = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Nama Bahan Baku <span className="text-destructive">*</span>
+                            {t("page.ingredient.form.nameLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
-                          <Input {...field} placeholder="Contoh: Tepung Terigu" className="h-12" />
+                          <Input
+                            {...field}
+                            placeholder={t("page.ingredient.form.namePlaceholder")}
+                            className="h-12"
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
@@ -215,13 +252,19 @@ const EditIngredient = () => {
                         name="category"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kategori</FormLabel>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.categoryLabel")}
+                            </FormLabel>
                             <Combobox
-                              options={categories.filter((c) => c.status === "active").map((c) => ({ value: String(c.id), label: c.name }))}
+                              options={categories
+                                .filter((c) => c.status === "active")
+                                .map((c) => ({ value: String(c.id), label: c.name }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
-                              placeholder="Pilih kategori"
-                              searchPlaceholder="Cari kategori..."
+                              placeholder={t("page.ingredient.form.categoryPlaceholder")}
+                              searchPlaceholder={t(
+                                "page.ingredient.form.categorySearchPlaceholder"
+                              )}
                             />
                             <FormMessage />
                           </FormItem>
@@ -232,13 +275,19 @@ const EditIngredient = () => {
                         name="supplier"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</FormLabel>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.supplierLabel")}
+                            </FormLabel>
                             <Combobox
-                              options={suppliers.filter((s) => s.status === "active").map((s) => ({ value: String(s.id), label: s.name }))}
+                              options={suppliers
+                                .filter((s) => s.status === "active")
+                                .map((s) => ({ value: String(s.id), label: s.name }))}
                               value={field.value || ""}
                               onChange={(v) => field.onChange(v || null)}
-                              placeholder="Pilih supplier"
-                              searchPlaceholder="Cari supplier..."
+                              placeholder={t("page.ingredient.form.supplierPlaceholder")}
+                              searchPlaceholder={t(
+                                "page.ingredient.form.supplierSearchPlaceholder"
+                              )}
                             />
                             <FormMessage />
                           </FormItem>
@@ -249,7 +298,9 @@ const EditIngredient = () => {
                 </div>
 
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">Konversi Satuan</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.ingredient.form.sectionKonversi")}
+                  </h3>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <FormField
@@ -257,13 +308,18 @@ const EditIngredient = () => {
                         name="unit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Unit Pembelian</FormLabel>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.unitLabel")}
+                            </FormLabel>
                             <select
                               value={field.value}
                               onChange={(e) => field.onChange(e.target.value)}
-                              className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm"
-                            >
-                              {unitOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                              className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
+                              {unitOptions.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
                             </select>
                             <FormMessage />
                           </FormItem>
@@ -274,13 +330,18 @@ const EditIngredient = () => {
                         name="baseUnit"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Base Unit</FormLabel>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.baseUnitLabel")}
+                            </FormLabel>
                             <select
                               value={field.value}
                               onChange={(e) => field.onChange(e.target.value)}
-                              className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm"
-                            >
-                              {baseUnitOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                              className="w-full h-12 px-3 rounded-md border border-input bg-background text-sm">
+                              {baseUnitOptions.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
                             </select>
                             <FormMessage />
                           </FormItem>
@@ -291,13 +352,17 @@ const EditIngredient = () => {
                         name="conversionFactor"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Faktor Konversi</FormLabel>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.ingredient.form.conversionLabel")}
+                            </FormLabel>
                             <Input
                               type="text"
                               inputMode="numeric"
                               value={field.value}
-                              onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
-                              placeholder="1000"
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                              }
+                              placeholder={t("page.ingredient.form.conversionPlaceholder")}
                               className="h-12"
                             />
                             <FormMessage />
@@ -307,7 +372,9 @@ const EditIngredient = () => {
                     </div>
                     <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
                       <p className="text-sm text-muted-foreground">
-                        1 <span className="font-semibold text-foreground">{watchUnit}</span> = {watchConversionFactor} <span className="font-semibold text-foreground">{watchBaseUnit}</span>
+                        1 <span className="font-semibold text-foreground">{watchUnit}</span> ={" "}
+                        {watchConversionFactor}{" "}
+                        <span className="font-semibold text-foreground">{watchBaseUnit}</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">{convLabel}</p>
                     </div>
@@ -315,20 +382,30 @@ const EditIngredient = () => {
                 </div>
 
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">Stok & Harga</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.ingredient.form.sectionStok")}
+                  </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="stock"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Stok</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.ingredient.form.stockLabel")}
+                          </FormLabel>
                           <Input
-                            type="text" inputMode="numeric" className="h-12"
+                            type="text"
+                            inputMode="numeric"
+                            className="h-12"
                             value={field.value}
-                            onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                            }
                           />
-                          <p className="text-xs text-muted-foreground">Jumlah stok saat ini</p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.ingredient.form.stockDesc")}
+                          </p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -338,13 +415,21 @@ const EditIngredient = () => {
                       name="minStock"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minimal Stok</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.ingredient.form.minStockLabel")}
+                          </FormLabel>
                           <Input
-                            type="text" inputMode="numeric" className="h-12"
+                            type="text"
+                            inputMode="numeric"
+                            className="h-12"
                             value={field.value}
-                            onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                            }
                           />
-                          <p className="text-xs text-muted-foreground">Notifikasi stok menipis jika di bawah batas ini</p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.ingredient.form.minStockDesc")}
+                          </p>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -354,11 +439,17 @@ const EditIngredient = () => {
                       name="costPrice"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Harga Beli (Rp)</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.ingredient.form.priceLabel")}
+                          </FormLabel>
                           <Input
-                            type="text" inputMode="numeric" className="h-12"
+                            type="text"
+                            inputMode="numeric"
+                            className="h-12"
                             value={field.value ? field.value.toLocaleString("id-ID") : "0"}
-                            onChange={(e) => field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                            }
                           />
                           <FormMessage />
                         </FormItem>
@@ -368,7 +459,9 @@ const EditIngredient = () => {
                 </div>
 
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                  <h3 className="text-base font-semibold text-foreground mb-6">Status</h3>
+                  <h3 className="text-base font-semibold text-foreground mb-6">
+                    {t("page.ingredient.form.sectionStatus")}
+                  </h3>
                   <FormField
                     control={form.control}
                     name="isActive"
@@ -380,28 +473,28 @@ const EditIngredient = () => {
                               ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
                               : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
                           }`}
-                          onClick={() => field.onChange(!field.value)}
-                        >
+                          onClick={() => field.onChange(!field.value)}>
                           <div className="flex items-center gap-3">
                             <div
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                 field.value
                                   ? "bg-green-600 text-white"
                                   : "bg-destructive/10 text-destructive"
-                              }`}
-                            >
+                              }`}>
                               <span className="material-symbols-outlined text-lg">
                                 {field.value ? "check" : "close"}
                               </span>
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-foreground">
-                                {field.value ? "Aktif" : "Nonaktif"}
+                                {field.value
+                                  ? t("page.ingredient.form.statusActive")
+                                  : t("page.ingredient.form.statusInactive")}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {field.value
-                                  ? "Bahan baku ini aktif dan dapat digunakan"
-                                  : "Bahan baku ini tidak aktif"}
+                                  ? t("page.ingredient.form.statusActiveDesc")
+                                  : t("page.ingredient.form.statusInactiveDesc")}
                               </p>
                             </div>
                           </div>
@@ -418,39 +511,93 @@ const EditIngredient = () => {
                 <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-base">info</span>
-                    <span className="text-sm font-semibold text-primary">Tips Penamaan</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {t("page.ingredient.form.tipsTitle")}
+                    </span>
                   </div>
                   <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                    <p>Gunakan nama yang spesifik dan mudah dikenali, contoh: <span className="text-foreground font-medium">&quot;Tepung Terigu Protein Tinggi&quot;</span> bukan hanya &quot;Tepung&quot;.</p>
-                    <p>Jika bahan baku memiliki varian (ukuran/warna), tambahkan informasi tersebut pada nama.</p>
+                    <p>
+                      {t("page.ingredient.form.tipsText1")}{" "}
+                      <span className="text-foreground font-medium">
+                        &quot;{t("page.ingredient.form.tipsExample")}&quot;
+                      </span>{" "}
+                      {t("page.ingredient.form.tipsText2")}
+                    </p>
+                    <p>{t("page.ingredient.form.tipsText3")}</p>
                   </div>
                 </div>
 
                 <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="material-symbols-outlined text-primary text-base">swap_horiz</span>
-                    <span className="text-sm font-semibold text-foreground">Konversi Satuan</span>
+                    <span className="material-symbols-outlined text-primary text-base">
+                      swap_horiz
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {t("page.ingredient.form.sidebarKonversi")}
+                    </span>
                   </div>
                   <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                    <p><span className="text-foreground font-medium">Unit Pembelian:</span> Satuan yang digunakan saat membeli dari supplier.</p>
-                    <p><span className="text-foreground font-medium">Base Unit:</span> Satuan terkecil untuk perhitungan stok dan resep.</p>
-                    <p><span className="text-foreground font-medium">Faktor Konversi:</span> Jumlah base unit per unit pembelian.</p>
+                    <p>
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredient.form.sidebarUnitPembelian")}
+                      </span>{" "}
+                      {t("page.ingredient.form.sidebarUnitPembelianDesc")}
+                    </p>
+                    <p>
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredient.form.sidebarBaseUnit")}
+                      </span>{" "}
+                      {t("page.ingredient.form.sidebarBaseUnitDesc")}
+                    </p>
+                    <p>
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredient.form.sidebarFaktor")}
+                      </span>{" "}
+                      {t("page.ingredient.form.sidebarFaktorDesc")}
+                    </p>
                     <div className="bg-background rounded-lg p-3 border border-border mt-2">
-                      <p className="text-foreground font-medium mb-1">Contoh:</p>
-                      <p>1 Kg = 1000 Gram <span className="text-muted-foreground">(faktor: 1000)</span></p>
-                      <p>1 Lusin = 12 Pcs <span className="text-muted-foreground">(faktor: 12)</span></p>
-                      <p>1 Karton = 50 Pcs <span className="text-muted-foreground">(faktor: 50)</span></p>
+                      <p className="text-foreground font-medium mb-1">
+                        {t("page.ingredient.form.sidebarContoh")}
+                      </p>
+                      <p>
+                        {t("page.ingredient.form.sidebarContohKg")}{" "}
+                        <span className="text-muted-foreground">
+                          ({t("page.ingredient.form.sidebarContohFaktor")}: 1000)
+                        </span>
+                      </p>
+                      <p>
+                        {t("page.ingredient.form.sidebarContohLusin")}{" "}
+                        <span className="text-muted-foreground">
+                          ({t("page.ingredient.form.sidebarContohFaktor")}: 12)
+                        </span>
+                      </p>
+                      <p>
+                        {t("page.ingredient.form.sidebarContohKarton")}{" "}
+                        <span className="text-muted-foreground">
+                          ({t("page.ingredient.form.sidebarContohFaktor")}: 50)
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="material-symbols-outlined text-primary text-base">inventory_2</span>
-                    <span className="text-sm font-semibold text-foreground">Manajemen Stok</span>
+                    <span className="material-symbols-outlined text-primary text-base">
+                      inventory_2
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {t("page.ingredient.form.sidebarManajemenStok")}
+                    </span>
                   </div>
                   <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                    <p>Atur <span className="text-foreground font-medium">Minimal Stok</span> untuk mendapatkan notifikasi saat stok menipis dan perlu dilakukan pemesanan ulang.</p>
+                    <p>
+                      {t("page.ingredient.form.sidebarStokDesc")}{" "}
+                      <span className="text-foreground font-medium">
+                        {t("page.ingredient.form.minStockLabel")}
+                      </span>{" "}
+                      {t("page.ingredient.form.sidebarStokDesc2")}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -458,24 +605,34 @@ const EditIngredient = () => {
 
             <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t">
               <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-                <X size={16} className="mr-1" /> Batal
+                <X size={16} className="mr-1" /> {t("page.ingredient.form.cancelButton")}
               </Button>
               <Button type="submit" disabled={mutation.isLoading}>
-                <Save size={16} className="mr-1" /> {mutation.isLoading ? "Menyimpan..." : "Simpan"}
+                <Save size={16} className="mr-1" />{" "}
+                {mutation.isLoading
+                  ? t("page.ingredient.form.savingButton")
+                  : t("page.ingredient.form.saveButton")}
               </Button>
             </div>
           </form>
         </Form>
       </div>
 
-      {mutation.isLoading && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {mutation.isLoading && (
+        <Loading fullscreen size="lg" label={t("page.ingredient.form.savingButton")} />
+      )}
 
       <Modal
-        type="confirm" open={cancelModal}
+        type="confirm"
+        open={cancelModal}
         onOpenChange={(o) => !o && setCancelModal(false)}
-        title="Batalkan?" description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
-        onConfirm={() => { setCancelModal(false); navigate("/ingredient"); }}
+        title={t("page.ingredient.edit.modalCancelTitle")}
+        description={t("page.ingredient.edit.modalCancelDesc")}
+        confirmText={t("page.ingredient.edit.modalCancelConfirm")}
+        onConfirm={() => {
+          setCancelModal(false);
+          navigate("/ingredient");
+        }}
       />
     </div>
   );

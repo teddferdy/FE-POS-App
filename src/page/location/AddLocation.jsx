@@ -60,20 +60,20 @@ import { Button } from "@/components/ui/button";
 import UserGuide from "@/components/organism/UserGuide";
 
 const days = [
-  { id: "monday", label: "Senin" },
-  { id: "tuesday", label: "Selasa" },
-  { id: "wednesday", label: "Rabu" },
-  { id: "thursday", label: "Kamis" },
-  { id: "friday", label: "Jumat" },
-  { id: "saturday", label: "Sabtu" },
-  { id: "sunday", label: "Minggu" }
+  { id: "monday", label: "common.day.monday" },
+  { id: "tuesday", label: "common.day.tuesday" },
+  { id: "wednesday", label: "common.day.wednesday" },
+  { id: "thursday", label: "common.day.thursday" },
+  { id: "friday", label: "common.day.friday" },
+  { id: "saturday", label: "common.day.saturday" },
+  { id: "sunday", label: "common.day.sunday" }
 ];
 
 const categoryOptions = [
-  { value: "Main Branch", label: "Main Branch" },
-  { value: "Branch", label: "Branch" },
-  { value: "Warehouse", label: "Warehouse" },
-  { value: "Office", label: "Office" }
+  { value: "Main Branch", labelKey: "page.location.category.mainBranch" },
+  { value: "Branch", labelKey: "page.location.category.branch" },
+  { value: "Warehouse", labelKey: "page.location.category.warehouse" },
+  { value: "Office", labelKey: "page.location.category.office" }
 ];
 
 const AddLocation = () => {
@@ -107,23 +107,26 @@ const AddLocation = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      name: z.string().min(2, "Nama toko minimal 2 karakter"),
+      name: z.string().min(2, t("page.location.form.nameValidation")),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
       phoneNumber: z
         .string()
-        .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
-        .min(8, "Nomor telepon minimal 8 digit")
-        .max(14, "Nomor telepon maksimal 14 digit"),
-      email: z.string().email("Format email tidak valid").min(1, "Email wajib diisi"),
-      address: z.string().min(5, "Alamat minimal 5 karakter"),
+        .regex(/^\d+$/, t("page.location.form.phoneNumericValidation"))
+        .min(8, t("page.location.form.phoneMinValidation"))
+        .max(14, t("page.location.form.phoneMaxValidation")),
+      email: z
+        .string()
+        .email(t("page.location.form.emailValidation"))
+        .min(1, t("page.location.form.emailRequiredValidation")),
+      address: z.string().min(5, t("page.location.form.addressValidation")),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().min(1, "Kota/Kabupaten wajib dipilih"),
-      province: z.string().min(1, "Provinsi wajib dipilih"),
-      district: z.string().min(1, "Kecamatan wajib dipilih"),
-      village: z.string().min(1, "Kelurahan/Desa wajib dipilih"),
-      postalCode: z.string().min(1, "Kode pos wajib diisi"),
+      city: z.string().min(1, t("page.location.form.cityRequired")),
+      province: z.string().min(1, t("page.location.form.provinceRequired")),
+      district: z.string().min(1, t("page.location.form.districtRequired")),
+      village: z.string().min(1, t("page.location.form.villageRequired")),
+      postalCode: z.string().min(1, t("page.location.form.postalCodeRequired")),
       isActive: z.boolean().default(true),
       category: z.string().optional(),
       managerName: z.string().optional(),
@@ -138,7 +141,7 @@ const AddLocation = () => {
         })
       )
     });
-  }, []);
+  }, [t]);
 
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -260,25 +263,27 @@ const AddLocation = () => {
     }
   };
 
-   const addMutation = useMutation(addLocation, {
-     onSuccess: () => {
-       queryClient.invalidateQueries(["locations"]);
-       queryClient.invalidateQueries(["allLocations"]);
-       setIsSubmitting(false);
-       setSuccessModal(true);
-     },
+  const addMutation = useMutation(addLocation, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["locations"]);
+      queryClient.invalidateQueries(["allLocations"]);
+      setIsSubmitting(false);
+      setSuccessModal(true);
+    },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.location.form.error.failed"), {
+        description: err?.response?.data?.message || err.message
+      });
       setIsSubmitting(false);
     }
   });
 
-   const editMutation = useMutation(editLocation, {
-     onSuccess: () => {
-       queryClient.invalidateQueries(["locations"]);
-       queryClient.invalidateQueries(["allLocations"]);
-       setIsSubmitting(false);
-       setSuccessModal(true);
+  const editMutation = useMutation(editLocation, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["locations"]);
+      queryClient.invalidateQueries(["allLocations"]);
+      setIsSubmitting(false);
+      setSuccessModal(true);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
@@ -288,7 +293,9 @@ const AddLocation = () => {
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (!isEdit && !imageFile) {
-      toast.error("Gagal", { description: "Foto toko wajib diupload" });
+      toast.error(t("page.location.form.error.gagal"), {
+        description: t("page.location.form.error.fotoWajib")
+      });
       setIsSubmitting(false);
       return;
     }
@@ -421,7 +428,9 @@ const AddLocation = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-border">
                     <MapPin className="text-primary" size={20} />
-                    <h3 className="text-base font-semibold text-foreground">Informasi Toko</h3>
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("page.location.form.informasiToko")}
+                    </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
@@ -430,7 +439,8 @@ const AddLocation = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Nama Toko <span className="text-destructive">*</span>
+                            {t("page.location.form.nameLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <Input
                             {...field}
@@ -448,11 +458,11 @@ const AddLocation = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            ID Toko
+                            {t("page.location.form.storeIdLabel")}
                           </FormLabel>
                           <Input
                             {...field}
-                            placeholder="Otomatis dari sistem"
+                            placeholder={t("page.location.form.autoFromSystem")}
                             disabled
                             className="font-mono h-12 bg-muted/50"
                           />
@@ -469,7 +479,8 @@ const AddLocation = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Nomor Telepon <span className="text-destructive">*</span>
+                            {t("page.location.form.phoneLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <div className="relative">
                             <Phone
@@ -478,7 +489,7 @@ const AddLocation = () => {
                             />
                             <Input
                               {...field}
-                              placeholder="62821000000"
+                              placeholder={t("page.location.form.phonePlaceholder")}
                               className="pl-9"
                               inputMode="numeric"
                               onChange={(e) => {
@@ -488,7 +499,7 @@ const AddLocation = () => {
                             />
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Maksimal 14 nomor, hanya angka
+                            {t("page.location.form.phoneHint")}
                           </p>
                           <FormMessage />
                         </FormItem>
@@ -502,7 +513,8 @@ const AddLocation = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Email <span className="text-destructive">*</span>
+                            {t("page.location.form.emailLabel")}{" "}
+                            <span className="text-destructive">*</span>
                           </FormLabel>
                           <div className="relative">
                             <Mail
@@ -511,7 +523,7 @@ const AddLocation = () => {
                             />
                             <Input
                               {...field}
-                              placeholder="toko@email.com"
+                              placeholder={t("page.location.form.emailPlaceholder")}
                               className="pl-9"
                               type="email"
                             />
@@ -531,7 +543,8 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Alamat Lengkap <span className="text-destructive">*</span>
+                          {t("page.location.form.addressLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <div className="relative">
                           <MapPin
@@ -540,7 +553,7 @@ const AddLocation = () => {
                           />
                           <Textarea
                             {...field}
-                            placeholder="Masukkan alamat lengkap toko..."
+                            placeholder={t("page.location.form.addressPlaceholder")}
                             className="pl-9 min-h-[80px]"
                           />
                         </div>
@@ -556,11 +569,11 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Detail Lokasi (Patokan)
+                          {t("page.location.form.detailLocationLabel")}
                         </FormLabel>
                         <Textarea
                           {...field}
-                          placeholder="Lantai 2, Samping lift utara"
+                          placeholder={t("page.location.form.detailPlaceholder")}
                           className="min-h-[80px]"
                         />
                         <FormMessage />
@@ -577,7 +590,8 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Provinsi <span className="text-destructive">*</span>
+                          {t("page.location.form.provinceLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={provinces.map((p) => ({
@@ -607,7 +621,7 @@ const AddLocation = () => {
                               }
                             }
                           }}
-                          placeholder="Pilih Provinsi"
+                          placeholder={t("page.location.form.selectProvince")}
                         />
                         <FormMessage />
                       </FormItem>
@@ -619,7 +633,8 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kota/Kabupaten <span className="text-destructive">*</span>
+                          {t("page.location.form.cityLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={cities.map((c) => ({
@@ -647,7 +662,7 @@ const AddLocation = () => {
                               }
                             }
                           }}
-                          placeholder="Pilih Kota/Kabupaten"
+                          placeholder={t("page.location.form.selectCity")}
                           disabled={!cities.length}
                           loading={citiesLoading}
                         />
@@ -663,7 +678,8 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kecamatan <span className="text-destructive">*</span>
+                          {t("page.location.form.districtLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={districts.map((d) => ({
@@ -682,18 +698,16 @@ const AddLocation = () => {
                               try {
                                 const villagesResponse = await getVillages(val);
                                 setVillages(villagesResponse || []);
-                                // Update area after villages data is loaded
                               } catch (error) {
                                 console.error("Error fetching villages:", error);
                               } finally {
                                 setVillagesLoading(false);
                               }
                             } else {
-                              // Clear postal code and update area
                               form.setValue("postalCode", "");
                             }
                           }}
-                          placeholder="Pilih Kecamatan"
+                          placeholder={t("page.location.form.selectDistrict")}
                           disabled={!districts.length}
                           loading={districtsLoading}
                         />
@@ -707,7 +721,8 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kelurahan/Desa <span className="text-destructive">*</span>
+                          {t("page.location.form.villageLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Combobox
                           options={villages.map((v) => ({
@@ -724,7 +739,6 @@ const AddLocation = () => {
                                 const postalData = await getPostalCode(val);
                                 if (postalData && postalData.length > 0) {
                                   form.setValue("postalCode", postalData[0].kode_pos);
-                                  // Update area only after postal code is set
                                   handleAreaSelect();
                                 }
                               } catch (error) {
@@ -732,7 +746,7 @@ const AddLocation = () => {
                               }
                             }
                           }}
-                          placeholder="Pilih Kelurahan/Desa"
+                          placeholder={t("page.location.form.selectVillage")}
                           disabled={!villages.length}
                           loading={villagesLoading}
                         />
@@ -746,11 +760,12 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kode Pos <span className="text-destructive">*</span>
+                          {t("page.location.form.postalCodeLabel")}{" "}
+                          <span className="text-destructive">*</span>
                         </FormLabel>
                         <Input
                           {...field}
-                          placeholder="Otomatis terisi"
+                          placeholder={t("page.location.form.autoFill")}
                           disabled
                           className="bg-muted/50"
                         />
@@ -767,7 +782,7 @@ const AddLocation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Pilih Lokasi di Peta
+                        {t("page.location.form.mapLabel")}
                       </FormLabel>
                       <LocationMapPicker
                         lat={form.watch("latitude")}
@@ -792,7 +807,7 @@ const AddLocation = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Kategori
+                          {t("page.location.form.categoryLabel")}
                         </FormLabel>
                         <select
                           value={field.value || ""}
@@ -800,7 +815,7 @@ const AddLocation = () => {
                           className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                           {categoryOptions.map((opt) => (
                             <option key={opt.value} value={opt.value}>
-                              {opt.label}
+                              {t(opt.labelKey)}
                             </option>
                           ))}
                         </select>
@@ -817,7 +832,7 @@ const AddLocation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Nama Manager
+                        {t("page.location.form.managerLabel")}
                       </FormLabel>
                       <div className="relative">
                         <div className="cursor-pointer" onClick={() => setManagerModalOpen(true)}>
@@ -827,7 +842,7 @@ const AddLocation = () => {
                           />
                           <Input
                             {...field}
-                            placeholder="Klik untuk pilih manager"
+                            placeholder={t("page.location.form.clickSelectManager")}
                             className="pl-9 pr-10 cursor-pointer"
                             readOnly
                           />
@@ -858,9 +873,11 @@ const AddLocation = () => {
                       <Clock size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Jam Operasional</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {t("page.location.form.operationalHours")}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Atur jadwal operasional toko mingguan
+                        {t("page.location.form.operationalHoursDesc")}
                       </p>
                     </div>
                   </div>
@@ -885,9 +902,12 @@ const AddLocation = () => {
                         };
                         return (
                           <div key={day.id} className="grid grid-cols-12 gap-2 items-center py-2">
-                            <div className="col-span-2 text-sm font-medium">{day.label}</div>
+                            <div className="col-span-2 text-sm font-medium">{t(day.label)}</div>
                             <div className="col-span-3 relative">
-                              <Clock size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                              <Clock
+                                size={14}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                              />
                               <input
                                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
@@ -897,10 +917,13 @@ const AddLocation = () => {
                               />
                             </div>
                             <div className="col-span-1 text-center text-xs text-muted-foreground flex items-center justify-center">
-                              <span className="text-xs">s/d</span>
+                              <span className="text-xs">{t("common.to")}</span>
                             </div>
                             <div className="col-span-3 relative">
-                              <Clock size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                              <Clock
+                                size={14}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                              />
                               <input
                                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-border text-sm text-foreground bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 type="time"
@@ -914,7 +937,9 @@ const AddLocation = () => {
                             <div className="col-span-2 flex justify-end items-center gap-2">
                               <span
                                 className={`text-xs ${dayData.isOpen ? "text-green-600 dark:text-green-400" : "text-destructive dark:text-red-400"}`}>
-                                {dayData.isOpen ? "Buka" : "Tutup"}
+                                {dayData.isOpen
+                                  ? t("page.location.form.openStatus")
+                                  : t("page.location.form.closedStatus")}
                               </span>
                               <label className="relative inline-flex items-center cursor-pointer">
                                 <input
@@ -942,9 +967,11 @@ const AddLocation = () => {
                       <Globe size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Sosial Media</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {t("page.location.form.socialMedia")}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Tambahkan akun media sosial untuk ditampilkan di invoice
+                        {t("page.location.form.socialMediaDesc")}
                       </p>
                     </div>
                   </div>
@@ -959,13 +986,13 @@ const AddLocation = () => {
                     {socialLinks.map((link, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <Input
-                          placeholder="Platform (IG, FB, WA)"
+                          placeholder={t("page.location.form.socialPlatform")}
                           value={link.platform}
                           onChange={(e) => updateSocial(idx, "platform", e.target.value)}
                           className="flex-1"
                         />
                         <Input
-                          placeholder="Akun / URL"
+                          placeholder={t("page.location.form.socialAccount")}
                           value={link.account}
                           onChange={(e) => updateSocial(idx, "account", e.target.value)}
                           className="flex-1"
@@ -985,7 +1012,7 @@ const AddLocation = () => {
                       onClick={addSocialRow}
                       className="gap-1">
                       <Plus size={14} />
-                      Tambah Sosial Media
+                      {t("page.location.form.addSocialMedia")}
                     </Button>
                   </div>
                 )}
@@ -1013,12 +1040,14 @@ const AddLocation = () => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        {form.watch("isActive") ? "Aktif" : "Tidak Aktif"}
+                        {form.watch("isActive")
+                          ? t("page.location.form.active")
+                          : t("page.location.form.inactive")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {form.watch("isActive")
-                          ? "Toko ini aktif dan dapat beroperasi."
-                          : "Toko ini tidak aktif."}
+                          ? t("page.location.form.activeDesc")
+                          : t("page.location.form.inactiveDesc")}
                       </p>
                     </div>
                   </div>
@@ -1035,10 +1064,13 @@ const AddLocation = () => {
                   <div className="flex items-center gap-2">
                     <Building2 className="text-primary" size={20} />
                     <h3 className="text-base font-semibold text-foreground">
-                      Foto Toko <span className="text-destructive">*</span>
+                      {t("page.location.form.storePhoto")}{" "}
+                      <span className="text-destructive">*</span>
                     </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">Format: JPG, PNG. Maksimal 2MB.</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.location.form.photoFormat")}
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1070,7 +1102,7 @@ const AddLocation = () => {
                       <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-8 min-h-[300px] justify-center">
                         <CloudUpload size={64} className="mb-4" />
                         <span className="text-base font-semibold text-center">
-                          Klik atau Tarik Foto
+                          {t("page.location.form.clickOrDragPhoto")}
                         </span>
                       </div>
                     )}
@@ -1083,10 +1115,10 @@ const AddLocation = () => {
                     <Info size={18} className="text-primary shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                        Validasi Data
+                        {t("page.location.form.validationTitle")}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Sistem akan melakukan pengecekan ID Toko duplikat secara otomatis.
+                        {t("page.location.form.validationDesc")}
                       </p>
                     </div>
                   </div>
@@ -1094,10 +1126,10 @@ const AddLocation = () => {
                     <ShieldCheck size={18} className="text-secondary shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                        Keamanan
+                        {t("page.location.form.securityTitle")}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Data hanya dapat diubah oleh pemilik atau super admin.
+                        {t("page.location.form.securityDesc")}
                       </p>
                     </div>
                   </div>
@@ -1105,10 +1137,10 @@ const AddLocation = () => {
                     <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                        Audit Trail
+                        {t("page.location.form.auditTitle")}
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Setiap perubahan akan tercatat dalam log sistem.
+                        {t("page.location.form.auditDesc")}
                       </p>
                     </div>
                   </div>
@@ -1122,7 +1154,7 @@ const AddLocation = () => {
                 variant="outline"
                 className="w-full sm:w-auto"
                 onClick={() => setCancelModal(true)}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
                 <Button
@@ -1130,11 +1162,13 @@ const AddLocation = () => {
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={isSubmitting}>
-                  Simpan sebagai Draft
+                  {t("page.location.form.saveDraft")}
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
                   <Save size={18} />
-                  {isEdit ? "Simpan Perubahan" : "Simpan Lokasi"}
+                  {isEdit
+                    ? t("page.location.form.saveChanges")
+                    : t("page.location.form.saveLocation")}
                 </Button>
               </div>
             </div>
@@ -1148,10 +1182,8 @@ const AddLocation = () => {
         <DialogContent className="sm:max-w-2xl min-w-[800px] p-0 gap-0 overflow-hidden">
           <div className="px-6 pt-6 pb-4 border-b border-border">
             <DialogHeader>
-              <DialogTitle className="text-lg">Pilih Manager</DialogTitle>
-              <DialogDescription>
-                Pilih karyawan yang akan menjadi manager toko ini.
-              </DialogDescription>
+              <DialogTitle className="text-lg">{t("page.location.form.selectManager")}</DialogTitle>
+              <DialogDescription>{t("page.location.form.selectManagerDesc")}</DialogDescription>
             </DialogHeader>
           </div>
 
@@ -1163,7 +1195,7 @@ const AddLocation = () => {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
                 <Input
-                  placeholder="Cari karyawan..."
+                  placeholder={t("page.location.form.searchEmployee")}
                   value={managerSearch}
                   onChange={(e) => {
                     setManagerSearch(e.target.value);
@@ -1177,7 +1209,9 @@ const AddLocation = () => {
                   className="pl-9"
                 />
               </div>
-              <Button onClick={() => setManagerFetchSearch(managerSearch)}>Cari</Button>
+              <Button onClick={() => setManagerFetchSearch(managerSearch)}>
+                {t("common.search")}
+              </Button>
             </div>
           </div>
 
@@ -1186,22 +1220,22 @@ const AddLocation = () => {
               <thead className="sticky top-0 bg-background z-10">
                 <tr className="bg-muted/20">
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    ID
+                    {t("page.location.form.employeeIdHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Foto
+                    {t("page.location.form.employeePhotoHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Nama
+                    {t("page.location.form.employeeNameHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Email
+                    {t("page.location.form.employeeEmailHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Departemen
+                    {t("page.location.form.employeeDepartmentHeader")}
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
-                    Toko
+                    {t("page.location.form.employeeStoreHeader")}
                   </th>
                 </tr>
               </thead>
@@ -1210,7 +1244,7 @@ const AddLocation = () => {
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                       <User size={32} className="mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Tidak ada karyawan ditemukan</p>
+                      <p className="text-sm">{t("page.location.form.noEmployeeFound")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -1261,7 +1295,7 @@ const AddLocation = () => {
                 disabled={managerPage <= 1}
                 onClick={() => setManagerPage((p) => Math.max(1, p - 1))}
                 className="h-8">
-                Prev
+                {t("common.prev")}
               </Button>
               <span className="text-xs text-muted-foreground min-w-[60px] text-center">
                 {managerPage} / {managerTotalPages}
@@ -1272,7 +1306,7 @@ const AddLocation = () => {
                 disabled={managerPage >= managerTotalPages}
                 onClick={() => setManagerPage((p) => p + 1)}
                 className="h-8">
-                Next
+                {t("common.next")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -1285,14 +1319,14 @@ const AddLocation = () => {
                 }}
                 className="h-8 gap-1.5">
                 <UserPlus size={14} />
-                Tambah Karyawan
+                {t("page.location.form.addEmployee")}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setManagerModalOpen(false)}
                 className="h-8">
-                Tutup
+                {t("common.close")}
               </Button>
             </div>
           </div>
@@ -1303,24 +1337,26 @@ const AddLocation = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title={isEdit ? "Data Berhasil Diubah" : "Data Berhasil Ditambahkan"}
+        title={
+          isEdit ? t("page.location.add.successEditTitle") : t("page.location.add.successAddTitle")
+        }
         onConfirm={() => navigate("/location-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.location.form.cancelModalTitle")}
+        confirmText={t("page.location.form.cancelModalConfirm")}
         onConfirm={() => navigate("/location-list")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.location.form.draftModalTitle")}
+        description={t("page.location.form.draftModalDesc")}
+        confirmText={t("page.location.form.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

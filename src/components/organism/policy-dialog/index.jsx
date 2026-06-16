@@ -177,7 +177,7 @@ const PolicyDialog = ({ type, open, onOpenChange }) => {
             <Button
               type="button"
               className="bg-foreground text-background hover:bg-foreground/90 px-5 py-2 rounded-lg text-sm font-medium transition-all">
-              <span>Saya Mengerti</span>
+              <span>{t("policy.understand")}</span>
             </Button>
           </DialogClose>
         </div>

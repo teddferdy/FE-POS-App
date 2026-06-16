@@ -361,7 +361,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             <Menu size={20} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground hidden sm:block">SwiftPOS Admin</h1>
+            <h1 className="text-lg font-bold text-foreground hidden sm:block">{t("header.appName")}</h1>
           </div>
           <button
             data-tour="header-search"

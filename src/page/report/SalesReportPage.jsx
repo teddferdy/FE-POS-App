@@ -45,7 +45,9 @@ const SalesReportPage = () => {
       XLSX.writeFile(wb, `sales-report-${salesPeriod.toLowerCase()}-${Date.now()}.xlsx`);
       toast.success(t("common.success"), { description: t("page.report.sales.exportSuccess") });
     } catch (err) {
-      toast.error(t("common.error"), { description: err?.message || t("page.report.sales.exportFailed") });
+      toast.error(t("common.error"), {
+        description: err?.message || t("page.report.sales.exportFailed")
+      });
     } finally {
       setExportLoading(false);
     }
@@ -55,10 +57,10 @@ const SalesReportPage = () => {
     <div data-tour="page-reports" className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">{t("page.report.sales.title")}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.report.sales.description")}
-          </p>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">
+            {t("page.report.sales.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.report.sales.description")}</p>
         </div>
         <button
           disabled={exportLoading}

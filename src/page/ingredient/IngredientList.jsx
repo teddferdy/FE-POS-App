@@ -41,12 +41,12 @@ const IngredientList = () => {
 
   const deleteMutation = useMutation(deleteIngredient, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Bahan baku berhasil dihapus" });
+      toast.success(t("page.ingredient.list.toastSuccess"), { description: t("page.ingredient.list.toastDeleteDesc") });
       queryClient.invalidateQueries(["ingredients"]);
       setDeleteTarget(null);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.ingredient.list.toastError"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -57,23 +57,23 @@ const IngredientList = () => {
     date ? new Date(date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
 
   const columns = [
-    { header: "Nama", render: (item) => <span className="font-medium">{item.name}</span> },
+    { header: t("page.ingredient.list.tableNama"), render: (item) => <span className="font-medium">{item.name}</span> },
     {
-      header: "Kategori",
+      header: t("page.ingredient.list.tableKategori"),
       render: (item) => <span className="text-sm text-muted-foreground">{item.categoryData?.name || "-"}</span>
     },
     {
-      header: "Supplier",
+      header: t("page.ingredient.list.tableSupplier"),
       render: (item) => <span className="text-sm text-muted-foreground">{item.supplierData?.name || "-"}</span>
     },
     {
-      header: "Unit",
+      header: t("page.ingredient.list.tableUnit"),
       render: (item) => (
         <span className="text-sm capitalize">{item.unit || "pcs"}</span>
       )
     },
     {
-      header: "Konversi",
+      header: t("page.ingredient.list.tableKonversi"),
       className: "min-w-[200px]",
       render: (item) => {
         const base = item.baseUnit || item.unit || "pcs";
@@ -86,7 +86,7 @@ const IngredientList = () => {
       }
     },
     {
-      header: "Stok",
+      header: t("page.ingredient.list.tableStok"),
       align: "right",
       render: (item) => (
         <span className={`font-mono ${item.stock <= item.minStock ? "text-destructive font-semibold" : ""}`}>
@@ -95,13 +95,13 @@ const IngredientList = () => {
       )
     },
     {
-      header: "Min Stok",
+      header: t("page.ingredient.list.tableMinStok"),
       align: "right",
       className: "min-w-[120px]",
       render: (item) => <span className="font-mono text-muted-foreground">{item.minStock}</span>
     },
     {
-      header: "Harga Beli",
+      header: t("page.ingredient.list.tableHargaBeli"),
       align: "right",
       className: "min-w-[160px]",
       render: (item) => (
@@ -109,25 +109,25 @@ const IngredientList = () => {
       )
     },
     {
-      header: "Status",
+      header: t("page.ingredient.list.tableStatus"),
       render: (item) => (
         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.active}`}>
-          {item.status === "active" ? "Aktif" : "Nonaktif"}
+          {item.status === "active" ? t("page.ingredient.list.statusActive") : t("page.ingredient.list.statusInactive")}
         </span>
       )
     },
     {
-      header: "Dibuat",
+      header: t("page.ingredient.list.tableDibuat"),
       className: "min-w-[180px]",
       render: (item) => <span className="text-xs text-muted-foreground">{fmtDate(item.createdAt)}</span>
     },
     {
-      header: "Diubah",
+      header: t("page.ingredient.list.tableDiubah"),
       className: "min-w-[180px]",
       render: (item) => <span className="text-xs text-muted-foreground">{fmtDate(item.updatedAt)}</span>
     },
     {
-      header: "Aksi",
+      header: t("page.ingredient.list.tableAksi"),
       align: "right",
       stickyRight: true,
       render: (item) => (
@@ -159,15 +159,15 @@ const IngredientList = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground">Dashboard</button>
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground">{t("page.ingredient.list.breadcrumbDashboard")}</button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Bahan Baku</span>
+        <span className="text-primary font-semibold">{t("page.ingredient.list.breadcrumbIngredient")}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Bahan Baku</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola bahan baku & material</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.ingredient.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.ingredient.list.subtitle")}</p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
           <div className="flex items-center gap-2">
@@ -178,15 +178,15 @@ const IngredientList = () => {
                 setDownloadingTemplate(true);
                 try {
                   await downloadIngredientTemplate();
-                  toast.success("Berhasil", { description: "Template berhasil diunduh" });
+                  toast.success(t("page.ingredient.list.toastSuccess"), { description: t("page.ingredient.list.toastTemplateDesc") });
                 } catch (err) {
-                  toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+                  toast.error(t("page.ingredient.list.toastError"), { description: err?.response?.data?.message || err.message });
                 } finally {
                   setDownloadingTemplate(false);
                 }
               }}
               className="gap-2">
-              <Download size={16} /> Template
+              <Download size={16} /> {t("page.ingredient.list.btnTemplate")}
             </Button>
             <Button
               variant="outline"
@@ -195,21 +195,21 @@ const IngredientList = () => {
                 setDownloadingData(true);
                 try {
                   await downloadIngredientExcel();
-                  toast.success("Berhasil", { description: "Data berhasil diunduh" });
+                  toast.success(t("page.ingredient.list.toastSuccess"), { description: t("page.ingredient.list.toastExportDesc") });
                 } catch (err) {
-                  toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+                  toast.error(t("page.ingredient.list.toastError"), { description: err?.response?.data?.message || err.message });
                 } finally {
                   setDownloadingData(false);
                 }
               }}
               className="gap-2">
-              <Download size={16} /> Export
+              <Download size={16} /> {t("page.ingredient.list.btnExport")}
             </Button>
             <Button variant="outline" onClick={() => setImportModal(true)} className="gap-2">
-              <Upload size={16} /> Import
+              <Upload size={16} /> {t("page.ingredient.list.btnImport")}
             </Button>
             <Button onClick={() => navigate("/add-ingredient")} className="gap-2">
-              <Plus size={18} /> Tambah Bahan Baku
+              <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
             </Button>
           </div>
         )}
@@ -217,15 +217,15 @@ const IngredientList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total</p>
+          <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statTotal")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statAktif")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{ingredients.filter((i) => i.status === "active").length}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Stok Menipis</p>
+          <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statStokMenipis")}</p>
           <p className="text-2xl font-bold text-destructive mt-1">{ingredients.filter((i) => i.stock <= i.minStock).length}</p>
         </Card>
       </div>
@@ -233,7 +233,7 @@ const IngredientList = () => {
       <div className="relative w-full sm:w-72">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Cari bahan baku..." value={search}
+          placeholder={t("page.ingredient.list.searchPlaceholder")} value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9 h-10"
         />
@@ -243,7 +243,7 @@ const IngredientList = () => {
         columns={columns}
         data={ingredients}
         isLoading={isLoading}
-        emptyMessage="Belum ada bahan baku"
+        emptyMessage={t("page.ingredient.list.emptyMessage")}
         emptyIcon={Package}
       />
 
@@ -251,9 +251,9 @@ const IngredientList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Hapus Bahan Baku?"
-        description="Data yang dihapus tidak dapat dikembalikan."
-        confirmText="Ya, Hapus"
+        title={t("page.ingredient.list.modalDeleteTitle")}
+        description={t("page.ingredient.list.modalDeleteDesc")}
+        confirmText={t("page.ingredient.list.modalDeleteConfirm")}
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
 

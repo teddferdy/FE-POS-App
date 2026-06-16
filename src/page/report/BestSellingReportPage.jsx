@@ -31,9 +31,13 @@ const BestSellingReportPage = () => {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "BestSeller");
       XLSX.writeFile(wb, `best-seller-${Date.now()}.xlsx`);
-      toast.success(t("common.success"), { description: t("page.report.bestSeller.exportSuccess") });
+      toast.success(t("common.success"), {
+        description: t("page.report.bestSeller.exportSuccess")
+      });
     } catch (err) {
-      toast.error(t("common.error"), { description: err?.message || t("page.report.bestSeller.exportFailed") });
+      toast.error(t("common.error"), {
+        description: err?.message || t("page.report.bestSeller.exportFailed")
+      });
     } finally {
       setExportLoading(false);
     }

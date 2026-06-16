@@ -25,26 +25,26 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
-const statusColors = {
-  draft: {
-    bg: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
-    dot: "bg-yellow-500",
-    label: "Draft"
-  },
-  completed: {
-    bg: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
-    dot: "bg-green-500",
-    label: "Completed"
-  },
-  cancelled: {
-    bg: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
-    dot: "bg-red-500",
-    label: "Cancelled"
-  }
-};
-
 const StockOpnameList = () => {
   const { t } = useTranslation();
+
+  const statusColors = {
+    draft: {
+      bg: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
+      dot: "bg-yellow-500",
+      label: t("page.stockOpname.status.draft")
+    },
+    completed: {
+      bg: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+      dot: "bg-green-500",
+      label: t("page.stockOpname.status.completed")
+    },
+    cancelled: {
+      bg: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+      dot: "bg-red-500",
+      label: t("page.stockOpname.status.cancelled")
+    }
+  };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -106,26 +106,26 @@ const StockOpnameList = () => {
   const handleExportSelected = useCallback(() => {
     exportStockOpnameByIds(selectedItems)
       .then(() => {
-        toast.success("Berhasil", {
-          description: `${selectedItems.length} data berhasil diexport`
+        toast.success(t("common.success"), {
+          description: t("page.stockOpname.list.exportSuccess", { count: selectedItems.length })
         });
         setSelectedItems([]);
       })
       .catch((err) => {
-        toast.error("Gagal", {
-          description: err?.response?.data?.message || err.message || "Gagal export data"
+        toast.error(t("common.failed"), {
+          description: err?.response?.data?.message || err.message || t("page.stockOpname.list.exportFailed")
         });
       });
   }, [selectedItems]);
 
   const deleteMutation = useMutation(deleteStockOpname, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Stock opname berhasil dihapus" });
+      toast.success(t("common.success"), { description: t("page.stockOpname.list.deleteSuccess") });
       queryClient.invalidateQueries(["stockOpname"]);
       setDeleteTarget(null);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("common.failed"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -147,9 +147,9 @@ const StockOpnameList = () => {
       toastIdRef.current = toast(
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Export Stock Opname</p>
+            <p className="text-sm font-semibold text-foreground">{t("page.stockOpname.list.exportTitle")}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {selectedItems.length} data dipilih
+              {t("page.stockOpname.list.exportSelected", { count: selectedItems.length })}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -158,7 +158,7 @@ const StockOpnameList = () => {
                 onClick={handleExportSelected}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                 <FileDown size={14} />
-                Export
+                {t("page.stockOpname.list.export")}
               </button>
             )}
             <button
@@ -192,65 +192,65 @@ const StockOpnameList = () => {
 
   const stats = [
     {
-      label: "Total Audit",
+      label: t("page.stockOpname.stats.totalAudit"),
       value: data?.stats?.total ?? total ?? 0,
       icon: ClipboardList,
       color: "text-primary",
       bg: "bg-primary/10",
-      trend: "+12% vs Bulan lalu",
+      trend: t("page.stockOpname.stats.trend"),
       trendIcon: TrendingUp,
       trendColor: "text-green-600"
     },
     {
-      label: "Draft",
+      label: t("page.stockOpname.status.draft"),
       value: data?.stats?.draft ?? 0,
       icon: Edit,
       color: "text-secondary",
       bg: "bg-secondary/10",
-      sub: "Menunggu penyelesaian"
+      sub: t("page.stockOpname.stats.draftSub")
     },
     {
-      label: "Completed",
+      label: t("page.stockOpname.status.completed"),
       value: data?.stats?.completed ?? 0,
       icon: CheckCircle2,
       color: "text-green-600 dark:text-green-400",
       bg: "bg-green-100 dark:bg-green-900/30",
-      sub: "Telah diverifikasi"
+      sub: t("page.stockOpname.stats.completedSub")
     },
     {
-      label: "Cancelled",
+      label: t("page.stockOpname.status.cancelled"),
       value: data?.stats?.cancelled ?? 0,
       icon: AlertTriangle,
       color: "text-red-600 dark:text-red-400",
       bg: "bg-red-100 dark:bg-red-900/30",
-      sub: "Dibatalkan"
+      sub: t("page.stockOpname.stats.cancelledSub")
     }
   ];
 
   const columns = [
     {
-      header: "Tanggal Audit",
+      header: t("page.stockOpname.list.columns.auditDate"),
       align: "center",
       render: (item) => (
         <span className="font-mono text-xs text-foreground">{item.auditDate || "-"}</span>
       )
     },
     {
-      header: "ID Audit",
+      header: t("page.stockOpname.list.columns.auditId"),
       align: "center",
       render: (item) => (
         <span className="text-xs font-bold text-primary">{item.opnameNumber || "-"}</span>
       )
     },
     {
-      header: "Lokasi Gudang",
+      header: t("page.stockOpname.list.columns.warehouse"),
       align: "center",
       render: (item) => (
         <span className="text-sm font-medium text-foreground">{item.store?.name || "-"}</span>
       )
     },
     {
-      header: "Auditor",
+      header: t("page.stockOpname.list.columns.auditor"),
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-center gap-2">
@@ -266,14 +266,14 @@ const StockOpnameList = () => {
       )
     },
     {
-      header: "Jumlah Barang",
+      header: t("page.stockOpname.list.columns.totalItems"),
       align: "center",
       render: (item) => (
         <span className="text-sm font-mono text-foreground">{item.stats?.totalItems ?? "-"}</span>
       )
     },
     {
-      header: "Status",
+      header: t("page.stockOpname.list.columns.status"),
       align: "center",
       render: (item) => {
         const status = item.status || "draft";
@@ -288,7 +288,7 @@ const StockOpnameList = () => {
       }
     },
     {
-      header: "Aksi",
+      header: t("page.stockOpname.list.columns.actions"),
       align: "right",
       render: (item) => {
         const isDraft = item.status === "draft";
@@ -337,10 +337,10 @@ const StockOpnameList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Stock Opname</span>
+        <span className="text-primary font-semibold">{t("page.stockOpname.list.title")}</span>
       </nav>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -353,7 +353,7 @@ const StockOpnameList = () => {
         {canAccess(user, MENU_KEY, "add") && (
           <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
             <Plus size={16} />
-            Tambah Stock Opname Baru
+            {t("page.stockOpname.list.addButton")}
           </Button>
         )}
       </div>
@@ -388,7 +388,7 @@ const StockOpnameList = () => {
         columns={columns}
         data={filteredItems}
         isLoading={isLoading}
-        emptyMessage="Tidak ada data stock opname"
+        emptyMessage={t("page.stockOpname.list.empty")}
         emptyIcon={ClipboardList}
         selectable
         selectedIds={selectedItems}
@@ -413,10 +413,10 @@ const StockOpnameList = () => {
                     setPage(1);
                   }}
                   className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                  <option value="all">Semua Gudang</option>
-                  <option value="utama-jkt">Gudang Utama - JKT</option>
-                  <option value="bsd">Gudang BSD</option>
-                  <option value="dc">Distribution Center</option>
+                  <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
+                  <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
+                  <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
+                  <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
                 </select>
                 <ChevronLeft
                   size={14}
@@ -431,10 +431,10 @@ const StockOpnameList = () => {
                     setPage(1);
                   }}
                   className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                  <option value="all">Semua Status</option>
-                  <option value="draft">Draft</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                  <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                  <option value="completed">{t("page.stockOpname.status.completed")}</option>
+                  <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
                 </select>
                 <ChevronLeft
                   size={14}
@@ -448,7 +448,7 @@ const StockOpnameList = () => {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Cari ID Audit, Gudang, Auditor..."
+                placeholder={t("page.stockOpname.list.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -468,9 +468,9 @@ const StockOpnameList = () => {
         type="confirm"
         open={noDataModal}
         onOpenChange={setNoDataModal}
-        title="Belum Ada Data Stock Opname"
-        description="Belum ada data stock opname. Silakan tambah stock opname terlebih dahulu sebelum melakukan export."
-        confirmText="Tambah Stock Opname"
+        title={t("page.stockOpname.list.noDataTitle")}
+        description={t("page.stockOpname.list.noDataDesc")}
+        confirmText={t("page.stockOpname.list.addButton")}
         onConfirm={() => navigate("/add-stock-opname")}
       />
 
@@ -478,9 +478,9 @@ const StockOpnameList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Stock Opname?"
-        description="Data yang dihapus tidak dapat dikembalikan."
-        confirmText="Ya, Hapus"
+        title={t("page.stockOpname.list.deleteTitle")}
+        description={t("page.stockOpname.list.deleteDesc")}
+        confirmText={t("page.stockOpname.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />
     </div>

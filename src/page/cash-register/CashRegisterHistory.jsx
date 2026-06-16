@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { ArrowLeft, Eye, Store } from "lucide-react";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,8 @@ const formatIDR = (num) => {
   return "Rp " + Number(num).toLocaleString("id-ID");
 };
 
-const statusCfg = {
-  open: { label: "Buka", class: "bg-green-100 text-green-800" },
-  closed: { label: "Tutup", class: "bg-gray-100 text-gray-800" }
-};
-
 const CashRegisterHistory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -46,9 +43,14 @@ const CashRegisterHistory = () => {
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
 
+  const statusCfg = {
+    open: { label: t("page.cashRegister.history.statusOpen"), class: "bg-green-100 text-green-800" },
+    closed: { label: t("page.cashRegister.history.statusClosed"), class: "bg-gray-100 text-gray-800" }
+  };
+
   const columns = [
     {
-      header: "Toko",
+      header: t("page.cashRegister.history.store"),
       render: (item) => (
         <div className="text-sm">
           <div>{item.storeData?.name || "-"}</div>
@@ -61,11 +63,11 @@ const CashRegisterHistory = () => {
       )
     },
     {
-      header: "Dibuka Oleh",
+      header: t("page.cashRegister.history.openedBy"),
       render: (item) => <span className="text-sm">{item.userData?.fullName || "-"}</span>
     },
     {
-      header: "Buka",
+      header: t("page.cashRegister.history.open"),
       render: (item) => (
         <div className="text-xs">
           <div>{new Date(item.openedAt).toLocaleDateString("id")}</div>
@@ -74,7 +76,7 @@ const CashRegisterHistory = () => {
       )
     },
     {
-      header: "Tutup",
+      header: t("page.cashRegister.history.closed"),
       render: (item) => (
         <div className="text-xs">
           {item.closedAt ? (
@@ -89,35 +91,35 @@ const CashRegisterHistory = () => {
       )
     },
     {
-      header: "Saldo Awal",
+      header: t("page.cashRegister.history.openingBalance"),
       align: "right",
       render: (item) => (
         <span className="font-mono text-sm">{formatIDR(item.openingBalance)}</span>
       )
     },
     {
-      header: "Penjualan",
+      header: t("page.cashRegister.history.sales"),
       align: "right",
       render: (item) => (
         <span className="font-mono text-sm">{formatIDR(item.totalSales)}</span>
       )
     },
     {
-      header: "Pengeluaran",
+      header: t("page.cashRegister.history.expenses"),
       align: "right",
       render: (item) => (
         <span className="font-mono text-sm">{formatIDR(item.totalExpenses)}</span>
       )
     },
     {
-      header: "Saldo Akhir",
+      header: t("page.cashRegister.history.closingBalance"),
       align: "right",
       render: (item) => (
         <span className="font-mono text-sm">{formatIDR(item.closingBalance)}</span>
       )
     },
     {
-      header: "Status",
+      header: t("page.cashRegister.history.status"),
       align: "center",
       render: (item) => {
         const sc = statusCfg[item.status] || statusCfg.closed;
@@ -130,7 +132,7 @@ const CashRegisterHistory = () => {
       }
     },
     {
-      header: "Aksi",
+      header: t("page.cashRegister.history.action"),
       align: "right",
       render: (item) => (
         <Button
@@ -153,21 +155,21 @@ const CashRegisterHistory = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.cashRegister.history.breadcrumbDashboard")}
         </button>
         <span className="text-xs">/</span>
         <button
           onClick={() => navigate("/cash-register/current")}
           className="hover:text-foreground">
-          Kasir
+          {t("page.cashRegister.history.breadcrumbCashier")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Riwayat</span>
+        <span className="text-primary font-semibold">{t("page.cashRegister.history.breadcrumb")}</span>
       </nav>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Riwayat Kasir</h1>
-          <p className="text-sm text-muted-foreground mt-1">Riwayat buka/tutup kasir</p>
+          <h1 className="text-2xl font-bold">{t("page.cashRegister.history.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.cashRegister.history.desc")}</p>
         </div>
         <div className="flex items-center gap-2">
           {isSuperAdmin && (
@@ -177,7 +179,7 @@ const CashRegisterHistory = () => {
                 onValueChange={(v) => { setSelectedStore(Number(v)); setPage(1); }}>
                 <SelectTrigger className="h-9 text-sm">
                   <Store size={14} className="mr-1" />
-                  <SelectValue placeholder="Pilih toko" />
+                  <SelectValue placeholder={t("page.cashRegister.history.selectStore")} />
                 </SelectTrigger>
                 <SelectContent>
                   {storeList.map((s) => (
@@ -191,7 +193,7 @@ const CashRegisterHistory = () => {
             variant="outline"
             onClick={() => navigate("/cash-register/current")}
             className="shrink-0 gap-2">
-            <ArrowLeft size={16} /> Kembali
+            <ArrowLeft size={16} /> {t("page.cashRegister.history.back")}
           </Button>
         </div>
       </div>
@@ -200,7 +202,7 @@ const CashRegisterHistory = () => {
         columns={columns}
         data={items}
         isLoading={isLoading}
-        emptyMessage="Tidak ada riwayat kasir"
+        emptyMessage={t("page.cashRegister.history.empty")}
         onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />

@@ -98,8 +98,8 @@ const LoginPage = () => {
       setCookie("user", user);
       setIsLoading(false);
       setTimeout(() => {
-        toast.success("Success", {
-          description: "Welcome, Login User successfully"
+        toast.success(t("page.login.toast.success"), {
+          description: t("page.login.toast.successDescription")
         });
       }, 1000);
       setTimeout(() => {
@@ -114,7 +114,7 @@ const LoginPage = () => {
       setIsLoading(false);
       const message = err.response?.data?.message || err.message;
       setTimeout(() => {
-        toast.error("Login Gagal", {
+        toast.error(t("page.login.toast.error"), {
           description: message
         });
       }, 1500);

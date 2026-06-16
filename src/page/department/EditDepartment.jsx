@@ -85,9 +85,7 @@ const EditDepartment = () => {
   }
 
   if (departmentsLoading) {
-    return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
-    );
+    return <Loading fullscreen size="lg" label="Memuat data..." />;
   }
 
   if (!department) {

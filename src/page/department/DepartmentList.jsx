@@ -196,92 +196,90 @@ const DepartmentList = () => {
         title={t("page.department.list.title")}
         description={t("page.department.list.description")}>
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="department-download-template"
-          variant="outline"
-          disabled={isDownloadingTemplate}
-          onClick={async () => {
-            setIsDownloadingTemplate(true);
-            try {
-              await downloadDepartmentTemplate();
-              toast.success(t("common.success"), {
-                description: t("page.department.toast.templateSuccess")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.department.toast.templateError")
-              });
-            } finally {
-              setIsDownloadingTemplate(false);
-            }
-          }}>
-          {isDownloadingTemplate ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-          )}
-          {isDownloadingTemplate
-            ? t("page.department.button.downloading")
-            : t("page.department.button.downloadTemplate")}
-        </Button>
+          <Button
+            data-tour="department-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadDepartmentTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.department.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.department.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate
+              ? t("page.department.button.downloading")
+              : t("page.department.button.downloadTemplate")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="department-download-data"
-          variant="outline"
-          disabled={isDownloadingData}
-          onClick={async () => {
-            setIsDownloadingData(true);
-            try {
-              await downloadDepartmentExcel();
-              toast.success(t("common.success"), {
-                description: t("page.department.toast.dataSuccess")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.department.toast.dataError")
-              });
-            } finally {
-              setIsDownloadingData(false);
-            }
-          }}>
-          {isDownloadingData ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">download</span>
-          )}
-          {isDownloadingData
-            ? t("page.department.button.downloading")
-            : t("page.department.button.downloadData")}
-        </Button>
+          <Button
+            data-tour="department-download-data"
+            variant="outline"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadDepartmentExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.department.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.department.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData
+              ? t("page.department.button.downloading")
+              : t("page.department.button.downloadData")}
+          </Button>
         )}
+        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
         {canAccess(user, MENU_KEY, "import") && (
-        <span className="w-px h-7 bg-border mx-1" />
-        )}
-        {canAccess(user, MENU_KEY, "import") && (
-        <Button
-          data-tour="department-upload"
-          variant="default"
-          onClick={() => setUploadModalOpen(true)}>
-          <span className="material-symbols-outlined text-lg">upload</span>
-          {t("page.department.button.upload")}
-        </Button>
+          <Button
+            data-tour="department-upload"
+            variant="default"
+            onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            {t("page.department.button.upload")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "add") && (
-        <Button
-          data-tour="department-add"
-          variant="default"
-          onClick={() => navigate("/add-department")}
-          className="shadow-md">
-          <span className="material-symbols-outlined text-lg">add</span>
-          {t("page.department.button.add")}
-        </Button>
+          <Button
+            data-tour="department-add"
+            variant="default"
+            onClick={() => navigate("/add-department")}
+            className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            {t("page.department.button.add")}
+          </Button>
         )}
       </PageHeader>
 

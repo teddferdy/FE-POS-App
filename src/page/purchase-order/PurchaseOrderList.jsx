@@ -45,27 +45,27 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 
-const statusMap = {
-  pending: {
-    label: "Menunggu",
-    class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-  },
-  ordered: {
-    label: "Sebagian",
-    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-  },
-  received: {
-    label: "Diterima",
-    class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-  },
-  cancelled: {
-    label: "Dibatalkan",
-    class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-  }
-};
-
 const PurchaseOrderList = () => {
   const { t } = useTranslation();
+
+  const statusMap = {
+    pending: {
+      label: t("page.purchaseOrder.status.pending"),
+      class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+    },
+    ordered: {
+      label: t("page.purchaseOrder.status.ordered"),
+      class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+    },
+    received: {
+      label: t("page.purchaseOrder.status.received"),
+      class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+    },
+    cancelled: {
+      label: t("page.purchaseOrder.status.cancelled"),
+      class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+    }
+  };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -92,14 +92,14 @@ const PurchaseOrderList = () => {
 
   const payMutation = useMutation(recordPayment, {
     onSuccess: () => {
-      toast.success("Pembayaran berhasil dicatat");
+      toast.success(t("page.purchaseOrder.detail.toast.paymentRecorded"));
       queryClient.invalidateQueries(["purchase-orders"]);
       setPayModal(false);
       setPayPo(null);
       setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
     },
     onError: (err) => {
-      toast.error("Gagal mencatat pembayaran", {
+      toast.error(t("page.purchaseOrder.detail.toast.paymentRecordFailed"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -147,7 +147,7 @@ const PurchaseOrderList = () => {
       }),
     {
       onSuccess: () => {
-        toast.success("Berhasil", { description: "Retur Pembelian berhasil diproses" });
+        toast.success(t("common.success"), { description: t("page.purchaseOrder.detail.toast.returnSuccess") });
         queryClient.invalidateQueries(["purchase-orders"]);
         setReturModal(false);
         setReturPo(null);
@@ -155,7 +155,7 @@ const PurchaseOrderList = () => {
         setReturItems([]);
       },
       onError: (err) => {
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+        toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
       }
     }
   );
@@ -166,9 +166,9 @@ const PurchaseOrderList = () => {
   const handleDownloadTemplate = async () => {
     try {
       await downloadPurchaseOrderTemplate();
-      toast.success("Template diunduh");
+      toast.success(t("page.purchaseOrder.detail.toast.templateDownloaded"));
     } catch (err) {
-      toast.error("Gagal mengunduh template", {
+      toast.error(t("page.purchaseOrder.detail.toast.templateDownloadFailed"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -177,9 +177,9 @@ const PurchaseOrderList = () => {
   const handleDownloadExcel = async () => {
     try {
       await downloadPurchaseOrderExcel();
-      toast.success("Data PO diunduh");
+      toast.success(t("page.purchaseOrder.detail.toast.excelDownloaded"));
     } catch (err) {
-      toast.error("Gagal mengunduh", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.purchaseOrder.detail.toast.excelDownloadFailed"), { description: err?.response?.data?.message || err.message });
     }
   };
 
@@ -188,12 +188,12 @@ const PurchaseOrderList = () => {
     setImportLoading(true);
     try {
       await uploadPurchaseOrderExcel(importFile);
-      toast.success("Import berhasil");
+      toast.success(t("page.purchaseOrder.detail.toast.importSuccess"));
       queryClient.invalidateQueries(["purchase-orders"]);
       setImportModal(false);
       setImportFile(null);
     } catch (err) {
-      toast.error("Import gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.purchaseOrder.detail.toast.importFailed"), { description: err?.response?.data?.message || err.message });
     } finally {
       setImportLoading(false);
     }
@@ -203,13 +203,13 @@ const PurchaseOrderList = () => {
 
   const columns = [
     {
-      header: "No. PO",
+      header: t("page.purchaseOrder.list.columns.poNumber"),
       render: (po) => (
         <span className="font-medium text-foreground">{po.orderNumber || `PO-${po.id}`}</span>
       )
     },
     {
-      header: "Supplier",
+      header: t("page.purchaseOrder.list.columns.supplier"),
       render: (po) => (
         <div>
           <p className="font-medium">{po.supplierData?.name || "-"}</p>
@@ -220,11 +220,11 @@ const PurchaseOrderList = () => {
       )
     },
     {
-      header: "PIC",
+      header: t("page.purchaseOrder.list.columns.pic"),
       render: (po) => po.picData?.fullName || "-"
     },
     {
-      header: "Tanggal PO",
+      header: t("page.purchaseOrder.list.columns.poDate"),
       render: (po) => (
         <span className="text-muted-foreground">
           {po.orderDate
@@ -238,7 +238,7 @@ const PurchaseOrderList = () => {
       )
     },
     {
-      header: "Jatuh Tempo",
+      header: t("page.purchaseOrder.list.columns.dueDate"),
       render: (po) => {
         const isOverdue =
           po.dueDate &&
@@ -260,11 +260,11 @@ const PurchaseOrderList = () => {
       }
     },
     {
-      header: "Store",
+      header: t("page.purchaseOrder.list.columns.store"),
       render: (po) => <span className="text-sm">{po.storeData?.name || "-"}</span>
     },
     {
-      header: "Status",
+      header: t("page.purchaseOrder.list.columns.status"),
       render: (po) => {
         const st = statusMap[po.status] || statusMap.pending;
         return (
@@ -283,7 +283,7 @@ const PurchaseOrderList = () => {
       }
     },
     {
-      header: "Total",
+      header: t("page.purchaseOrder.list.columns.total"),
       align: "right",
       render: (po) => (
         <span className="font-medium">
@@ -294,7 +294,7 @@ const PurchaseOrderList = () => {
       )
     },
     {
-      header: "Pembayaran",
+      header: t("page.purchaseOrder.list.columns.payment"),
       align: "center",
       render: (po) => {
         const total = po.finalAmount || po.totalAmount || 0;
@@ -304,7 +304,7 @@ const PurchaseOrderList = () => {
         if (paid >= total) {
           return (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              Lunas
+              {t("page.purchaseOrder.list.paymentStatus.paid")}
             </span>
           );
         }
@@ -312,7 +312,7 @@ const PurchaseOrderList = () => {
           return (
             <div className="flex flex-col items-center gap-0.5">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                Sebagian
+                {t("page.purchaseOrder.list.paymentStatus.partial")}
               </span>
               <span className="text-xs text-muted-foreground">
                 Rp {Number(remaining).toLocaleString("id-ID")}
@@ -322,13 +322,13 @@ const PurchaseOrderList = () => {
         }
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-            Belum
+            {t("page.purchaseOrder.list.paymentStatus.unpaid")}
           </span>
         );
       }
     },
     {
-      header: "Catatan",
+      header: t("page.purchaseOrder.list.columns.notes"),
       render: (po) => (
         <span
           className="text-muted-foreground text-xs max-w-[150px] block truncate"
@@ -338,7 +338,7 @@ const PurchaseOrderList = () => {
       )
     },
     {
-      header: "Aksi",
+      header: t("page.purchaseOrder.list.columns.actions"),
       align: "right",
       render: (po) => (
         <div className="flex items-center justify-end gap-1">
@@ -347,7 +347,7 @@ const PurchaseOrderList = () => {
             size="icon"
             className="h-8 w-8 text-muted-foreground"
             onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}
-            title="Detail PO">
+            title={t("page.purchaseOrder.list.action.detail")}>
             <Eye size={15} />
           </Button>
           {po.status !== "cancelled" && (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
@@ -360,7 +360,7 @@ const PurchaseOrderList = () => {
                 setPayForm({ amount: "", paymentDate: undefined, paymentMethod: "cash", reference: "", notes: "" });
                 setPayModal(true);
               }}
-              title="Bayar">
+              title={t("page.purchaseOrder.list.action.pay")}>
               <Wallet size={15} />
             </Button>
           )}
@@ -371,7 +371,7 @@ const PurchaseOrderList = () => {
                 size="icon"
                 className="h-8 w-8 text-blue-600"
                 onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
-                title="Edit PO">
+                title={t("page.purchaseOrder.list.action.edit")}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="15"
@@ -391,7 +391,7 @@ const PurchaseOrderList = () => {
                 size="icon"
                 className="h-8 w-8 text-green-600"
                 onClick={() => navigate(`/add-goods-receipt?poId=${po.id}`)}
-                title="Terima PO">
+                title={t("page.purchaseOrder.list.action.receive")}>
                 <RefreshCw size={15} />
               </Button>
             </>
@@ -406,7 +406,7 @@ const PurchaseOrderList = () => {
                 setReturReason("");
                 setReturModal(true);
               }}
-              title="Retur PO">
+              title={t("page.purchaseOrder.list.action.return")}>
               <Undo2 size={15} />
             </Button>
           )}
@@ -472,7 +472,7 @@ const PurchaseOrderList = () => {
               setPage(1);
             }}
             className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-            <option value="all">Semua Store</option>
+            <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
             {(locations?.data || []).map((loc) => (
               <option key={loc.id} value={loc.id}>
                 {loc.name}
@@ -486,7 +486,7 @@ const PurchaseOrderList = () => {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            placeholder="Cari PO..."
+            placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -498,7 +498,7 @@ const PurchaseOrderList = () => {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
             <Download size={14} />
-            Export
+            {t("page.purchaseOrder.list.export")}
           </Button>
           <Button
             variant="outline"
@@ -506,7 +506,7 @@ const PurchaseOrderList = () => {
             className="gap-1.5"
             onClick={() => setImportModal(true)}>
             <Upload size={14} />
-            Import
+            {t("page.purchaseOrder.list.import")}
           </Button>
         </div>
       </div>
@@ -515,7 +515,7 @@ const PurchaseOrderList = () => {
         columns={columns}
         data={orders}
         isLoading={isLoading}
-        emptyMessage="Belum ada purchase order"
+        emptyMessage={t("page.purchaseOrder.list.empty")}
         emptyIcon={Package}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
@@ -526,24 +526,24 @@ const PurchaseOrderList = () => {
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
             <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
               <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">Retur Pembelian</h3>
+                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.detail.returModalTitle")}</h3>
               </div>
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">No. PO</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poNumber")}</p>
                     <p className="font-medium">{returPo.orderNumber || `PO-${returPo.id}`}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Supplier</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.supplier")}</p>
                     <p className="font-medium">{returPo.supplierData?.name || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">PIC</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.pic")}</p>
                     <p className="font-medium">{returPo.picData?.fullName || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Tanggal PO</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poDate")}</p>
                     <p className="font-medium">
                       {returPo.orderDate
                         ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
@@ -555,7 +555,7 @@ const PurchaseOrderList = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Jam PO</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.poTime")}</p>
                     <p className="font-medium">
                       {returPo.orderDate
                         ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
@@ -566,29 +566,29 @@ const PurchaseOrderList = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Store</p>
+                    <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.returInfo.store")}</p>
                     <p className="font-medium">{returPo.storeData?.name || "-"}</p>
                   </div>
                 </div>
 
                 {returItems.length > 0 && (
                   <div>
-                    <p className="text-sm font-semibold text-foreground mb-2">Item</p>
+                    <p className="text-sm font-semibold text-foreground mb-2">{t("page.purchaseOrder.list.returInfo.itemTitle")}</p>
                     <div className="overflow-x-auto border rounded-lg">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-muted/60 border-b">
                             <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">
-                              Item
+                              {t("page.purchaseOrder.list.returInfo.itemHeader")}
                             </th>
                             <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
-                              Qty PO
+                              {t("page.purchaseOrder.list.returInfo.qtyPo")}
                             </th>
                             <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
-                              Unit
+                              {t("page.purchaseOrder.list.returInfo.unit")}
                             </th>
                             <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
-                              Retur
+                              {t("page.purchaseOrder.list.returInfo.return")}
                             </th>
                           </tr>
                         </thead>
@@ -639,10 +639,10 @@ const PurchaseOrderList = () => {
                 )}
 
                 <div>
-                  <label className="text-sm text-muted-foreground block mb-1">Alasan Retur</label>
+                  <label className="text-sm text-muted-foreground block mb-1">{t("page.purchaseOrder.list.returInfo.reasonLabel")}</label>
                   <textarea
                     className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Masukkan alasan retur..."
+                    placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
                     value={returReason}
                     onChange={(e) => setReturReason(e.target.value)}
                   />
@@ -657,7 +657,7 @@ const PurchaseOrderList = () => {
                     setReturReason("");
                     setReturItems([]);
                   }}>
-                  Batal
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   className="bg-amber-600 hover:bg-amber-700 text-white"
@@ -675,7 +675,7 @@ const PurchaseOrderList = () => {
                         notes: ""
                       }));
                     if (itemsToReturn.length === 0) {
-                      toast.error("Validasi", { description: "Minimal 1 item harus diretur" });
+                      toast.error(t("page.purchaseOrder.list.returInfo.validationTitle"), { description: t("page.purchaseOrder.list.returInfo.validationDesc") });
                       return;
                     }
                     returnMutation.mutate({
@@ -685,7 +685,7 @@ const PurchaseOrderList = () => {
                     });
                   }}
                   disabled={!returReason.trim() || returnMutation.isLoading}>
-                  {returnMutation.isLoading ? "Memproses..." : "Konfirmasi Retur"}
+                  {returnMutation.isLoading ? t("common.processing") : t("page.purchaseOrder.list.returInfo.confirmButton")}
                 </Button>
               </div>
             </div>
@@ -698,16 +698,16 @@ const PurchaseOrderList = () => {
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
             <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
               <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">Import PO</h3>
+                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.list.importModalTitle")}</h3>
               </div>
               <div className="p-6 space-y-4">
                 <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
                   <Download size={15} />
-                  Download Template Excel
+                  {t("page.purchaseOrder.list.downloadTemplate")}
                 </Button>
                 <div className="border-t border-border pt-4">
                   <label className="text-sm font-medium text-foreground block mb-2">
-                    Upload File Excel
+                    {t("page.purchaseOrder.list.uploadFile")}
                   </label>
                   <Input
                     type="file"
@@ -726,10 +726,10 @@ const PurchaseOrderList = () => {
                     setImportModal(false);
                     setImportFile(null);
                   }}>
-                  Batal
+                  {t("common.cancel")}
                 </Button>
                 <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                  {importLoading ? "Mengupload..." : "Import"}
+                  {importLoading ? t("common.uploading") : t("page.purchaseOrder.list.import")}
                 </Button>
               </div>
             </div>
@@ -741,24 +741,24 @@ const PurchaseOrderList = () => {
         <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
           <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-border">
-              <h3 className="text-lg font-semibold">Catat Pembayaran</h3>
+              <h3 className="text-lg font-semibold">{t("page.purchaseOrder.detail.recordPaymentTitle")}</h3>
             </div>
             <div className="p-6 space-y-5">
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">No. PO</p>
+                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.poNumber")}</p>
                   <p className="font-medium">{payPo.orderNumber || `PO-${payPo.id}`}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Supplier</p>
+                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.supplier")}</p>
                   <p className="font-medium">{payPo.supplierData?.name || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.total")}</p>
                   <p className="font-medium">Rp {Number(payPo.finalAmount || payPo.totalAmount || 0).toLocaleString("id-ID")}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Sisa</p>
+                  <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.payInfo.remaining")}</p>
                   <p className="font-medium text-red-500">
                     Rp {Number((payPo.finalAmount || payPo.totalAmount || 0) - (payPo.totalPaid || 0)).toLocaleString("id-ID")}
                   </p>
@@ -767,7 +767,7 @@ const PurchaseOrderList = () => {
               <hr className="border-t border-border" />
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Jumlah Pembayaran <span className="text-destructive">*</span>
+                  {t("page.purchaseOrder.detail.paymentAmount")} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
@@ -786,11 +786,11 @@ const PurchaseOrderList = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Tanggal Bayar</Label>
+                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.paymentDate")}</Label>
                   <DatePicker date={payForm.paymentDate} setDate={(date) => setPayForm({...payForm, paymentDate: date})} />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Metode Pembayaran</Label>
+                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.paymentMethod")}</Label>
                   <Select
                     value={payForm.paymentMethod}
                     onValueChange={(value) => setPayForm({ ...payForm, paymentMethod: value })}>
@@ -798,10 +798,10 @@ const PurchaseOrderList = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="z-[90]">
-                      <SelectItem value="cash">Tunai</SelectItem>
-                      <SelectItem value="transfer">Transfer</SelectItem>
-                      <SelectItem value="giro">Giro</SelectItem>
-                      <SelectItem value="other">Lainnya</SelectItem>
+                      <SelectItem value="cash">{t("page.purchaseOrder.paymentMethod.cash")}</SelectItem>
+                      <SelectItem value="transfer">{t("page.purchaseOrder.paymentMethod.transfer")}</SelectItem>
+                      <SelectItem value="giro">{t("page.purchaseOrder.paymentMethod.giro")}</SelectItem>
+                      <SelectItem value="other">{t("page.purchaseOrder.paymentMethod.other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -809,18 +809,18 @@ const PurchaseOrderList = () => {
               <hr className="border-t border-border" />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Referensi</Label>
+                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.reference")}</Label>
                   <Input
-                    placeholder="No. invoice / referensi"
+                    placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
                     value={payForm.reference}
                     onChange={(e) => setPayForm({ ...payForm, reference: e.target.value })}
                     className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Catatan</Label>
+                  <Label className="text-sm font-medium">{t("page.purchaseOrder.detail.notes")}</Label>
                   <Input
-                    placeholder="Catatan tambahan"
+                    placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
                     value={payForm.notes}
                     onChange={(e) => setPayForm({ ...payForm, notes: e.target.value })}
                     className="h-11"
@@ -830,12 +830,12 @@ const PurchaseOrderList = () => {
             </div>
             <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setPayModal(false); setPayPo(null); }}>
-                Batal
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={() => {
                   if (!payForm.amount || Number(payForm.amount) <= 0) {
-                    toast.error("Jumlah pembayaran harus diisi");
+                    toast.error(t("page.purchaseOrder.detail.validation.paymentRequired"));
                     return;
                   }
                   payMutation.mutate({
@@ -849,7 +849,7 @@ const PurchaseOrderList = () => {
                   });
                 }}
                 disabled={payMutation.isLoading}>
-                {payMutation.isLoading ? "Memproses..." : "Simpan"}
+                {payMutation.isLoading ? t("common.processing") : t("common.save")}
               </Button>
             </div>
           </div>

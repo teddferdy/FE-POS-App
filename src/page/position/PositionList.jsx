@@ -168,94 +168,92 @@ const PositionList = () => {
         title={t("page.position.list.title")}
         description={t("page.position.list.description")}>
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="position-download-template"
-          variant="outline"
-          disabled={isDownloadingTemplate}
-          onClick={async () => {
-            if (departments.length === 0) {
-              setNoDepartmentModal(true);
-              return;
-            }
-            setIsDownloadingTemplate(true);
-            try {
-              await downloadPositionTemplate();
-              toast.success(t("common.success"), {
-                description: t("page.position.toast.templateDownloaded")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.position.toast.templateDownloadFailed")
-              });
-            } finally {
-              setIsDownloadingTemplate(false);
-            }
-          }}>
-          {isDownloadingTemplate ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-          )}
-          {isDownloadingTemplate
-            ? t("common.downloading")
-            : t("page.position.button.downloadTemplate")}
-        </Button>
+          <Button
+            data-tour="position-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              if (departments.length === 0) {
+                setNoDepartmentModal(true);
+                return;
+              }
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadPositionTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.position.toast.templateDownloaded")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.position.toast.templateDownloadFailed")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate
+              ? t("common.downloading")
+              : t("page.position.button.downloadTemplate")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="position-download-data"
-          variant="outline"
-          disabled={isDownloadingData}
-          onClick={async () => {
-            setIsDownloadingData(true);
-            try {
-              await downloadPositionExcel();
-              toast.success(t("common.success"), {
-                description: t("page.position.toast.dataDownloaded")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.position.toast.dataDownloadFailed")
-              });
-            } finally {
-              setIsDownloadingData(false);
-            }
-          }}>
-          {isDownloadingData ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">download</span>
-          )}
-          {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
-        </Button>
+          <Button
+            data-tour="position-download-data"
+            variant="outline"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadPositionExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.position.toast.dataDownloaded")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.position.toast.dataDownloadFailed")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData ? t("common.downloading") : t("page.position.button.downloadData")}
+          </Button>
         )}
+        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
         {canAccess(user, MENU_KEY, "import") && (
-        <span className="w-px h-7 bg-border mx-1" />
-        )}
-        {canAccess(user, MENU_KEY, "import") && (
-        <Button
-          data-tour="position-upload"
-          variant="default"
-          onClick={() => setUploadModalOpen(true)}>
-          <span className="material-symbols-outlined text-lg">upload</span>
-          {t("page.position.button.uploadExcel")}
-        </Button>
+          <Button
+            data-tour="position-upload"
+            variant="default"
+            onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            {t("page.position.button.uploadExcel")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "add") && (
-        <Button
-          data-tour="position-add"
-          variant="default"
-          onClick={() => navigate("/add-position")}
-          className="shadow-md">
-          <span className="material-symbols-outlined text-lg">add</span>
-          {t("page.position.button.add")}
-        </Button>
+          <Button
+            data-tour="position-add"
+            variant="default"
+            onClick={() => navigate("/add-position")}
+            className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            {t("page.position.button.add")}
+          </Button>
         )}
       </PageHeader>
 

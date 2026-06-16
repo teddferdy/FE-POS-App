@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Lightbulb, Info, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,9 @@ const variantIcons = {
   warning: AlertTriangle
 };
 
-const TipsCard = ({ tips = [], title = "Tips", variant = "default", className }) => {
+const TipsCard = ({ tips = [], title: titleProp, variant = "default", className }) => {
+  const { t } = useTranslation();
+  const title = titleProp ?? t("common.tips");
   const Icon = variantIcons[variant];
   return (
     <div className={cn("rounded-xl p-5 flex flex-col", variantStyles[variant], className)}>

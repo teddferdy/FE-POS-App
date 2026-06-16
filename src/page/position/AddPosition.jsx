@@ -238,7 +238,7 @@ const AddPosition = () => {
                 variant="outline"
                 onClick={() => setDraftModal(true)}
                 disabled={createMutation.isLoading}>
-                Simpan sebagai Draft
+                {t("page.position.button.saveDraft")}
               </Button>
               <Button
                 type="submit"
@@ -256,9 +256,9 @@ const AddPosition = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.position.add.draftTitle")}
+        description={t("page.position.add.draftDescription")}
+        confirmText={t("page.position.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           createMutation.mutate({

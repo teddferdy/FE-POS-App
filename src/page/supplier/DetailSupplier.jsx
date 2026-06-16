@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { ArrowLeft, Building2, Phone, Mail, MapPin, User, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getSupplierById } from "@/services/supplier";
 import { getPaymentsBySupplier, recordPayment, deletePayment } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,10 @@ const statusMap = {
   received: { label: "Diterima", class: "bg-green-100 text-green-800" },
   cancelled: { label: "Dibatalkan", class: "bg-red-100 text-red-800" }
 };
+const statusKeys = { pending: "pending", ordered: "ordered", received: "received", cancelled: "cancelled" };
 
 const DetailSupplier = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -54,81 +57,82 @@ const DetailSupplier = () => {
 
   const recordMutation = useMutation(recordPayment, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Pembayaran berhasil dicatat" });
+      toast.success(t("page.supplier.detail.toast.success"), { description: t("page.supplier.detail.toast.paymentSuccessDesc") });
       queryClient.invalidateQueries(["supplier-payments", id]);
       setPaymentModal(false);
       setPayAmount("");
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.supplier.detail.toast.error"), { description: err?.response?.data?.message || err.message })
   });
 
   const deleteMutation = useMutation(deletePayment, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Pembayaran dihapus" });
+      toast.success(t("page.supplier.detail.toast.success"), { description: t("page.supplier.detail.toast.deleteSuccessDesc") });
       queryClient.invalidateQueries(["supplier-payments", id]);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.supplier.detail.toast.error"), { description: err?.response?.data?.message || err.message })
   });
 
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID supplier tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.supplier.detail.noId")}</p>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
+      <Loading fullscreen size="lg" label={t("page.supplier.detail.loading")} />
     );
   }
 
   const poColumns = [
     {
-      header: "No. PO",
+      header: t("page.supplier.detail.table.noPo"),
       render: (po) => <span className="font-medium">{po.orderNumber || `PO-${po.id}`}</span>
     },
     {
-      header: "Tanggal",
+      header: t("page.supplier.detail.table.date"),
       render: (po) => (po.orderDate ? new Date(po.orderDate).toLocaleDateString("id") : "-")
     },
     {
-      header: "Total",
+      header: t("page.supplier.detail.table.total"),
       align: "right",
       render: (po) => `Rp ${(po.finalAmount || 0).toLocaleString("id-ID")}`
     },
     {
-      header: "Status",
+      header: t("page.supplier.detail.table.status"),
       render: (po) => {
         const st = statusMap[po.status] || statusMap.pending;
+        const stKey = statusKeys[po.status] || "pending";
         return (
           <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${st.class}`}>
-            {st.label}
+            {t(`page.supplier.detail.status.${stKey}`)}
           </span>
         );
       }
     },
     {
-      header: "Terbayar",
+      header: t("page.supplier.detail.table.terbayar"),
       align: "right",
       render: (po) => {
         const paid = (po.payments || []).reduce((s, p) => s + Number(p.amount || 0), 0);
         const left = (po.finalAmount || 0) - paid;
         return (
           <div className="text-right">
-            <p className="text-xs text-green-600">Rp {paid.toLocaleString("id-ID")}</p>
+              <p className="text-xs text-green-600">{t("page.supplier.detail.table.rpPrefix")} {paid.toLocaleString("id-ID")}</p>
             {left > 0 && (
-              <p className="text-xs text-red-500">Sisa Rp {left.toLocaleString("id-ID")}</p>
+              <p className="text-xs text-red-500">{t("page.supplier.detail.table.sisa")} Rp {left.toLocaleString("id-ID")}</p>
             )}
           </div>
         );
       }
     },
     {
-      header: "Aksi",
+      header: t("page.supplier.detail.table.aksi"),
       render: (po) =>
         po.status !== "cancelled" && (
           <Button
@@ -136,7 +140,7 @@ const DetailSupplier = () => {
             size="sm"
             className="h-7 text-xs text-primary"
             onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}>
-            Detail
+            {t("page.supplier.detail.table.detail")}
           </Button>
         )
     }
@@ -146,11 +150,11 @@ const DetailSupplier = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/")} className="hover:text-foreground">
-          Dashboard
+          {t("page.supplier.detail.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/supplier")} className="hover:text-foreground">
-          Supplier
+          {t("page.supplier.detail.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">{supplier.name || "Detail"}</span>
@@ -165,15 +169,15 @@ const DetailSupplier = () => {
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Building2 size={24} className="text-primary" /> {supplier.name || "-"}
             </h1>
-            <p className="text-sm text-muted-foreground">Detail supplier & riwayat pembelian</p>
+            <p className="text-sm text-muted-foreground">{t("page.supplier.detail.subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(`/edit-supplier?id=${id}`)}>
-            Edit Supplier
+            {t("page.supplier.detail.editSupplier")}
           </Button>
           <Button onClick={() => setPaymentModal(true)} className="gap-1.5">
-            <Plus size={15} /> Catat Pembayaran
+            <Plus size={15} /> {t("page.supplier.detail.catatPembayaran")}
           </Button>
         </div>
       </div>
@@ -181,7 +185,7 @@ const DetailSupplier = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-5 col-span-1 md:col-span-2">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Informasi Supplier
+            {t("page.supplier.detail.section.informasiSupplier")}
           </h3>
           <div className="space-y-2.5 text-sm">
             <div className="flex items-center gap-2">
@@ -217,36 +221,36 @@ const DetailSupplier = () => {
 
         <Card className="p-5">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Total Pesanan
+            {t("page.supplier.detail.card.totalPesanan")}
           </h3>
           <p className="text-2xl font-bold text-foreground">
             Rp {(summary.totalOrdered || 0).toLocaleString("id-ID")}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">{purchaseOrders.length} transaksi</p>
+          <p className="text-xs text-muted-foreground mt-1">{purchaseOrders.length} {t("page.supplier.detail.card.transaksi")}</p>
         </Card>
 
         <Card className="p-5">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Sisa Hutang
+            {t("page.supplier.detail.card.sisaHutang")}
           </h3>
           <p
             className={`text-2xl font-bold ${(summary.balance || 0) > 0 ? "text-red-600" : "text-green-600"}`}>
             Rp {(summary.balance || 0).toLocaleString("id-ID")}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Terbayar: Rp {(summary.totalPaid || 0).toLocaleString("id-ID")}
+            {t("page.supplier.detail.card.terbayar")}: Rp {(summary.totalPaid || 0).toLocaleString("id-ID")}
           </p>
         </Card>
       </div>
 
       {loadingPayments ? (
-        <Loading fullscreen size="lg" label="Memuat data..." />
+        <Loading fullscreen size="lg" label={t("page.supplier.detail.loading")} />
       ) : (
         <DataTable
           columns={poColumns}
           data={purchaseOrders}
           isLoading={false}
-          emptyMessage="Belum ada purchase order untuk supplier ini"
+          emptyMessage={t("page.supplier.detail.emptyMessage")}
           emptyIcon={Building2}
         />
       )}
@@ -255,11 +259,11 @@ const DetailSupplier = () => {
         type="form"
         open={paymentModal}
         onOpenChange={(o) => !o && setPaymentModal(false)}
-        title="Catat Pembayaran"
-        confirmText="Simpan"
+        title={t("page.supplier.detail.modal.title")}
+        confirmText={t("page.supplier.detail.modal.confirm")}
         onConfirm={() => {
           if (!payAmount || parseFloat(payAmount) <= 0) {
-            toast.error("Validasi", { description: "Jumlah pembayaran harus diisi" });
+            toast.error(t("page.supplier.detail.modal.validation"), { description: t("page.supplier.detail.modal.validationDesc") });
             return;
           }
           recordMutation.mutate({
@@ -275,47 +279,47 @@ const DetailSupplier = () => {
         loading={recordMutation.isLoading}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Jumlah Pembayaran *</Label>
+            <Label>{t("page.supplier.detail.modal.amountLabel")}</Label>
             <Input
               type="text"
               inputMode="numeric"
               value={payAmount}
               onChange={(e) => setPayAmount(e.target.value.replace(/[^0-9]/g, ""))}
-              placeholder="0"
+              placeholder={t("page.supplier.detail.modal.amountPlaceholder")}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tanggal Bayar</Label>
+              <Label>{t("page.supplier.detail.modal.paymentDateLabel")}</Label>
               <DatePicker date={payDate} setDate={setPayDate} />
             </div>
             <div className="space-y-2">
-              <Label>Metode</Label>
+              <Label>{t("page.supplier.detail.modal.methodLabel")}</Label>
               <select
                 value={payMethod}
                 onChange={(e) => setPayMethod(e.target.value)}
                 className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="cash">Tunai</option>
-                <option value="transfer">Transfer</option>
-                <option value="cheque">Cek / Giro</option>
-                <option value="credit">Kartu Kredit</option>
+                <option value="cash">{t("page.supplier.detail.modal.methodCash")}</option>
+                <option value="transfer">{t("page.supplier.detail.modal.methodTransfer")}</option>
+                <option value="cheque">{t("page.supplier.detail.modal.methodCheque")}</option>
+                <option value="credit">{t("page.supplier.detail.modal.methodCredit")}</option>
               </select>
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Referensi (No. Invoice/Transfer)</Label>
+            <Label>{t("page.supplier.detail.modal.referenceLabel")}</Label>
             <Input
               value={payRef}
               onChange={(e) => setPayRef(e.target.value)}
-              placeholder="Opsional"
+              placeholder={t("page.supplier.detail.modal.referencePlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label>Catatan</Label>
+            <Label>{t("page.supplier.detail.modal.notesLabel")}</Label>
             <Input
               value={payNotes}
               onChange={(e) => setPayNotes(e.target.value)}
-              placeholder="Opsional"
+              placeholder={t("page.supplier.detail.modal.notesPlaceholder")}
             />
           </div>
         </div>

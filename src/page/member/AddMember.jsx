@@ -47,7 +47,7 @@ const AddMember = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("page.member.add.errorGagal"), {
         description: err?.response?.data?.message || err.message
       });
       setIsSubmitting(false);
@@ -63,7 +63,7 @@ const AddMember = () => {
   const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!form.name || !form.phoneNumber || !form.email || !form.birthDate) {
-      toast.error("Validasi", { description: "Nama lengkap, email, nomor telepon, dan tanggal lahir wajib diisi" });
+      toast.error(t("page.member.add.toastValidation"), { description: t("page.member.add.validationDesc") });
       return;
     }
     setIsSubmitting(true);
@@ -115,7 +115,7 @@ const AddMember = () => {
                       value={form.name}
                       onChange={handleChange}
                       className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
-                      placeholder="Contoh: Budi Santoso"
+                      placeholder={t("page.member.add.namePlaceholder")}
                       required
                     />
                   </div>
@@ -193,7 +193,7 @@ const AddMember = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-2 mb-6 text-primary">
                   <span className="material-symbols-outlined">location_on</span>
-                  <h3 className="text-base font-semibold text-foreground">Alamat Lengkap</h3>
+                  <h3 className="text-base font-semibold text-foreground">{t("page.member.add.fullAddress")}</h3>
                 </div>
                 <textarea
                   name="address"
@@ -211,7 +211,7 @@ const AddMember = () => {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
                 <div className="flex items-center gap-2 mb-6 text-primary relative">
                   <span className="material-symbols-outlined">military_tech</span>
-                  <h3 className="text-base font-semibold text-foreground">Membership Tier</h3>
+                  <h3 className="text-base font-semibold text-foreground">{t("page.member.add.membershipTier")}</h3>
                 </div>
                 <div className="space-y-3 relative">
                   {tiers.length === 0 ? (
@@ -256,7 +256,7 @@ const AddMember = () => {
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                 <div className="flex items-center gap-2 mb-6 text-primary">
                   <span className="material-symbols-outlined">stars</span>
-                  <h3 className="text-base font-semibold text-foreground">Initial Points</h3>
+                  <h3 className="text-base font-semibold text-foreground">{t("page.member.add.initialPoints")}</h3>
                 </div>
                 <div className="bg-muted rounded-xl p-4 text-center">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
@@ -295,7 +295,7 @@ const AddMember = () => {
                 variant="outline"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
-                Simpan sebagai Draft
+                {t("page.member.add.saveDraft")}
               </Button>
               <Button type="submit" disabled={isSubmitting} className="gap-2">
                 <span className="material-symbols-outlined text-lg">save</span>
@@ -306,30 +306,30 @@ const AddMember = () => {
         </form>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Ditambahkan"
+        title={t("page.member.add.successTitle")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.member.add.cancelModalTitle")}
+        confirmText={t("page.member.add.cancelModalConfirm")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.member.add.draftModalTitle")}
+        description={t("page.member.add.draftModalDesc")}
+        confirmText={t("page.member.add.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           setIsSubmitting(true);

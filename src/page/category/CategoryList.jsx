@@ -283,89 +283,89 @@ const CategoryList = () => {
         title={t("page.category.list.title")}
         description={t("page.category.list.description")}>
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="category-download-template"
-          variant="outline"
-          disabled={isDownloadingTemplate}
-          onClick={async () => {
-            setIsDownloadingTemplate(true);
-            try {
-              await downloadTemplate();
-              toast.success(t("common.success"), {
-                description: t("page.category.toast.templateSuccess")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.category.toast.templateError")
-              });
-            } finally {
-              setIsDownloadingTemplate(false);
-            }
-          }}>
-          {isDownloadingTemplate ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-          )}
-          {isDownloadingTemplate
-            ? t("page.category.button.downloading")
-            : t("page.category.button.downloadTemplate")}
-        </Button>
+          <Button
+            data-tour="category-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadTemplate")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "export") && (
-        <Button
-          data-tour="category-download-data"
-          variant="outline"
-          disabled={isDownloadingData}
-          onClick={async () => {
-            setIsDownloadingData(true);
-            try {
-              await downloadExcel();
-              toast.success(t("common.success"), {
-                description: t("page.category.toast.dataSuccess")
-              });
-            } catch (err) {
-              toast.error(t("common.error"), {
-                description:
-                  err?.response?.data?.message || err.message || t("page.category.toast.dataError")
-              });
-            } finally {
-              setIsDownloadingData(false);
-            }
-          }}>
-          {isDownloadingData ? (
-            <Loader2 size={16} className="mr-1 animate-spin" />
-          ) : (
-            <span className="material-symbols-outlined text-lg mr-1">download</span>
-          )}
-          {isDownloadingData
-            ? t("page.category.button.downloading")
-            : t("page.category.button.downloadData")}
-        </Button>
+          <Button
+            data-tour="category-download-data"
+            variant="outline"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadData")}
+          </Button>
         )}
+        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
         {canAccess(user, MENU_KEY, "import") && (
-        <span className="w-px h-7 bg-border mx-1" />
-        )}
-        {canAccess(user, MENU_KEY, "import") && (
-        <Button
-          data-tour="category-upload"
-          variant="default"
-          onClick={() => setUploadModalOpen(true)}>
-          <span className="material-symbols-outlined text-lg">upload</span>
-          {t("page.category.button.upload")}
-        </Button>
+          <Button
+            data-tour="category-upload"
+            variant="default"
+            onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            {t("page.category.button.upload")}
+          </Button>
         )}
         {canAccess(user, MENU_KEY, "add") && (
-        <Button
-          data-tour="category-add"
-          onClick={() => navigate("/add-category")}
-          className="shadow-md">
-          <span className="material-symbols-outlined text-lg">add</span>
-          {t("page.category.button.add")}
-        </Button>
+          <Button
+            data-tour="category-add"
+            onClick={() => navigate("/add-category")}
+            className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            {t("page.category.button.add")}
+          </Button>
         )}
       </PageHeader>
 
@@ -405,51 +405,51 @@ const CategoryList = () => {
           data={filtered}
           isLoading={isLoading}
           emptyMessage={t("page.category.list.empty")}
-        toolbar={
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-            <h4 className="text-base font-semibold text-foreground">
-              {t("page.category.list.sectionTitle")}
-            </h4>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-64">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                  search
-                </span>
-                <Input
-                  placeholder={t("page.category.list.search")}
-                  value={search}
+          toolbar={
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+              <h4 className="text-base font-semibold text-foreground">
+                {t("page.category.list.sectionTitle")}
+              </h4>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                    search
+                  </span>
+                  <Input
+                    placeholder={t("page.category.list.search")}
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
                   onChange={(e) => {
-                    setSearch(e.target.value);
+                    setStatusFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="pl-9 h-9 text-sm"
-                />
+                  className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                  <option value="">{t("page.category.list.statusAll")}</option>
+                  <option value="active">{t("common.active")}</option>
+                  <option value="inactive">{t("common.inactive")}</option>
+                </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 h-9"
+                  onClick={() => setStatusFilter("")}>
+                  <span className="material-symbols-outlined text-base">filter_list</span>
+                  {t("page.category.button.filter")}
+                </Button>
               </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                <option value="">{t("page.category.list.statusAll")}</option>
-                <option value="active">{t("common.active")}</option>
-                <option value="inactive">{t("common.inactive")}</option>
-              </select>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 h-9"
-                onClick={() => setStatusFilter("")}>
-                <span className="material-symbols-outlined text-base">filter_list</span>
-                {t("page.category.button.filter")}
-              </Button>
             </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-        rowClassName={() => "group"}
-      />
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => "group"}
+        />
       </div>
 
       <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">

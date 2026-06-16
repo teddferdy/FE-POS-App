@@ -27,40 +27,12 @@ import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
 const PROMO_TYPES = {
-  standard: "Standard (Persen/Nominal)",
-  bogo: "BOGO (Beli X Gratis Y)",
-  bundling: "Bundling (Harga Paket)",
-  happyHour: "Happy Hour (Diskon Waktu)",
-  category: "Kategori (Diskon per Kategori)"
+  standard: "page.discount.form.promoType.standard",
+  bogo: "page.discount.form.promoType.bogo",
+  bundling: "page.discount.form.promoType.bundling",
+  happyHour: "page.discount.form.promoType.happyHour",
+  category: "page.discount.form.promoType.category"
 };
-
-const formSchema = z.object({
-  name: z.string().min(1, "Nama diskon wajib diisi"),
-  promoType: z.string().default("standard"),
-  type: z.string().min(1, "Tipe diskon wajib dipilih"),
-  value: z.coerce.number().min(1, "Nilai diskon wajib diisi").optional().or(z.literal("")),
-  startDate: z.date({ required_error: "Tanggal mulai wajib diisi" }),
-  endDate: z.date().nullable().optional(),
-  minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true),
-  code: z.string().optional().or(z.literal("")),
-  maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
-  // BOGO fields
-  buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
-  freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
-  // Bundling fields
-  bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
-  productIds: z.string().optional().or(z.literal("")),
-  // Happy Hour fields
-  discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
-  startTime: z.string().optional().or(z.literal("")),
-  endTime: z.string().optional().or(z.literal("")),
-  daysOfWeek: z.string().optional().or(z.literal("")),
-  // Category fields
-  categoryIds: z.string().optional().or(z.literal("")),
-  catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal(""))
-});
 
 const AddDiscount = () => {
   const { t } = useTranslation();
@@ -68,6 +40,34 @@ const AddDiscount = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.discount.form.validation.nameRequired")),
+    promoType: z.string().default("standard"),
+    type: z.string().min(1, t("page.discount.form.validation.typeRequired")),
+    value: z.coerce.number().min(1, t("page.discount.form.validation.valueRequired")).optional().or(z.literal("")),
+    startDate: z.date({ required_error: t("page.discount.form.validation.startDateRequired") }),
+    endDate: z.date().nullable().optional(),
+    minPurchase: z.coerce.number().min(0).optional().or(z.literal("")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true),
+    code: z.string().optional().or(z.literal("")),
+    maxDiscount: z.coerce.number().min(0).optional().or(z.literal("")),
+    // BOGO fields
+    buyQty: z.coerce.number().min(1).optional().or(z.literal("")),
+    freeQty: z.coerce.number().min(1).optional().or(z.literal("")),
+    // Bundling fields
+    bundlePrice: z.coerce.number().min(1).optional().or(z.literal("")),
+    productIds: z.string().optional().or(z.literal("")),
+    // Happy Hour fields
+    discountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+    startTime: z.string().optional().or(z.literal("")),
+    endTime: z.string().optional().or(z.literal("")),
+    daysOfWeek: z.string().optional().or(z.literal("")),
+    // Category fields
+    categoryIds: z.string().optional().or(z.literal("")),
+    catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal(""))
+  });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -103,8 +103,8 @@ const AddDiscount = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
-        description: err?.response?.data?.message || err.message || "Gagal menambahkan diskon"
+      toast.error(t("page.discount.add.toast.error"), {
+        description: err?.response?.data?.message || err.message || t("page.discount.add.toast.errorDescription")
       });
     }
   });
@@ -206,9 +206,9 @@ const AddDiscount = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Nama Diskon <span className="text-destructive">*</span>
+                      {t("page.discount.form.name")} <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Input placeholder="Masukkan nama diskon" {...field} />
+                    <Input placeholder={t("page.discount.form.namePlaceholder")} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -219,16 +219,16 @@ const AddDiscount = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tipe Promo <span className="text-destructive">*</span>
+                      {t("page.discount.form.promoTypeLabel")} <span className="text-destructive">*</span>
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Pilih tipe promo" />
+                        <SelectValue placeholder={t("page.discount.form.promoTypePlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(PROMO_TYPES).map(([key, label]) => (
                           <SelectItem key={key} value={key}>
-                            {label}
+                            {t(label)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -247,16 +247,16 @@ const AddDiscount = () => {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Tipe Diskon <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih tipe diskon" />
+                    <FormLabel>
+                      {t("page.discount.form.typeLabel")} <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("page.discount.form.typePlaceholder")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Persentase">Persentase</SelectItem>
-                          <SelectItem value="Nominal">Nominal</SelectItem>
+                          <SelectItem value="Persentase">{t("page.discount.form.percent")}</SelectItem>
+                          <SelectItem value="Nominal">{t("page.discount.form.nominal")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -268,12 +268,12 @@ const AddDiscount = () => {
                   name="value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Nilai <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        placeholder="Masukkan nilai diskon"
+                    <FormLabel>
+                      {t("page.discount.form.value")} <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Input
+                      type="number"
+                      placeholder={t("page.discount.form.valuePlaceholder")}
                         {...field}
                         onChange={(e) => {
                           field.onChange(e.target.value === "" ? "" : Number(e.target.value));
@@ -506,7 +506,7 @@ const AddDiscount = () => {
                 name="endDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tanggal Berakhir</FormLabel>
+                    <FormLabel>{t("page.discount.form.endDate")}</FormLabel>
                     <DatePicker date={field.value} setDate={field.onChange} />
                     <FormMessage />
                   </FormItem>
@@ -519,7 +519,7 @@ const AddDiscount = () => {
                     name="minPurchase"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Minimal Belanja</FormLabel>
+                        <FormLabel>{t("page.discount.form.minPurchase")}</FormLabel>
                         <Input
                           type="number"
                           placeholder="0"
@@ -537,7 +537,7 @@ const AddDiscount = () => {
                     name="maxDiscount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Maks Diskon</FormLabel>
+                        <FormLabel>{t("page.discount.form.maxDiscount")}</FormLabel>
                         <Input
                           type="number"
                           placeholder="0 (0 = unlimited)"
@@ -557,9 +557,9 @@ const AddDiscount = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Promo Code</FormLabel>
+                    <FormLabel>{t("page.discount.form.promoCode")}</FormLabel>
                     <Input
-                      placeholder="PROMO10 (biarkan kosong jika bukan promo code)"
+                      placeholder={t("page.discount.form.promoCodePlaceholder")}
                       {...field}
                       onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
@@ -573,8 +573,8 @@ const AddDiscount = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
-                  <Textarea placeholder="Deskripsi diskon" rows={3} {...field} />
+                  <FormLabel>{t("page.discount.form.description")}</FormLabel>
+                  <Textarea placeholder={t("page.discount.form.descriptionPlaceholder")} rows={3} {...field} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -603,12 +603,12 @@ const AddDiscount = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">
-                          {field.value ? "Aktif" : "Tidak Aktif"}
+                          {field.value ? t("page.discount.form.active") : t("page.discount.form.inactive")}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {field.value
-                            ? "Diskon ini aktif dan dapat digunakan."
-                            : "Diskon ini tidak aktif."}
+                            ? t("page.discount.form.activeDescription")
+                            : t("page.discount.form.inactiveDescription")}
                         </p>
                       </div>
                     </div>
@@ -628,7 +628,7 @@ const AddDiscount = () => {
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={createMutation.isLoading}>
-                  Simpan sebagai Draft
+                  {t("page.discount.add.saveAsDraft")}
                 </Button>
                 <Button
                   onClick={handleTypeClick}
@@ -647,27 +647,27 @@ const AddDiscount = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.discount.add.cancelTitle")}
+        description={t("page.discount.add.cancelDescription")}
+        confirmText={t("page.discount.add.cancelConfirm")}
         onConfirm={() => navigate("/discount")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Diskon berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("page.discount.add.successTitle")}
+        description={t("page.discount.add.successDescription")}
+        confirmText={t("page.discount.add.successConfirm")}
         onConfirm={() => navigate("/discount")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.discount.add.draftTitle")}
+        description={t("page.discount.add.draftDescription")}
+        confirmText={t("page.discount.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, Plus, Minus, Send, QrCode, ChevronLeft, Store } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import Modal from "@/components/organism/modal";
 import { axiosInstance } from "@/services";
 
 const CustomerOrder = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const tableId = searchParams.get("table");
@@ -41,7 +43,7 @@ const CustomerOrder = () => {
       })
       .catch((e) => {
         console.error(e);
-        toast.error("Gagal memuat menu", {
+        toast.error(t("page.customerOrder.loadMenuFail"), {
           description: e?.response?.data?.message || e.message
         });
       })
@@ -119,8 +121,8 @@ const CustomerOrder = () => {
       setCart([]);
       setCustomerName("");
     } catch (e) {
-      toast.error("Gagal", {
-        description: e?.response?.data?.message || e.message || "Gagal memesan"
+      toast.error(t("page.customerOrder.fail"), {
+        description: e?.response?.data?.message || e.message || t("page.customerOrder.failDesc")
       });
     } finally {
       setSubmitting(false);
@@ -132,9 +134,9 @@ const CustomerOrder = () => {
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-sm">
           <QrCode size={48} className="mx-auto text-muted-foreground mb-4" />
-          <h1 className="text-xl font-bold mb-2">QR Code Tidak Valid</h1>
+          <h1 className="text-xl font-bold mb-2">{t("page.customerOrder.invalidQr")}</h1>
           <p className="text-sm text-muted-foreground mb-4">
-            Scan QR code yang tersedia di meja untuk memesan.
+            {t("page.customerOrder.scanQrToOrder")}
           </p>
         </Card>
       </div>
@@ -148,8 +150,8 @@ const CustomerOrder = () => {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <Store size={20} className="text-orange-600" />
           <div className="flex-1">
-            <h1 className="font-bold text-lg">Pesan Menu</h1>
-            {tableId && <p className="text-xs text-muted-foreground">Meja #{tableId}</p>}
+            <h1 className="font-bold text-lg">{t("page.customerOrder.title")}</h1>
+            {tableId && <p className="text-xs text-muted-foreground">{t("page.customerOrder.tableNumber", { number: tableId })}</p>}
           </div>
           <div className="relative">
             <ShoppingCart size={20} />
@@ -173,7 +175,7 @@ const CustomerOrder = () => {
                 : "bg-white text-foreground border hover:bg-orange-50"
             }`}
           >
-            Semua
+            {t("page.customerOrder.allCategory")}
           </button>
           {categories.map(cat => (
             <button
@@ -194,9 +196,9 @@ const CustomerOrder = () => {
       {/* Menu */}
       <main className="max-w-lg mx-auto px-4 space-y-3">
         {loading ? (
-          <p className="text-center text-muted-foreground py-8">Memuat menu...</p>
+          <p className="text-center text-muted-foreground py-8">{t("page.customerOrder.loading")}</p>
         ) : filteredProducts.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Tidak ada produk</p>
+          <p className="text-center text-muted-foreground py-8">{t("page.customerOrder.noProducts")}</p>
         ) : (
           filteredProducts.map(product => (
             <Card key={prodId(product)} className="p-4 flex gap-4 items-center">
@@ -259,13 +261,13 @@ const CustomerOrder = () => {
 
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Nama Anda (opsional)"
+                placeholder={t("page.customerOrder.namePlaceholder")}
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="text-sm h-9"
               />
               <div className="text-right shrink-0">
-                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-xs text-muted-foreground">{t("page.customerOrder.total")}</p>
                 <p className="font-bold text-orange-600">
                   Rp{totalPrice.toLocaleString("id-ID")}
                 </p>
@@ -276,7 +278,7 @@ const CustomerOrder = () => {
                 className="gap-1 shrink-0"
               >
                 <Send size={16} />
-                {submitting ? "..." : "Pesan"}
+                {submitting ? t("page.customerOrder.submitting") : t("page.customerOrder.order")}
               </Button>
             </div>
           </div>
@@ -287,9 +289,9 @@ const CustomerOrder = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Pesanan Terkirim!"
-        description={`Pesanan ${orderNumber} berhasil dikirim ke dapur.`}
-        confirmText="OK"
+        title={t("page.customerOrder.successModalTitle")}
+        description={t("page.customerOrder.successModalDesc", { orderNumber })}
+        confirmText={t("page.customerOrder.successModalConfirm")}
         onConfirm={() => setSuccessModal(false)}
       />
     </div>

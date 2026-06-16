@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Store, ShoppingBag, Clock, QrCode } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { axiosInstance } from "@/services";
 
-const statusLabel = {
-  pending: "Menunggu",
-  preparing: "Disiapkan",
-  ready: "Siap",
-  served: "Tersaji"
-};
+const getStatusLabel = (t) => ({
+  pending: t("page.customerDisplay.statusPending"),
+  preparing: t("page.customerDisplay.statusPreparing"),
+  ready: t("page.customerDisplay.statusReady"),
+  served: t("page.customerDisplay.statusServed")
+});
 
 const statusColor = {
   pending: "text-yellow-600 bg-yellow-50",
@@ -20,6 +21,7 @@ const statusColor = {
 const formatCurrency = (val) => `Rp${(val || 0).toLocaleString("id-ID")}`;
 
 const CustomerDisplay = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table");
   const storeId = searchParams.get("store");
@@ -53,8 +55,8 @@ const CustomerDisplay = () => {
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
         <div className="text-center">
           <QrCode size={64} className="mx-auto mb-4 opacity-50" />
-          <p className="text-xl font-bold mb-2">Customer Display</p>
-          <p className="text-gray-400">Scan QR di meja untuk melihat pesanan</p>
+          <p className="text-xl font-bold mb-2">{t("page.customerDisplay.title")}</p>
+          <p className="text-gray-400">{t("page.customerDisplay.scanQrDesc")}</p>
         </div>
       </div>
     );
@@ -65,17 +67,17 @@ const CustomerDisplay = () => {
       <header className="max-w-3xl mx-auto mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Store size={28} className="text-orange-400" />
-          <h1 className="text-2xl font-bold">Pesanan Saya</h1>
+          <h1 className="text-2xl font-bold">{t("page.customerDisplay.myOrders")}</h1>
         </div>
-        <p className="text-gray-400">Meja #{tableId}</p>
+        <p className="text-gray-400">{t("page.customerDisplay.tableNumber", { number: tableId })}</p>
       </header>
 
       <main className="max-w-3xl mx-auto space-y-6">
         {orders.length === 0 && !error && (
           <div className="text-center py-16">
             <ShoppingBag size={64} className="mx-auto mb-4 text-gray-600" />
-            <p className="text-xl text-gray-400">Belum ada pesanan</p>
-            <p className="text-sm text-gray-600 mt-2">Pesanan akan muncul di sini</p>
+            <p className="text-xl text-gray-400">{t("page.customerDisplay.noOrders")}</p>
+            <p className="text-sm text-gray-600 mt-2">{t("page.customerDisplay.ordersWillAppear")}</p>
           </div>
         )}
 
@@ -96,7 +98,7 @@ const CustomerDisplay = () => {
                 </p>
               </div>
               <span className="px-3 py-1 rounded-full text-sm bg-orange-500/20 text-orange-400">
-                {order.status === "pending" ? "Berjalan" : order.status}
+                {order.status === "pending" ? t("page.customerDisplay.inProgress") : order.status}
               </span>
             </div>
 
@@ -107,12 +109,12 @@ const CustomerDisplay = () => {
                   className="flex items-center gap-4 bg-gray-700/50 rounded-lg p-3"
                 >
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColor[item.status] || "text-gray-400"}`}>
-                    {statusLabel[item.status] || item.status}
+                    {getStatusLabel(t)[item.status] || item.status}
                   </span>
                   <div className="flex-1">
                     <p className="font-medium">{item.productName}</p>
                     {item.notes && (
-                      <p className="text-xs text-gray-400 mt-0.5">Catatan: {item.notes}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{t("page.customerDisplay.notesLabel")}: {item.notes}</p>
                     )}
                   </div>
                   <div className="text-right">
@@ -124,7 +126,7 @@ const CustomerDisplay = () => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-700 flex justify-between text-lg font-bold">
-              <span>Total</span>
+              <span>{t("page.customerDisplay.total")}</span>
               <span className="text-orange-400">{formatCurrency(order.totalPrice)}</span>
             </div>
           </div>

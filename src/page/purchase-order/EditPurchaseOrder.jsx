@@ -117,25 +117,25 @@ const EditPurchaseOrder = () => {
     ingredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
   const unitOptions = [
-    { value: "pcs", label: "Pcs" },
-    { value: "item", label: "Item" },
-    { value: "unit", label: "Unit" },
-    { value: "buah", label: "Buah" },
-    { value: "pasang", label: "Pasang" },
-    { value: "set", label: "Set" },
-    { value: "lusin", label: "Lusin" },
-    { value: "pack", label: "Pack" },
-    { value: "box", label: "Box" },
-    { value: "karton", label: "Karton" },
-    { value: "kg", label: "Kg" },
-    { value: "gram", label: "Gram" },
-    { value: "liter", label: "Liter" },
-    { value: "ml", label: "Ml" },
-    { value: "meter", label: "Meter" },
-    { value: "cm", label: "Cm" },
-    { value: "cup", label: "Cup" },
-    { value: "gelas", label: "Gelas" },
-    { value: "porsi", label: "Porsi" }
+    { value: "pcs", label: t("page.product.form.unit.pcs") },
+    { value: "item", label: t("page.product.form.unit.item") },
+    { value: "unit", label: t("page.product.form.unit.unit") },
+    { value: "buah", label: t("page.product.form.unit.buah") },
+    { value: "pasang", label: t("page.product.form.unit.pasang") },
+    { value: "set", label: t("page.product.form.unit.set") },
+    { value: "lusin", label: t("page.product.form.unit.lusin") },
+    { value: "pack", label: t("page.product.form.unit.pack") },
+    { value: "box", label: t("page.product.form.unit.box") },
+    { value: "karton", label: t("page.product.form.unit.karton") },
+    { value: "kg", label: t("page.product.form.unit.kg") },
+    { value: "gram", label: t("page.product.form.unit.gram") },
+    { value: "liter", label: t("page.product.form.unit.liter") },
+    { value: "ml", label: t("page.product.form.unit.ml") },
+    { value: "meter", label: t("page.product.form.unit.meter") },
+    { value: "cm", label: t("page.product.form.unit.cm") },
+    { value: "cup", label: t("page.product.form.unit.cup") },
+    { value: "gelas", label: t("page.product.form.unit.gelas") },
+    { value: "porsi", label: t("page.product.form.unit.porsi") }
   ];
 
   const addSupplierMutation = useMutation(addSupplier, {
@@ -144,10 +144,10 @@ const EditPurchaseOrder = () => {
       setSupplierSearch(newSupplier.name);
       setSupplierId(newSupplier.id || newSupplier._id);
       setShowSupplierList(false);
-      toast.success("Supplier berhasil ditambahkan");
+      toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
     },
     onError: (err) => {
-      toast.error("Gagal tambah supplier", {
+      toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
         description: err?.response?.data?.message || err.message
       });
     }
@@ -155,11 +155,11 @@ const EditPurchaseOrder = () => {
 
   const updateMutation = useMutation((payload) => editPurchaseOrder(id, payload), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Purchase Order berhasil diperbarui" });
+      toast.success(t("common.success"), { description: t("page.purchaseOrder.edit.toast.poUpdated") });
       navigate("/purchase-order");
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.failed"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -197,31 +197,31 @@ const EditPurchaseOrder = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedStore) {
-      toast.error("Pilih store", { description: "Pilih store/lokasi terlebih dahulu" });
+      toast.error(t("page.purchaseOrder.edit.validation.store"), { description: t("page.purchaseOrder.edit.validation.storeDesc") });
       return;
     }
     if (!supplierId) {
-      toast.error("Pilih atau tambah supplier", { description: "Pilih supplier terlebih dahulu" });
+      toast.error(t("page.purchaseOrder.edit.validation.supplier"), { description: t("page.purchaseOrder.edit.validation.supplierDesc") });
       return;
     }
     if (!picId) {
-      toast.error("Pilih PIC", { description: "Pilih PIC yang bertugas terlebih dahulu" });
+      toast.error(t("page.purchaseOrder.edit.validation.pic"), { description: t("page.purchaseOrder.edit.validation.picDesc") });
       return;
     }
     if (!orderDate) {
-      toast.error("Pilih tanggal", { description: "Pilih tanggal purchase order" });
+      toast.error(t("page.purchaseOrder.edit.validation.orderDate"), { description: t("page.purchaseOrder.edit.validation.orderDateDesc") });
       return;
     }
     if (!orderTime) {
-      toast.error("Pilih jam", { description: "Pilih jam purchase order" });
+      toast.error(t("page.purchaseOrder.edit.validation.orderTime"), { description: t("page.purchaseOrder.edit.validation.orderTimeDesc") });
       return;
     }
     if (!dueDate) {
-      toast.error("Pilih jatuh tempo", { description: "Pilih tanggal jatuh tempo" });
+      toast.error(t("page.purchaseOrder.edit.validation.dueDate"), { description: t("page.purchaseOrder.edit.validation.dueDateDesc") });
       return;
     }
     if (items.length === 0 || !items[0].name?.trim()) {
-      toast.error("Item kosong", { description: "Tambahkan minimal satu item" });
+      toast.error(t("page.purchaseOrder.edit.validation.items"), { description: t("page.purchaseOrder.edit.validation.itemsDesc") });
       return;
     }
     updateMutation.mutate({
@@ -252,21 +252,21 @@ const EditPurchaseOrder = () => {
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.purchaseOrder.detail.idNotFound")}</p>
       </div>
     );
   }
 
   if (loadingPo) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
+    return <Loading fullscreen size="lg" label={t("common.loading")} />;
   }
 
   if (!po) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-muted-foreground">Purchase Order tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.purchaseOrder.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/purchase-order")}>
-          Kembali
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -286,24 +286,24 @@ const EditPurchaseOrder = () => {
             href: "/purchase-order",
             i18nKey: "page.purchaseOrder.list.title"
           },
-          { label: "Edit PO" }
+          { label: t("page.purchaseOrder.edit.title") }
         ]}
-        title={`Edit PO: ${po.orderNumber || `PO-${po.id}`}`}
-        description="Perbarui informasi purchase order"></PageHeader>
+        title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
+        description={t("page.purchaseOrder.edit.description")}></PageHeader>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">
-          <h3 className="text-base font-semibold text-foreground mb-4">Informasi Supplier</h3>
+          <h3 className="text-base font-semibold text-foreground mb-4">{t("page.purchaseOrder.add.supplierSection")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Store / Lokasi <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
               </label>
               <select
                 value={selectedStore}
                 onChange={(e) => setSelectedStore(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
-                <option value="">Pilih Store</option>
+                <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name}
@@ -313,10 +313,10 @@ const EditPurchaseOrder = () => {
             </div>
             <div className="relative">
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Supplier <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.supplier")} <span className="text-destructive">*</span>
               </label>
               <Input
-                placeholder="Cari atau ketik nama supplier..."
+                placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
                 value={supplierSearch}
                 onChange={(e) => {
                   setSupplierSearch(e.target.value);
@@ -341,11 +341,11 @@ const EditPurchaseOrder = () => {
                     ))
                   ) : supplierSearch ? (
                     <p className="p-3 text-xs text-muted-foreground text-center">
-                      Tidak ada supplier ditemukan
+                      {t("page.purchaseOrder.add.noSupplierFound")}
                     </p>
                   ) : (
                     <p className="p-3 text-xs text-muted-foreground text-center">
-                      Ketik untuk mencari supplier
+                      {t("page.purchaseOrder.add.typeToSearchSupplier")}
                     </p>
                   )}
                   {supplierSearch && !filteredSuppliers.some((s) => s.name === supplierSearch) && (
@@ -356,7 +356,7 @@ const EditPurchaseOrder = () => {
                       }
                       disabled={addSupplierMutation.isLoading}
                       className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                      <Plus size={15} /> Tambah &quot;{supplierSearch}&quot;
+                      <Plus size={15} /> {t("page.purchaseOrder.add.addSupplier")} &quot;{supplierSearch}&quot;
                     </button>
                   )}
                 </div>
@@ -364,14 +364,14 @@ const EditPurchaseOrder = () => {
             </div>
             <div className="relative">
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                PIC <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
               </label>
               {employees.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
                   <div className="text-center">
-                    <p className="text-sm font-medium text-foreground">Belum ada pegawai</p>
+                    <p className="text-sm font-medium text-foreground">{t("page.purchaseOrder.add.noEmployee")}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Tambah pegawai terlebih dahulu
+                      {t("page.purchaseOrder.add.addEmployeeFirst")}
                     </p>
                   </div>
                   <Button
@@ -380,13 +380,13 @@ const EditPurchaseOrder = () => {
                     size="sm"
                     onClick={() => navigate("/add-employee")}
                     className="gap-2">
-                    <Plus size={15} /> Tambah Pegawai
+                    <Plus size={15} /> {t("page.purchaseOrder.add.addEmployee")}
                   </Button>
                 </div>
               ) : (
                 <>
                   <Input
-                    placeholder="Cari atau ketik nama PIC..."
+                    placeholder={t("page.purchaseOrder.add.picPlaceholder")}
                     value={picSearch}
                     onChange={(e) => {
                       setPicSearch(e.target.value);
@@ -411,11 +411,11 @@ const EditPurchaseOrder = () => {
                         ))
                       ) : picSearch ? (
                         <p className="p-3 text-xs text-muted-foreground text-center">
-                          Tidak ada pegawai ditemukan
+                          {t("page.purchaseOrder.add.noEmployeeFound")}
                         </p>
                       ) : (
                         <p className="p-3 text-xs text-muted-foreground text-center">
-                          Ketik untuk mencari pegawai
+                          {t("page.purchaseOrder.add.typeToSearchPic")}
                         </p>
                       )}
                     </div>
@@ -425,26 +425,26 @@ const EditPurchaseOrder = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Tanggal PO <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
               </label>
               <DatePicker date={orderDate} setDate={setOrderDate} />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Jam <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
               </label>
               <TimePicker value={orderTime} onChange={setOrderTime} />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Jatuh Tempo <span className="text-destructive">*</span>
+                {t("page.purchaseOrder.add.dueDate")} <span className="text-destructive">*</span>
               </label>
               <DatePicker date={dueDate} setDate={setDueDate} />
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Catatan</label>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">{t("page.purchaseOrder.add.notes")}</label>
               <Textarea
-                placeholder="Catatan untuk supplier (opsional)"
+                placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[80px]"
@@ -455,15 +455,15 @@ const EditPurchaseOrder = () => {
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-foreground">Item Barang</h3>
+            <h3 className="text-base font-semibold text-foreground">{t("page.purchaseOrder.add.itemSection")}</h3>
             <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addItem}>
-              <Plus size={15} /> Tambah Item
+              <Plus size={15} /> {t("page.purchaseOrder.add.addItem")}
             </Button>
           </div>
 
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Belum ada item. Klik &quot;Tambah Item&quot; untuk menambahkan barang.
+              {t("page.purchaseOrder.add.noItems")}
             </p>
           ) : (
             <div className="space-y-3">
@@ -474,7 +474,7 @@ const EditPurchaseOrder = () => {
                   </span>
                   <div className="relative flex-1 min-w-0">
                     <Input
-                      placeholder="Nama barang / bahan baku"
+                      placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
                       value={item.name}
                       onChange={(e) => {
                         updateItem(idx, "name", e.target.value);
@@ -489,7 +489,7 @@ const EditPurchaseOrder = () => {
                       <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                         {!item.name ? (
                           <p className="p-3 text-xs text-muted-foreground text-center">
-                            Ketik untuk mencari bahan baku
+                            {t("page.purchaseOrder.add.typeToSearchIngredient")}
                           </p>
                         ) : getFilteredIngredients(item.name).length > 0 ? (
                           getFilteredIngredients(item.name).map((ing) => (
@@ -511,14 +511,14 @@ const EditPurchaseOrder = () => {
                           ))
                         ) : (
                           <p className="p-3 text-xs text-muted-foreground text-center">
-                            Tidak ada bahan baku ditemukan. Gunakan teks bebas.
+                            {t("page.purchaseOrder.add.noIngredientFound")}
                           </p>
                         )}
                       </div>
                     )}
                   </div>
                   <Input
-                    placeholder="Qty"
+                    placeholder={t("page.purchaseOrder.add.qty")}
                     value={item.qty || ""}
                     onChange={(e) =>
                       updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
@@ -536,7 +536,7 @@ const EditPurchaseOrder = () => {
                     ))}
                   </select>
                   <Input
-                    placeholder="Rp 0"
+                    placeholder={t("page.purchaseOrder.add.pricePlaceholder")}
                     value={item.price ? formatIDR(item.price) : ""}
                     onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
                     className="h-9 text-sm w-36 shrink-0"
@@ -561,16 +561,16 @@ const EditPurchaseOrder = () => {
 
           <div className="flex flex-col items-end mt-4 pt-4 border-t border-border space-y-2">
             <div className="flex items-center gap-4">
-              <label className="text-sm text-muted-foreground">Diskon</label>
+              <label className="text-sm text-muted-foreground">{t("page.purchaseOrder.add.discount")}</label>
               <Input
-                placeholder="Rp 0"
+                placeholder={t("page.purchaseOrder.add.discountPlaceholder")}
                 value={discount ? formatIDR(discount) : ""}
                 onChange={(e) => setDiscount(parseIDR(e.target.value))}
                 className="h-9 text-sm w-36 text-right"
               />
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.add.total")}</p>
               <p className="text-xl font-bold text-foreground">
                 Rp {totalAmount.toLocaleString("id-ID")}
               </p>
@@ -578,7 +578,7 @@ const EditPurchaseOrder = () => {
             {discount > 0 && (
               <div className="text-right">
                 <p className="text-sm text-muted-foreground text-red-500">
-                  Diskon - Rp {discount.toLocaleString("id-ID")}
+                  {t("page.purchaseOrder.add.discountLabel", { amount: discount.toLocaleString("id-ID") })}
                 </p>
                 <p className="text-lg font-bold text-foreground">
                   Rp {finalAmount.toLocaleString("id-ID")}
@@ -594,7 +594,7 @@ const EditPurchaseOrder = () => {
             variant="outline"
             onClick={() => setCancelModal(true)}
             className="gap-2">
-            <X size={18} /> Batal
+            <X size={18} /> {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
             {updateMutation.isLoading ? (
@@ -602,7 +602,7 @@ const EditPurchaseOrder = () => {
             ) : (
               <Save size={18} />
             )}
-            {updateMutation.isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+            {updateMutation.isLoading ? t("common.saving") : t("page.purchaseOrder.edit.saveChanges")}
           </Button>
         </div>
       </form>
@@ -611,10 +611,10 @@ const EditPurchaseOrder = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Data yang sudah diisi tidak akan disimpan."
-        confirmText="Ya, Batalkan"
-        cancelText="Lanjutkan"
+        title={t("page.purchaseOrder.edit.cancelModalTitle")}
+        description={t("page.purchaseOrder.edit.cancelModalDesc")}
+        confirmText={t("page.purchaseOrder.edit.cancelModalConfirm")}
+        cancelText={t("page.purchaseOrder.edit.cancelModalCancel")}
         onConfirm={() => navigate("/purchase-order")}
       />
     </div>

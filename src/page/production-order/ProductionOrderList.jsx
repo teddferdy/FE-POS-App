@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   Plus,
   Search,
@@ -29,35 +30,35 @@ import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 
-const statusConfig = {
-  draft: {
-    label: "Draft",
-    icon: Clock,
-    class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-  },
-  planned: {
-    label: "Planned",
-    icon: ClipboardList,
-    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-  },
-  in_progress: {
-    label: "In Progress",
-    icon: Play,
-    class: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
-  },
-  completed: {
-    label: "Completed",
-    icon: CheckCircle,
-    class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-  },
-  cancelled: {
-    label: "Cancelled",
-    icon: XCircle,
-    class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-  }
-};
-
 const ProductionOrderList = () => {
+  const { t } = useTranslation();
+  const statusConfig = {
+    draft: {
+      label: t("page.productionOrder.status.draft"),
+      icon: Clock,
+      class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+    },
+    planned: {
+      label: t("page.productionOrder.status.planned"),
+      icon: ClipboardList,
+      class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+    },
+    in_progress: {
+      label: t("page.productionOrder.status.inProgress"),
+      icon: Play,
+      class: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
+    },
+    completed: {
+      label: t("page.productionOrder.status.completed"),
+      icon: CheckCircle,
+      class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+    },
+    cancelled: {
+      label: t("page.productionOrder.status.cancelled"),
+      icon: XCircle,
+      class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+    }
+  };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -102,22 +103,22 @@ const ProductionOrderList = () => {
 
   const deleteMutation = useMutation(deleteProductionOrder, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Production order berhasil dihapus" });
+      toast.success(t("page.productionOrder.list.toastSuccess"), { description: t("page.productionOrder.list.toastDeleteDesc") });
       queryClient.invalidateQueries(["production-orders"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
   });
 
   const startMutation = useMutation(startProduction, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Produksi dimulai, bahan baku telah dikurangi" });
+      toast.success(t("page.productionOrder.list.toastSuccess"), { description: t("page.productionOrder.list.toastStartDesc") });
       queryClient.invalidateQueries(["production-orders"]);
       setStartTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
   });
 
   const completeMutation = useMutation(
@@ -125,41 +126,41 @@ const ProductionOrderList = () => {
       completeProduction(completeTarget, { producedQty: parseInt(payload.producedQty) || 0 }),
     {
       onSuccess: () => {
-        toast.success("Berhasil", {
-          description: "Produksi selesai, barang jadi ditambahkan ke stok"
+        toast.success(t("page.productionOrder.list.toastSuccess"), {
+          description: t("page.productionOrder.list.toastCompleteDesc")
         });
         queryClient.invalidateQueries(["production-orders"]);
         setCompleteTarget(null);
         setCompleteQty("");
       },
       onError: (err) =>
-        toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+        toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
     }
   );
 
   const columns = [
     {
-      header: "No. Produksi",
+      header: t("page.productionOrder.list.tableNoProduksi"),
       render: (item) => (
         <span className="font-mono text-xs font-bold text-primary">{item.productionNo || "-"}</span>
       )
     },
     {
-      header: "Produk",
+      header: t("page.productionOrder.list.tableProduk"),
       render: (item) => <span className="text-sm">{item.productData?.nameProduct || "-"}</span>
     },
     {
-      header: "Qty Rencana",
+      header: t("page.productionOrder.list.tableQtyRencana"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.plannedQty}</span>
     },
     {
-      header: "Qty Hasil",
+      header: t("page.productionOrder.list.tableQtyHasil"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.producedQty || 0}</span>
     },
     {
-      header: "Tgl. Jadwal",
+      header: t("page.productionOrder.list.tableTglJadwal"),
       align: "center",
       render: (item) => (
         <span className="text-xs">
@@ -168,11 +169,11 @@ const ProductionOrderList = () => {
       )
     },
     {
-      header: "Store",
+      header: t("page.productionOrder.list.tableStore"),
       render: (item) => <span className="text-sm">{item.storeData?.name || "-"}</span>
     },
     {
-      header: "Status",
+      header: t("page.productionOrder.list.tableStatus"),
       align: "center",
       render: (item) => {
         const cfg = statusConfig[item.status] || statusConfig.draft;
@@ -185,7 +186,7 @@ const ProductionOrderList = () => {
       }
     },
     {
-      header: "Aksi",
+      header: t("page.productionOrder.list.tableAksi"),
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
@@ -240,22 +241,22 @@ const ProductionOrderList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.productionOrder.list.breadcrumbDashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Production Order</span>
+        <span className="text-primary font-semibold">{t("page.productionOrder.list.breadcrumbPO")}</span>
       </nav>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Production Order</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.productionOrder.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kelola production order dan proses produksi
+            {t("page.productionOrder.list.subtitle")}
           </p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
           <Button onClick={() => navigate("/add-production-order")} className="shrink-0 gap-2">
-            <Plus size={16} /> Tambah Production Order
+            <Plus size={16} /> {t("page.productionOrder.list.addButton")}
           </Button>
         )}
       </div>
@@ -263,31 +264,31 @@ const ProductionOrderList = () => {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           {
-            label: "Total",
+            label: t("page.productionOrder.list.statTotal"),
             value: stats.total ?? total,
             color: "text-primary",
             bg: "bg-primary/10"
           },
           {
-            label: "Draft",
+            label: t("page.productionOrder.list.statDraft"),
             value: stats.draft ?? 0,
             color: "text-yellow-600",
             bg: "bg-yellow-100"
           },
           {
-            label: "Planned",
+            label: t("page.productionOrder.list.statPlanned"),
             value: stats.planned ?? 0,
             color: "text-blue-600",
             bg: "bg-blue-100"
           },
           {
-            label: "In Progress",
+            label: t("page.productionOrder.list.statInProgress"),
             value: stats.inProgress ?? 0,
             color: "text-indigo-600",
             bg: "bg-indigo-100"
           },
           {
-            label: "Completed",
+            label: t("page.productionOrder.list.statCompleted"),
             value: stats.completed ?? 0,
             color: "text-green-600",
             bg: "bg-green-100"
@@ -304,7 +305,7 @@ const ProductionOrderList = () => {
         columns={columns}
         data={filteredItems}
         isLoading={isLoading}
-        emptyMessage="Tidak ada data production order"
+        emptyMessage={t("page.productionOrder.list.emptyMessage")}
         emptyIcon={ClipboardList}
         toolbar={
           <div className="flex items-center gap-3">
@@ -315,7 +316,7 @@ const ProductionOrderList = () => {
                 setPage(1);
               }}
               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">Semua Status</option>
+              <option value="all">{t("page.productionOrder.list.filterAll")}</option>
               {Object.entries(statusConfig).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v.label}
@@ -328,7 +329,7 @@ const ProductionOrderList = () => {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Cari No. Produksi, Produk..."
+                placeholder={t("page.productionOrder.list.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -343,9 +344,9 @@ const ProductionOrderList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Hapus Production Order?"
-        description="Data yang dihapus tidak dapat dikembalikan."
-        confirmText="Ya, Hapus"
+        title={t("page.productionOrder.list.modalDeleteTitle")}
+        description={t("page.productionOrder.list.modalDeleteDesc")}
+        confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
         onConfirm={() => deleteMutation.mutate(deleteTarget)}
       />
 
@@ -353,9 +354,9 @@ const ProductionOrderList = () => {
         type="confirm"
         open={!!startTarget}
         onOpenChange={(o) => !o && setStartTarget(null)}
-        title="Mulai Produksi?"
-        description="Bahan baku berdasarkan BOM akan dikurangi dari stok. Lanjutkan?"
-        confirmText="Ya, Mulai"
+        title={t("page.productionOrder.list.modalStartTitle")}
+        description={t("page.productionOrder.list.modalStartDesc")}
+        confirmText={t("page.productionOrder.list.modalStartConfirm")}
         onConfirm={() => startMutation.mutate(startTarget)}
       />
 
@@ -368,16 +369,16 @@ const ProductionOrderList = () => {
             setCompleteQty("");
           }
         }}
-        title="Selesaikan Produksi"
-        description="Masukkan jumlah barang jadi yang dihasilkan">
+        title={t("page.productionOrder.list.modalCompleteTitle")}
+        description={t("page.productionOrder.list.modalCompleteDesc")}>
         <div className="space-y-3">
-          <label className="text-sm font-medium">Jumlah Hasil Produksi</label>
+          <label className="text-sm font-medium">{t("page.productionOrder.list.modalCompleteLabel")}</label>
           <Input
             type="number"
             min="1"
             value={completeQty}
             onChange={(e) => setCompleteQty(e.target.value)}
-            placeholder="Masukkan jumlah"
+            placeholder={t("page.productionOrder.list.modalCompletePlaceholder")}
           />
         </div>
         <div className="flex justify-end gap-2 mt-4">
@@ -387,11 +388,11 @@ const ProductionOrderList = () => {
               setCompleteTarget(null);
               setCompleteQty("");
             }}>
-            Batal
+            {t("page.productionOrder.list.modalCompleteCancel")}
           </Button>
           <Button
             onClick={() => completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })}>
-            Selesaikan
+            {t("page.productionOrder.list.modalCompleteConfirm")}
           </Button>
         </div>
       </Modal>

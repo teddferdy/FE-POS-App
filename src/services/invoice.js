@@ -36,3 +36,15 @@ export const sendInvoiceEmail = async (payload) => {
 };
 
 export const sendInvoiceWA = sendInvoiceWhatsApp;
+
+export const getWhatsAppStatus = async () => {
+  const { data, status } = await axiosInstance.get("/pos/whatsapp/status");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const restartWhatsApp = async () => {
+  const { data, status } = await axiosInstance.post("/pos/whatsapp/restart");
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};

@@ -60,7 +60,7 @@ const EditMember = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", {
+      toast.error(t("page.member.edit.toastError"), {
         description: err?.response?.data?.message || err.message
       });
       setIsSubmitting(false);
@@ -75,7 +75,7 @@ const EditMember = () => {
   const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!form.name || !form.phoneNumber) {
-      toast.error("Validasi", { description: "Nama dan nomor telepon wajib diisi" });
+      toast.error(t("page.member.edit.toastValidation"), { description: t("page.member.edit.validationDesc") });
       return;
     }
     setIsSubmitting(true);
@@ -94,7 +94,7 @@ const EditMember = () => {
 
   if (memberLoading || !form) {
     return (
-      <Loading fullscreen size="lg" label="Memuat data..." />
+      <Loading fullscreen size="lg" label={t("common.loading")} />
     );
   }
 
@@ -113,7 +113,7 @@ const EditMember = () => {
           {t("breadcrumb.back")}
         </Button>
         <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
-          Simpan sebagai Draft
+          {t("page.member.edit.saveDraft")}
         </Button>
         <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
           <span className="material-symbols-outlined text-lg">save</span>
@@ -217,7 +217,7 @@ const EditMember = () => {
             <div className="bg-card rounded-xl shadow-sm border border-border p-6">
               <div className="flex items-center gap-2 mb-6 text-primary">
                 <span className="material-symbols-outlined">location_on</span>
-                <h3 className="text-base font-semibold text-foreground">Alamat Lengkap</h3>
+                <h3 className="text-base font-semibold text-foreground">{t("page.member.edit.fullAddress")}</h3>
               </div>
               <textarea
                 name="address"
@@ -235,7 +235,7 @@ const EditMember = () => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
               <div className="flex items-center gap-2 mb-6 text-primary relative">
                 <span className="material-symbols-outlined">military_tech</span>
-                <h3 className="text-base font-semibold text-foreground">Membership Tier</h3>
+                <h3 className="text-base font-semibold text-foreground">{t("page.member.edit.membershipTier")}</h3>
               </div>
               <div className="space-y-3 relative">
                 {tiers.length === 0 ? (
@@ -295,39 +295,39 @@ const EditMember = () => {
               variant="outline"
               onClick={(e) => handleSubmit(e, true)}
               disabled={isSubmitting}>
-              Simpan sebagai Draft
+              {t("page.member.edit.saveDraft")}
             </Button>
             <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
-              Simpan Perubahan
+              {t("page.member.edit.saveChanges")}
             </Button>
           </div>
         </div>
       </form>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Data Berhasil Diperbarui"
+        title={t("page.member.edit.successTitle")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.member.edit.cancelModalTitle")}
+        confirmText={t("page.member.edit.cancelModalConfirm")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.member.edit.draftModalTitle")}
+        description={t("page.member.edit.draftModalDesc")}
+        confirmText={t("page.member.edit.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           setIsSubmitting(true);

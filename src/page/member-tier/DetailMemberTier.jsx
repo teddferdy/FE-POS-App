@@ -210,7 +210,7 @@ const DetailMemberTier = () => {
               <Coins size={20} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Min Points</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("page.memberTier.detail.minPoints")}</p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {tier.minPoints?.toLocaleString?.() || 0}
               </p>
@@ -221,7 +221,7 @@ const DetailMemberTier = () => {
               <Coins size={20} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max Points</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("page.memberTier.detail.maxPoints")}</p>
               <p className="text-sm font-semibold text-foreground mt-0.5">
                 {tier.maxPoints?.toLocaleString?.() || "~"}
               </p>
@@ -278,7 +278,7 @@ const DetailMemberTier = () => {
         <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
             <Calendar size={18} className="text-primary" />
-            <h3 className="text-base font-semibold text-foreground">System Info</h3>
+            <h3 className="text-base font-semibold text-foreground">{t("page.memberTier.detail.systemInfo")}</h3>
           </div>
           <div className="space-y-4">
             <DetailRow icon={Calendar} label="Created At" value={formatDate(tier.createdAt)} />

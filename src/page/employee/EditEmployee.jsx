@@ -66,20 +66,20 @@ const EditEmployee = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      fullName: z.string().min(2, "Nama lengkap minimal 2 karakter"),
-      userName: z.string().min(1, "Username wajib diisi"),
-      email: z.string().email("Format email tidak valid"),
+      fullName: z.string().min(2, t("page.employee.edit.validation.fullNameMin")),
+      userName: z.string().min(1, t("page.employee.edit.validation.userNameRequired")),
+      email: z.string().email(t("page.employee.edit.validation.emailInvalid")),
       password: z.string().optional().or(z.literal("")),
       phoneNumber: z
         .string()
-        .regex(/^\d+$/, "Nomor telepon hanya boleh angka")
-        .min(8, "Minimal 8 digit")
-        .max(14, "Maksimal 14 digit"),
-      placeOfBirth: z.string().min(2, "Tempat lahir minimal 2 karakter"),
-      address: z.string().min(5, "Alamat minimal 5 karakter"),
-      gender: z.string().min(1, "Pilih jenis kelamin"),
-      dateOfBirth: z.string().min(1, "Pilih tanggal lahir"),
-      employeeId: z.string().min(1, "ID Karyawan harus diisi"),
+        .regex(/^\d+$/, t("page.employee.edit.validation.phoneOnlyNumbers"))
+        .min(8, t("page.employee.edit.validation.phoneMinDigits"))
+        .max(14, t("page.employee.edit.validation.phoneMaxDigits")),
+      placeOfBirth: z.string().min(2, t("page.employee.edit.validation.placeOfBirthMin")),
+      address: z.string().min(5, t("page.employee.edit.validation.addressMin")),
+      gender: z.string().min(1, t("page.employee.edit.validation.genderRequired")),
+      dateOfBirth: z.string().min(1, t("page.employee.edit.validation.dateOfBirthRequired")),
+      employeeId: z.string().min(1, t("page.employee.edit.validation.employeeIdRequired")),
       department: z.string().optional().or(z.literal("")),
       position: z.string().optional().or(z.literal("")),
       store: z.string().optional().or(z.literal("")),
@@ -91,7 +91,7 @@ const EditEmployee = () => {
       isActive: z.boolean().default(true),
       roleId: z.string().optional().or(z.literal("")),
       accessMenu: z.string().optional().or(z.literal("")),
-      monthlySalary: z.coerce.number().min(0, "Tidak boleh negatif").optional().or(z.literal(""))
+      monthlySalary: z.coerce.number().min(0, t("page.employee.edit.validation.salaryNegative")).optional().or(z.literal(""))
     });
   }, []);
 
@@ -212,14 +212,14 @@ const EditEmployee = () => {
   const contractDuration = form.watch("contractDuration");
 
   const contractDurations = [
-    { value: "3", label: "3 Bulan" },
-    { value: "6", label: "6 Bulan" },
-    { value: "9", label: "9 Bulan" },
-    { value: "12", label: "12 Bulan / 1 Tahun" },
-    { value: "24", label: "2 Tahun" },
-    { value: "36", label: "3 Tahun" },
-    { value: "48", label: "4 Tahun" },
-    { value: "60", label: "5 Tahun" }
+    { value: "3", label: t("page.employee.form.contractDuration.3months") },
+    { value: "6", label: t("page.employee.form.contractDuration.6months") },
+    { value: "9", label: t("page.employee.form.contractDuration.9months") },
+    { value: "12", label: t("page.employee.form.contractDuration.12months") },
+    { value: "24", label: t("page.employee.form.contractDuration.2years") },
+    { value: "36", label: t("page.employee.form.contractDuration.3years") },
+    { value: "48", label: t("page.employee.form.contractDuration.4years") },
+    { value: "60", label: t("page.employee.form.contractDuration.5years") }
   ];
 
   const getDaysInMonth = () => {
@@ -593,8 +593,8 @@ const EditEmployee = () => {
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                                <SelectItem value="Perempuan">Perempuan</SelectItem>
+                                <SelectItem value="Laki-laki">{t("page.employee.edit.male")}</SelectItem>
+                                <SelectItem value="Perempuan">{t("page.employee.edit.female")}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -1209,7 +1209,7 @@ const EditEmployee = () => {
                               disabled={disableAccess}
                               onClick={() => setAccessMenuModalOpen(true)}>
                               {disableAccess
-                                ? "Pilih role terlebih dahulu"
+                                ? t("page.employee.edit.selectRoleFirst")
                                 : permCount > 0
                                   ? t("page.employee.form.accessMenuCount", { count: permCount })
                                   : t("page.employee.form.accessMenuButton")}
@@ -1393,7 +1393,7 @@ const EditEmployee = () => {
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}>
-                    Simpan sebagai Draft
+                    {t("page.employee.edit.saveAsDraft")}
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
                     <span className="material-symbols-outlined text-lg">save</span>
@@ -1428,9 +1428,9 @@ const EditEmployee = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.employee.edit.draftTitle")}
+        description={t("page.employee.edit.draftDescription")}
+        confirmText={t("page.employee.edit.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

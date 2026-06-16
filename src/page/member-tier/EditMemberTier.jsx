@@ -284,10 +284,10 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
                   {t("page.memberTier.edit.previewBadge")}
                 </p>
                 <h4 className="font-headline-md text-on-surface">
-                  {formData.tierName || "Gold Member"}
+                  {formData.tierName || t("page.memberTier.edit.goldMember")}
                 </h4>
                 <p className="font-body-md text-on-surface-variant">
-                  Mulai dari{" "}
+                  {t("page.memberTier.edit.startFrom")}{" "}
                   {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
                     "id-ID"
                   )}{" "}
@@ -369,7 +369,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
             onClick={() => setDraftModal(true)}
             disabled={!formData.isActive}
             className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            Simpan sebagai Draft
+            {t("page.memberTier.edit.saveDraft")}
           </button>
           <button
             onClick={() => handleSave(false)}
@@ -385,9 +385,9 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.memberTier.edit.draftModalTitle")}
+        description={t("page.memberTier.edit.draftModalDesc")}
+        confirmText={t("page.memberTier.edit.draftModalConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           if (onSave) onSave({ ...formData, saveAsDraft: true });

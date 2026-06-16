@@ -70,7 +70,7 @@ const DetailRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const StatusBadge = ({ isActive }) => (
+const StatusBadge = ({ isActive, t }) => (
   <span
     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight ${
       isActive
@@ -78,13 +78,17 @@ const StatusBadge = ({ isActive }) => (
         : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
     }`}>
     {isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-    {isActive ? "Active" : "Inactive"}
+    {isActive ? t("page.location.detail.active") : t("page.location.detail.inactive")}
   </span>
 );
 
-const FormattedOpeningHours = ({ openingHours }) => {
+const FormattedOpeningHours = ({ openingHours, t }) => {
   if (!openingHours || openingHours.length === 0) {
-    return <p className="text-sm text-foreground italic">Tidak ada jam operasional</p>;
+    return (
+      <p className="text-sm text-foreground italic">
+        {t("page.location.detail.noOperationalHours")}
+      </p>
+    );
   }
   return (
     <div className="space-y-1">
@@ -99,7 +103,7 @@ const FormattedOpeningHours = ({ openingHours }) => {
             </span>
           ) : (
             <span className="text-xs text-muted-foreground/60 italic bg-muted/50 px-3 py-1 rounded-lg">
-              Tutup
+              {t("page.location.detail.closed")}
             </span>
           )}
         </div>
@@ -215,7 +219,9 @@ const LocationDetail = () => {
                     {s === 2 && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                         {[...Array(5)].map((_, r) => (
-                          <div key={r} className="flex items-start gap-3 py-3 border-b border-border">
+                          <div
+                            key={r}
+                            className="flex items-start gap-3 py-3 border-b border-border">
                             <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
                             <div className="flex-1 space-y-1">
                               <Skeleton className="h-3 w-20" />
@@ -262,7 +268,9 @@ const LocationDetail = () => {
                     </div>
                     <div className="space-y-3">
                       {[...Array(3)].map((_, r) => (
-                        <div key={r} className="flex items-center justify-between py-2 border-b border-border">
+                        <div
+                          key={r}
+                          className="flex items-center justify-between py-2 border-b border-border">
                           <Skeleton className="h-3 w-20" />
                           <Skeleton className="h-3 w-16" />
                         </div>
@@ -271,7 +279,9 @@ const LocationDetail = () => {
                   </div>
                 ))}
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                  <div
+                    key={i}
+                    className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
                     <Skeleton className="h-5 w-5 shrink-0 mt-0.5 rounded" />
                     <div className="flex-1 space-y-1">
                       <Skeleton className="h-3 w-24" />
@@ -291,9 +301,9 @@ const LocationDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Store size={40} />
-        <p>Toko tidak ditemukan</p>
+        <p>{t("page.location.detail.locationNotFound")}</p>
         <Button variant="outline" onClick={() => navigate("/location-list")}>
-          Kembali
+          {t("breadcrumb.back")}
         </Button>
       </div>
     );
@@ -332,45 +342,97 @@ const LocationDetail = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* Informasi Toko */}
               <div className="space-y-4">
-                <SectionHeader icon={Building2} title="Informasi Toko" />
+                <SectionHeader icon={Building2} title={t("page.location.detail.informasiToko")} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Store} label="Nama Toko" value={location.name} />
-                  <DetailRow icon={Hash} label="Store ID" value={location.id} />
-                  <DetailRow icon={Layers} label="Kategori" value={location.category} />
-                  <DetailRow icon={User} label="Manager" value={location.managerName} />
+                  <DetailRow
+                    icon={Store}
+                    label={t("page.location.detail.storeName")}
+                    value={location.name}
+                  />
+                  <DetailRow
+                    icon={Hash}
+                    label={t("page.location.detail.storeId")}
+                    value={location.id}
+                  />
+                  <DetailRow
+                    icon={Layers}
+                    label={t("page.location.detail.category")}
+                    value={location.category}
+                  />
+                  <DetailRow
+                    icon={User}
+                    label={t("page.location.detail.manager")}
+                    value={location.managerName}
+                  />
                 </div>
               </div>
 
               {/* Kontak */}
               <div className="space-y-4">
-                <SectionHeader icon={Smartphone} title="Kontak" />
+                <SectionHeader icon={Smartphone} title={t("page.location.detail.kontak")} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Phone} label="Nomor Telepon" value={location.phoneNumber} />
-                  <DetailRow icon={Mail} label="Email" value={location.email} />
+                  <DetailRow
+                    icon={Phone}
+                    label={t("page.location.detail.phoneNumber")}
+                    value={location.phoneNumber}
+                  />
+                  <DetailRow
+                    icon={Mail}
+                    label={t("page.location.detail.email")}
+                    value={location.email}
+                  />
                 </div>
               </div>
 
               {/* Alamat & Wilayah */}
               <div className="space-y-4">
-                <SectionHeader icon={MapPin} title="Alamat & Wilayah" />
+                <SectionHeader icon={MapPin} title={t("page.location.detail.alamatWilayah")} />
                 <div className="space-y-0">
-                  <DetailRow icon={MapPin} label="Alamat Lengkap" value={location.address} />
-                  <DetailRow icon={Globe} label="Detail Lokasi" value={location.detailLocation} />
+                  <DetailRow
+                    icon={MapPin}
+                    label={t("page.location.detail.fullAddress")}
+                    value={location.address}
+                  />
+                  <DetailRow
+                    icon={Globe}
+                    label={t("page.location.detail.detailLocation")}
+                    value={location.detailLocation}
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Building2} label="Provinsi" value={provinceName} />
-                  <DetailRow icon={Building2} label="Kota / Kabupaten" value={cityName} />
-                  <DetailRow icon={Building2} label="Kecamatan" value={districtName} />
-                  <DetailRow icon={Building2} label="Kelurahan" value={villageName} />
-                  <DetailRow icon={Hash} label="Kode Pos" value={postalCodeValue} />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.province")}
+                    value={provinceName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.city")}
+                    value={cityName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.district")}
+                    value={districtName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.location.detail.village")}
+                    value={villageName}
+                  />
+                  <DetailRow
+                    icon={Hash}
+                    label={t("page.location.detail.postalCode")}
+                    value={postalCodeValue}
+                  />
                 </div>
               </div>
 
               {/* Jam Operasional */}
               <div className="space-y-4">
-                <SectionHeader icon={Clock} title="Jam Operasional" />
+                <SectionHeader icon={Clock} title={t("page.location.detail.operationalHours")} />
                 <div className="bg-muted/20 rounded-lg p-4 border border-border">
-                  <FormattedOpeningHours openingHours={location.openingHours} />
+                  <FormattedOpeningHours openingHours={location.openingHours} t={t} />
                 </div>
               </div>
 
@@ -378,7 +440,7 @@ const LocationDetail = () => {
               <div className="space-y-4">
                 <SectionHeader
                   icon={Map}
-                  title="Lokasi Peta"
+                  title={t("page.location.detail.mapLocation")}
                   action={
                     hasCoordinates &&
                     googleMapsUrl && (
@@ -388,7 +450,7 @@ const LocationDetail = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
                         <Navigation size={13} />
-                        Buka rute
+                        {t("page.location.detail.openRoute")}
                       </a>
                     )
                   }
@@ -428,22 +490,24 @@ const LocationDetail = () => {
                     </MapContainer>
                     <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-t border-border text-xs text-muted-foreground">
                       <span>
-                        <span className="font-medium">Lat:</span> {lat.toFixed(6)}
+                        <span className="font-medium">{t("page.location.detail.lat")}:</span>{" "}
+                        {lat.toFixed(6)}
                       </span>
                       <span>
-                        <span className="font-medium">Lng:</span> {lng.toFixed(6)}
+                        <span className="font-medium">{t("page.location.detail.lng")}:</span>{" "}
+                        {lng.toFixed(6)}
                       </span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-3 bg-muted/30 rounded-lg border border-dashed border-border">
                     <MapPin size={32} />
-                    <p className="text-sm">Koordinat tidak tersedia</p>
+                    <p className="text-sm">{t("page.location.detail.noCoordinates")}</p>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/edit-location?id=${id}`)}>
-                      Atur Lokasi
+                      {t("page.location.detail.setLocation")}
                     </Button>
                   </div>
                 )}
@@ -465,12 +529,16 @@ const LocationDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">
-                      {isActive ? "Aktif" : "Non-Aktif"}
+                      {isActive
+                        ? t("page.location.detail.active")
+                        : t("page.location.detail.nonActive")}
                     </p>
-                    <p className="text-xs text-muted-foreground">Status Operasional Toko</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.location.detail.operationalStatus")}
+                    </p>
                   </div>
                 </div>
-                <StatusBadge isActive={isActive} />
+                <StatusBadge isActive={isActive} t={t} />
               </div>
 
               {/* Foto Toko */}
@@ -479,7 +547,9 @@ const LocationDetail = () => {
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                     <Image size={18} />
                   </div>
-                  <h3 className="text-base font-semibold text-foreground">Foto Toko</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.storePhoto")}
+                  </h3>
                 </div>
                 {location.image ? (
                   <div className="rounded-lg overflow-hidden border border-border">
@@ -492,7 +562,9 @@ const LocationDetail = () => {
                 ) : (
                   <div className="rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center bg-muted/30 p-8 min-h-[200px]">
                     <Image size={48} className="text-muted-foreground mb-3" />
-                    <span className="text-sm text-muted-foreground">Tidak ada gambar</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("page.location.detail.noImage")}
+                    </span>
                   </div>
                 )}
               </div>
@@ -503,19 +575,25 @@ const LocationDetail = () => {
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                     <Hash size={18} />
                   </div>
-                  <h3 className="text-base font-semibold text-foreground">Detail Lainnya</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.otherDetails")}
+                  </h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">Main Branch</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.mainBranch")}
+                    </span>
                     <span
                       className={`text-xs font-bold ${location.mainBranch ? "text-green-600" : "text-muted-foreground"}`}>
-                      {location.mainBranch ? "Ya" : "Tidak"}
+                      {location.mainBranch ? t("common.yes") : t("common.no")}
                     </span>
                   </div>
                   {location.managerName && (
                     <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                      <span className="text-xs font-medium text-muted-foreground">Manager</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t("page.location.detail.manager")}
+                      </span>
                       <span className="text-xs font-semibold text-foreground">
                         {location.managerName}
                       </span>
@@ -530,11 +608,15 @@ const LocationDetail = () => {
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                     <span className="material-symbols-outlined text-base">info</span>
                   </div>
-                  <h3 className="text-base font-semibold text-foreground">Informasi Sistem</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.location.detail.systemInfo")}
+                  </h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">Dibuat Pada</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.createdAt")}
+                    </span>
                     <span className="text-xs font-semibold text-foreground">
                       {location.createdAt
                         ? new Date(location.createdAt).toLocaleDateString("id-ID", {
@@ -547,7 +629,7 @@ const LocationDetail = () => {
                   </div>
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Diperbarui Pada
+                      {t("page.location.detail.updatedAt")}
                     </span>
                     <span className="text-xs font-semibold text-foreground">
                       {location.updatedAt

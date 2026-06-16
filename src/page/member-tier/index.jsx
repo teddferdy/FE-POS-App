@@ -43,22 +43,22 @@ const MemberTier = () => {
 
   const editMutation = useMutation(editMemberTier, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Tier berhasil diperbarui" });
+      toast.success(t("page.memberTier.list.toastUpdateSuccess"), { description: t("page.memberTier.list.toastUpdateDesc") });
       queryClient.invalidateQueries(["member-tiers"]);
       setEditingTier(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.memberTier.list.toastError"), { description: err?.response?.data?.message || err.message })
   });
 
   const deleteMutation = useMutation(deleteMemberTier, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Tier berhasil dihapus" });
+      toast.success(t("page.memberTier.list.toastDeleteSuccess"), { description: t("page.memberTier.list.toastDeleteDesc") });
       queryClient.invalidateQueries(["member-tiers"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.memberTier.list.toastError"), { description: err?.response?.data?.message || err.message })
   });
 
   const handleSaveEdit = (formData) => {
@@ -85,7 +85,7 @@ const MemberTier = () => {
         <span
           className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
         />
-        {isActive ? "Aktif" : "Non-Active"}
+        {isActive ? t("common.active") : t("common.inactive")}
       </span>
     );
   };
@@ -162,7 +162,7 @@ const MemberTier = () => {
               navigate(`/detail-member-tier?id=${tier.id}`);
             }}
             className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
-            title="Detail">
+            title={t("page.memberTier.list.detailTitle")}>
             <span className="material-symbols-outlined text-lg">visibility</span>
           </button>
           {canAccess(user, MENU_KEY, "edit") && (
@@ -172,7 +172,7 @@ const MemberTier = () => {
                 setEditingTier(tier);
               }}
               className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-              title="Edit">
+              title={t("page.memberTier.list.editTitle")}>
               <span className="material-symbols-outlined text-lg">edit</span>
             </button>
           )}
@@ -183,7 +183,7 @@ const MemberTier = () => {
                 setDeleteTarget(tier);
               }}
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-              title="Delete">
+              title={t("page.memberTier.list.deleteTitle")}>
               <span className="material-symbols-outlined text-lg">delete</span>
             </button>
           )}
@@ -200,7 +200,7 @@ const MemberTier = () => {
             onClick={() => setEditingTier(null)}
             className="flex items-center gap-2 text-primary hover:underline transition-all">
             <ArrowLeft size={20} />
-            <span className="font-medium">Kembali ke Daftar Tier</span>
+            <span className="font-medium">{t("page.memberTier.list.backToList")}</span>
           </button>
           <EditMemberTier
             tier={editingTier}
@@ -287,10 +287,10 @@ const MemberTier = () => {
           {tiers.length === 0 ? (
             <div className="bg-card rounded-xl border border-border p-12 text-center">
               <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Belum ada tier member.</p>
+              <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
               <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
                 <Plus size={16} className="mr-2" />
-                Tambah Tier
+                {t("page.memberTier.list.addTier")}
               </Button>
             </div>
           ) : (
@@ -343,8 +343,8 @@ const MemberTier = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Tier?"
-        confirmText="Ya, Hapus"
+        title={t("page.memberTier.list.deleteModalTitle")}
+        confirmText={t("page.memberTier.list.deleteModalConfirm")}
         onConfirm={() => {
           if (deleteTarget) {
             deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });

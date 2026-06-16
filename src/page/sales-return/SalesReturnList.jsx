@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Search, Eye, CheckCircle, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import { getAllSalesReturn, approveSalesReturn, rejectSalesReturn } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ const statusCfg = {
 };
 
 const SalesReturnList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -60,42 +62,50 @@ const SalesReturnList = () => {
 
   const approveMut = useMutation(approveSalesReturn, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Sales return disetujui" });
+      toast.success(t("page.salesReturn.list.toast.success"), {
+        description: t("page.salesReturn.list.toast.approveDesc")
+      });
       queryClient.invalidateQueries(["sales-returns"]);
       setActionTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.salesReturn.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const rejectMut = useMutation(rejectSalesReturn, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Sales return ditolak" });
+      toast.success(t("page.salesReturn.list.toast.success"), {
+        description: t("page.salesReturn.list.toast.rejectDesc")
+      });
       queryClient.invalidateQueries(["sales-returns"]);
       setActionTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.salesReturn.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const columns = [
     {
-      header: "Return No",
+      header: t("page.salesReturn.list.header.returnNo"),
       render: (item) => (
         <span className="font-mono text-xs font-bold text-primary">{item.returnNumber}</span>
       )
     },
     {
-      header: "Store",
+      header: t("page.salesReturn.list.header.store"),
       render: (item) => <span className="text-sm">{item.storeData?.name || "-"}</span>
     },
     {
-      header: "Items",
+      header: t("page.salesReturn.list.header.items"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.items?.length || 0}</span>
     },
     {
-      header: "Reason",
+      header: t("page.salesReturn.list.header.reason"),
       render: (item) => (
         <span className="text-xs text-muted-foreground max-w-[200px] truncate block">
           {item.reason || "-"}
@@ -103,13 +113,13 @@ const SalesReturnList = () => {
       )
     },
     {
-      header: "Returned By",
+      header: t("page.salesReturn.list.header.returnedBy"),
       render: (item) => (
         <span className="text-sm">{item.returnedBy || item.returnedByData?.name || "-"}</span>
       )
     },
     {
-      header: "Status",
+      header: t("page.salesReturn.list.header.status"),
       align: "center",
       render: (item) => {
         const sc = statusCfg[item.status] || statusCfg.pending;
@@ -122,7 +132,7 @@ const SalesReturnList = () => {
       }
     },
     {
-      header: "Aksi",
+      header: t("page.salesReturn.list.header.aksi"),
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
@@ -168,21 +178,21 @@ const SalesReturnList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.salesReturn.list.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Sales Return</span>
+        <span className="text-primary font-semibold">{t("page.salesReturn.list.title")}</span>
       </nav>
       <div>
-        <h1 className="text-2xl font-bold">Sales Return</h1>
-        <p className="text-sm text-muted-foreground mt-1">Kelola retur penjualan</p>
+        <h1 className="text-2xl font-bold">{t("page.salesReturn.list.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.salesReturn.list.subtitle")}</p>
       </div>
 
       <DataTable
         columns={columns}
         data={filteredItems}
         isLoading={isLoading}
-        emptyMessage="Tidak ada data sales return"
+        emptyMessage={t("page.salesReturn.list.emptyMessage")}
         toolbar={
           <div className="flex items-center gap-3">
             <select
@@ -192,7 +202,7 @@ const SalesReturnList = () => {
                 setPage(1);
               }}
               className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">Semua Status</option>
+              <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
               {Object.entries(statusCfg).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v.label}
@@ -205,7 +215,7 @@ const SalesReturnList = () => {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Cari Return No..."
+                placeholder={t("page.salesReturn.list.placeholder.search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -220,13 +230,21 @@ const SalesReturnList = () => {
         type="confirm"
         open={!!actionTarget}
         onOpenChange={(o) => !o && setActionTarget(null)}
-        title={actionType === "approve" ? "Setujui Sales Return?" : "Tolak Sales Return?"}
+        title={
+          actionType === "approve"
+            ? t("page.salesReturn.list.modal.approveTitle")
+            : t("page.salesReturn.list.modal.rejectTitle")
+        }
         description={
           actionType === "approve"
-            ? "Retur akan disetujui. Stok sudah ditambahkan saat pembuatan retur."
-            : "Retur akan ditolak dan stok akan dikembalikan ke jumlah semula."
+            ? t("page.salesReturn.list.modal.approveDesc")
+            : t("page.salesReturn.list.modal.rejectDesc")
         }
-        confirmText={actionType === "approve" ? "Ya, Setujui" : "Ya, Tolak"}
+        confirmText={
+          actionType === "approve"
+            ? t("page.salesReturn.list.modal.approveConfirm")
+            : t("page.salesReturn.list.modal.rejectConfirm")
+        }
         confirmVariant={actionType === "approve" ? "default" : "destructive"}
         onConfirm={() => {
           if (actionType === "approve") approveMut.mutate(actionTarget);

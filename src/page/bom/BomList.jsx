@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Plus, Search, Eye, Trash2 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import { getAllBom, deleteBom } from "@/services/bom";
@@ -12,6 +13,7 @@ import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 
 const BomList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -34,23 +36,27 @@ const BomList = () => {
 
   const deleteMut = useMutation(() => deleteBom(deleteTarget), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "BOM dihapus" });
+      toast.success(t("page.bom.list.toast.success"), {
+        description: t("page.bom.list.toast.successDesc")
+      });
       queryClient.invalidateQueries(["bom-list"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.bom.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const columns = [
     {
-      header: "Nama BOM",
+      header: t("page.bom.list.table.name"),
       render: (item) => (
         <span className="font-medium text-sm">{item.name || `BOM #${item.id}`}</span>
       )
     },
     {
-      header: "Produk",
+      header: t("page.bom.list.table.product"),
       render: (item) => (
         <div>
           <p className="text-sm font-medium">{item.productData?.nameProduct || "-"}</p>
@@ -59,17 +65,17 @@ const BomList = () => {
       )
     },
     {
-      header: "Total Item",
+      header: t("page.bom.list.table.totalItems"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.lines?.length || 0}</span>
     },
     {
-      header: "Total Qty",
+      header: t("page.bom.list.table.totalQty"),
       align: "center",
       render: (item) => <span className="font-mono text-sm">{item.totalQty || 0}</span>
     },
     {
-      header: "Catatan",
+      header: t("page.bom.list.table.notes"),
       render: (item) => (
         <span className="text-xs text-muted-foreground max-w-[150px] truncate block">
           {item.notes || "-"}
@@ -77,7 +83,7 @@ const BomList = () => {
       )
     },
     {
-      header: "Aksi",
+      header: t("page.bom.list.table.actions"),
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
@@ -108,19 +114,19 @@ const BomList = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">BOM</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
       </nav>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Bill of Materials</h1>
-          <p className="text-sm text-muted-foreground mt-1">Daftar BOM produk</p>
+          <h1 className="text-2xl font-bold">{t("page.bom.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.bom.list.description")}</p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
           <Button onClick={() => navigate("/bom/add")} className="shrink-0 gap-2">
-            <Plus size={16} /> Tambah BOM
+            <Plus size={16} /> {t("page.bom.list.addButton")}
           </Button>
         )}
       </div>
@@ -129,7 +135,7 @@ const BomList = () => {
         columns={columns}
         data={items}
         isLoading={isLoading}
-        emptyMessage="Tidak ada BOM"
+        emptyMessage={t("page.bom.list.empty")}
         toolbar={
           <div className="relative w-full sm:w-64">
             <Search
@@ -137,7 +143,7 @@ const BomList = () => {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Cari produk..."
+              placeholder={t("page.bom.list.searchPlaceholder")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -154,9 +160,9 @@ const BomList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Hapus BOM?"
-        description="Data yang dihapus tidak dapat dikembalikan."
-        confirmText="Ya, Hapus"
+        title={t("page.bom.list.modal.deleteTitle")}
+        description={t("page.bom.list.modal.deleteDescription")}
+        confirmText={t("page.bom.list.modal.confirmDelete")}
         onConfirm={() => deleteMut.mutate()}
       />
     </div>

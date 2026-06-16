@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   getTransferById,
@@ -18,6 +19,7 @@ const statusDetail = {
 };
 
 const DetailStockTransfer = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -30,20 +32,20 @@ const DetailStockTransfer = () => {
 
   const approveMut = useMutation(() => approveStockTransfer(id), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Transfer disetujui, stok disesuaikan" });
+      toast.success(t("page.stockTransfer.detail.toast.success"), { description: t("page.stockTransfer.detail.toast.approveDesc") });
       queryClient.invalidateQueries(["stock-transfer-detail", id]);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.stockTransfer.detail.toast.error"), { description: err?.response?.data?.message || err.message })
   });
 
   const rejectMut = useMutation(() => rejectStockTransfer(id), {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Transfer ditolak" });
+      toast.success(t("page.stockTransfer.detail.toast.success"), { description: t("page.stockTransfer.detail.toast.rejectDesc") });
       queryClient.invalidateQueries(["stock-transfer-detail", id]);
     },
     onError: (err) =>
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.stockTransfer.detail.toast.error"), { description: err?.response?.data?.message || err.message })
   });
 
   if (isLoading)
@@ -56,9 +58,9 @@ const DetailStockTransfer = () => {
   if (!transfer)
     return (
       <div className="p-6">
-        <p className="text-muted-foreground">Transfer tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.stockTransfer.detail.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/stock-transfer")} className="mt-4">
-          <ArrowLeft size={16} className="mr-1" /> Kembali
+          <ArrowLeft size={16} className="mr-1" /> {t("page.stockTransfer.detail.back")}
         </Button>
       </div>
     );
@@ -71,42 +73,42 @@ const DetailStockTransfer = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("page.stockTransfer.detail.breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
-          Stock Transfer
+          {t("page.stockTransfer.detail.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Detail</span>
+        <span className="text-primary font-semibold">{t("page.stockTransfer.detail.breadcrumb.detail")}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Detail Stock Transfer</h1>
+          <h1 className="text-2xl font-bold">{t("page.stockTransfer.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{transfer.transferNumber}</p>
         </div>
         <Button variant="outline" onClick={() => navigate("/stock-transfer")}>
-          <ArrowLeft size={16} className="mr-1" /> Kembali
+          <ArrowLeft size={16} className="mr-1" /> {t("page.stockTransfer.detail.back")}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">Informasi Transfer</h2>
+            <h2 className="text-lg font-semibold mb-4">{t("page.stockTransfer.detail.section.informasiTransfer")}</h2>
             <table className="w-full text-sm">
               <tbody>
                 {[
-                  ["Transfer No", transfer.transferNumber],
-                  ["Dari", transfer.fromStoreData?.name || "-"],
-                  ["Ke", transfer.toStoreData?.name || "-"],
+                  [t("page.stockTransfer.detail.field.transferNo"), transfer.transferNumber],
+                  [t("page.stockTransfer.detail.field.from"), transfer.fromStoreData?.name || "-"],
+                  [t("page.stockTransfer.detail.field.to"), transfer.toStoreData?.name || "-"],
                   [
-                    "Dikirim Oleh",
+                    t("page.stockTransfer.detail.field.transferredBy"),
                     transfer.transferredBy || transfer.transferredByData?.name || "-"
                   ],
-                  ["Tanggal", new Date(transfer.createdAt).toLocaleDateString("id")],
-                  ["Catatan", transfer.notes || "-"]
+                  [t("page.stockTransfer.detail.field.date"), new Date(transfer.createdAt).toLocaleDateString("id")],
+                  [t("page.stockTransfer.detail.field.notes"), transfer.notes || "-"]
                 ].map(([l, v]) => (
                   <tr key={l} className="border-b border-muted/30">
                     <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
@@ -118,14 +120,14 @@ const DetailStockTransfer = () => {
           </div>
 
           <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">Items</h2>
+            <h2 className="text-lg font-semibold mb-4">{t("page.stockTransfer.detail.section.items")}</h2>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2">Produk</th>
-                  <th className="pb-2 text-right">Qty</th>
-                  <th className="pb-2 text-center">Unit</th>
-                  <th className="pb-2">Catatan</th>
+                  <th className="pb-2">{t("page.stockTransfer.detail.table.product")}</th>
+                  <th className="pb-2 text-right">{t("page.stockTransfer.detail.table.qty")}</th>
+                  <th className="pb-2 text-center">{t("page.stockTransfer.detail.table.unit")}</th>
+                  <th className="pb-2">{t("page.stockTransfer.detail.table.notes")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -143,7 +145,7 @@ const DetailStockTransfer = () => {
                 ) : (
                   <tr>
                     <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                      Tidak ada item
+                      {t("page.stockTransfer.detail.table.noItems")}
                     </td>
                   </tr>
                 )}
@@ -155,7 +157,7 @@ const DetailStockTransfer = () => {
         <div className="space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Status
+              {t("page.stockTransfer.detail.section.status")}
             </h2>
             <div
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
@@ -168,7 +170,7 @@ const DetailStockTransfer = () => {
                   size="sm"
                   disabled={approveMut.isLoading}
                   onClick={() => approveMut.mutate()}>
-                  <CheckCircle size={15} /> Setujui
+                  <CheckCircle size={15} /> {t("page.stockTransfer.detail.approve")}
                 </Button>
                 <Button
                   className="w-full gap-2"
@@ -176,7 +178,7 @@ const DetailStockTransfer = () => {
                   size="sm"
                   disabled={rejectMut.isLoading}
                   onClick={() => rejectMut.mutate()}>
-                  <XCircle size={15} /> Tolak
+                  <XCircle size={15} /> {t("page.stockTransfer.detail.reject")}
                 </Button>
               </div>
             )}

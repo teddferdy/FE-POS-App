@@ -18,17 +18,17 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama supplier wajib diisi"),
-  contactPerson: z.string().optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
-  email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const AddSupplier = () => {
   const { t } = useTranslation();
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.supplier.validation.nameRequired")),
+    contactPerson: z.string().optional().or(z.literal("")),
+    phone: z.string().optional().or(z.literal("")),
+    email: z.string().email(t("page.supplier.validation.emailInvalid")).optional().or(z.literal("")),
+    address: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
@@ -229,7 +229,7 @@ const AddSupplier = () => {
             disabled={createMutation.isLoading}
             className="gap-2">
             <Save size={18} />
-            Simpan sebagai Draft
+            {t("page.supplier.form.saveAsDraft")}
           </Button>
           <Button
             onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
@@ -263,9 +263,9 @@ const AddSupplier = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.supplier.modal.draftTitle")}
+        description={t("page.supplier.modal.draftDescription")}
+        confirmText={t("page.supplier.modal.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

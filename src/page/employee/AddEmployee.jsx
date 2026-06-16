@@ -126,14 +126,14 @@ const AddEmployee = () => {
   const contractDuration = form.watch("contractDuration");
 
   const contractDurations = [
-    { value: "3", label: "3 Bulan" },
-    { value: "6", label: "6 Bulan" },
-    { value: "9", label: "9 Bulan" },
-    { value: "12", label: "12 Bulan / 1 Tahun" },
-    { value: "24", label: "2 Tahun" },
-    { value: "36", label: "3 Tahun" },
-    { value: "48", label: "4 Tahun" },
-    { value: "60", label: "5 Tahun" }
+    { value: "3", label: t("page.employee.form.contractDuration.3months") },
+    { value: "6", label: t("page.employee.form.contractDuration.6months") },
+    { value: "9", label: t("page.employee.form.contractDuration.9months") },
+    { value: "12", label: t("page.employee.form.contractDuration.12months") },
+    { value: "24", label: t("page.employee.form.contractDuration.2years") },
+    { value: "36", label: t("page.employee.form.contractDuration.3years") },
+    { value: "48", label: t("page.employee.form.contractDuration.4years") },
+    { value: "60", label: t("page.employee.form.contractDuration.5years") }
   ];
 
   const getDaysInMonth = () => {
@@ -222,7 +222,7 @@ const AddEmployee = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.employee.add.toast.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -294,7 +294,7 @@ const AddEmployee = () => {
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (documents.length === 0) {
-      toast.error("Gagal", { description: "Dokumen karyawan wajib diupload minimal 1 file" });
+      toast.error(t("page.employee.add.toast.error"), { description: t("page.employee.add.toast.documentRequired") });
       setIsSubmitting(false);
       return;
     }
@@ -344,7 +344,7 @@ const AddEmployee = () => {
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                     <span className="material-symbols-outlined text-primary">person</span>
-                    <h4 className="text-base font-semibold text-foreground">Informasi Pribadi</h4>
+                    <h4 className="text-base font-semibold text-foreground">{t("page.employee.add.personalInfo")}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -380,7 +380,7 @@ const AddEmployee = () => {
                         ) : (
                           <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-4">
                             <CloudUpload size={36} className="mb-2" />
-                            <span className="text-xs font-semibold text-center">Upload Foto</span>
+                            <span className="text-xs font-semibold text-center">{t("page.employee.add.uploadPhoto")}</span>
                           </div>
                         )}
                       </div>
@@ -460,8 +460,8 @@ const AddEmployee = () => {
                                   <SelectValue placeholder="Pilih" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                                  <SelectItem value="Perempuan">Perempuan</SelectItem>
+                                  <SelectItem value="Laki-laki">{t("page.employee.add.male")}</SelectItem>
+                                  <SelectItem value="Perempuan">{t("page.employee.add.female")}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -478,7 +478,7 @@ const AddEmployee = () => {
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 Tempat Lahir <span className="text-destructive">*</span>
                               </FormLabel>
-                              <Input {...field} placeholder="Contoh: Jakarta" />
+                              <Input {...field} placeholder={t("page.employee.add.placeOfBirthPlaceholder")} />
                               <FormMessage />
                             </FormItem>
                           )}
@@ -512,7 +512,7 @@ const AddEmployee = () => {
                               {...field}
                               rows={3}
                               className="resize-none"
-                              placeholder="Alamat lengkap"
+                              placeholder={t("page.employee.add.addressPlaceholder")}
                             />
                             <FormMessage />
                           </FormItem>
@@ -526,7 +526,7 @@ const AddEmployee = () => {
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                     <span className="material-symbols-outlined text-primary">work</span>
-                    <h4 className="text-base font-semibold text-foreground">Informasi Pekerjaan</h4>
+                    <h4 className="text-base font-semibold text-foreground">{t("page.employee.add.jobInfo")}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -542,7 +542,7 @@ const AddEmployee = () => {
                             {...field}
                             disabled
                             className="font-mono bg-muted/50"
-                            placeholder="Memuat..."
+                            placeholder={t("page.employee.add.loading")}
                           />
                           <FormMessage />
                         </FormItem>
@@ -584,7 +584,7 @@ const AddEmployee = () => {
                               <div className="flex-1">
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Departemen" />
+                                    <SelectValue placeholder={t("page.employee.add.departmentPlaceholder")} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {departments.map((d) => (
@@ -601,7 +601,7 @@ const AddEmployee = () => {
                                 size="icon"
                                 className="shrink-0"
                                 onClick={() => navigate("/add-department")}
-                                title="Tambah Departemen Baru">
+                                title={t("page.employee.add.addDepartment")}>
                                 <span className="material-symbols-outlined text-base">add</span>
                               </Button>
                             </div>
@@ -651,7 +651,7 @@ const AddEmployee = () => {
                                   }))}
                                   value={field.value || ""}
                                   onChange={field.onChange}
-                                  placeholder="Pilih Jabatan"
+                                  placeholder={t("page.employee.add.positionPlaceholder")}
                                 />
                               </div>
                               <Button
@@ -660,7 +660,7 @@ const AddEmployee = () => {
                                 size="icon"
                                 className="shrink-0"
                                 onClick={() => navigate("/add-position")}
-                                title="Tambah Jabatan Baru">
+                                title={t("page.employee.add.addPosition")}>
                                 <span className="material-symbols-outlined text-base">add</span>
                               </Button>
                             </div>
@@ -710,7 +710,7 @@ const AddEmployee = () => {
                                   }))}
                                   value={field.value || ""}
                                   onChange={field.onChange}
-                                  placeholder="Pilih Cabang"
+                                  placeholder={t("page.employee.add.storePlaceholder")}
                                   searchPlaceholder="Cari cabang..."
                                 />
                               </div>
@@ -720,7 +720,7 @@ const AddEmployee = () => {
                                 size="icon"
                                 className="shrink-0"
                                 onClick={() => navigate("/add-location")}
-                                title="Tambah Cabang Baru">
+                                title={t("page.employee.add.addStore")}>
                                 <span className="material-symbols-outlined text-base">add</span>
                               </Button>
                             </div>
@@ -739,41 +739,45 @@ const AddEmployee = () => {
                           </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Pilih Tipe" />
+                              <SelectValue placeholder={t("page.employee.add.employmentTypePlaceholder")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="full-time">Full Time</SelectItem>
-                              <SelectItem value="part-time">Part Time</SelectItem>
-                              <SelectItem value="contract">Kontrak</SelectItem>
-                              <SelectItem value="internship">Magang</SelectItem>
+                              <SelectItem value="full-time">{t("page.employee.add.fullTime")}</SelectItem>
+                              <SelectItem value="part-time">{t("page.employee.add.partTime")}</SelectItem>
+                              <SelectItem value="contract">{t("page.employee.add.contract")}</SelectItem>
+                              <SelectItem value="internship">{t("page.employee.add.internship")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="shift"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Shift
-                          </FormLabel>
-                          <Combobox
-                            options={(shifts || []).map((s) => ({
-                              value: String(s.id),
-                              label: s.shiftName || s.name
-                            }))}
-                            value={field.value || ""}
-                            onChange={field.onChange}
-                            placeholder={selectedStore ? "Pilih Shift" : "Pilih cabang dulu"}
-                            disabled={!selectedStore}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+<FormField
+  control={form.control}
+  name="shift"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {t("page.employee.form.shift")}
+      </FormLabel>
+      <Combobox
+        options={(shifts || []).map((s) => ({
+          value: String(s.id),
+          label: s.shiftName || s.name
+        }))}
+        value={field.value || ""}
+        onChange={field.onChange}
+        placeholder={
+          selectedStore
+            ? t("page.employee.form.shiftPlaceholder")
+            : t("page.employee.form.shiftSelectStoreFirst")
+        }
+        disabled={!selectedStore}
+      />
+      <FormMessage />
+    </FormItem>
+  )}
+/>
                     <FormField
                       control={form.control}
                       name="startDate"
@@ -804,7 +808,7 @@ const AddEmployee = () => {
                               </FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Pilih Durasi" />
+                                  <SelectValue placeholder={t("page.employee.add.durationPlaceholder")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {contractDurations.map((d) => (
@@ -926,7 +930,7 @@ const AddEmployee = () => {
                           value={dailySalary ? dailySalary.toLocaleString("id-ID") : ""}
                           readOnly
                           className="pl-10 bg-muted/50 text-muted-foreground"
-                          placeholder="Otomatis terhitung"
+                          placeholder={t("page.employee.add.autoCalculated")}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -954,7 +958,7 @@ const AddEmployee = () => {
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Username <span className="text-destructive">*</span>
                           </FormLabel>
-                          <Input {...field} placeholder="Username unik untuk login" />
+                            <Input {...field} placeholder={t("page.employee.add.usernamePlaceholder")} />
                           <FormMessage />
                         </FormItem>
                       )}
@@ -987,30 +991,30 @@ const AddEmployee = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="roleId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Pilih Peran (Role)
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={String(field.value || "")}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Default: User" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {roles.map((role) => (
-                                <SelectItem key={role.id || role._id} value={String(role.id || role._id)}>
-                                  {role.name || role.role}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+<FormField
+  control={form.control}
+  name="roleId"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {t("page.employee.form.roleSelect")}
+      </FormLabel>
+      <Select onValueChange={field.onChange} value={String(field.value || "")}>
+        <SelectTrigger>
+          <SelectValue placeholder={t("page.employee.form.rolePlaceholder")} />
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((role) => (
+            <SelectItem key={role.id || role._id} value={String(role.id || role._id)}>
+              {role.name || role.role}
+            </SelectItem>
+          ))}
+        </SelectContent>
+        <FormMessage />
+      </Select>
+    </FormItem>
+  )}
+/>
                     <FormField
                       control={form.control}
                       name="accessMenu"
@@ -1035,7 +1039,7 @@ const AddEmployee = () => {
                               onClick={() => setAccessMenuModalOpen(true)}
                             >
                               {disableAccess
-                                ? "Pilih role terlebih dahulu"
+                                ? t("page.employee.add.selectRoleFirst")
                                 : permCount > 0
                                   ? t("page.employee.form.accessMenuCount", { count: permCount })
                                   : t("page.employee.form.accessMenuButton")}
@@ -1060,7 +1064,7 @@ const AddEmployee = () => {
                 <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                   <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                     <span className="material-symbols-outlined text-primary">description</span>
-                    <h4 className="text-base font-semibold text-foreground">Dokumen Karyawan</h4>
+                    <h4 className="text-base font-semibold text-foreground">{t("page.employee.add.documents")}</h4>
                   </div>
 
                   <input
@@ -1080,10 +1084,10 @@ const AddEmployee = () => {
                         className="text-muted-foreground group-hover:text-primary transition-colors mb-2"
                       />
                       <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                        Klik untuk upload dokumen
+                        {t("page.employee.add.clickToUpload")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PDF, DOC, XLS, JPG, PNG — multiple file
+                        {t("page.employee.add.documentTypes")}
                       </p>
                     </div>
 
@@ -1106,7 +1110,7 @@ const AddEmployee = () => {
                               type="button"
                               onClick={() => handlePreviewDocument(doc)}
                               className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                              title="Lihat file">
+                              title={t("page.employee.add.viewFile")}>
                               <Eye size={16} />
                             </button>
                             <button
@@ -1130,33 +1134,30 @@ const AddEmployee = () => {
                     <span className="material-symbols-outlined text-3xl text-primary mb-3">
                       badge
                     </span>
-                    <h3 className="text-base font-semibold text-primary mb-2">Panduan Pengisian</h3>
+                    <h3 className="text-base font-semibold text-primary mb-2">{t("page.employee.add.guidance")}</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Pastikan data yang dimasukkan sesuai dengan dokumen resmi karyawan.
                     </p>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-sm text-foreground">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          check_circle
-                        </span>
-                        <span>
-                          Field dengan tanda <span className="text-destructive">*</span> wajib
-                          diisi.
-                        </span>
-                      </li>
-                      <li className="flex items-center gap-3 text-sm text-foreground">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          check_circle
-                        </span>
-                        <span>Data lain bersifat opsional.</span>
-                      </li>
-                      <li className="flex items-center gap-3 text-sm text-foreground">
-                        <span className="material-symbols-outlined text-primary text-base">
-                          check_circle
-                        </span>
-                        <span>Role default adalah User jika tidak dipilih.</span>
-                      </li>
-                    </ul>
+<ul className="space-y-3">
+                       <li className="flex items-center gap-3 text-sm text-foreground">
+                         <span className="material-symbols-outlined text-primary text-base">
+                           check_circle
+                         </span>
+                         <span>{t("page.employee.edit.guidanceRequired")}</span>
+                       </li>
+                       <li className="flex items-center gap-3 text-sm text-foreground">
+                         <span className="material-symbols-outlined text-primary text-base">
+                           check_circle
+                         </span>
+                         <span>{t("page.employee.add.guidanceOptional")}</span>
+                       </li>
+                       <li className="flex items-center gap-3 text-sm text-foreground">
+                         <span className="material-symbols-outlined text-primary text-base">
+                           check_circle
+                         </span>
+                         <span>{t("page.employee.edit.guidanceRole")}</span>
+                       </li>
+                     </ul>
                   </div>
                   <div className="absolute -right-10 -bottom-10 opacity-10">
                     <span className="material-symbols-outlined text-[200px] text-primary">
@@ -1205,24 +1206,24 @@ const AddEmployee = () => {
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Karyawan Berhasil Ditambahkan"
+        title={t("page.employee.add.successTitle")}
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan Perubahan?"
-        confirmText="Ya, Batalkan"
+        title={t("page.employee.add.cancelTitle")}
+        confirmText={t("page.employee.add.cancelConfirm")}
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("page.employee.add.draftTitle")}
+        description={t("page.employee.add.draftDescription")}
+        confirmText={t("page.employee.add.draftConfirm")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

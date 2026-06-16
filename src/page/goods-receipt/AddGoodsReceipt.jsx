@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { Save, X, Plus, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ const AddGoodsReceipt = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const [poId, setPoId] = useState(searchParams.get("poId") || "");
   const [receivedDate, setReceivedDate] = useState(new Date());
@@ -81,15 +83,17 @@ const AddGoodsReceipt = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!poId || items.length === 0) {
-      toast.error("Validasi", { description: "PO dan minimal 1 item harus diisi" });
+      toast.error(t("page.goodsReceipt.add.toast.validation"), {
+        description: t("page.goodsReceipt.add.toast.poRequired")
+      });
       return;
     }
     const validItems = items.filter(
       (it) => parseFloat(it.qtyReceived) > 0 && (it.ingredientName || it.ingredient)
     );
     if (validItems.length === 0) {
-      toast.error("Validasi", {
-        description: "Setidaknya 1 item dengan nama dan qty diterima > 0"
+      toast.error(t("page.goodsReceipt.add.toast.validation"), {
+        description: t("page.goodsReceipt.add.toast.itemRequired")
       });
       return;
     }
@@ -110,11 +114,15 @@ const AddGoodsReceipt = () => {
         }))
       };
       await addGoodsReceipt(payload);
-      toast.success("Berhasil", { description: "Goods receipt berhasil dibuat" });
+      toast.success(t("page.goodsReceipt.add.toast.success"), {
+        description: t("page.goodsReceipt.add.toast.successDesc")
+      });
       queryClient.invalidateQueries(["goods-receipts"]);
       navigate("/goods-receipt");
     } catch (err) {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.goodsReceipt.add.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -126,20 +134,20 @@ const AddGoodsReceipt = () => {
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground">
-          Dashboard
+          {t("breadcrumb.dashboard")}
         </button>
         <span className="text-xs">/</span>
         <button onClick={() => navigate("/goods-receipt")} className="hover:text-foreground">
-          Goods Receipt
+          {t("breadcrumb.goodsReceipt")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">Tambah</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
       </nav>
 
       <div>
-        <h1 className="text-2xl font-bold">Tambah Goods Receipt</h1>
+        <h1 className="text-2xl font-bold">{t("page.goodsReceipt.add.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Catat penerimaan barang dari purchase order
+          {t("page.goodsReceipt.add.description")}
         </p>
       </div>
 
@@ -149,7 +157,8 @@ const AddGoodsReceipt = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>
-              Purchase Order <span className="text-destructive">*</span>
+              {t("page.goodsReceipt.add.form.purchaseOrder")}{" "}
+              <span className="text-destructive">*</span>
             </Label>
             <select
               value={poId}
@@ -158,7 +167,7 @@ const AddGoodsReceipt = () => {
                 setItems([]);
               }}
               className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">Pilih PO</option>
+              <option value="">{t("page.goodsReceipt.add.form.selectPO")}</option>
               {purchaseOrders.map((po) => (
                 <option key={po.id} value={po.id}>
                   {po.orderNumber}
@@ -167,25 +176,27 @@ const AddGoodsReceipt = () => {
             </select>
             {selectedPO && (
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs text-muted-foreground">Status: {selectedPO.status}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("page.goodsReceipt.add.form.status")}: {selectedPO.status}
+                </span>
                 <span className="text-xs text-muted-foreground">|</span>
                 <span className="text-xs text-muted-foreground">
-                  Store: {selectedPO.storeData?.name || "-"}
+                  {t("page.goodsReceipt.add.form.store")}: {selectedPO.storeData?.name || "-"}
                 </span>
               </div>
             )}
           </div>
           <div className="space-y-2">
-            <Label>Tanggal Diterima</Label>
+            <Label>{t("page.goodsReceipt.add.form.receivedDate")}</Label>
             <DatePicker date={receivedDate} setDate={setReceivedDate} />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>Items</Label>
+          <Label>{t("page.goodsReceipt.add.form.items")}</Label>
           {loadingPo ? (
             <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-              Memuat items...
+              {t("page.goodsReceipt.add.loading.items")}
             </div>
           ) : poId ? (
             <div className="overflow-x-auto border rounded-lg">
@@ -193,19 +204,19 @@ const AddGoodsReceipt = () => {
                 <thead>
                   <tr className="bg-muted/60 border-b">
                     <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      Nama
+                      {t("page.goodsReceipt.add.table.name")}
                     </th>
                     <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                      Qty PO
+                      {t("page.goodsReceipt.add.table.qtyPo")}
                     </th>
                     <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                      Unit
+                      {t("page.goodsReceipt.add.table.unit")}
                     </th>
                     <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                      Qty Diterima
+                      {t("page.goodsReceipt.add.table.qtyReceived")}
                     </th>
                     <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                      Catatan
+                      {t("page.goodsReceipt.add.table.notes")}
                     </th>
                     <th className="w-10"></th>
                   </tr>
@@ -225,7 +236,7 @@ const AddGoodsReceipt = () => {
                             value={item.ingredientName}
                             onChange={(e) => updateItem(idx, "ingredientName", e.target.value)}
                             className="h-8 text-xs"
-                            placeholder="Nama barang"
+                            placeholder={t("page.goodsReceipt.add.placeholder.name")}
                           />
                         )}
                       </td>
@@ -241,7 +252,7 @@ const AddGoodsReceipt = () => {
                               updateItem(idx, "qty", e.target.value.replace(/[^0-9]/g, ""))
                             }
                             className="h-8 text-xs text-center w-16 mx-auto"
-                            placeholder="0"
+                            placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                           />
                         )}
                       </td>
@@ -256,18 +267,18 @@ const AddGoodsReceipt = () => {
                               value={item.unit}
                               onChange={(e) => updateItem(idx, "unit", e.target.value)}
                               className="h-8 px-2 rounded border border-input bg-background text-xs">
-                              <option value="pcs">Pcs</option>
-                              <option value="buah">Buah</option>
-                              <option value="kg">Kg</option>
-                              <option value="gram">Gram</option>
-                              <option value="liter">Liter</option>
-                              <option value="ml">Ml</option>
-                              <option value="meter">Meter</option>
-                              <option value="cm">Cm</option>
-                              <option value="lusin">Lusin</option>
-                              <option value="box">Box</option>
-                              <option value="pack">Pack</option>
-                              <option value="karton">Karton</option>
+                              <option value="pcs">{t("unit.pcs")}</option>
+                              <option value="buah">{t("unit.buah")}</option>
+                              <option value="kg">{t("unit.kg")}</option>
+                              <option value="gram">{t("unit.gram")}</option>
+                              <option value="liter">{t("unit.liter")}</option>
+                              <option value="ml">{t("unit.ml")}</option>
+                              <option value="meter">{t("unit.meter")}</option>
+                              <option value="cm">{t("unit.cm")}</option>
+                              <option value="lusin">{t("unit.lusin")}</option>
+                              <option value="box">{t("unit.box")}</option>
+                              <option value="pack">{t("unit.pack")}</option>
+                              <option value="karton">{t("unit.karton")}</option>
                             </select>
                           )}
                         </div>
@@ -286,7 +297,7 @@ const AddGoodsReceipt = () => {
                             )
                           }
                           className="h-8 text-xs text-right w-24 ml-auto"
-                          placeholder="0"
+                          placeholder={t("page.goodsReceipt.add.placeholder.qty")}
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -295,7 +306,7 @@ const AddGoodsReceipt = () => {
                           value={item.conditionNotes}
                           onChange={(e) => updateItem(idx, "conditionNotes", e.target.value)}
                           className="h-8 text-xs"
-                          placeholder="Kondisi (opsional)"
+                          placeholder={t("page.goodsReceipt.add.placeholder.condition")}
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
@@ -315,45 +326,50 @@ const AddGoodsReceipt = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-sm text-muted-foreground">
-              Pilih purchase order terlebih dahulu
+              {t("page.goodsReceipt.add.form.noPO")}
             </div>
           )}
           {poId && (
             <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-              <Plus size={14} /> Tambah Item
+              <Plus size={14} /> {t("page.goodsReceipt.add.form.addItem")}
             </Button>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label>Catatan</Label>
+          <Label>{t("page.goodsReceipt.add.form.notesLabel")}</Label>
           <Textarea
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Catatan penerimaan (opsional)"
+            placeholder={t("page.goodsReceipt.add.placeholder.notes")}
           />
         </div>
 
         <div className="flex items-center justify-between gap-4 pt-4 border-t">
           <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-            <X size={16} className="mr-1" /> Batal
+            <X size={16} className="mr-1" /> {t("page.goodsReceipt.add.form.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting || items.length === 0}>
-            <Save size={16} className="mr-1" /> {isSubmitting ? "Menyimpan..." : "Simpan"}
+            <Save size={16} className="mr-1" />{" "}
+            {isSubmitting
+              ? t("page.goodsReceipt.add.form.saving")
+              : t("page.goodsReceipt.add.form.save")}
           </Button>
         </div>
       </form>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && (
+        <Loading fullscreen size="lg" label={t("page.goodsReceipt.add.form.saving")} />
+      )}
 
       <Modal
         type="confirm"
         open={cancelModal}
         onOpenChange={(o) => !o && setCancelModal(false)}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("page.goodsReceipt.add.modal.title")}
+        description={t("page.goodsReceipt.add.modal.description")}
+        confirmText={t("page.goodsReceipt.add.modal.confirm")}
         onConfirm={() => {
           setCancelModal(false);
           navigate("/goods-receipt");

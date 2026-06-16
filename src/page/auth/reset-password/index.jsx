@@ -62,21 +62,21 @@ const ResetPasswordPage = () => {
     () =>
       z
         .object({
-          email: z.string().min(1, { message: "Email tidak boleh kosong" }).email({
-            message: "Format email tidak valid"
+          email: z.string().min(1, { message: t("page.resetPassword.validation.emailRequired") }).email({
+            message: t("page.resetPassword.validation.emailInvalid")
           }),
           newPassword: z.string().min(6, {
-            message: "Kata sandi minimal 6 karakter"
+            message: t("page.resetPassword.validation.passwordMin")
           }),
           confirmPassword: z.string().min(1, {
-            message: "Konfirmasi kata sandi tidak boleh kosong"
+            message: t("page.resetPassword.validation.confirmRequired")
           })
         })
         .refine((data) => data.newPassword === data.confirmPassword, {
-          message: "Kata sandi tidak cocok",
+          message: t("page.resetPassword.validation.passwordMismatch"),
           path: ["confirmPassword"]
         }),
-    []
+    [t]
   );
 
   const form = useForm({
@@ -92,15 +92,15 @@ const ResetPasswordPage = () => {
     onMutate: () => setIsLoading(true),
     onSuccess: () => {
       setIsLoading(false);
-      toast.success("Success", {
-        description: "Password has been reset successfully"
+      toast.success(t("page.resetPassword.toast.success"), {
+        description: t("page.resetPassword.toast.successDescription")
       });
       setTimeout(() => navigate("/"), 1500);
     },
     onError: (err) => {
       setIsLoading(false);
       const message = err.response?.data?.error || err.response?.data?.message || err.message;
-      toast.error("Reset Password Gagal", {
+      toast.error(t("page.resetPassword.toast.error"), {
         description: message
       });
     }

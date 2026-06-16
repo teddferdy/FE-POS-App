@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const OfflineIndicator = () => {
+  const { t } = useTranslation();
   const [online, setOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ const OfflineIndicator = () => {
         fontSize: 14,
         fontWeight: 600
       }}>
-      Anda sedang offline — data akan disinkronkan saat koneksi kembali
+      {t("offline.message")}
     </div>
   );
 };

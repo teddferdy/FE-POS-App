@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +10,7 @@ const DataTable = ({
   columns = [],
   data = [],
   isLoading = false,
-  emptyMessage = "Tidak ada data",
+  emptyMessage: emptyMessageProp,
   emptyIcon: EmptyIcon,
   containerClassName,
   toolbar,
@@ -22,6 +23,8 @@ const DataTable = ({
   isSelectable,
   rowKey
 }) => {
+  const { t } = useTranslation();
+  const emptyMessage = emptyMessageProp ?? t("common.noData");
   const getRowId = (row) => {
     if (rowKey) return typeof rowKey === "function" ? rowKey(row) : row[rowKey];
     return row.id || row._id;

@@ -47,11 +47,11 @@ const DiscountList = () => {
 
   const deleteMutation = useMutation(deleteDiscount, {
     onSuccess: () => {
-      toast.success("Berhasil", { description: "Diskon berhasil dihapus" });
+      toast.success(t("page.discount.list.toast.success"), { description: t("page.discount.list.toast.successDescription") });
       queryClient.invalidateQueries(["discounts"]);
     },
     onError: (err) => {
-      toast.error("Gagal", { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.discount.list.toast.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
@@ -110,7 +110,7 @@ const DiscountList = () => {
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
           }`}>
-          {item.status === "active" ? "Aktif" : "Tidak Aktif"}
+          {item.status === "active" ? t("page.discount.list.active") : t("page.discount.list.inactive")}
         </span>
       )
     },
@@ -175,15 +175,15 @@ const DiscountList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Total Diskon</p>
+          <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("page.discount.list.active")}</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm text-muted-foreground">Tidak Aktif</p>
+          <p className="text-sm text-muted-foreground">{t("page.discount.list.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
         </Card>
       </div>
@@ -217,9 +217,9 @@ const DiscountList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Diskon?"
-        description={`Yakin ingin menghapus diskon ${deleteTarget?.name || ""}?`}
-        confirmText="Ya, Hapus"
+        title={t("page.discount.list.deleteTitle")}
+        description={t("page.discount.list.deleteDescription", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.discount.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />
     </div>
