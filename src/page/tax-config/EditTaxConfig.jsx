@@ -19,7 +19,6 @@ import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pajak wajib diisi"),
-  type: z.enum(["PPN", "PPh", "Non-Pajak"]),
   rate: z.coerce.number().min(0, "Tarif tidak boleh negatif"),
   description: z.string().optional().or(z.literal("")),
   isActive: z.boolean().default(true)
@@ -63,7 +62,6 @@ const EditTaxConfig = () => {
     if (tax?.id) {
       form.reset({
         name: tax.name || "",
-        type: tax.type || "PPN",
         rate: tax.rate || 0,
         description: tax.description || "",
         isActive: tax.status === "active"
@@ -88,6 +86,7 @@ const EditTaxConfig = () => {
     updateMutation.mutate({
       id: taxId,
       ...rest,
+      type: 'percentage',
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };

@@ -20,7 +20,6 @@ import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pajak wajib diisi"),
-  type: z.enum(["PPN", "PPh", "Non-Pajak"]),
   rate: z.coerce.number().min(0, "Tarif tidak boleh negatif"),
   description: z.string().optional().or(z.literal("")),
   isActive: z.boolean().default(true)
@@ -43,7 +42,6 @@ const AddTaxConfig = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      type: "PPN",
       rate: 11,
       description: "",
       isActive: true
@@ -66,6 +64,7 @@ const AddTaxConfig = () => {
     const { isActive, ...rest } = values;
     createMutation.mutate({
       ...rest,
+      type: 'percentage',
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };

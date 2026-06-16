@@ -19,6 +19,13 @@ const typeColors = {
   "Non-Pajak": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
 };
 
+const getTaxType = (name) => {
+  if (!name) return "Non-Pajak";
+  if (name.startsWith("PPN")) return "PPN";
+  if (name.startsWith("PPh")) return "PPh";
+  return "Non-Pajak";
+};
+
 const TaxConfigList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -68,12 +75,15 @@ const TaxConfigList = () => {
     { header: t("page.taxConfig.table.name"), accessor: "name" },
     {
       header: t("page.taxConfig.table.type"),
-      render: (item) => (
-        <span
-          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${typeColors[item.type] || typeColors["Non-Pajak"]}`}>
-          {item.type || "Non-Pajak"}
-        </span>
-      )
+      render: (item) => {
+        const taxType = getTaxType(item.name);
+        return (
+          <span
+            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${typeColors[taxType] || typeColors["Non-Pajak"]}`}>
+            {taxType}
+          </span>
+        );
+      }
     },
     {
       header: t("page.taxConfig.table.rate"),
