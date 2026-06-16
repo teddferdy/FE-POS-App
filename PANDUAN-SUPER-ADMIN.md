@@ -201,6 +201,7 @@ flowchart LR
 flowchart LR
     subgraph MASUK["💵 UANG MASUK"]
         POS["Penjualan POS"]
+        AR["Pembayaran Piutang"]
     end
 
     subgraph KELUAR["💸 UANG KELUAR"]
@@ -208,23 +209,26 @@ flowchart LR
         EXP["Pengeluaran"]
     end
 
-    subgraph LAPOR["📊 LAPORAN"]
+    subgraph LAPORAN["📊 LAPORAN"]
         SALES["Penjualan"]
         BEST["Produk Terlaris"]
         PL["Laba/Rugi"]
         CASH["Arus Kas"]
         DAILY["Laporan Harian"]
+        AR_REPORT["Laporan Piutang"]
     end
 
     POS --> SALES
     POS --> BEST
     POS --> PL
+    AR --> CASH
     PO_BAYAR --> PL
     EXP --> PL
     POS --> CASH
     PO_BAYAR --> CASH
     EXP --> CASH
     POS --> DAILY
+    AR --> AR_REPORT
 ```
 
 **Yang perlu kamu tau:**
@@ -281,6 +285,15 @@ flowchart LR
 | Menu | Fungsinya buat bisnis | Nyambung kemana |
 |------|----------------------|------------------|
 | **Diskon** | Atur promo & diskon (per item / per transaksi / member). Bisa set periode, minimal belanja, dan syarat lainnya. | ➡ POS (waktu transaksi) |
+| **Piutang Pelanggan (AR)** | Catat penjualan kredit & pembayaran piutang. Lihat siapa aja yang masih punya tanggungan, total tagihan, dan status lunas/belum. | ➡ POS ➡ Laporan |
+
+### 👷 Karyawan
+| Menu | Fungsinya buat bisnis | Nyambung kemana |
+|------|----------------------|------------------|
+| **Departemen** | Divisi organisasi: Dapur, Kasir, Manajemen, dll. | ➡ Posisi |
+| **Posisi** | Jabatan: Koki, Kasir, Supervisor, dll. | ➡ Karyawan |
+| **Daftar Karyawan** | Data pegawai: gaji, kontrak, dokumen. | ➡ Shift |
+| **Shift** | Jadwal kerja. Biar tau siapa jaga kapan. | — |
 
 ### 👷 Karyawan
 | Menu | Fungsinya buat bisnis | Nyambung kemana |
@@ -312,6 +325,7 @@ flowchart LR
 | **Laporan Harian** | Rekap penjualan per hari. | — |
 | **Laba / Rugi** | Pemasukan - pengeluaran = profit bersih. | — |
 | **Arus Kas** | Uang masuk & keluar. Biar tau kondisi cashflow. | — |
+| **Piutang (AR)** | Rekap piutang pelanggan, status tagihan, total outstanding. | ➡ Piutang Pelanggan |
 
 ### ⚙️ Pengaturan
 | Menu | Fungsinya buat bisnis | Nyambung kemana |
@@ -1159,6 +1173,11 @@ flowchart TD
 | **Cek laba/rugi** | Laporan → Laba/Rugi |
 | **Atur tampilan struk** | Pengaturan → Invoice & Struk |
 | **Buat diskon / promo** | Transaksi → Diskon |
+| **Pelanggan bayar nanti (kredit)** | Piutang Pelanggan (AR) |
+| **Catat pembayaran piutang** | AR Payment |
+| **Tukar poin member dengan produk** | Set harga poin di Produk → Redeem di POS |
+| **Pisah bayar per orang** | Split Bill di POS |
+| **Kirim notifikasi ke pelanggan** | WhatsApp notifikasi otomatis |
 
 ---
 
@@ -1280,6 +1299,10 @@ flowchart TD
 | **Reservasi** | Pilih meja & jam | Cek ketersediaan → booking | Meja terbooking, operasi lebih terprediksi |
 | **Pengeluaran** | Pilih kategori + nominal | Approval (opsional) → simpan | Tercatat di Laba/Rugi & Arus Kas |
 | **Diskon** | Tentukan jenis, nilai, syarat & periode | Terapkan di POS otomatis | Pelanggan dapat potongan, laporan tetap akurat |
+| **Piutang (AR)** | Transaksi kredit → catat piutang | Pembayaran bertahap → Lunas | Tracking tagihan pelanggan, laporan piutang real-time |
+| **Redeem Points** | Set harga poin di produk | Tukar poin di POS | Member makin loyal, poin jadi nilai tukar nyata |
+| **Split Bill** | Pilih metode "Pisah Bayar" di POS | Bagi total per orang | Pelanggan bayar sesuai porsi masing-masing |
+| **WhatsApp Notif** | Order masuk → otomatis kirim WA | WhatsApp Client | Pelanggan dapet notifikasi real-time |
 
 ---
 
@@ -1458,6 +1481,10 @@ stateDiagram-v2
 | **Split Payment** | Pembayaran pake 2 metode sekaligus | "Bayar 50rb tunai + 30rb QRIS" |
 | **RBAC (Role-Based Access Control)** | Sistem izin berdasarkan role — tiap role punya akses beda | "Super Admin bisa semua, Cashier cuma POS" |
 | **Grand Total** | Total akhir setelah ditambah pajak & dikurang diskon | "Grand Total: Rp 120.000 (termasuk PPN 11%)" |
+| **AR (Accounts Receivable) / Piutang** | Tagihan yang belum dibayar oleh pelanggan — penjualan kredit | "Pelanggan A masih punya piutang Rp 500.000" |
+| **Redeem Points** | Penukaran poin member dengan produk atau diskon | "Produk ini bisa ditebus dengan 100 poin" |
+| **Split Bill** | Fitur pisah bayar — 1 meja dibagi pembayarannya per orang | "4 orang makan total Rp 200rb, masing2 bayar Rp 50rb" |
+| **i18n** | Internationalization — dukungan multi bahasa (Indonesia & Inggris) | "Switch ke English dari menu pengaturan" |
 
 ---
 
@@ -1531,6 +1558,23 @@ stateDiagram-v2
 | 3 | **Cashier cuma bisa akses POS & Membership** | Gak bisa buka menu pengaturan |
 | 4 | **Role bisa dikustom** | Bikin role sendiri dengan izin sesuai kebutuhan |
 
+### 8.8 Aturan Accounts Receivable (Piutang)
+
+| # | Aturan | Penjelasan |
+|---|--------|------------|
+| 1 | **Piutang tercatat otomatis pas transaksi POS dengan status kredit** | Kalau pelanggan bayar nanti, sistem otomatis bikin catatan piutang |
+| 2 | **Pembayaran piutang bisa dicicil** | Bayar sebagian, sisa tagihan otomatis terupdate |
+| 3 | **Status piutang: Belum Lunas / Sebagian / Lunas** | Tracking otomatis, tinggal lihat di daftar piutang |
+| 4 | **Laporan piutang real-time** | Tau total tagihan yang outstanding kapan aja |
+
+### 8.9 Aturan Redeem Points
+
+| # | Aturan | Penjelasan |
+|---|--------|------------|
+| 1 | **Produk bisa di-set dengan harga poin** | Admin tentuin berapa poin yang dibutuhkan buat tiap produk |
+| 2 | **Member bisa tukar poin langsung di POS** | Kasir bisa redeem poin member pas transaksi |
+| 3 | **Poin yang dipake otomatis berkurang** | Sistem otomatis kurangi poin member yang dipake |
+
 ---
 
 ## 9. Tabel Role & Hak Akses
@@ -1588,6 +1632,9 @@ stateDiagram-v2
 | Sales Return | ✅ | ✅ | — | — | — |
 | Purchase Return | ✅ | ✅ | — | — | — |
 | Transfer Stok | ✅ | ✅ | — | — | — |
+| **Piutang & Pembayaran** | | | | | |
+| Accounts Receivable (Lihat) | ✅ | ✅ | — | — | — |
+| AR Payment (Tambah) | ✅ | ✅ | — | — | — |
 | **Laporan** | | | | | |
 | Laporan Penjualan | ✅ | ✅ | ✅ | ✅ | — |
 | Produk Terlaris | ✅ | ✅ | ✅ | ✅ | — |
@@ -1627,18 +1674,22 @@ stateDiagram-v2
 
 ---
 
-## 10. List Update Malam Ini (13 Juni 2026)
+## 10. List Update Fitur (16 Juni 2026)
 
-### ✅ Apa Yang Berubah?
+### ✅ Fitur Baru
 
 | # | Perubahan | Dampak buat Bisnis |
 |---|-----------|-------------------|
-| 1 | **Due Date PO** — setiap Purchase Order sekarang bisa diisi jatuh tempo pembayaran | ✅ Tau kapan harus bayar supplier, gak bakal telat |
-| 2 | **Riwayat Pembayaran** — catat pembayaran PO (lunas/cicil/belum) | ✅ Bisa tracking utang ke supplier dengan rapi |
-| 3 | **Total Terbayar** — di list PO langsung kelihatan total yg udah dibayar | ✅ Gak perlu buka satu-satu PO buat cek status bayar |
-| 4 | **Bahan Baku di Purchase Return** — retur barang juga support ingredient | ✅ Gak cuma produk jadi, bahan baku juga bisa diretur |
-| 5 | **Bahan Baku di Goods Receipt** — terima barang ingredient dengan nama jelas | ✅ Stok ingredient akurat pas barang datang |
-| 6 | **Fix: Stok balik pas PO/GR dibatalkan** — stok otomatis kembali ke semula | ✅ Gak perlu stok manual lagi kalau batalin transaksi |
+| 1 | **Accounts Receivable (Piutang Pelanggan)** — catat piutang & pembayaran dari pelanggan yang beli ngutang. Ada detail nominal, jatuh tempo, dan status lunas/belum. | ✅ Bisa jualan dengan sistem bayar nanti (credit sales), tracking siapa yang masih punya tanggungan |
+| 2 | **Redeem Points di Produk** — produk bisa ditukar dengan poin member. Admin bisa set berapa poin yang dibutuhkan per produk. | ✅ Member makin tertarik ngumpulin poin karena bisa ditukar langsung dengan barang |
+| 3 | **Split Bill (Pisah Bayar per Orang)** — 1 meja bisa dibagi pembayarannya per orang. Contoh: Meja 5 total Rp 200rb, 4 orang masing-masing bayar Rp 50rb. | ✅ Cocok buat grup/teman yang mau bayar sendiri-sendiri, gak perlu pusing hitung manual |
+| 4 | **WhatsApp Notifikasi Otomatis** — order masuk & status pesanan otomatis dikirim via WhatsApp ke pelanggan (via WhatsApp Client). | ✅ Pelanggan dapet notifikasi real-time tanpa install aplikasi tambahan |
+| 5 | **Invoice PDF Generator** — struk/invoice bisa di-generate sebagai PDF dengan layout profesional. Support thermal printer & A4. | ✅ Bisa kirim invoice via email/WA sebagai PDF, tampilan lebih rapi |
+| 6 | **Revenue Trend Chart** — grafik tren pendapatan per toko dengan stacked area chart. Bisa filter periode. | ✅ Lihat visualisasi performa penjualan per cabang, bantu analisis bisnis lebih cepat |
+| 7 | **Customer Display** — layar tampilan buat pelanggan yang menunjukkan pesanan & total belanja secara real-time. | ✅ Pelanggan bisa lihat sendiri pesanan mereka, transparan & kurangi kesalahan order |
+| 8 | **Full Terjemahan (i18n)** — semua halaman sudah support Bahasa Indonesia & Inggris. Switch bahasa lewat menu. | ✅ Cocok buat bisnis dengan karyawan atau pelanggan asing |
+| 9 | **System Payment Methods** — QRIS & Cash sekarang permanent (isSystem: true), gabisa dihapus. | ✅ Metode pembayaran dasar tetap aman, gak kehapus secara tidak sengaja |
+| 10 | **Super Admin User Management** — bisa bikin user Super Admin baru langsung dari migration. 3 user super admin: Fabiola Rosa, Surya, Angga. | ✅ Tim manajemen punya akses penuh ke semua toko & fitur |
 
 ### 🚀 Status Deploy
 
@@ -1646,7 +1697,7 @@ stateDiagram-v2
 |------------|-----|--------|
 | **Frontend** (buat dipake) | [bisa-nota-demo.vercel.app](https://bisa-nota-demo.vercel.app) | ✅ Online |
 | **Backend** (otak aplikasi) | [api-bisa-nota.vercel.app](https://api-bisa-nota.vercel.app) | ✅ Online |
-| **Database** (penyimpanan data) | Neon PostgreSQL | ✅ Aman |
+| **Database** (penyimpanan data) | Neon PostgreSQL | ✅ Online — Data sudah dibersihkan, siap produksi |
 
 ### 📋 Yang Lagi Dikerjakan
 
@@ -1655,6 +1706,7 @@ stateDiagram-v2
 | **Halaman Detail Supplier** | Lihat info supplier + history PO + status pembayaran + total utang |
 | **Dashboard Utang (AP Module)** | Daftar semua PO yang belum lunas, total utang per supplier, jatuh tempo |
 | **Payment Tracking di Supplier** | Filter & cari pembayaran berdasarkan supplier |
+| **Laporan Piutang (AR Report)** | Rekap piutang pelanggan, umur piutang, collection tracking |
 
 ---
 
