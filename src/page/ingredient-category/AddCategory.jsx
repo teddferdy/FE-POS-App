@@ -6,12 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Save, X } from "lucide-react";
+import { useCookies } from "react-cookie";
+import { Save, X, Store, Plus } from "lucide-react";
 import {
   addIngredientCategory,
   getIngredientCategoryById,
   editIngredientCategory
 } from "@/services/ingredientCategory";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -29,11 +31,24 @@ const AddCategory = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
   const editId = searchParams.get("id");
   const isEdit = !!editId;
 
   const [showCancel, setShowCancel] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedStore, setSelectedStore] = useState(null);
+
+  const role = user?.role || "";
+  const isSuperAdmin = role === "super_admin";
+
+  const { data: locationsData } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -51,6 +66,7 @@ const AddCategory = () => {
           name: d.name || "",
           isActive: d.status !== "inactive"
         });
+        setSelectedStore(d.store || null);
       },
       onError: () => {
         toast.error(t("page.ingredientCategory.add.toastError"), {
@@ -86,9 +102,14 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values) => {
+    if (isSuperAdmin && !selectedStore) {
+      toast.error(t("page.ingredientCategory.add.storeRequired"));
+      return;
+    }
     const payload = {
       name: values.name.trim(),
-      status: values.isActive
+      status: values.isActive,
+      store: selectedStore
     };
     if (isEdit) {
       editMutation.mutate({ ...payload, id: editId });
@@ -201,6 +222,74 @@ const AddCategory = () => {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="col-span-12">
+                {isSuperAdmin ? (
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Store size={20} className="text-primary shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("page.ingredientCategory.add.storeSection.title")}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("page.ingredientCategory.add.storeSection.desc")}
+                        </p>
+                      </div>
+                    </div>
+                    {locations.length === 0 ? (
+                      <div className="flex items-center gap-3 pl-9">
+                        <p className="text-sm text-muted-foreground">
+                          {t("page.ingredientCategory.add.storeSection.noStore")}
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate("/add-location")}
+                          className="gap-1.5 shrink-0">
+                          <Plus size={16} />
+                          {t("page.ingredientCategory.add.storeSection.addStore")}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 pl-9">
+                        {locations.map((loc) => {
+                          const isChecked = selectedStore === loc.id;
+                          return (
+                            <button
+                              key={loc.id}
+                              type="button"
+                              onClick={() => setSelectedStore(isChecked ? null : loc.id)}
+                              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                isChecked
+                                  ? "bg-primary/10 border-primary text-primary"
+                                  : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                              }`}>
+                              {loc.name}
+                              {isChecked && (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                  stroke="currentColor" strokeWidth="2.5"
+                                  strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
+                    <Store size={16} className="shrink-0" />
+                    <span>
+                      {t("page.ingredientCategory.add.storeInfo")}{" "}
+                      <strong className="text-foreground">
+                        {user?.storeName || `Toko #${selectedStore || user?.store || ""}`}
+                      </strong>
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="col-span-12">
