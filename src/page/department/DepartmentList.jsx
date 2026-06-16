@@ -144,6 +144,22 @@ const DepartmentList = () => {
       )
     },
     {
+      header: t("common.createdBy"),
+      render: (department) => (
+        <span className="text-sm text-muted-foreground">
+          {department.createdByUser?.fullName || department.createdByUser?.userName || department.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (department) => (
+        <span className="text-sm text-muted-foreground">
+          {department.modifiedByUser?.fullName || department.modifiedByUser?.userName || department.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.department.table.actions"),
       align: "center",
       render: (department) => (

@@ -278,6 +278,8 @@
   "common.category": "Kategori",
   "common.actions": "Aksi",
   "common.delete": "Hapus",
+  "common.createdBy": "Dibuat Oleh",
+  "common.modifiedBy": "Diubah Oleh",
   "page.location.list.title": "Daftar Toko",
   "page.location.list.description": "Kelola lokasi dan cabang toko",
   "page.location.list.search": "Cari toko...",

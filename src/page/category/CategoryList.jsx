@@ -235,6 +235,22 @@ const CategoryList = () => {
       )
     },
     {
+      header: t("common.createdBy"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.createdByUser?.fullName || cat.createdByUser?.userName || cat.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.category.table.actions"),
       align: "right",
       render: (cat) => (

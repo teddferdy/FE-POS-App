@@ -207,6 +207,22 @@ const ProductList = () => {
       }
     },
     {
+      header: t("common.createdBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "right",
       render: (product) => (

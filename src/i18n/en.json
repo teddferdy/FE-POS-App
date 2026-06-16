@@ -279,6 +279,8 @@
   "common.category": "Category",
   "common.actions": "Actions",
   "common.delete": "Delete",
+  "common.createdBy": "Created By",
+  "common.modifiedBy": "Modified By",
   "page.location.list.title": "Store List",
   "page.location.list.description": "Manage store locations and branches",
   "page.location.list.search": "Search stores...",
