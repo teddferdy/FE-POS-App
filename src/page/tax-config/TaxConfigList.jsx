@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Percent } from "lucide-react";
 import { getAllTaxConfig, deleteTaxConfig } from "@/services/tax-config";
@@ -35,6 +36,11 @@ const TaxConfigList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const user = cookie?.user;
   const MENU_KEY = "/tax-list";
@@ -142,7 +148,7 @@ const TaxConfigList = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -168,7 +174,7 @@ const TaxConfigList = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card data-tour="tax-stat-total" className="p-5">
           <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
           <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
@@ -181,9 +187,9 @@ const TaxConfigList = () => {
           <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
           <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
         </Card>
-      </div>
+      </motion.div>
 
-      <div className="relative w-full sm:w-72">
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="relative w-full sm:w-72">
         <Search
           size={16}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -198,9 +204,9 @@ const TaxConfigList = () => {
           }}
           className="pl-9 h-10"
         />
-      </div>
+      </motion.div>
 
-      <div data-tour="tax-table">
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} data-tour="tax-table">
         <DataTable
           columns={columns}
           data={items}
@@ -209,7 +215,7 @@ const TaxConfigList = () => {
           emptyIcon={Percent}
           pagination={{ page, totalPages, total, onPageChange: setPage }}
         />
-      </div>
+      </motion.div>
 
       <Modal
         type="confirm"
@@ -222,7 +228,7 @@ const TaxConfigList = () => {
         confirmText={t("modal.yesDelete")}
         onConfirm={confirmDelete}
       />
-    </div>
+      </motion.div>
   );
 };
 

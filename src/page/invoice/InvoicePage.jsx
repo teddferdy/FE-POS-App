@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { useQuery, useQueryClient } from "react-query";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   MapPin,
@@ -212,6 +213,11 @@ const InvoicePage = () => {
   const [cookie] = useCookies();
   const queryClient = useQueryClient();
   const logoInputRef = useRef(null);
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const user = cookie?.user;
   const store = user?.store || "";
@@ -440,7 +446,7 @@ const InvoicePage = () => {
   };
 
   return (
-    <div data-tour="page-settings" className="space-y-6">
+    <motion.div variants={item} initial="hidden" animate="show" data-tour="page-settings" className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">{t("page.invoice.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("page.invoice.description")}</p>
@@ -696,7 +702,7 @@ const InvoicePage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 

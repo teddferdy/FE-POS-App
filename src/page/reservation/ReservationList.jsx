@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
 import { getReservations, deleteReservation } from "@/services/reservation";
@@ -13,6 +14,11 @@ import { format } from "date-fns";
 
 const ReservationList = () => {
   const { t } = useTranslation();
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const STATUS_MAP = {
     pending: {
@@ -153,7 +159,7 @@ const ReservationList = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -174,7 +180,7 @@ const ReservationList = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="flex flex-col sm:flex-row gap-3">
         <div className="w-full sm:w-60">
           <DatePicker
             date={dateFilter}
@@ -198,8 +204,9 @@ const ReservationList = () => {
           <option value="completed">{t("page.reservation.status.completed")}</option>
           <option value="no_show">{t("page.reservation.status.noShow")}</option>
         </select>
-      </div>
+      </motion.div>
 
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={reservations}
@@ -208,6 +215,7 @@ const ReservationList = () => {
         emptyIcon={Calendar}
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"
@@ -221,7 +229,7 @@ const ReservationList = () => {
           setDeleteTarget(null);
         }}
       />
-    </div>
+      </motion.div>
   );
 };
 

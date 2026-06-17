@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Search, Save, Pencil, Store } from "lucide-react";
@@ -20,6 +21,11 @@ const PriceStoreList = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const MENU_KEY = "/price-list-template";
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
 
   const [selectedStore, setSelectedStore] = useState("");
   const [search, setSearch] = useState("");
@@ -174,7 +180,7 @@ const PriceStoreList = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -216,7 +222,7 @@ const PriceStoreList = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="flex items-center gap-3">
         <div className="relative w-full sm:w-64">
           <Store
             size={16}
@@ -249,8 +255,9 @@ const PriceStoreList = () => {
             className="pl-9 h-9 text-sm"
           />
         </div>
-      </div>
+      </motion.div>
 
+      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={filteredProducts}
@@ -258,7 +265,8 @@ const PriceStoreList = () => {
         emptyMessage={!selectedStore ? t("page.priceStore.list.emptySelectStore") : t("page.priceStore.list.emptyProducts")}
         pagination={false}
       />
-    </div>
+      </motion.div>
+      </motion.div>
   );
 };
 

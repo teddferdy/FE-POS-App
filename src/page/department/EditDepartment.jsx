@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { editDepartment, getAllDepartment } from "@/services/department";
+import { editDepartment, getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,13 +25,12 @@ const EditDepartment = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { data: allDepartmentsData, isLoading: departmentsLoading } = useQuery(
-    ["departments-all"],
-    () => getAllDepartment(),
+  const { data: departmentData, isLoading: departmentsLoading } = useQuery(
+    ["department-detail", departmentId],
+    () => getDepartmentById({ id: departmentId }),
     { enabled: !!departmentId }
   );
-  const allDepartments = allDepartmentsData?.data || allDepartmentsData?.departments || [];
-  const department = allDepartments.find((d) => String(d.id) === departmentId);
+  const department = departmentData?.data || null;
 
   useEffect(() => {
     if (department) {
