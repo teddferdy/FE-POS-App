@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getAllShift, deleteShift } from "@/services/shift";
@@ -12,6 +13,21 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const ShiftList = () => {
   const { t } = useTranslation();
@@ -118,58 +134,70 @@ const ShiftList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.shift.list.title")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.shift.list.title")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.shift.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.shift.list.description")}</p>
+          </div>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
+              <Plus size={18} />
+              {t("breadcrumb.add")}
+            </Button>
+          )}
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-shift")} className="gap-2" data-tour="shift-add">
-            <Plus size={18} />
-            {t("breadcrumb.add")}
-          </Button>
-        )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
-        </Card>
-      </div>
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <div className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder={t("page.shift.list.search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-9 text-sm"
-        />
-      </div>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="relative w-full sm:w-72">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            placeholder={t("page.shift.list.search")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
+      </motion.div>
 
-      <div data-tour="shift-table">
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }} data-tour="shift-table">
         <DataTable
           columns={columns}
           data={shifts}
@@ -178,7 +206,7 @@ const ShiftList = () => {
           emptyMessage={t("page.shift.list.empty")}
           pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
         />
-      </div>
+      </motion.div>
 
       <Modal
         type="confirm"

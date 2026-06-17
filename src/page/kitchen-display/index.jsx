@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -8,7 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { Clock, ChefHat, CheckCircle2, Bell, CookingPot, Utensils, ListOrdered } from "lucide-react";
+import {
+  Clock,
+  ChefHat,
+  CheckCircle2,
+  Bell,
+  CookingPot,
+  Utensils,
+  ListOrdered,
+  Store
+} from "lucide-react";
 
 const statusConfig = {
   pending: {
@@ -59,8 +68,6 @@ const KitchenDisplay = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const { socket } = useSocket();
-  const audioRef = useRef(null);
-  const prevCountRef = useRef(0);
 
   const storeId = cookie?.activeStore || cookie?.user?.store;
 
@@ -77,35 +84,6 @@ const KitchenDisplay = () => {
       return () => socket.emit("leave-kitchen", storeId);
     }
   }, [socket, storeId]);
-
-  useEffect(() => {
-    if (!socket) return;
-    const handleNewOrder = () => {
-      queryClient.invalidateQueries(["kitchen-orders"]);
-      playNotificationSound();
-    };
-    const handleUpdate = () => queryClient.invalidateQueries(["kitchen-orders"]);
-
-    socket.on("new-order", handleNewOrder);
-    socket.on("order-updated", handleUpdate);
-    socket.on("item-status-updated", handleUpdate);
-
-    return () => {
-      socket.off("new-order", handleNewOrder);
-      socket.off("order-updated", handleUpdate);
-      socket.off("item-status-updated", handleUpdate);
-    };
-  }, [socket, queryClient]);
-
-  useEffect(() => {
-    const pendingCount = orders.filter((o) =>
-      o.items?.some((i) => i.status === "pending")
-    ).length;
-    if (pendingCount > prevCountRef.current && prevCountRef.current > 0) {
-      playNotificationSound();
-    }
-    prevCountRef.current = pendingCount;
-  }, [orders]);
 
   const playNotificationSound = useCallback(() => {
     try {
@@ -130,8 +108,29 @@ const KitchenDisplay = () => {
         osc2.start();
         osc2.stop(ctx.currentTime + 0.15);
       }, 200);
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleNewOrder = () => {
+      queryClient.invalidateQueries(["kitchen-orders"]);
+      playNotificationSound();
+    };
+    const handleUpdate = () => queryClient.invalidateQueries(["kitchen-orders"]);
+
+    socket.on("new-order", handleNewOrder);
+    socket.on("order-updated", handleUpdate);
+    socket.on("item-status-updated", handleUpdate);
+
+    return () => {
+      socket.off("new-order", handleNewOrder);
+      socket.off("order-updated", handleUpdate);
+      socket.off("item-status-updated", handleUpdate);
+    };
+  }, [socket, queryClient, playNotificationSound]);
 
   const updateMut = useMutation(
     ({ orderId, itemId, status }) => updateOrderItemStatus(orderId, itemId, status),
@@ -141,15 +140,24 @@ const KitchenDisplay = () => {
   const getOrdersByStatus = (status) =>
     orders.filter((o) => o.items?.some((i) => i.status === status));
 
-  const getItemStatusColor = (status) => {
-    const map = { pending: "bg-amber-100 text-amber-700", preparing: "bg-blue-100 text-blue-700", ready: "bg-green-100 text-green-700" };
-    return map[status] || "bg-gray-100 text-gray-700";
-  };
-
   if (!storeId) {
     return (
-      <div className="flex items-center justify-center h-[80vh] text-muted-foreground">
-        <p>{t("page.kitchenDisplay.noStore")}</p>
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+            <Store size={32} className="text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">
+            {t("page.kitchenDisplay.noStore.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("page.kitchenDisplay.noStore.description")}
+          </p>
+          <Button onClick={() => navigate("/add-location")} className="gap-2">
+            <Store size={16} />
+            {t("page.kitchenDisplay.noStore.action")}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -188,7 +196,8 @@ const KitchenDisplay = () => {
 
             return (
               <div key={colStatus} className="flex flex-col h-full">
-                <div className={`flex items-center justify-between px-4 py-3 rounded-t-xl border ${cfg.color}`}>
+                <div
+                  className={`flex items-center justify-between px-4 py-3 rounded-t-xl border ${cfg.color}`}>
                   <div className="flex items-center gap-2 font-semibold">
                     <Icon size={18} />
                     {t(`page.kitchenDisplay.status.${colStatus}`)}
@@ -205,7 +214,9 @@ const KitchenDisplay = () => {
                     colOrders.map((order) => {
                       const colItems = (order.items || []).filter((i) => i.status === colStatus);
                       return (
-                        <div key={order.id} className="bg-muted/30 rounded-lg p-3 border border-border">
+                        <div
+                          key={order.id}
+                          className="bg-muted/30 rounded-lg p-3 border border-border">
                           <div className="flex items-center justify-between mb-2">
                             <div>
                               <span className="font-bold text-sm">
@@ -226,8 +237,7 @@ const KitchenDisplay = () => {
                             {colItems.map((item) => (
                               <div
                                 key={item.id}
-                                className="flex items-center justify-between bg-background rounded-md px-3 py-2 text-sm"
-                              >
+                                className="flex items-center justify-between bg-background rounded-md px-3 py-2 text-sm">
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium truncate">
                                     {item.productName}
@@ -258,8 +268,7 @@ const KitchenDisplay = () => {
                                       itemId: item.id,
                                       status: cfg.next
                                     })
-                                  }
-                                >
+                                  }>
                                   {t(`page.kitchenDisplay.nextLabel.${colStatus}`)}
                                 </Button>
                               </div>

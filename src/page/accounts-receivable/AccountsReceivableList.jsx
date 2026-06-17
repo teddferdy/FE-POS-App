@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { ArrowLeft, Receipt, Search, Filter, Plus, Wallet } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
+import { TipsCard } from "@/components/ui/tips-card";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -20,6 +22,21 @@ const STATUS_LABELS = {
 };
 
 const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OVERDUE: "overdue" };
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const AccountsReceivableList = () => {
   const { t } = useTranslation();
@@ -129,40 +146,48 @@ const AccountsReceivableList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.accountsReceivable.list.breadcrumb")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.accountsReceivable.list.breadcrumb")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/dashboard-super-admin")}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.accountsReceivable.list.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.accountsReceivable.list.subtitle")}</p>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/dashboard-super-admin")}>
+              <ArrowLeft size={18} />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t("page.accountsReceivable.list.title")}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{t("page.accountsReceivable.list.subtitle")}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Card className="p-4">
-          <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.list.totalPiutang")}</p>
-          <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
-        </Card>
-        {Object.entries(agingBuckets).map(([key, bucket]) => (
-          <Card key={key} className="p-4">
-            <p className="text-xs text-muted-foreground">{bucket.label}</p>
-            <p className="text-lg font-bold">{formatCurrencyRupiah(bucket.total)}</p>
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <motion.div variants={item}>
+          <Card className="p-4">
+            <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.list.totalPiutang")}</p>
+            <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
           </Card>
+        </motion.div>
+        {Object.entries(agingBuckets).map(([key, bucket]) => (
+          <motion.div key={key} variants={item}>
+            <Card className="p-4">
+              <p className="text-xs text-muted-foreground">{bucket.label}</p>
+              <p className="text-lg font-bold">{formatCurrencyRupiah(bucket.total)}</p>
+            </Card>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="flex items-center gap-2">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center gap-2">
         {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
           <button
             key={s}
@@ -175,16 +200,18 @@ const AccountsReceivableList = () => {
             {s ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`) : t("page.accountsReceivable.list.filterAll")}
           </button>
         ))}
-      </div>
+      </motion.div>
 
-      <DataTable
-        columns={columns}
-        data={arList}
-        isLoading={isLoading}
-        emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
-        emptyIcon={Receipt}
-        pagination={{ page, totalPages: pagination.totalPages || 1, total: pagination.total || 0, onPageChange: setPage }}
-      />
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <DataTable
+          columns={columns}
+          data={arList}
+          isLoading={isLoading}
+          emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
+          emptyIcon={Receipt}
+          pagination={{ page, totalPages: pagination.totalPages || 1, total: pagination.total || 0, onPageChange: setPage }}
+        />
+      </motion.div>
 
       {payModal && (
         <Modal
@@ -218,6 +245,17 @@ const AccountsReceivableList = () => {
           </div>
         </Modal>
       )}
+
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <TipsCard
+          tips={[
+            t("page.accountsReceivable.list.tips.1"),
+            t("page.accountsReceivable.list.tips.2"),
+            t("page.accountsReceivable.list.tips.3"),
+            t("page.accountsReceivable.list.tips.4")
+          ]}
+        />
+      </motion.div>
     </div>
   );
 };

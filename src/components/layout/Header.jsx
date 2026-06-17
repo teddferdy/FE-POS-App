@@ -361,7 +361,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
             <Menu size={20} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground hidden sm:block">
+            <h1 className="text-lg font-bold text-foreground hidden lg:block">
               {t("header.appName")}
             </h1>
           </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import { ArrowLeft, Receipt, Wallet, Clock, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getARById } from "@/services/accounts-receivable";
@@ -17,6 +18,21 @@ const STATUS_MAP = {
   PARTIAL: { label: "Sebagian Dibayar", color: "bg-blue-100 text-blue-800" },
   PAID: { label: "Lunas", color: "bg-green-100 text-green-800" },
   OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 };
 
 const AccountsReceivableDetail = () => {
@@ -49,111 +65,129 @@ const AccountsReceivableDetail = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
-          {t("page.accountsReceivable.detail.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/accounts-receivable")} className="hover:text-foreground transition-colors">
-          {t("page.accountsReceivable.detail.breadcrumb.list")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.accountsReceivable.detail.breadcrumb.detail")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+            {t("page.accountsReceivable.detail.breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button onClick={() => navigate("/accounts-receivable")} className="hover:text-foreground transition-colors">
+            {t("page.accountsReceivable.detail.breadcrumb.list")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.accountsReceivable.detail.breadcrumb.detail")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/accounts-receivable")}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{ar.invoiceNo || `AR-${ar.id}`}</h1>
-            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${statusInfo.color}`}>
-              {isOverdue ? t("page.accountsReceivable.detail.status.overdue") : statusInfo.label}
-              {ar.overdueDays > 0 && ` (${t("page.accountsReceivable.detail.overdueLabel")} ${ar.overdueDays} ${t("page.accountsReceivable.detail.days")})`}
-            </span>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/accounts-receivable")}>
+              <ArrowLeft size={18} />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">{ar.invoiceNo || `AR-${ar.id}`}</h1>
+              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${statusInfo.color}`}>
+                {isOverdue ? t("page.accountsReceivable.detail.status.overdue") : statusInfo.label}
+                {ar.overdueDays > 0 && ` (${t("page.accountsReceivable.detail.overdueLabel")} ${ar.overdueDays} ${t("page.accountsReceivable.detail.days")})`}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-blue-50">
-            <Receipt size={20} className="text-blue-600" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.totalTagihan")}</p>
-            <p className="text-lg font-bold">{formatCurrencyRupiah(ar.totalAmount)}</p>
-          </div>
-        </Card>
-        <Card className="p-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-green-50">
-            <Wallet size={20} className="text-green-600" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.sudahDibayar")}</p>
-            <p className="text-lg font-bold">{formatCurrencyRupiah(ar.paidAmount)}</p>
-          </div>
-        </Card>
-        <Card className="p-4 flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${isOverdue ? "bg-red-50" : "bg-yellow-50"}`}>
-            {isOverdue ? <AlertCircle size={20} className="text-red-600" /> : <Clock size={20} className="text-yellow-600" />}
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.sisaPiutang")}</p>
-            <p className="text-lg font-bold">{formatCurrencyRupiah(ar.outstandingAmount)}</p>
-          </div>
-        </Card>
-      </div>
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <motion.div variants={item}>
+          <Card className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50">
+              <Receipt size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.totalTagihan")}</p>
+              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.totalAmount)}</p>
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-50">
+              <Wallet size={20} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.sudahDibayar")}</p>
+              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.paidAmount)}</p>
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-4 flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${isOverdue ? "bg-red-50" : "bg-yellow-50"}`}>
+              {isOverdue ? <AlertCircle size={20} className="text-red-600" /> : <Clock size={20} className="text-yellow-600" />}
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.detail.card.sisaPiutang")}</p>
+              <p className="text-lg font-bold">{formatCurrencyRupiah(ar.outstandingAmount)}</p>
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div variants={item}>
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.section.informasiInvoice")}</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.noInvoice")}</span><span>{ar.invoiceNo || "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.tanggalInvoice")}</span><span>{ar.invoiceDate ? new Date(ar.invoiceDate).toLocaleDateString("id-ID") : "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.jatuhTempo")}</span><span>{ar.dueDate ? new Date(ar.dueDate).toLocaleDateString("id-ID") : "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.customer")}</span><span>{ar.customerName || ar.orderData?.customerName || "-"}</span></div>
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={item}>
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.section.informasiOrder")}</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.noOrder")}</span><span>{ar.orderNumber || "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.tipeOrder")}</span><span>{ar.orderData?.orderType || ar.orderType || "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.statusOrder")}</span><span>{ar.orderData?.status || "-"}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.metodePembayaran")}</span><span>{ar.orderData?.paymentMethod || ar.paymentMethod || "-"}</span></div>
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
         <Card className="p-4">
-          <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.section.informasiInvoice")}</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.noInvoice")}</span><span>{ar.invoiceNo || "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.tanggalInvoice")}</span><span>{ar.invoiceDate ? new Date(ar.invoiceDate).toLocaleDateString("id-ID") : "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.jatuhTempo")}</span><span>{ar.dueDate ? new Date(ar.dueDate).toLocaleDateString("id-ID") : "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.customer")}</span><span>{ar.customerName || ar.orderData?.customerName || "-"}</span></div>
-          </div>
+          <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.paymentHistory")} ({payments.length})</h3>
+          {payments.length > 0 ? (
+            <DataTable
+              columns={paymentColumns}
+              data={payments}
+              isLoading={false}
+              emptyMessage={t("page.accountsReceivable.detail.noPayments")}
+              emptyIcon={Wallet}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">{t("page.accountsReceivable.detail.noPayments")}</p>
+          )}
         </Card>
-
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.section.informasiOrder")}</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.noOrder")}</span><span>{ar.orderNumber || "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.tipeOrder")}</span><span>{ar.orderData?.orderType || ar.orderType || "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.statusOrder")}</span><span>{ar.orderData?.status || "-"}</span></div>
-            <Separator />
-            <div className="flex justify-between"><span className="text-muted-foreground">{t("page.accountsReceivable.detail.field.metodePembayaran")}</span><span>{ar.orderData?.paymentMethod || ar.paymentMethod || "-"}</span></div>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="p-4">
-        <h3 className="font-semibold mb-3">{t("page.accountsReceivable.detail.paymentHistory")} ({payments.length})</h3>
-        {payments.length > 0 ? (
-          <DataTable
-            columns={paymentColumns}
-            data={payments}
-            isLoading={false}
-            emptyMessage={t("page.accountsReceivable.detail.noPayments")}
-            emptyIcon={Wallet}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">{t("page.accountsReceivable.detail.noPayments")}</p>
-        )}
-      </Card>
+      </motion.div>
 
       {ar.notes && (
-        <Card className="p-4">
-          <h3 className="font-semibold mb-2">{t("page.accountsReceivable.detail.notes")}</h3>
-          <p className="text-sm text-muted-foreground">{ar.notes}</p>
-        </Card>
+        <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <Card className="p-4">
+            <h3 className="font-semibold mb-2">{t("page.accountsReceivable.detail.notes")}</h3>
+            <p className="text-sm text-muted-foreground">{ar.notes}</p>
+          </Card>
+        </motion.div>
       )}
     </div>
   );

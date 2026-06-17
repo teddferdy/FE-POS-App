@@ -1,11 +1,27 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 import { getBomById } from "@/services/bom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const DetailBom = () => {
   const { t, i18n } = useTranslation();
@@ -35,21 +51,23 @@ const DetailBom = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/bom")} className="hover:text-foreground">
-          {t("breadcrumb.bom")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button onClick={() => navigate("/bom")} className="hover:text-foreground">
+            {t("breadcrumb.bom")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.bom.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -59,10 +77,10 @@ const DetailBom = () => {
         <Button variant="outline" onClick={() => navigate("/bom")}>
           <ArrowLeft size={16} className="mr-1" /> {t("page.bom.detail.back")}
         </Button>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div variants={item} className="lg:col-span-2 space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.bomInfo")}</h2>
             <table className="w-full text-sm">
@@ -90,6 +108,7 @@ const DetailBom = () => {
             </table>
           </div>
 
+          <motion.div variants={item}>
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.ingredientList")}</h2>
             <table className="w-full text-sm">
@@ -121,9 +140,10 @@ const DetailBom = () => {
               </tbody>
             </table>
           </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="space-y-6">
+        <motion.div variants={item} className="space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
               {t("page.bom.detail.summary")}
@@ -133,8 +153,8 @@ const DetailBom = () => {
               {t("page.bom.detail.ingredientCount")}
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

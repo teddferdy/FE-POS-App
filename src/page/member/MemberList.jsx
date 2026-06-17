@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -62,6 +63,19 @@ const MemberList = () => {
   const [sortBy, setSortBy] = useState("terbaru");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   const { data: tiersData } = useQuery(["member-tiers-all"], () => getAllMemberTier(), {
     staleTime: 5 * 60 * 1000
   });
@@ -75,7 +89,9 @@ const MemberList = () => {
 
   const deleteMutation = useMutation(deleteMember, {
     onSuccess: () => {
-      toast.success(t("page.member.list.toastSuccess"), { description: t("page.member.list.toastSuccessDesc") });
+      toast.success(t("page.member.list.toastSuccess"), {
+        description: t("page.member.list.toastSuccessDesc")
+      });
       queryClient.invalidateQueries(["members"]);
     },
     onError: (err) => {
@@ -234,7 +250,11 @@ const MemberList = () => {
         )}
       </PageHeader>
 
-      <div
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
         data-tour="member-search"
         className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
         {tiers.length === 0 ? (
@@ -299,9 +319,14 @@ const MemberList = () => {
             </div>
           </>
         )}
-      </div>
+      </motion.div>
 
-      <div data-tour="member-table">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        data-tour="member-table">
         <DataTable
           columns={columns}
           data={filteredMembers}
@@ -331,7 +356,7 @@ const MemberList = () => {
           pagination={{ page, totalPages, total, onPageChange: setPage }}
           rowClassName={() => "group"}
         />
-      </div>
+      </motion.div>
 
       <Modal
         type="confirm"

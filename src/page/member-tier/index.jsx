@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Award, Plus, Users, TrendingUp, ArrowLeft, PackageOpen } from "lucide-react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, editMemberTier, deleteMemberTier } from "@/services/member-tier";
@@ -27,10 +28,24 @@ const MemberTier = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
   const itemsPerPage = 5;
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
 
   const { data: tiersData, isLoading } = useQuery(["member-tiers"], getAllMemberTier);
   const tiers = tiersData?.data || tiersData?.tiers || [];
-  const activeTierCount = tiersData?.activeCount ?? tiers.filter((t) => t.status === "active" || t.status === true).length;
+  const activeTierCount =
+    tiersData?.activeCount ??
+    tiers.filter((t) => t.status === "active" || t.status === true).length;
 
   const filteredTiers = tiers.filter((tier) =>
     tier.name?.toLowerCase().includes(search.toLowerCase())
@@ -43,22 +58,30 @@ const MemberTier = () => {
 
   const editMutation = useMutation(editMemberTier, {
     onSuccess: () => {
-      toast.success(t("page.memberTier.list.toastUpdateSuccess"), { description: t("page.memberTier.list.toastUpdateDesc") });
+      toast.success(t("page.memberTier.list.toastUpdateSuccess"), {
+        description: t("page.memberTier.list.toastUpdateDesc")
+      });
       queryClient.invalidateQueries(["member-tiers"]);
       setEditingTier(null);
     },
     onError: (err) =>
-      toast.error(t("page.memberTier.list.toastError"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.memberTier.list.toastError"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const deleteMutation = useMutation(deleteMemberTier, {
     onSuccess: () => {
-      toast.success(t("page.memberTier.list.toastDeleteSuccess"), { description: t("page.memberTier.list.toastDeleteDesc") });
+      toast.success(t("page.memberTier.list.toastDeleteSuccess"), {
+        description: t("page.memberTier.list.toastDeleteDesc")
+      });
       queryClient.invalidateQueries(["member-tiers"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.memberTier.list.toastError"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.memberTier.list.toastError"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const handleSaveEdit = (formData) => {
@@ -82,9 +105,7 @@ const MemberTier = () => {
             ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
             : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
         }`}>
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
-        />
+        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
         {isActive ? t("common.active") : t("common.inactive")}
       </span>
     );
@@ -222,8 +243,13 @@ const MemberTier = () => {
             <UserGuide guideKey="add-member-tier" />
           </PageHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <motion.div
+              variants={item}
               data-tour="tier-stat-active"
               className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
@@ -243,8 +269,9 @@ const MemberTier = () => {
               <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary w-2/3" />
               </div>
-            </div>
-            <div
+            </motion.div>
+            <motion.div
+              variants={item}
               data-tour="tier-stat-members"
               className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
@@ -262,8 +289,9 @@ const MemberTier = () => {
               <p className="text-xs text-muted-foreground mt-2">
                 {t("page.memberTier.list.acrossTiers")}
               </p>
-            </div>
-            <div
+            </motion.div>
+            <motion.div
+              variants={item}
               data-tour="tier-stat-growth"
               className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-3">
@@ -281,20 +309,29 @@ const MemberTier = () => {
               <p className="text-xs text-muted-foreground mt-2">
                 {t("page.memberTier.list.conversions")}
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {tiers.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-12 text-center">
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="show"
+              className="bg-card rounded-xl border border-border p-12 text-center">
               <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
               <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
                 <Plus size={16} className="mr-2" />
                 {t("page.memberTier.list.addTier")}
               </Button>
-            </div>
+            </motion.div>
           ) : (
-            <div data-tour="tier-table">
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              data-tour="tier-table">
               <DataTable
                 columns={columns}
                 data={paginatedTiers}
@@ -334,7 +371,7 @@ const MemberTier = () => {
                   })}`
                 }}
               />
-            </div>
+            </motion.div>
           )}
         </div>
       )}

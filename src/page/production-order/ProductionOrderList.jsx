@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,7 +14,6 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock,
-  // AlertTriangle,
   CheckCircle,
   XCircle
 } from "lucide-react";
@@ -29,6 +29,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const ProductionOrderList = () => {
   const { t } = useTranslation();
@@ -237,17 +252,19 @@ const ProductionOrderList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.productionOrder.list.breadcrumbDashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.productionOrder.list.breadcrumbPO")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.productionOrder.list.breadcrumbDashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.productionOrder.list.breadcrumbPO")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.productionOrder.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -259,9 +276,9 @@ const ProductionOrderList = () => {
             <Plus size={16} /> {t("page.productionOrder.list.addButton")}
           </Button>
         )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           {
             label: t("page.productionOrder.list.statTotal"),
@@ -294,13 +311,16 @@ const ProductionOrderList = () => {
             bg: "bg-green-100"
           }
         ].map((s, i) => (
-          <div key={i} className="bg-card p-4 rounded-xl border border-border">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
-            <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
-          </div>
+          <motion.div key={i} variants={item}>
+            <div className="bg-card p-4 rounded-xl border border-border">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
+              <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
+            </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={filteredItems}
@@ -339,6 +359,7 @@ const ProductionOrderList = () => {
         }
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"

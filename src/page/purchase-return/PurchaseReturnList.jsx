@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Search, Eye, CheckCircle, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseReturn,
@@ -29,6 +30,11 @@ const statusCfg = {
     label: "Rejected",
     class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 };
 
 const PurchaseReturnList = () => {
@@ -174,20 +180,25 @@ const PurchaseReturnList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.purchaseReturn.list.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.purchaseReturn.list.title")}</span>
-      </nav>
-      <div>
-        <h1 className="text-2xl font-bold">{t("page.purchaseReturn.list.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.purchaseReturn.list.subtitle")}</p>
-      </div>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.purchaseReturn.list.breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.purchaseReturn.list.title")}</span>
+        </nav>
+      </motion.div>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div>
+          <h1 className="text-2xl font-bold">{t("page.purchaseReturn.list.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.purchaseReturn.list.subtitle")}</p>
+        </div>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={filteredItems}
@@ -225,6 +236,7 @@ const PurchaseReturnList = () => {
         }
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -24,6 +25,21 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -349,35 +365,40 @@ const StockOpnameList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.stockOpname.list.title")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.stockOpname.list.title")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.stockOpname.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.stockOpname.list.description")}
-          </p>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.stockOpname.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.stockOpname.list.description")}
+            </p>
+          </div>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
+              <Plus size={16} />
+              {t("page.stockOpname.list.addButton")}
+            </Button>
+          )}
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-stock-opname")} className="shrink-0 gap-2">
-            <Plus size={16} />
-            {t("page.stockOpname.list.addButton")}
-          </Button>
-        )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
-          <div
+          <motion.div
             key={idx}
+            variants={item}
             className="bg-card p-5 rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div className={`p-2 ${stat.bg} rounded-lg ${stat.color}`}>
@@ -396,10 +417,11 @@ const StockOpnameList = () => {
             ) : stat.sub ? (
               <p className="text-xs text-muted-foreground mt-1 italic">{stat.sub}</p>
             ) : null}
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={filteredItems}
@@ -479,6 +501,7 @@ const StockOpnameList = () => {
           onPageChange: setPage
         }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"

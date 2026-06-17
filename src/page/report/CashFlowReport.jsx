@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getCashFlow } from "@/services/report";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,7 +52,8 @@ const CashFlowReport = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }} className="space-y-6">
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
       <PageHeader
         breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.cashFlow.title" }]}
         title={t("page.report.cashFlow.title")}
@@ -61,13 +63,16 @@ const CashFlowReport = () => {
           <DatePicker date={endDate} setDate={setEndDate} />
         </div>
       </PageHeader>
+      </motion.div>
 
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
       {isLoading ? (
         <Loading fullscreen size="lg" label={t("page.report.cashFlow.loading")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {summaryCards.map((card) => (
-            <Card key={card.labelKey}>
+            <motion.div key={card.labelKey} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
+            <Card>
               <CardContent className="p-5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                   {t(card.labelKey)}
@@ -77,10 +82,12 @@ const CashFlowReport = () => {
                 </p>
               </CardContent>
             </Card>
+            </motion.div>
           ))}
         </div>
       )}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

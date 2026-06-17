@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { Plus, Search, Eye, Trash2, FileText, Download } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
@@ -28,6 +29,24 @@ const statusMap = {
   cancelled: {
     class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 };
 
 const GoodsReceiptList = () => {
@@ -227,17 +246,19 @@ const GoodsReceiptList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.goodsReceipt")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.goodsReceipt")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.goodsReceipt.list.title")}
@@ -251,9 +272,9 @@ const GoodsReceiptList = () => {
             <Plus size={16} /> {t("page.goodsReceipt.list.addButton")}
           </Button>
         )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
             label: t("page.goodsReceipt.list.stats.total"),
@@ -276,13 +297,14 @@ const GoodsReceiptList = () => {
             color: "text-red-600"
           }
         ].map((s, i) => (
-          <div key={i} className="bg-card p-4 rounded-xl border border-border">
+          <motion.div key={i} variants={item} className="bg-card p-4 rounded-xl border border-border">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
             <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={filteredItems}
@@ -346,6 +368,7 @@ const GoodsReceiptList = () => {
         }
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"

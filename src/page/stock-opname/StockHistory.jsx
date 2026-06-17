@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllStockHistory } from "@/services/stock";
 import { getAllProductTable } from "@/services/product";
@@ -45,6 +46,21 @@ const formatDate = (dateStr) => {
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
   return Number(num).toLocaleString("id-ID");
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 };
 
 const StockHistory = () => {
@@ -133,6 +149,7 @@ const StockHistory = () => {
 
   return (
     <div className="space-y-6">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
       <PageHeader
         breadcrumbs={[
           {
@@ -150,7 +167,9 @@ const StockHistory = () => {
         title={t("page.stockHistory.title")}
         description={t("page.stockHistory.description")}
       />
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
       <Card className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
@@ -215,7 +234,9 @@ const StockHistory = () => {
           </div>
         </div>
       </Card>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       {isLoading ? (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -366,6 +387,7 @@ const StockHistory = () => {
           </div>
         </div>
       )}
+      </motion.div>
     </div>
   );
 };

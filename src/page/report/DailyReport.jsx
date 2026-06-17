@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getDailyReport } from "@/services/report";
 import { Card } from "@/components/ui/card";
@@ -27,7 +28,8 @@ const DailyReport = () => {
   const reports = data?.data || [];
 
   return (
-    <div className="space-y-6">
+    <motion.div initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }} className="space-y-6">
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
       <PageHeader
         breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.daily.title" }]}
         title={t("page.report.daily.title")}
@@ -37,7 +39,9 @@ const DailyReport = () => {
           <DatePicker date={endDate} setDate={setEndDate} />
         </div>
       </PageHeader>
+      </motion.div>
 
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
       {isLoading ? (
         <Loading fullscreen size="lg" label={t("page.report.daily.loading")} />
       ) : reports.length === 0 ? (
@@ -98,7 +102,8 @@ const DailyReport = () => {
           </div>
         </Card>
       )}
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

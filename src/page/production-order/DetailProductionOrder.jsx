@@ -1,11 +1,27 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ClipboardList, Clock, Play, CheckCircle, XCircle } from "lucide-react";
 import { getProductionOrderById } from "@/services/production-order";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
@@ -53,21 +69,23 @@ const DetailProductionOrder = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.productionOrder.detail.breadcrumbDashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/production-order")} className="hover:text-foreground">
-          {t("page.productionOrder.detail.breadcrumbPO")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.productionOrder.detail.breadcrumbDetail")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.productionOrder.detail.breadcrumbDashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button onClick={() => navigate("/production-order")} className="hover:text-foreground">
+            {t("page.productionOrder.detail.breadcrumbPO")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.productionOrder.detail.breadcrumbDetail")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.productionOrder.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{order.productionNo}</p>
@@ -75,84 +93,90 @@ const DetailProductionOrder = () => {
         <Button variant="outline" onClick={() => navigate("/production-order")}>
           <ArrowLeft size={16} className="mr-1" /> {t("page.productionOrder.detail.backButton")}
         </Button>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.informasiProduksi")}</h2>
-            <table className="w-full text-sm">
-              <tbody>
-                {[
-                  [t("page.productionOrder.detail.noProduksi"), order.productionNo],
-                  [t("page.productionOrder.detail.produk"), order.productData?.nameProduct || "-"],
-                  [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
-                  [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
-                  [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
-                  [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
-                  [
-                    t("page.productionOrder.detail.tanggalJadwal"),
-                    order.scheduledDate
-                      ? new Date(order.scheduledDate).toLocaleDateString("id")
-                      : "-"
-                  ],
-                  [
-                    t("page.productionOrder.detail.tanggalSelesai"),
-                    order.completedDate
-                      ? new Date(order.completedDate).toLocaleDateString("id")
-                      : "-"
-                  ],
-                  [t("page.productionOrder.detail.catatan"), order.notes || "-"]
-                ].map(([label, value]) => (
-                  <tr key={label} className="border-b border-muted/30">
-                    <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
-                    <td className="py-2 font-medium">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {order.bomComponents?.length > 0 && (
+        <motion.div variants={container} initial="hidden" animate="show" className="lg:col-span-2 space-y-6">
+          <motion.div variants={item}>
             <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.bomComponents")}</h2>
+              <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.informasiProduksi")}</h2>
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
-                    <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
-                    <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
-                    <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
-                  </tr>
-                </thead>
                 <tbody>
-                  {order.bomComponents.map((c, i) => (
-                    <tr key={i} className="border-b border-muted/20">
-                      <td className="py-2">{c.ingredientName || c.name}</td>
-                      <td className="py-2">{c.qty}</td>
-                      <td className="py-2">{c.unit || "pcs"}</td>
-                      <td className="py-2 font-mono">
-                        {(parseFloat(c.qty) || 0) * order.plannedQty}
-                      </td>
+                  {[
+                    [t("page.productionOrder.detail.noProduksi"), order.productionNo],
+                    [t("page.productionOrder.detail.produk"), order.productData?.nameProduct || "-"],
+                    [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
+                    [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
+                    [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
+                    [t("page.productionOrder.detail.store"), order.storeData?.name || "-"],
+                    [
+                      t("page.productionOrder.detail.tanggalJadwal"),
+                      order.scheduledDate
+                        ? new Date(order.scheduledDate).toLocaleDateString("id")
+                        : "-"
+                    ],
+                    [
+                      t("page.productionOrder.detail.tanggalSelesai"),
+                      order.completedDate
+                        ? new Date(order.completedDate).toLocaleDateString("id")
+                        : "-"
+                    ],
+                    [t("page.productionOrder.detail.catatan"), order.notes || "-"]
+                  ].map(([label, value]) => (
+                    <tr key={label} className="border-b border-muted/30">
+                      <td className="py-2 pr-4 text-muted-foreground w-40">{label}</td>
+                      <td className="py-2 font-medium">{value}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </motion.div>
 
-        <div className="space-y-6">
-          <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              {t("page.productionOrder.detail.status")}
-            </h2>
-            <div
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
-              <StatusIcon size={14} /> {st.label}
+          {order.bomComponents?.length > 0 && (
+            <motion.div variants={item}>
+              <div className="bg-card p-6 rounded-xl border border-border">
+                <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.bomComponents")}</h2>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2">{t("page.productionOrder.detail.bomBahan")}</th>
+                      <th className="pb-2">{t("page.productionOrder.detail.bomQtyPerUnit")}</th>
+                      <th className="pb-2">{t("page.productionOrder.detail.bomUnit")}</th>
+                      <th className="pb-2">{t("page.productionOrder.detail.bomTotal")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.bomComponents.map((c, i) => (
+                      <tr key={i} className="border-b border-muted/20">
+                        <td className="py-2">{c.ingredientName || c.name}</td>
+                        <td className="py-2">{c.qty}</td>
+                        <td className="py-2">{c.unit || "pcs"}</td>
+                        <td className="py-2 font-mono">
+                          {(parseFloat(c.qty) || 0) * order.plannedQty}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+
+        <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+          <motion.div variants={item}>
+            <div className="bg-card p-6 rounded-xl border border-border">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                {t("page.productionOrder.detail.status")}
+              </h2>
+              <div
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
+                <StatusIcon size={14} /> {st.label}
+              </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

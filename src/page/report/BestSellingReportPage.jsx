@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
+import { motion } from "framer-motion";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { Loading } from "@/components/ui/loading";
 import { getBestSellerReport } from "@/services/report";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import BestSellerTab from "./BestSellerTab";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const BestSellingReportPage = () => {
   const { t } = useTranslation();
@@ -45,7 +51,7 @@ const BestSellingReportPage = () => {
 
   return (
     <div data-tour="page-reports" className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
             {t("page.report.bestSeller.title")}
@@ -61,15 +67,15 @@ const BestSellingReportPage = () => {
           <span className="material-symbols-outlined text-lg">download</span>
           {exportLoading ? t("common.downloading") : t("common.export")}
         </button>
-      </div>
+      </motion.div>
 
-      <div className="relative min-h-[300px]">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="relative min-h-[300px]">
         {!bestSellerData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
         {bestSellerData?.data && (
           <BestSellerTab t={t} data={bestSellerData?.data} isLoading={bestLoading} />
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

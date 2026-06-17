@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Tags, Gift } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,22 @@ const getPromoLabel = (item) => {
   if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
   return item.type === "Persentase" ? "Persentase" : item.type === "Nominal" ? "Nominal" : item.type || "-";
 };
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
 const DiscountList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -148,70 +165,84 @@ const DiscountList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.discount.list.title")}</span>
-      </nav>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.discount.list.title")}</span>
+        </nav>
+      </motion.div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.discount.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.discount.list.description")}
-          </p>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.discount.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.discount.list.description")}
+            </p>
+          </div>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-discount")} className="gap-2">
+              <Plus size={18} />
+              {t("page.discount.button.add")}
+            </Button>
+          )}
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-discount")} className="gap-2">
-            <Plus size={18} />
-            {t("page.discount.button.add")}
-          </Button>
-        )}
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.discount.list.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.discount.list.inactive")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-        </Card>
-      </div>
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("page.discount.list.active")}</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("page.discount.list.inactive")}</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <div className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <div className="relative w-full sm:w-72">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            placeholder={t("page.discount.list.search")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 h-10"
+          />
+        </div>
+      </motion.div>
+
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <DataTable
+          columns={columns}
+          data={discounts}
+          isLoading={isLoading}
+          emptyMessage={t("page.discount.list.empty")}
+          emptyIcon={Gift}
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
         />
-        <Input
-          placeholder={t("page.discount.list.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
-        />
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={discounts}
-        isLoading={isLoading}
-        emptyMessage={t("page.discount.list.empty")}
-        emptyIcon={Gift}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
+      </motion.div>
 
       <Modal
         type="confirm"

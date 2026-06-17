@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { AlertTriangle, Package, ShoppingBasket } from "lucide-react";
 import { getLowStockProducts } from "@/services/stock";
 import { Card } from "@/components/ui/card";
@@ -15,6 +16,21 @@ import {
 } from "@/components/ui/table";
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -49,47 +65,53 @@ const LowStock = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href:
-              role === "super_admin"
-                ? "/dashboard-super-admin"
-                : role === "admin"
-                  ? "/dashboard-admin"
-                  : "/home"
-          },
-          { label: t("breadcrumb.inventory") },
-          { label: t("breadcrumb.lowStock") }
-        ]}
-        title={t("page.lowStock.title")}
-        description={t("page.lowStock.description")}
-      />
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href:
+                role === "super_admin"
+                  ? "/dashboard-super-admin"
+                  : role === "admin"
+                    ? "/dashboard-admin"
+                    : "/home"
+            },
+            { label: t("breadcrumb.inventory") },
+            { label: t("breadcrumb.lowStock") }
+          ]}
+          title={t("page.lowStock.title")}
+          description={t("page.lowStock.description")}
+        />
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-            <Package size={24} className="text-red-600" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{lowStockData.totalProducts || 0}</p>
-            <p className="text-sm text-muted-foreground">{t("page.lowStock.productLowStock")}</p>
-          </div>
-        </Card>
-        <Card className="p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-            <ShoppingBasket size={24} className="text-orange-600" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{lowStockData.totalIngredients || 0}</p>
-            <p className="text-sm text-muted-foreground">{t("page.lowStock.ingredientLowStock")}</p>
-          </div>
-        </Card>
-      </div>
+      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div variants={item}>
+          <Card className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+              <Package size={24} className="text-red-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{lowStockData.totalProducts || 0}</p>
+              <p className="text-sm text-muted-foreground">{t("page.lowStock.productLowStock")}</p>
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+              <ShoppingBasket size={24} className="text-orange-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{lowStockData.totalIngredients || 0}</p>
+              <p className="text-sm text-muted-foreground">{t("page.lowStock.ingredientLowStock")}</p>
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <motion.div variants={fadeInUp} initial="hidden" animate="show" className="space-y-4">
           <Card className="overflow-hidden">
             <div className="p-4 border-b border-border bg-muted/30">
               <Skeleton className="h-4 w-40" />
@@ -139,16 +161,19 @@ const LowStock = () => {
               </Table>
             </div>
           </Card>
-        </div>
+        </motion.div>
       ) : products.length === 0 && ingredients.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">
-          <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
-          <p className="text-sm mt-1">{t("page.lowStock.emptyDetail")}</p>
-        </Card>
+        <motion.div variants={fadeInUp} initial="hidden" animate="show">
+          <Card className="p-12 text-center text-muted-foreground">
+            <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
+            <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
+            <p className="text-sm mt-1">{t("page.lowStock.emptyDetail")}</p>
+          </Card>
+        </motion.div>
       ) : (
         <>
           {products.length > 0 && (
+            <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
             <Card className="overflow-hidden">
               <div className="p-4 border-b border-border bg-muted/30">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -200,9 +225,11 @@ const LowStock = () => {
                 </Table>
               </div>
             </Card>
+            </motion.div>
           )}
 
           {ingredients.length > 0 && (
+            <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
             <Card className="overflow-hidden">
               <div className="p-4 border-b border-border bg-muted/30">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -254,6 +281,7 @@ const LowStock = () => {
                 </Table>
               </div>
             </Card>
+            </motion.div>
           )}
         </>
       )}

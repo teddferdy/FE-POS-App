@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Plus, Search, Eye, Trash2 } from "lucide-react";
@@ -11,6 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const BomList = () => {
   const { t } = useTranslation();
@@ -110,16 +126,18 @@ const BomList = () => {
 
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
-      </nav>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
+        </nav>
+      </motion.div>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{t("page.bom.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.bom.list.description")}</p>
@@ -129,8 +147,9 @@ const BomList = () => {
             <Plus size={16} /> {t("page.bom.list.addButton")}
           </Button>
         )}
-      </div>
+      </motion.div>
 
+      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
       <DataTable
         columns={columns}
         data={items}
@@ -155,6 +174,7 @@ const BomList = () => {
         }
         pagination={{ page, totalPages, total, onPageChange: setPage }}
       />
+      </motion.div>
 
       <Modal
         type="confirm"
