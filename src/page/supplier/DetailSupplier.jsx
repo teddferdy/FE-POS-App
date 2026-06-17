@@ -187,59 +187,73 @@ const DetailSupplier = () => {
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             {t("page.supplier.detail.section.informasiSupplier")}
           </h3>
-          <div className="space-y-2.5 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm">
             <div className="flex items-center gap-2">
-              <Building2 size={15} className="text-muted-foreground" />
+              <Building2 size={15} className="text-muted-foreground shrink-0" />
               <span className="font-medium">{supplier.name}</span>
             </div>
             {supplier.contactPerson && (
               <div className="flex items-center gap-2">
-                <User size={15} className="text-muted-foreground" />
+                <User size={15} className="text-muted-foreground shrink-0" />
                 <span>{supplier.contactPerson}</span>
               </div>
             )}
             {supplier.phone && (
               <div className="flex items-center gap-2">
-                <Phone size={15} className="text-muted-foreground" />
+                <Phone size={15} className="text-muted-foreground shrink-0" />
                 <span>{supplier.phone}</span>
               </div>
             )}
             {supplier.email && (
               <div className="flex items-center gap-2">
-                <Mail size={15} className="text-muted-foreground" />
+                <Mail size={15} className="text-muted-foreground shrink-0" />
                 <span>{supplier.email}</span>
               </div>
             )}
             {supplier.address && (
-              <div className="flex items-start gap-2">
-                <MapPin size={15} className="text-muted-foreground mt-0.5" />
+              <div className="flex items-start gap-2 md:col-span-2">
+                <MapPin size={15} className="text-muted-foreground mt-0.5 shrink-0" />
                 <span>{supplier.address}</span>
               </div>
             )}
           </div>
+          <div className="border-t pt-3 mt-3 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <User size={13} className="shrink-0" />
+              <span>Dibuat oleh: {supplier.createdByUser?.fullName || supplier.createdByUser?.userName || supplier.createdBy || "-"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User size={13} className="shrink-0" />
+              <span>Diubah oleh: {supplier.modifiedByUser?.fullName || supplier.modifiedByUser?.userName || supplier.modifiedBy || "-"}</span>
+            </div>
+          </div>
         </Card>
 
-        <Card className="p-5">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        <Card className="p-5 text-center flex flex-col">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {t("page.supplier.detail.card.totalPesanan")}
           </h3>
-          <p className="text-2xl font-bold text-foreground">
-            Rp {(summary.totalOrdered || 0).toLocaleString("id-ID")}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">{purchaseOrders.length} {t("page.supplier.detail.card.transaksi")}</p>
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <p className="text-2xl font-bold text-foreground">
+              Rp {(summary.totalOrdered || 0).toLocaleString("id-ID")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">{purchaseOrders.length} {t("page.supplier.detail.card.transaksi")}</p>
+          </div>
         </Card>
 
-        <Card className="p-5">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        <Card className="p-5 text-center flex flex-col">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {t("page.supplier.detail.card.sisaHutang")}
           </h3>
-          <p
-            className={`text-2xl font-bold ${(summary.balance || 0) > 0 ? "text-red-600" : "text-green-600"}`}>
-            Rp {(summary.balance || 0).toLocaleString("id-ID")}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("page.supplier.detail.card.terbayar")}: Rp {(summary.totalPaid || 0).toLocaleString("id-ID")}
-          </p>
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <p
+              className={`text-2xl font-bold ${(summary.balance || 0) > 0 ? "text-red-600" : "text-green-600"}`}>
+              Rp {(summary.balance || 0).toLocaleString("id-ID")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.supplier.detail.card.terbayar")}: Rp {(summary.totalPaid || 0).toLocaleString("id-ID")}
+            </p>
+          </div>
         </Card>
       </div>
 
