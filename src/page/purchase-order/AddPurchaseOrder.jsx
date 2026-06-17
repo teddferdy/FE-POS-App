@@ -22,6 +22,20 @@ import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const AddPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -241,26 +255,32 @@ const AddPurchaseOrder = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href: "/dashboard-super-admin",
-            i18nKey: "breadcrumb.home"
-          },
-          {
-            label: t("page.purchaseOrder.list.title"),
-            href: "/purchase-order",
-            i18nKey: "page.purchaseOrder.list.title"
-          },
-          { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
-        ]}
-        title={t("page.purchaseOrder.add.title")}
-        description={t("page.purchaseOrder.add.description")}>
-        <UserGuide guideKey="add-purchase-order" />
-      </PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
+              {
+                label: t("page.purchaseOrder.list.title"),
+                href: "/purchase-order",
+                i18nKey: "page.purchaseOrder.list.title"
+              },
+              { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
+            ]}
+            title={t("page.purchaseOrder.add.title")}
+            description={t("page.purchaseOrder.add.description")}>
+            <UserGuide guideKey="add-purchase-order" />
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="overflow-hidden border-0 shadow-md rounded-xl">
           <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
             <div className="flex items-center gap-3">
@@ -663,7 +683,9 @@ const AddPurchaseOrder = () => {
             </Button>
           </div>
         </div>
-      </form>
+          </form>
+        </motion.div>
+      </motion.div>
 
       <Modal
         type="confirm"

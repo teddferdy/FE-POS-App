@@ -10,6 +10,19 @@ import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
 const ProfitLossReport = () => {
   const { t } = useTranslation();
   const [startDate, setStartDate] = useState(new Date());
@@ -56,46 +69,48 @@ const ProfitLossReport = () => {
   ];
 
   return (
-    <motion.div initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }} className="space-y-6">
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
-      <PageHeader
-        breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.profitLoss.title" }]}
-        title={t("page.report.profitLoss.title")}
-        description={t("page.report.profitLoss.description")}>
-        <div className="flex items-center gap-2">
-          <DatePicker date={startDate} setDate={setStartDate} />
-          <DatePicker date={endDate} setDate={setEndDate} />
-        </div>
-      </PageHeader>
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.profitLoss.title" }]}
+            title={t("page.report.profitLoss.title")}
+            description={t("page.report.profitLoss.description")}>
+            <div className="flex items-center gap-2">
+              <DatePicker date={startDate} setDate={setStartDate} />
+              <DatePicker date={endDate} setDate={setEndDate} />
+            </div>
+          </PageHeader>
+        </motion.div>
       </motion.div>
 
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
-      {isLoading ? (
-        <Loading fullscreen size="lg" label={t("page.report.profitLoss.loading")} />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {summaryCards.map((card) => (
-            <motion.div key={card.labelKey} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
-            <Card>
-              <CardContent className="p-5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t(card.labelKey)}
-                </p>
-                <p className={`text-xl font-bold ${card.color}`}>
-                  {card.value != null
-                    ? typeof card.value === "number"
-                      ? formatCurrency(card.value)
-                      : card.value
-                    : "-"}
-                </p>
-              </CardContent>
-            </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          {isLoading ? (
+            <Loading fullscreen size="lg" label={t("page.report.profitLoss.loading")} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {summaryCards.map((card) => (
+                <Card key={card.labelKey}>
+                  <CardContent className="p-5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t(card.labelKey)}
+                    </p>
+                    <p className={`text-xl font-bold ${card.color}`}>
+                      {card.value != null
+                        ? typeof card.value === "number"
+                          ? formatCurrency(card.value)
+                          : card.value
+                        : "-"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

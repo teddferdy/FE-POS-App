@@ -16,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 
 const statusMap = {
   pending: { label: "Menunggu", class: "bg-yellow-100 text-yellow-800" },
@@ -24,6 +25,19 @@ const statusMap = {
   cancelled: { label: "Dibatalkan", class: "bg-red-100 text-red-800" }
 };
 const statusKeys = { pending: "pending", ordered: "ordered", received: "received", cancelled: "cancelled" };
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const DetailSupplier = () => {
   const { t } = useTranslation();
@@ -147,6 +161,7 @@ const DetailSupplier = () => {
   ];
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/")} className="hover:text-foreground">
@@ -339,6 +354,7 @@ const DetailSupplier = () => {
         </div>
       </Modal>
     </div>
+    </motion.div>
   );
 };
 

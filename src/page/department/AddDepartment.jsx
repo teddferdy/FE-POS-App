@@ -11,6 +11,21 @@ import { Switch } from "@/components/ui/switch";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const AddDepartment = () => {
   const { t } = useTranslation();
@@ -53,19 +68,25 @@ const AddDepartment = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        breadcrumbs={[
-          { i18nKey: "breadcrumb.employee" },
-          { i18nKey: "breadcrumb.department" },
-          { i18nKey: "page.department.add.title" }
-        ]}
-        title={t("page.department.add.title")}
-        description={t("page.department.add.description")}>
-        <UserGuide guideKey="add-department" />
-      </PageHeader>
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.employee" },
+              { i18nKey: "breadcrumb.department" },
+              { i18nKey: "page.department.add.title" }
+            ]}
+            title={t("page.department.add.title")}
+            description={t("page.department.add.description")}>
+            <UserGuide guideKey="add-department" />
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div className="flex flex-col gap-1.5">
@@ -159,6 +180,8 @@ const AddDepartment = () => {
           </div>
         </div>
       </form>
+        </motion.div>
+      </motion.div>
       <Modal
         type="confirm"
         open={draftModal}

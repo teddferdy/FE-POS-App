@@ -25,6 +25,20 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formatCurrency = (num) => {
   if (num === null || num === undefined) return "Rp0";
@@ -209,6 +223,7 @@ const DetailProduct = () => {
   const isOutOfStock = stock <= 0;
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -678,6 +693,7 @@ const DetailProduct = () => {
         </Button>
       </div>
     </div>
+    </motion.div>
   );
 };
 

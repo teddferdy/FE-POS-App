@@ -3,6 +3,20 @@ import { useSearchParams } from "react-router-dom";
 import { Store, ShoppingBag, Clock, QrCode } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { axiosInstance } from "@/services";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const getStatusLabel = (t) => ({
   pending: t("page.customerDisplay.statusPending"),
@@ -63,6 +77,7 @@ const CustomerDisplay = () => {
   }
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
       <header className="max-w-3xl mx-auto mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -133,6 +148,7 @@ const CustomerDisplay = () => {
         ))}
       </main>
     </div>
+    </motion.div>
   );
 };
 

@@ -11,6 +11,20 @@ import {
 import { getGoodsReceiptById } from "@/services/goods-receipt";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const statusDetail = {
   draft: { class: "bg-yellow-100 text-yellow-800" },
@@ -55,7 +69,8 @@ const DetailGoodsReceipt = () => {
   const st = statusDetail[receipt.status] || statusDetail.draft;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -189,6 +204,7 @@ const DetailGoodsReceipt = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

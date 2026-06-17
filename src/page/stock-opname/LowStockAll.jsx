@@ -21,6 +21,20 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const LowStockAll = () => {
   const { t } = useTranslation();
@@ -192,26 +206,34 @@ const LowStockAll = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Low Stock - Semua Toko"
-        description="Daftar barang dengan stok menipis di seluruh toko"
-      />
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+          title="Low Stock - Semua Toko"
+          description="Daftar barang dengan stok menipis di seluruh toko"
+        ></PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <DataTable
-        columns={columns}
-        data={items}
-        isLoading={isLoading}
-        emptyMessage="Tidak ada barang dengan stok menipis"
-        emptyIcon={AlertTriangle}
-        toolbar={filters}
-        pagination={{
-          page,
-          totalPages,
-          total,
-          onPageChange: setPage,
-          showingText: `Menampilkan ${items.length} dari ${total} data`
-        }}
-      />
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <DataTable
+            columns={columns}
+            data={items}
+            isLoading={isLoading}
+            emptyMessage="Tidak ada barang dengan stok menipis"
+            emptyIcon={AlertTriangle}
+            toolbar={filters}
+            pagination={{
+              page,
+              totalPages,
+              total,
+              onPageChange: setPage,
+              showingText: `Menampilkan ${items.length} dari ${total} data`
+            }}
+          />
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

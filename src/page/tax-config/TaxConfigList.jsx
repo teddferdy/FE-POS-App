@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Percent } from "lucide-react";
-import { getAllTaxConfig, deleteTaxConfig } from "@/services/tax-config";
+import { Plus, Search, Edit, Trash2, Percent, Loader2 } from "lucide-react";
+import { getAllTaxConfig, deleteTaxConfig, downloadTaxConfigTemplate, downloadTaxConfigExcel } from "@/services/tax-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import UploadTaxConfigModal from "./components/UploadTaxConfigModal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
@@ -36,6 +37,9 @@ const TaxConfigList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const item = {
     hidden: { opacity: 0, y: 20 },
@@ -166,12 +170,76 @@ const TaxConfigList = () => {
             {t("page.taxConfig.list.description")}
           </p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2">
-            <Plus size={18} />
-            {t("page.taxConfig.button.add")}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingTemplate}
+              onClick={async () => {
+                setIsDownloadingTemplate(true);
+                try {
+                  await downloadTaxConfigTemplate();
+                  toast.success(t("common.success"), {
+                    description: t("page.taxConfig.toast.templateSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.taxConfig.toast.templateError")
+                  });
+                } finally {
+                  setIsDownloadingTemplate(false);
+                }
+              }}>
+              {isDownloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+              )}
+              {t("page.taxConfig.button.downloadTemplate")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingData}
+              onClick={async () => {
+                setIsDownloadingData(true);
+                try {
+                  await downloadTaxConfigExcel();
+                  toast.success(t("common.success"), {
+                    description: t("page.taxConfig.toast.dataSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.taxConfig.toast.dataError")
+                  });
+                } finally {
+                  setIsDownloadingData(false);
+                }
+              }}>
+              {isDownloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">download</span>
+              )}
+              {t("page.taxConfig.button.downloadData")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button
+              variant="default"
+              onClick={() => setUploadModalOpen(true)}>
+              <span className="material-symbols-outlined text-lg mr-1">upload</span>
+              {t("page.taxConfig.button.upload")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2 shadow-md">
+              <Plus size={18} />
+              {t("page.taxConfig.button.add")}
+            </Button>
+          )}
+        </div>
       </div>
 
       <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -227,6 +295,12 @@ const TaxConfigList = () => {
         })}
         confirmText={t("modal.yesDelete")}
         onConfirm={confirmDelete}
+      />
+
+      <UploadTaxConfigModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["tax-configs"])}
       />
       </motion.div>
   );

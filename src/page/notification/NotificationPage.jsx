@@ -25,6 +25,21 @@ import { Loading } from "@/components/ui/loading";
 import { getAllNotifications, markAsRead, markAllAsRead } from "@/services/notification";
 import { useSocket } from "@/services/socket";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const typeIcons = {
   employee_created: {
@@ -217,6 +232,8 @@ const NotificationPage = () => {
 
   return (
     <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
@@ -231,6 +248,10 @@ const NotificationPage = () => {
           </Button>
         )}
       </PageHeader>
+    </motion.div>
+    </motion.div>
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
 
       {isLoading ? (
         <Loading fullscreen size="lg" label="Memuat data..." />
@@ -317,6 +338,9 @@ const NotificationPage = () => {
           )}
         </>
       )}
+
+    </motion.div>
+    </motion.div>
 
       <Modal
         open={!!selectedNotif}

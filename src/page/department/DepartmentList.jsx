@@ -163,7 +163,10 @@ const DepartmentList = () => {
       header: t("common.createdBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
-          {department.createdByUser?.fullName || department.createdByUser?.userName || department.createdBy || "-"}
+          {department.createdByUser?.fullName ||
+            department.createdByUser?.userName ||
+            department.createdBy ||
+            "-"}
         </span>
       )
     },
@@ -171,7 +174,10 @@ const DepartmentList = () => {
       header: t("common.modifiedBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
-          {department.modifiedByUser?.fullName || department.modifiedByUser?.userName || department.modifiedBy || "-"}
+          {department.modifiedByUser?.fullName ||
+            department.modifiedByUser?.userName ||
+            department.modifiedBy ||
+            "-"}
         </span>
       )
     },
@@ -219,260 +225,281 @@ const DepartmentList = () => {
   ];
 
   return (
-    <div className="space-y-8">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-      <PageHeader
-        breadcrumbs={[
-          { label: t("breadcrumb.adminConsole") },
-          { label: t("breadcrumb.department") }
-        ]}
-        title={t("page.department.list.title")}
-        description={t("page.department.list.description")}>
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            data-tour="department-download-template"
-            variant="outline"
-            disabled={isDownloadingTemplate}
-            onClick={async () => {
-              setIsDownloadingTemplate(true);
-              try {
-                await downloadDepartmentTemplate();
-                toast.success(t("common.success"), {
-                  description: t("page.department.toast.templateSuccess")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.department.toast.templateError")
-                });
-              } finally {
-                setIsDownloadingTemplate(false);
-              }
-            }}>
-            {isDownloadingTemplate ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.adminConsole") },
+              { label: t("breadcrumb.department") }
+            ]}
+            title={t("page.department.list.title")}
+            description={t("page.department.list.description")}>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                data-tour="department-download-template"
+                variant="outline"
+                disabled={isDownloadingTemplate}
+                onClick={async () => {
+                  setIsDownloadingTemplate(true);
+                  try {
+                    await downloadDepartmentTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.department.toast.templateSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.department.toast.templateError")
+                    });
+                  } finally {
+                    setIsDownloadingTemplate(false);
+                  }
+                }}>
+                {isDownloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                )}
+                {isDownloadingTemplate
+                  ? t("page.department.button.downloading")
+                  : t("page.department.button.downloadTemplate")}
+              </Button>
             )}
-            {isDownloadingTemplate
-              ? t("page.department.button.downloading")
-              : t("page.department.button.downloadTemplate")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            data-tour="department-download-data"
-            variant="outline"
-            disabled={isDownloadingData}
-            onClick={async () => {
-              setIsDownloadingData(true);
-              try {
-                await downloadDepartmentExcel();
-                toast.success(t("common.success"), {
-                  description: t("page.department.toast.dataSuccess")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.department.toast.dataError")
-                });
-              } finally {
-                setIsDownloadingData(false);
-              }
-            }}>
-            {isDownloadingData ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                data-tour="department-download-data"
+                variant="outline"
+                disabled={isDownloadingData}
+                onClick={async () => {
+                  setIsDownloadingData(true);
+                  try {
+                    await downloadDepartmentExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.department.toast.dataSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.department.toast.dataError")
+                    });
+                  } finally {
+                    setIsDownloadingData(false);
+                  }
+                }}>
+                {isDownloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                )}
+                {isDownloadingData
+                  ? t("page.department.button.downloading")
+                  : t("page.department.button.downloadData")}
+              </Button>
             )}
-            {isDownloadingData
-              ? t("page.department.button.downloading")
-              : t("page.department.button.downloadData")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-        {canAccess(user, MENU_KEY, "import") && (
-          <Button
-            data-tour="department-upload"
-            variant="default"
-            onClick={() => setUploadModalOpen(true)}>
-            <span className="material-symbols-outlined text-lg">upload</span>
-            {t("page.department.button.upload")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button
-            data-tour="department-add"
-            variant="default"
-            onClick={() => navigate("/add-department")}
-            className="shadow-md">
-            <span className="material-symbols-outlined text-lg">add</span>
-            {t("page.department.button.add")}
-          </Button>
-        )}
-      </PageHeader>
-      </motion.div>
-
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div
-          variants={item}
-          data-tour="department-stat-total"
-          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              {t("page.department.list.statsTotal")}
-            </p>
-            <h3 className="text-3xl font-bold text-foreground">
-              {stats?.totalDepartemen ?? total}
-            </h3>
-            <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-sm">domain</span>
-              {t("page.department.list.statsAll")}
-            </p>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">domain</span>
-          </div>
-        </motion.div>
-        <motion.div
-          variants={item}
-          data-tour="department-stat-active"
-          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              {t("page.department.list.statsActive")}
-            </p>
-            <h3 className="text-3xl font-bold text-foreground">
-              {stats?.totalDepartemenAktif ?? 0}
-            </h3>
-            <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-sm">check_circle</span>
-              {stats?.totalDepartemen
-                ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
-                : 0}
-              {t("page.department.list.statsActivePercent")}
-            </p>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">check_circle</span>
-          </div>
-        </motion.div>
-        <motion.div
-          variants={item}
-          data-tour="department-stat-inactive"
-          className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-          <div>
-            <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-              {t("page.department.list.statsInactive")}
-            </p>
-            <h3 className="text-3xl font-bold text-white">
-              {stats?.totalDepartemenNonActive ?? 0}
-            </h3>
-            <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-sm">cancel</span>
-              {t("page.department.list.statsAttention")}
-            </p>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">cancel</span>
-          </div>
-        </motion.div>
-        <motion.div
-          variants={item}
-          data-tour="department-stat-nodesc"
-          className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              {t("page.department.list.statsNoDesc")}
-            </p>
-            <h3 className="text-3xl font-bold text-foreground">
-              {stats?.totalTanpaDeskripsi ?? 0}
-            </h3>
-            <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
-              <span className="material-symbols-outlined text-sm">warning</span>
-              {stats?.totalDepartemen
-                ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
-                : 0}
-              {t("page.department.list.statsNoDescPercent")}
-            </p>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-3xl">warning</span>
-          </div>
+            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button
+                data-tour="department-upload"
+                variant="default"
+                onClick={() => setUploadModalOpen(true)}>
+                <span className="material-symbols-outlined text-lg">upload</span>
+                {t("page.department.button.upload")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="department-add"
+                variant="default"
+                onClick={() => navigate("/add-department")}
+                className="shadow-md">
+                <span className="material-symbols-outlined text-lg">add</span>
+                {t("page.department.button.add")}
+              </Button>
+            )}
+          </PageHeader>
         </motion.div>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }} data-tour="department-table">
-        <DataTable
-          columns={columns}
-          data={departments}
-          isLoading={isLoading}
-          emptyMessage={t("page.department.list.empty")}
-          toolbar={
-            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t("page.department.list.showLabel")}
-                </span>
-                <select
-                  value={limit}
-                  className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                  <option value={10}>{t("page.department.list.show10")}</option>
-                  <option value={25}>{t("page.department.list.show25")}</option>
-                  <option value={50}>{t("page.department.list.show50")}</option>
-                </select>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              variants={item}
+              data-tour="department-stat-total"
+              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t("page.department.list.statsTotal")}
+                </p>
+                <h3 className="text-3xl font-bold text-foreground">
+                  {stats?.totalDepartemen ?? total}
+                </h3>
+                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">domain</span>
+                  {t("page.department.list.statsAll")}
+                </p>
               </div>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                  search
-                </span>
-                <input
-                  data-tour="department-search"
-                  placeholder={t("page.department.list.search")}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                />
+              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">domain</span>
               </div>
+            </motion.div>
+            <motion.div
+              variants={item}
+              data-tour="department-stat-active"
+              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t("page.department.list.statsActive")}
+                </p>
+                <h3 className="text-3xl font-bold text-foreground">
+                  {stats?.totalDepartemenAktif ?? 0}
+                </h3>
+                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">check_circle</span>
+                  {stats?.totalDepartemen
+                    ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
+                    : 0}
+                  {t("page.department.list.statsActivePercent")}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">check_circle</span>
+              </div>
+            </motion.div>
+            <motion.div
+              variants={item}
+              data-tour="department-stat-inactive"
+              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+              <div>
+                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+                  {t("page.department.list.statsInactive")}
+                </p>
+                <h3 className="text-3xl font-bold text-white">
+                  {stats?.totalDepartemenNonActive ?? 0}
+                </h3>
+                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">cancel</span>
+                  {t("page.department.list.statsAttention")}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">cancel</span>
+              </div>
+            </motion.div>
+            <motion.div
+              variants={item}
+              data-tour="department-stat-nodesc"
+              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t("page.department.list.statsNoDesc")}
+                </p>
+                <h3 className="text-3xl font-bold text-foreground">
+                  {stats?.totalTanpaDeskripsi ?? 0}
+                </h3>
+                <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">warning</span>
+                  {stats?.totalDepartemen
+                    ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
+                    : 0}
+                  {t("page.department.list.statsNoDescPercent")}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">warning</span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            data-tour="department-table"
+            className="mt-6">
+            <DataTable
+              columns={columns}
+              data={departments}
+              isLoading={isLoading}
+              emptyMessage={t("page.department.list.empty")}
+              toolbar={
+                <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {t("page.department.list.showLabel")}
+                    </span>
+                    <select
+                      value={limit}
+                      className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                      <option value={10}>{t("page.department.list.show10")}</option>
+                      <option value={25}>{t("page.department.list.show25")}</option>
+                      <option value={50}>{t("page.department.list.show50")}</option>
+                    </select>
+                  </div>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                      search
+                    </span>
+                    <input
+                      data-tour="department-search"
+                      placeholder={t("page.department.list.search")}
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                      }}
+                      className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    />
+                  </div>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              rowClassName={() => "group"}
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined opacity-80">lightbulb</span>
+              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                {t("page.department.tips.title")}
+              </h4>
             </div>
-          }
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-          rowClassName={() => "group"}
-        />
-      </motion.div>
-
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="material-symbols-outlined opacity-80">lightbulb</span>
-          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-            {t("page.department.tips.title")}
-          </h4>
-        </div>
-        <ul className="space-y-2">
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.department.tips.1")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.department.tips.2")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.department.tips.3")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.department.tips.4")}</span>
-          </li>
-        </ul>
+            <ul className="space-y-2">
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.department.tips.1")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.department.tips.2")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.department.tips.3")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.department.tips.4")}</span>
+              </li>
+            </ul>
+          </motion.div>
+        </motion.div>
       </motion.div>
 
       <Modal

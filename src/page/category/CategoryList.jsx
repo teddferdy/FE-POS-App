@@ -265,7 +265,7 @@ const CategoryList = () => {
       header: t("page.category.table.actions"),
       align: "right",
       render: (cat) => (
-        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-1 transition-opacity">
           {canAccess(user, MENU_KEY, "view") && (
             <button
               onClick={(e) => {
@@ -304,8 +304,10 @@ const CategoryList = () => {
   ];
 
   return (
-    <div data-tour="page-category" className="space-y-8">
-      <PageHeader
+    <div data-tour="page-category" className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
         breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
         title={t("page.category.list.title")}
         description={t("page.category.list.description")}>
@@ -395,13 +397,17 @@ const CategoryList = () => {
           </Button>
         )}
       </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat) => (
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.map((stat) => (
           <motion.div
             key={stat.label}
             variants={item}
@@ -485,7 +491,7 @@ const CategoryList = () => {
             </div>
           }
           pagination={{ page, totalPages, total, onPageChange: setPage }}
-          rowClassName={() => "group"}
+          rowClassName={() => ""}
         />
       </motion.div>
 
@@ -519,6 +525,8 @@ const CategoryList = () => {
             <span>{t("page.category.tips.4")}</span>
           </li>
         </ul>
+      </motion.div>
+        </motion.div>
       </motion.div>
 
       <Modal

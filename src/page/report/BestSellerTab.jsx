@@ -1,6 +1,20 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const BestSellerTab = ({ t, data }) => {
   const bestSellers = data?.bestSellers || [];
@@ -8,6 +22,7 @@ const BestSellerTab = ({ t, data }) => {
   const maxSold = Math.max(...bestSellers.map((p) => p.sold || 0), 1);
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -197,6 +212,7 @@ const BestSellerTab = ({ t, data }) => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

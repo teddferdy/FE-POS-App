@@ -15,6 +15,20 @@ import {
   Lightbulb
 } from "lucide-react";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -82,6 +96,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
   const IconComponent = icons.find((i) => i.name === formData.selectedIcon)?.component || Star;
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
       {/* Header */}
       <div className="px-xl py-lg border-b border-outline-variant/20 flex items-center justify-between">
@@ -394,6 +409,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 

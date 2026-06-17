@@ -25,6 +25,20 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
@@ -124,8 +138,9 @@ const EditExpense = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
           className="hover:text-foreground transition-colors">
@@ -303,6 +318,7 @@ const EditExpense = () => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 

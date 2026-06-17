@@ -10,6 +10,21 @@ import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const icons = [
   { name: "star", component: Star, fill: true },
@@ -98,7 +113,9 @@ const AddMemberTier = () => {
   const IconComponent = icons.find((i) => i.name === formData.selectedIcon)?.component || Star;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.home" },
@@ -110,6 +127,10 @@ const AddMemberTier = () => {
         description={t("page.memberTier.add.description")}>
         <UserGuide guideKey="add-member-tier" />
       </PageHeader>
+    </motion.div>
+    </motion.div>
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
 
       <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
         <div className="grid grid-cols-12 gap-6">
@@ -400,6 +421,9 @@ const AddMemberTier = () => {
           </div>
         </div>
       </div>
+
+    </motion.div>
+    </motion.div>
 
       <Modal
         type="confirm"

@@ -189,6 +189,9 @@ import NotificationPage from "./page/notification/NotificationPage";
 import AccountsReceivableList from "./page/accounts-receivable/AccountsReceivableList";
 import AccountsReceivableDetail from "./page/accounts-receivable/AccountsReceivableDetail";
 
+// Backup
+import BackupPage from "./page/backup/BackupPage";
+
 // Discount
 import DiscountList from "./page/discount/DiscountList";
 import AddDiscount from "./page/discount/AddDiscount";
@@ -429,6 +432,8 @@ function App() {
           <Route path="/add-expense" element={withLayout(<AddExpense />)} />
           <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
           <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
+
+          <Route path="/backup" element={withLayout(<BackupPage />)} />
 
           <Route path="/support" element={withLayout(<Support />)} />
 

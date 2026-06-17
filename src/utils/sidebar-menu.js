@@ -27,7 +27,8 @@ import {
   DollarSign,
   BadgePercent,
   ChefHat,
-  Wallet
+  Wallet,
+  Database
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -104,7 +105,7 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.ingredientCategory",
         href: "/ingredient-category",
         icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Bahan Baku",
@@ -416,7 +417,7 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.roleManagement",
         href: "/role-management",
         icon: Shield,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Harga per Toko",
@@ -438,6 +439,13 @@ export const sidebarMenuSuperAdmin = [
         href: "/reservation",
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Backup & Restore",
+        i18nKey: "sidebar.backup",
+        href: "/backup",
+        icon: Database,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -493,7 +501,7 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.ingredientCategory",
         href: "/ingredient-category",
         icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Bahan Baku",
@@ -695,7 +703,7 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.pajak",
         href: "/tax-list",
         icon: Percent,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       }
     ],
     actions: []
@@ -778,14 +786,21 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.reservation",
         href: "/reservation",
         icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Metode Pembayaran",
         i18nKey: "sidebar.metodePembayaran",
         href: "/type-payment-list",
         icon: CreditCard,
-        actions: ["add", "edit", "view", "delete"]
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
       },
       {
         title: "Invoice & Struk",
@@ -800,6 +815,13 @@ export const sidebarMenuAdmin = [
         href: "/price-list-template",
         icon: BadgePercent,
         actions: ["view", "edit"]
+      },
+      {
+        title: "Backup & Restore",
+        i18nKey: "sidebar.backup",
+        href: "/backup",
+        icon: Database,
+        actions: ["view"]
       }
     ],
     actions: []
@@ -1185,6 +1207,7 @@ export const urlWithArrowBack = [
     i18nKey: "sidebar.pricePerStore",
     pathName: "/price-list-template"
   },
+  { url: -1, title: "Backup & Restore", i18nKey: "sidebar.backup", pathName: "/backup" },
   { url: -1, title: "BOM", i18nKey: "sidebar.bom", pathName: "/bom" },
   {
     url: "/bom",

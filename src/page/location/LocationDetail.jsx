@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
   Store,
@@ -56,6 +57,16 @@ const dayLabels = {
   friday: "Jumat",
   saturday: "Sabtu",
   sunday: "Minggu"
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
 const DetailRow = ({ icon: Icon, label, value }) => (
@@ -311,27 +322,33 @@ const LocationDetail = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href: "/dashboard-super-admin",
-            i18nKey: "breadcrumb.home"
-          },
-          {
-            label: t("page.location.list.title"),
-            href: "/location-list",
-            i18nKey: "page.location.list.title"
-          },
-          { label: t("page.location.detail.title"), i18nKey: "page.location.detail.title" }
-        ]}
-        title={t("page.location.detail.title")}
-        description={t("page.location.detail.description")}>
-        <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
-          <Edit size={16} />
-          {t("breadcrumb.edit")}
-        </Button>
-      </PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
+              {
+                label: t("page.location.list.title"),
+                href: "/location-list",
+                i18nKey: "page.location.list.title"
+              },
+              { label: t("page.location.detail.title"), i18nKey: "page.location.detail.title" }
+            ]}
+            title={t("page.location.detail.title")}
+            description={t("page.location.detail.description")}>
+            <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
+              <Edit size={16} />
+              {t("breadcrumb.edit")}
+            </Button>
+          </PageHeader>
+        </motion.div>
+      </motion.div>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
 
       {/* Main Card */}
       <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
@@ -339,7 +356,7 @@ const LocationDetail = () => {
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* ===== LEFT COLUMN (2/3) ===== */}
-            <div className="lg:col-span-2 space-y-8">
+            <motion.div variants={item} className="lg:col-span-2 space-y-8">
               {/* Informasi Toko */}
               <div className="space-y-4">
                 <SectionHeader icon={Building2} title={t("page.location.detail.informasiToko")} />
@@ -512,10 +529,10 @@ const LocationDetail = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
             {/* ===== RIGHT COLUMN (1/3) ===== */}
-            <div className="lg:col-span-1 space-y-6">
+            <motion.div variants={item} className="lg:col-span-1 space-y-6">
               {/* Status */}
               <div className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
@@ -641,6 +658,22 @@ const LocationDetail = () => {
                         : "-"}
                     </span>
                   </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.createdBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.createdBy || "-"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("page.location.detail.modifiedBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {location.modifiedBy || "-"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -680,10 +713,12 @@ const LocationDetail = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

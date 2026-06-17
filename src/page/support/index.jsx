@@ -12,6 +12,20 @@ import {
   ExternalLink
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const faqItems = [
   {
@@ -118,130 +132,138 @@ const Support = () => {
   const [openId, setOpenId] = useState(null);
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
-          { label: t("page.support.title") }
-        ]}
-        title={t("page.support.title")}
-        description={t("page.support.description")}
-      />
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
+              { label: t("page.support.title") }
+            ]}
+            title={t("page.support.title")}
+            description={t("page.support.description")}
+          />
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div
-          data-tour="support-contact-email"
-          className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-            <Mail size={22} />
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div
+              data-tour="support-contact-email"
+              className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                <Mail size={22} />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">{t("page.support.emailTitle")}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{t("page.support.emailDesc")}</p>
+              <a
+                href="mailto:support@pos-app.id"
+                className="text-sm font-semibold text-primary hover:underline">
+                support@pos-app.id
+              </a>
+            </div>
+            <div
+              data-tour="support-contact-phone"
+              className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
+                <Phone size={22} />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">{t("page.support.phoneTitle")}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{t("page.support.phoneDesc")}</p>
+              <a
+                href="tel:+6281234567890"
+                className="text-sm font-semibold text-primary hover:underline">
+                +62 812-3456-7890
+              </a>
+            </div>
+            <div
+              data-tour="support-contact-chat"
+              className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center mb-4">
+                <MessageCircle size={22} />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">{t("page.support.chatTitle")}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{t("page.support.chatDesc")}</p>
+              <button className="text-sm font-semibold text-primary hover:underline">
+                {t("page.support.startChat")}
+              </button>
+            </div>
           </div>
-          <h3 className="font-semibold text-foreground mb-1">{t("page.support.emailTitle")}</h3>
-          <p className="text-sm text-muted-foreground mb-3">{t("page.support.emailDesc")}</p>
-          <a
-            href="mailto:support@pos-app.id"
-            className="text-sm font-semibold text-primary hover:underline">
-            support@pos-app.id
-          </a>
-        </div>
-        <div
-          data-tour="support-contact-phone"
-          className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
-          <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
-            <Phone size={22} />
-          </div>
-          <h3 className="font-semibold text-foreground mb-1">{t("page.support.phoneTitle")}</h3>
-          <p className="text-sm text-muted-foreground mb-3">{t("page.support.phoneDesc")}</p>
-          <a
-            href="tel:+6281234567890"
-            className="text-sm font-semibold text-primary hover:underline">
-            +62 812-3456-7890
-          </a>
-        </div>
-        <div
-          data-tour="support-contact-chat"
-          className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow">
-          <div className="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center mb-4">
-            <MessageCircle size={22} />
-          </div>
-          <h3 className="font-semibold text-foreground mb-1">{t("page.support.chatTitle")}</h3>
-          <p className="text-sm text-muted-foreground mb-3">{t("page.support.chatDesc")}</p>
-          <button className="text-sm font-semibold text-primary hover:underline">
-            {t("page.support.startChat")}
-          </button>
-        </div>
-      </div>
 
-      <div
-        data-tour="support-faq"
-        className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="px-6 py-5 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-2">
-            <LifeBuoy size={18} className="text-primary" />
-            <h3 className="text-base font-semibold text-foreground">
-              {t("page.support.faqTitle")}
+          <div
+            data-tour="support-faq"
+            className="bg-card rounded-xl border border-border overflow-hidden mt-6">
+            <div className="px-6 py-5 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <LifeBuoy size={18} className="text-primary" />
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.support.faqTitle")}
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{t("page.support.faqDesc")}</p>
+            </div>
+            <div className="divide-y divide-border">
+              {faqItems.map((item) => {
+                const content = isId ? item.idText : item.en;
+                const isOpen = openId === item.id;
+                return (
+                  <div key={item.id} className="px-6">
+                    <button
+                      onClick={() => setOpenId(isOpen ? null : item.id)}
+                      className="w-full flex items-center justify-between gap-4 py-4 text-left hover:text-primary transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="material-symbols-outlined text-primary text-xl shrink-0">
+                          {item.icon}
+                        </span>
+                        <span className="text-sm font-semibold text-foreground">{content.q}</span>
+                      </div>
+                      <ChevronDown
+                        size={18}
+                        className={`text-muted-foreground shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="pb-4 pl-9 pr-2 text-sm text-muted-foreground leading-relaxed">
+                        {content.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div data-tour="support-resources" className="mt-6">
+            <h3 className="text-base font-semibold text-foreground mb-4">
+              {t("page.support.resourcesTitle")}
             </h3>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">{t("page.support.faqDesc")}</p>
-        </div>
-        <div className="divide-y divide-border">
-          {faqItems.map((item) => {
-            const content = isId ? item.idText : item.en;
-            const isOpen = openId === item.id;
-            return (
-              <div key={item.id} className="px-6">
-                <button
-                  onClick={() => setOpenId(isOpen ? null : item.id)}
-                  className="w-full flex items-center justify-between gap-4 py-4 text-left hover:text-primary transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="material-symbols-outlined text-primary text-xl shrink-0">
-                      {item.icon}
-                    </span>
-                    <span className="text-sm font-semibold text-foreground">{content.q}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {resources.map((r, i) => (
+                <a
+                  key={i}
+                  href={r.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-card p-5 rounded-xl border border-border hover:shadow-md hover:border-primary/30 transition-all flex items-center gap-3 group">
+                  <div
+                    className={`w-10 h-10 rounded-lg ${r.color} flex items-center justify-center shrink-0`}>
+                    <r.icon size={20} />
                   </div>
-                  <ChevronDown
-                    size={18}
-                    className={`text-muted-foreground shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{isId ? r.id : r.en}</p>
+                    <p className="text-xs text-muted-foreground truncate">{r.href}</p>
+                  </div>
+                  <ExternalLink
+                    size={16}
+                    className="text-muted-foreground group-hover:text-primary shrink-0"
                   />
-                </button>
-                {isOpen && (
-                  <div className="pb-4 pl-9 pr-2 text-sm text-muted-foreground leading-relaxed">
-                    {content.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div data-tour="support-resources">
-        <h3 className="text-base font-semibold text-foreground mb-4">
-          {t("page.support.resourcesTitle")}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {resources.map((r, i) => (
-            <a
-              key={i}
-              href={r.href}
-              target="_blank"
-              rel="noreferrer"
-              className="bg-card p-5 rounded-xl border border-border hover:shadow-md hover:border-primary/30 transition-all flex items-center gap-3 group">
-              <div
-                className={`w-10 h-10 rounded-lg ${r.color} flex items-center justify-center shrink-0`}>
-                <r.icon size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{isId ? r.id : r.en}</p>
-                <p className="text-xs text-muted-foreground truncate">{r.href}</p>
-              </div>
-              <ExternalLink
-                size={16}
-                className="text-muted-foreground group-hover:text-primary shrink-0"
-              />
-            </a>
-          ))}
-        </div>
-      </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

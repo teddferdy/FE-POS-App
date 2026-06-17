@@ -6,6 +6,20 @@ import { ArrowLeft, Package } from "lucide-react";
 import { getIngredientById } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -45,7 +59,8 @@ const DetailIngredient = () => {
     );
 
   return (
-    <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
@@ -225,6 +240,7 @@ const DetailIngredient = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

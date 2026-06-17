@@ -7,6 +7,20 @@ import { ArrowLeft, Building2, User, Calendar, Clock, DollarSign, ShoppingCart, 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getOrdersByStore } from "@/services/order";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
@@ -96,6 +110,7 @@ const CashRegisterDetail = () => {
   ];
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground">{t("page.cashRegister.detail.breadcrumbDashboard")}</button>
@@ -223,6 +238,7 @@ const CashRegisterDetail = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

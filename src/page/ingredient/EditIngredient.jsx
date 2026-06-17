@@ -18,6 +18,20 @@ import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -190,7 +204,8 @@ const EditIngredient = () => {
     return <Loading fullscreen size="lg" label={t("page.ingredient.edit.loadingData")} />;
 
   return (
-    <div>
+    <motion.div variants={container} initial="hidden" animate="show">
+      <div>
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
@@ -635,6 +650,7 @@ const EditIngredient = () => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 

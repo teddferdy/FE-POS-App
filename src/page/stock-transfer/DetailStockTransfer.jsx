@@ -11,6 +11,20 @@ import {
 } from "@/services/stock-transfer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const statusDetail = {
   pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
@@ -68,6 +82,7 @@ const DetailStockTransfer = () => {
   const st = statusDetail[transfer.status] || statusDetail.pending;
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -186,6 +201,7 @@ const DetailStockTransfer = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

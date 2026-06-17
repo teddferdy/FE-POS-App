@@ -32,6 +32,20 @@ import {
 import { getEmployeeDetail } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const DetailEmployee = () => {
   const { t } = useTranslation();
@@ -231,6 +245,7 @@ const DetailEmployee = () => {
       : (employee.documents || []).map(normalizeDoc);
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -600,6 +615,7 @@ const DetailEmployee = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

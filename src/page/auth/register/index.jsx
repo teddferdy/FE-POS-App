@@ -31,6 +31,20 @@ import { register } from "@/services/auth";
 import { getAllLocation } from "@/services/location";
 import { translationSelect } from "@/state/translation";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const RegisterPage = () => {
   const { t } = useTranslation();
@@ -153,7 +167,7 @@ const RegisterPage = () => {
   });
 
   return (
-    <>
+    <motion.div variants={container} initial="hidden" animate="show">
       <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
         {/* Top Nav */}
         <nav className="bg-card border-b border-border fixed top-0 w-full z-50 transition-colors">
@@ -468,7 +482,7 @@ const RegisterPage = () => {
       <PolicyDialog type="terms" open={termsOpen} onOpenChange={setTermsOpen} />
       <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="register" />
       {isLoading && <Loading fullscreen size="lg" label="Memuat data..." />}
-    </>
+    </motion.div>
   );
 };
 

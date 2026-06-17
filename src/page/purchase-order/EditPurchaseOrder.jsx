@@ -20,6 +20,20 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EditPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -274,24 +288,30 @@ const EditPurchaseOrder = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href: "/dashboard-super-admin",
-            i18nKey: "breadcrumb.home"
-          },
-          {
-            label: t("page.purchaseOrder.list.title"),
-            href: "/purchase-order",
-            i18nKey: "page.purchaseOrder.list.title"
-          },
-          { label: t("page.purchaseOrder.edit.title") }
-        ]}
-        title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
-        description={t("page.purchaseOrder.edit.description")}></PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href: "/dashboard-super-admin",
+                i18nKey: "breadcrumb.home"
+              },
+              {
+                label: t("page.purchaseOrder.list.title"),
+                href: "/purchase-order",
+                i18nKey: "page.purchaseOrder.list.title"
+              },
+              { label: t("page.purchaseOrder.edit.title") }
+            ]}
+            title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
+            description={t("page.purchaseOrder.edit.description")}></PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">
           <h3 className="text-base font-semibold text-foreground mb-4">{t("page.purchaseOrder.add.supplierSection")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -601,7 +621,9 @@ const EditPurchaseOrder = () => {
             {updateMutation.isLoading ? t("common.saving") : t("page.purchaseOrder.edit.saveChanges")}
           </Button>
         </div>
-      </form>
+          </form>
+        </motion.div>
+      </motion.div>
 
       <Modal
         type="confirm"

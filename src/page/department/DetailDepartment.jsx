@@ -6,6 +6,21 @@ import { getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -131,24 +146,30 @@ const DetailDepartment = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
-          { label: t("breadcrumb.department"), href: "/department-list" },
-          { label: dept.name }
-        ]}
-        title={dept.name}
-        description={t("page.department.detail.description")}>
-        <Button
-          onClick={() => navigate(`/edit-department?id=${dept.id}`)}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-          <span className="material-symbols-outlined text-lg">edit</span>
-          {t("page.department.button.edit")}
-        </Button>
-      </PageHeader>
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
+              { label: t("breadcrumb.department"), href: "/department-list" },
+              { label: dept.name }
+            ]}
+            title={dept.name}
+            description={t("page.department.detail.description")}>
+            <Button
+              onClick={() => navigate(`/edit-department?id=${dept.id}`)}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+              <span className="material-symbols-outlined text-lg">edit</span>
+              {t("page.department.button.edit")}
+            </Button>
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
@@ -245,6 +266,8 @@ const DetailDepartment = () => {
           </div>
         </div>
       </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

@@ -13,6 +13,21 @@ import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EditMember = () => {
   const { t } = useTranslation();
@@ -99,7 +114,9 @@ const EditMember = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
       <PageHeader
         breadcrumbs={[
           { label: t("breadcrumb.home") },
@@ -121,6 +138,10 @@ const EditMember = () => {
         </Button>
         <UserGuide guideKey="add-member" />
       </PageHeader>
+    </motion.div>
+    </motion.div>
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
@@ -303,6 +324,9 @@ const EditMember = () => {
           </div>
         </div>
       </form>
+
+    </motion.div>
+    </motion.div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

@@ -11,6 +11,7 @@ import { buildAccessMenuPayload } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
 
 const actionLabels = {
   view: "Lihat",
@@ -97,6 +98,19 @@ const buildInitialPermissions = (groups) => {
     });
   });
   return perms;
+};
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
 };
 
 const AddRole = () => {
@@ -188,6 +202,7 @@ const AddRole = () => {
   };
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div>
       <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
         <button
@@ -422,6 +437,7 @@ const AddRole = () => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 

@@ -6,6 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Stars } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const levelConfig = {
   platinum: {
@@ -262,6 +276,7 @@ const MemberDetail = () => {
   ];
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
@@ -669,6 +684,7 @@ const MemberDetail = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

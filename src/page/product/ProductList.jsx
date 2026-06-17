@@ -4,14 +4,22 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Plus, Search, Edit, Trash2, Upload, Download, Package } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getAllProductTable, deleteProduct } from "@/services/product";
+import {
+  getAllProductTable,
+  deleteProduct,
+  downloadProductTemplate,
+  downloadProductExcel,
+  uploadProductExcel
+} from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
+import UploadProductModal from "./components/UploadProductModal";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
@@ -29,6 +37,9 @@ const ProductList = () => {
   const [sortFilter, setSortFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [noStoreModal, setNoStoreModal] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
@@ -263,132 +274,150 @@ const ProductList = () => {
 
   return (
     <div data-tour="page-products" className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() =>
-            navigate(
-              role === "super_admin"
-                ? "/dashboard-super-admin"
-                : role === "admin"
-                  ? "/dashboard-admin"
-                  : "/home"
-            )
-          }
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        {role === "super_admin" && locationParam && (
-          <>
-            <button
-              onClick={() => navigate("/location-list")}
-              className="hover:text-foreground transition-colors">
-              {t("sidebar.kelolaToko")}
-            </button>
-            <span className="text-xs">/</span>
-          </>
-        )}
-        <span className="text-primary font-semibold">{t("breadcrumb.product")}</span>
-      </nav>
-
-      {/* Header */}
-      <motion.div
-        variants={item}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.product.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.product.list.description")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {canAccess(user, MENU_KEY, "import") && (
-            <Button data-tour="product-import" variant="outline" className="gap-2">
-              <Upload size={16} />
-              {t("page.product.button.import")}
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+          breadcrumbs={[
+            { href: role === "super_admin" ? "/dashboard-super-admin" : role === "admin" ? "/dashboard-admin" : "/home", i18nKey: "breadcrumb.home" },
+            ...(role === "super_admin" && locationParam ? [{ href: "/location-list", i18nKey: "sidebar.kelolaToko" }] : []),
+            { i18nKey: "breadcrumb.product" }
+          ]}
+          title={t("page.product.list.title")}
+          description={t("page.product.list.description")}>
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingTemplate}
+              onClick={async () => {
+                setIsDownloadingTemplate(true);
+                try {
+                  await downloadProductTemplate();
+                  toast.success(t("common.success"), {
+                    description: t("page.product.toast.templateSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.product.toast.templateError")
+                  });
+                } finally {
+                  setIsDownloadingTemplate(false);
+                }
+              }}>
+              {isDownloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <Download size={16} className="mr-1" />
+              )}
+              {t("page.product.button.downloadTemplate")}
             </Button>
           )}
           {canAccess(user, MENU_KEY, "export") && (
-            <Button data-tour="product-export" variant="outline" className="gap-2">
-              <Download size={16} />
+            <Button
+              variant="outline"
+              disabled={isDownloadingData}
+              onClick={async () => {
+                setIsDownloadingData(true);
+                try {
+                  await downloadProductExcel();
+                  toast.success(t("common.success"), {
+                    description: t("page.product.toast.dataSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.product.toast.dataError")
+                  });
+                } finally {
+                  setIsDownloadingData(false);
+                }
+              }}>
+              {isDownloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <Download size={16} className="mr-1" />
+              )}
               {t("page.product.button.export")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button
+              data-tour="product-import"
+              variant="default"
+              onClick={() => setUploadModalOpen(true)}>
+              <Upload size={16} className="mr-1" />
+              {t("page.product.button.import")}
             </Button>
           )}
           {canAccess(user, MENU_KEY, "add") && (
             <Button
               data-tour="product-add"
               onClick={() => navigate("/add-product")}
-              className="gap-2">
-              <Plus size={18} />
+              className="shadow-md">
+              <Plus size={16} className="mr-1" />
               {t("page.product.button.add")}
             </Button>
           )}
-        </div>
+        </PageHeader>
+        </motion.div>
       </motion.div>
 
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="product-search"
-        className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
-        <div className="flex-1 w-full relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.product.list.searchSku")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
-          />
-        </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-            <option value="">{t("common.all")} Kategori</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortFilter}
-            onChange={(e) => setSortFilter(e.target.value)}
-            className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-            <option value="">{t("page.product.list.filter.newest")}</option>
-            <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
-            <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
-            <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
-          </select>
-        </div>
-      </motion.div>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div
+            data-tour="product-search"
+            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+            <div className="flex-1 w-full relative">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.product.list.searchSku")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                <option value="">{t("common.all")} Kategori</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={sortFilter}
+                onChange={(e) => setSortFilter(e.target.value)}
+                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                <option value="">{t("page.product.list.filter.newest")}</option>
+                <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
+                <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
+                <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
+              </select>
+            </div>
+          </div>
 
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="product-table">
-        <DataTable
-          columns={columns}
-          data={filteredProducts}
-          isLoading={isLoading}
-          emptyMessage={t("page.product.list.empty")}
-          emptyIcon={Package}
-          pagination={{
-            page,
-            totalPages,
-            total,
-            onPageChange: setPage
-          }}
-        />
+          <div data-tour="product-table">
+            <DataTable
+              columns={columns}
+              data={filteredProducts}
+              isLoading={isLoading}
+              emptyMessage={t("page.product.list.empty")}
+              emptyIcon={Package}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: setPage
+              }}
+            />
+          </div>
+        </motion.div>
       </motion.div>
 
       <Modal
@@ -407,6 +436,12 @@ const ProductList = () => {
         description={t("page.product.noStore.description")}
         confirmText={t("page.product.noStore.button")}
         onConfirm={() => navigate("/add-location")}
+      />
+
+      <UploadProductModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["products"])}
       />
     </div>
   );

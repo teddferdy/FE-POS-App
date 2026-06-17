@@ -5,11 +5,12 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Plus, Package } from "lucide-react";
-import { getAllIngredientCategory, deleteIngredientCategory } from "@/services/ingredientCategory";
+import { Plus, Package, Loader2 } from "lucide-react";
+import { getAllIngredientCategory, deleteIngredientCategory, downloadIngredientCategoryTemplate, downloadIngredientCategoryExcel } from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
+import UploadIngredientCategoryModal from "./components/UploadIngredientCategoryModal";
 import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
@@ -35,6 +36,9 @@ const CategoryList = () => {
   const MENU_KEY = "/ingredient-category";
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data, isLoading } = useQuery(
     ["ingredient-categories"],
@@ -169,26 +173,91 @@ const CategoryList = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
-          { i18nKey: "page.ingredientCategory.list.breadcrumbCategory" }
-        ]}
-        title={t("page.ingredientCategory.list.title")}
-        description={t("page.ingredientCategory.list.subtitle")}>
-        {canAccess(user, MENU_KEY, "create") && (
-          <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
-            <Plus size={16} className="mr-1" />
-            {t("page.ingredientCategory.list.addButton")}
-          </Button>
-        )}
-      </PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+          breadcrumbs={[
+            { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
+            { i18nKey: "page.ingredientCategory.list.breadcrumbCategory" }
+          ]}
+          title={t("page.ingredientCategory.list.title")}
+          description={t("page.ingredientCategory.list.subtitle")}>
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingTemplate}
+              onClick={async () => {
+                setIsDownloadingTemplate(true);
+                try {
+                  await downloadIngredientCategoryTemplate();
+                  toast.success(t("common.success"), {
+                    description: t("page.ingredientCategory.toast.templateSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.ingredientCategory.toast.templateError")
+                  });
+                } finally {
+                  setIsDownloadingTemplate(false);
+                }
+              }}>
+              {isDownloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+              )}
+              {t("page.ingredientCategory.button.downloadTemplate")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingData}
+              onClick={async () => {
+                setIsDownloadingData(true);
+                try {
+                  await downloadIngredientCategoryExcel();
+                  toast.success(t("common.success"), {
+                    description: t("page.ingredientCategory.toast.dataSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.ingredientCategory.toast.dataError")
+                  });
+                } finally {
+                  setIsDownloadingData(false);
+                }
+              }}>
+              {isDownloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">download</span>
+              )}
+              {t("page.ingredientCategory.button.downloadData")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button
+              variant="default"
+              onClick={() => setUploadModalOpen(true)}>
+              <span className="material-symbols-outlined text-lg mr-1">upload</span>
+              {t("page.ingredientCategory.button.upload")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "create") && (
+            <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
+              <Plus size={16} className="mr-1" />
+              {t("page.ingredientCategory.list.addButton")}
+            </Button>
+          )}
+        </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat) => (
           <motion.div key={stat.label} variants={item} className="bg-card p-6 rounded-xl border border-border shadow-sm">
             <div className="flex items-center gap-4">
@@ -202,14 +271,9 @@ const CategoryList = () => {
             </div>
             </motion.div>
         ))}
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}>
-        <DataTable
+      <DataTable
           columns={columns}
           data={filtered}
           isLoading={isLoading}
@@ -226,14 +290,8 @@ const CategoryList = () => {
             </div>
           }
         />
-      </motion.div>
 
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}>
-        <TipsCard
+      <TipsCard
           tips={[
             t("page.ingredientCategory.list.tips.1"),
             t("page.ingredientCategory.list.tips.2"),
@@ -241,6 +299,7 @@ const CategoryList = () => {
             t("page.ingredientCategory.list.tips.4")
           ]}
         />
+      </motion.div>
       </motion.div>
 
       <Modal
@@ -256,6 +315,12 @@ const CategoryList = () => {
             setDeleteTarget(null);
           }
         }}
+      />
+
+      <UploadIngredientCategoryModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["ingredient-categories"])}
       />
     </div>
   );

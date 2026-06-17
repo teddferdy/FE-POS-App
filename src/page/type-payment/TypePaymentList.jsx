@@ -5,17 +5,20 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Search, Eye, Edit, Trash2, CreditCard } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, CreditCard, Loader2 } from "lucide-react";
 import {
   getAllTypePaymentListActive,
   getAllTypePayment,
-  deleteTypePayment
+  deleteTypePayment,
+  downloadTypePaymentTemplate,
+  downloadTypePaymentExcel
 } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import UploadTypePaymentModal from "./components/UploadTypePaymentModal";
 import { canAccess } from "@/utils/permission";
 
 const formatDate = (dateStr) => {
@@ -49,6 +52,9 @@ const TypePaymentList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const item = {
     hidden: { opacity: 0, y: 20 },
@@ -209,12 +215,76 @@ const TypePaymentList = () => {
             {t("page.typePayment.list.description")}
           </p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-type-payment")} className="gap-2">
-            <Plus size={18} />
-            {t("page.typePayment.button.add")}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingTemplate}
+              onClick={async () => {
+                setIsDownloadingTemplate(true);
+                try {
+                  await downloadTypePaymentTemplate();
+                  toast.success(t("common.success"), {
+                    description: t("page.typePayment.toast.templateSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.typePayment.toast.templateError")
+                  });
+                } finally {
+                  setIsDownloadingTemplate(false);
+                }
+              }}>
+              {isDownloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+              )}
+              {t("page.typePayment.button.downloadTemplate")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingData}
+              onClick={async () => {
+                setIsDownloadingData(true);
+                try {
+                  await downloadTypePaymentExcel();
+                  toast.success(t("common.success"), {
+                    description: t("page.typePayment.toast.dataSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.typePayment.toast.dataError")
+                  });
+                } finally {
+                  setIsDownloadingData(false);
+                }
+              }}>
+              {isDownloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">download</span>
+              )}
+              {t("page.typePayment.button.downloadData")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button
+              variant="default"
+              onClick={() => setUploadModalOpen(true)}>
+              <span className="material-symbols-outlined text-lg mr-1">upload</span>
+              {t("page.typePayment.button.upload")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-type-payment")} className="gap-2 shadow-md">
+              <Plus size={18} />
+              {t("page.typePayment.button.add")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -272,6 +342,15 @@ const TypePaymentList = () => {
         })}
         confirmText={t("modal.yesDelete")}
         onConfirm={confirmDelete}
+      />
+
+      <UploadTypePaymentModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => {
+          queryClient.invalidateQueries(["type-payments"]);
+          queryClient.invalidateQueries(["type-payments-all"]);
+        }}
       />
       </motion.div>
   );

@@ -18,6 +18,20 @@ import {
   ListOrdered,
   Store
 } from "lucide-react";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const statusConfig = {
   pending: {
@@ -163,6 +177,7 @@ const KitchenDisplay = () => {
   }
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -288,6 +303,7 @@ const KitchenDisplay = () => {
         </div>
       )}
     </div>
+    </motion.div>
   );
 };
 

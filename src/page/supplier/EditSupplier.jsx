@@ -18,6 +18,20 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -107,18 +121,24 @@ const EditSupplier = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
-          { label: t("breadcrumb.supplier"), href: "/supplier", i18nKey: "breadcrumb.supplier" },
-          { label: t("breadcrumb.editSupplier"), i18nKey: "breadcrumb.editSupplier" }
-        ]}
-        title={t("page.supplier.edit.title")}
-        description={t("page.supplier.edit.description")}>
-        <UserGuide guideKey="add-supplier" />
-      </PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+              { label: t("breadcrumb.supplier"), href: "/supplier", i18nKey: "breadcrumb.supplier" },
+              { label: t("breadcrumb.editSupplier"), i18nKey: "breadcrumb.editSupplier" }
+            ]}
+            title={t("page.supplier.edit.title")}
+            description={t("page.supplier.edit.description")}>
+            <UserGuide guideKey="add-supplier" />
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6 lg:col-span-2">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -259,7 +279,9 @@ const EditSupplier = () => {
             <Save size={18} />
             {updateMutation.isLoading ? t("common.saving") : t("common.save")}
           </Button>
-      </div>
+        </div>
+      </motion.div>
+    </motion.div>
 
       <Modal
         type="confirm"

@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pajak wajib diisi"),
@@ -29,6 +30,19 @@ const taxTypes = [
   { value: "PPh", label: "PPh" },
   { value: "Non-Pajak", label: "Non-Pajak" }
 ];
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EditTaxConfig = () => {
   const { t } = useTranslation();
@@ -106,6 +120,7 @@ const EditTaxConfig = () => {
   }
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -279,6 +294,7 @@ const EditTaxConfig = () => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 

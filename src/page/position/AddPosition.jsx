@@ -19,6 +19,21 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import { motion } from "framer-motion";
+
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const AddPosition = () => {
   const { t } = useTranslation();
@@ -70,7 +85,9 @@ const AddPosition = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
       <PageHeader
         breadcrumbs={[
           { i18nKey: "breadcrumb.hrm" },
@@ -81,6 +98,10 @@ const AddPosition = () => {
         description={t("page.position.add.description")}>
         <UserGuide guideKey="add-position" />
       </PageHeader>
+    </motion.div>
+    </motion.div>
+    <motion.div variants={container} initial="hidden" animate="show">
+    <motion.div variants={item}>
 
       <form onSubmit={handleSubmit}>
         <div className="bg-card p-6 rounded-xl shadow-sm border border-border space-y-6">
@@ -251,6 +272,9 @@ const AddPosition = () => {
           </div>
         </div>
       </form>
+
+    </motion.div>
+    </motion.div>
 
       <Modal
         type="confirm"

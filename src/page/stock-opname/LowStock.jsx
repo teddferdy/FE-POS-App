@@ -27,10 +27,10 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
+// const fadeInUp = {
+//   hidden: { opacity: 0, y: 20 },
+//   show: { opacity: 1, y: 0 }
+// };
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -65,226 +65,226 @@ const LowStock = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-        <PageHeader
-          breadcrumbs={[
-            {
-              label: t("breadcrumb.home"),
-              href:
-                role === "super_admin"
-                  ? "/dashboard-super-admin"
-                  : role === "admin"
-                    ? "/dashboard-admin"
-                    : "/home"
-            },
-            { label: t("breadcrumb.inventory") },
-            { label: t("breadcrumb.lowStock") }
-          ]}
-          title={t("page.lowStock.title")}
-          description={t("page.lowStock.description")}
-        />
-      </motion.div>
-
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
-          <Card className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-              <Package size={24} className="text-red-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{lowStockData.totalProducts || 0}</p>
-              <p className="text-sm text-muted-foreground">{t("page.lowStock.productLowStock")}</p>
-            </div>
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-              <ShoppingBasket size={24} className="text-orange-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{lowStockData.totalIngredients || 0}</p>
-              <p className="text-sm text-muted-foreground">{t("page.lowStock.ingredientLowStock")}</p>
-            </div>
-          </Card>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.home"),
+                href:
+                  role === "super_admin"
+                    ? "/dashboard-super-admin"
+                    : role === "admin"
+                      ? "/dashboard-admin"
+                      : "/home"
+              },
+              { label: t("breadcrumb.inventory") },
+              { label: t("breadcrumb.lowStock") }
+            ]}
+            title={t("page.lowStock.title")}
+            description={t("page.lowStock.description")}
+          />
         </motion.div>
       </motion.div>
 
-      {isLoading ? (
-        <motion.div variants={fadeInUp} initial="hidden" animate="show" className="space-y-4">
-          <Card className="overflow-hidden">
-            <div className="p-4 border-b border-border bg-muted/30">
-              <Skeleton className="h-4 w-40" />
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      <Skeleton className="h-3 w-24" />
-                    </TableHead>
-                    <TableHead className="text-right">
-                      <Skeleton className="h-3 w-20 ml-auto" />
-                    </TableHead>
-                    <TableHead className="text-right">
-                      <Skeleton className="h-3 w-16 ml-auto" />
-                    </TableHead>
-                    <TableHead>
-                      <Skeleton className="h-3 w-12" />
-                    </TableHead>
-                    <TableHead>
-                      <Skeleton className="h-3 w-14" />
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[...Array(4)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-36" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-12 ml-auto" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-4 w-12 ml-auto" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-10" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-20 rounded-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </motion.div>
-      ) : products.length === 0 && ingredients.length === 0 ? (
-        <motion.div variants={fadeInUp} initial="hidden" animate="show">
-          <Card className="p-12 text-center text-muted-foreground">
-            <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
-            <p className="text-sm mt-1">{t("page.lowStock.emptyDetail")}</p>
-          </Card>
-        </motion.div>
-      ) : (
-        <>
-          {products.length > 0 && (
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-            <Card className="overflow-hidden">
-              <div className="p-4 border-b border-border bg-muted/30">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Package size={16} className="text-destructive" />
-                  {t("page.lowStock.product")} ({products.length})
-                </h3>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                <Package size={24} className="text-red-600" />
               </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("page.lowStock.table.productName")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("page.lowStock.table.currentStock")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("page.lowStock.table.minStock")}
-                      </TableHead>
-                      <TableHead>{t("page.lowStock.table.unit")}</TableHead>
-                      <TableHead>{t("common.status")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((p) => {
-                      const status = getStockStatus(p.stock, t);
-                      return (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.nameProduct}</TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {formatNumber(p.stock)}
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {formatNumber(p.minStock)}
-                          </TableCell>
-                          <TableCell>{p.unit || "pcs"}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full ${p.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
-                              />
-                              {status.label}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+              <div>
+                <p className="text-2xl font-bold">{lowStockData.totalProducts || 0}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.lowStock.productLowStock")}
+                </p>
               </div>
             </Card>
-            </motion.div>
-          )}
+            <Card className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                <ShoppingBasket size={24} className="text-orange-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{lowStockData.totalIngredients || 0}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.lowStock.ingredientLowStock")}
+                </p>
+              </div>
+            </Card>
+          </div>
 
-          {ingredients.length > 0 && (
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-            <Card className="overflow-hidden">
-              <div className="p-4 border-b border-border bg-muted/30">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <ShoppingBasket size={16} className="text-orange-500" />
-                  {t("page.lowStock.ingredient")} ({ingredients.length})
-                </h3>
-              </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("page.lowStock.table.currentStock")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("page.lowStock.table.minStock")}
-                      </TableHead>
-                      <TableHead>{t("page.lowStock.table.unit")}</TableHead>
-                      <TableHead>{t("common.status")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ingredients.map((i) => {
-                      const status = getStockStatus(i.stock, t);
-                      return (
-                        <TableRow key={i.id}>
-                          <TableCell className="font-medium">{i.name}</TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {formatNumber(i.stock)}
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {formatNumber(i.minStock)}
-                          </TableCell>
-                          <TableCell>{i.unit || "pcs"}</TableCell>
+          {isLoading ? (
+            <div className="space-y-4 mt-6">
+              <Card className="overflow-hidden">
+                <div className="p-4 border-b border-border bg-muted/30">
+                  <Skeleton className="h-4 w-40" />
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          <Skeleton className="h-3 w-24" />
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <Skeleton className="h-3 w-20 ml-auto" />
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <Skeleton className="h-3 w-16 ml-auto" />
+                        </TableHead>
+                        <TableHead>
+                          <Skeleton className="h-3 w-12" />
+                        </TableHead>
+                        <TableHead>
+                          <Skeleton className="h-3 w-14" />
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[...Array(4)].map((_, i) => (
+                        <TableRow key={i}>
                           <TableCell>
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
-                              />
-                              {status.label}
-                            </span>
+                            <Skeleton className="h-4 w-36" />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Skeleton className="h-4 w-12 ml-auto" />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Skeleton className="h-4 w-12 ml-auto" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-10" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-5 w-20 rounded-full" />
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
+            </div>
+          ) : products.length === 0 && ingredients.length === 0 ? (
+            <Card className="p-12 text-center text-muted-foreground mt-6">
+              <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
+              <p className="text-lg font-medium">{t("page.lowStock.empty")}</p>
+              <p className="text-sm mt-1">{t("page.lowStock.emptyDetail")}</p>
             </Card>
-            </motion.div>
+          ) : (
+            <>
+              {products.length > 0 && (
+                <Card className="overflow-hidden">
+                  <div className="p-4 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <Package size={16} className="text-destructive" />
+                      {t("page.lowStock.product")} ({products.length})
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("page.lowStock.table.productName")}</TableHead>
+                          <TableHead className="text-right">
+                            {t("page.lowStock.table.currentStock")}
+                          </TableHead>
+                          <TableHead className="text-right">
+                            {t("page.lowStock.table.minStock")}
+                          </TableHead>
+                          <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                          <TableHead>{t("common.status")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {products.map((p) => {
+                          const status = getStockStatus(p.stock, t);
+                          return (
+                            <TableRow key={p.id}>
+                              <TableCell className="font-medium">{p.nameProduct}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {formatNumber(p.stock)}
+                              </TableCell>
+                              <TableCell className="text-right text-muted-foreground">
+                                {formatNumber(p.minStock)}
+                              </TableCell>
+                              <TableCell>{p.unit || "pcs"}</TableCell>
+                              <TableCell>
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${p.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
+                                  />
+                                  {status.label}
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </Card>
+              )}
+
+              {ingredients.length > 0 && (
+                <Card className="overflow-hidden">
+                  <div className="p-4 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <ShoppingBasket size={16} className="text-orange-500" />
+                      {t("page.lowStock.ingredient")} ({ingredients.length})
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("page.lowStock.table.ingredientName")}</TableHead>
+                          <TableHead className="text-right">
+                            {t("page.lowStock.table.currentStock")}
+                          </TableHead>
+                          <TableHead className="text-right">
+                            {t("page.lowStock.table.minStock")}
+                          </TableHead>
+                          <TableHead>{t("page.lowStock.table.unit")}</TableHead>
+                          <TableHead>{t("common.status")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {ingredients.map((i) => {
+                          const status = getStockStatus(i.stock, t);
+                          return (
+                            <TableRow key={i.id}>
+                              <TableCell className="font-medium">{i.name}</TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {formatNumber(i.stock)}
+                              </TableCell>
+                              <TableCell className="text-right text-muted-foreground">
+                                {formatNumber(i.minStock)}
+                              </TableCell>
+                              <TableCell>{i.unit || "pcs"}</TableCell>
+                              <TableCell>
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.cls}`}>
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${i.stock <= 0 ? "bg-red-500" : "bg-orange-500"}`}
+                                  />
+                                  {status.label}
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </Card>
+              )}
+            </>
           )}
-        </>
-      )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

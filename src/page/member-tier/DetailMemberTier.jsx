@@ -6,6 +6,20 @@ import { Award, Medal, Coins, Gift, Tag, Calendar, Users } from "lucide-react";
 import { getDetailMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -154,6 +168,7 @@ const DetailMemberTier = () => {
   const isActive = tier.status === "active" || tier.status === true;
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-8">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -298,6 +313,7 @@ const DetailMemberTier = () => {
         </Button>
       </div>
     </div>
+    </motion.div>
   );
 };
 

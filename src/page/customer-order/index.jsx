@@ -10,6 +10,20 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import Modal from "@/components/organism/modal";
 import { axiosInstance } from "@/services";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const CustomerOrder = () => {
   const { t } = useTranslation();
@@ -144,6 +158,7 @@ const CustomerOrder = () => {
   }
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white pb-24">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b">
@@ -295,6 +310,7 @@ const CustomerOrder = () => {
         onConfirm={() => setSuccessModal(false)}
       />
     </div>
+    </motion.div>
   );
 };
 

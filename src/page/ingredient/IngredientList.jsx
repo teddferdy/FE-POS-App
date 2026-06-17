@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload, Loader2 } from "lucide-react";
 import {
   getAllIngredients,
   deleteIngredient,
@@ -236,8 +236,8 @@ const IngredientList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.ingredient.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.ingredient.list.subtitle")}</p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {canAccess(user, MENU_KEY, "export") && (
             <Button
               variant="outline"
               disabled={downloadingTemplate}
@@ -245,20 +245,26 @@ const IngredientList = () => {
                 setDownloadingTemplate(true);
                 try {
                   await downloadIngredientTemplate();
-                  toast.success(t("page.ingredient.list.toastSuccess"), {
+                  toast.success(t("common.success"), {
                     description: t("page.ingredient.list.toastTemplateDesc")
                   });
                 } catch (err) {
-                  toast.error(t("page.ingredient.list.toastError"), {
-                    description: err?.response?.data?.message || err.message
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.ingredient.list.toastError")
                   });
                 } finally {
                   setDownloadingTemplate(false);
                 }
-              }}
-              className="gap-2">
-              <Download size={16} /> {t("page.ingredient.list.btnTemplate")}
+              }}>
+              {downloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <Download size={16} className="mr-1" />
+              )}
+              {t("page.ingredient.list.btnTemplate")}
             </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
             <Button
               variant="outline"
               disabled={downloadingData}
@@ -266,28 +272,37 @@ const IngredientList = () => {
                 setDownloadingData(true);
                 try {
                   await downloadIngredientExcel();
-                  toast.success(t("page.ingredient.list.toastSuccess"), {
+                  toast.success(t("common.success"), {
                     description: t("page.ingredient.list.toastExportDesc")
                   });
                 } catch (err) {
-                  toast.error(t("page.ingredient.list.toastError"), {
-                    description: err?.response?.data?.message || err.message
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.ingredient.list.toastError")
                   });
                 } finally {
                   setDownloadingData(false);
                 }
-              }}
-              className="gap-2">
-              <Download size={16} /> {t("page.ingredient.list.btnExport")}
+              }}>
+              {downloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <Download size={16} className="mr-1" />
+              )}
+              {t("page.ingredient.list.btnExport")}
             </Button>
-            <Button variant="outline" onClick={() => setImportModal(true)} className="gap-2">
-              <Upload size={16} /> {t("page.ingredient.list.btnImport")}
+          )}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button variant="outline" onClick={() => setImportModal(true)}>
+              <Upload size={16} className="mr-1" />
+              {t("page.ingredient.list.btnImport")}
             </Button>
-            <Button onClick={() => navigate("/add-ingredient")} className="gap-2">
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
               <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
 
       <motion.div

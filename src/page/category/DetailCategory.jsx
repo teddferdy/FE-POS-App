@@ -2,9 +2,11 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { getCategoryById } from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -26,6 +28,16 @@ const formatDate = (dateStr) => {
   } catch {
     return "-";
   }
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
 const DetailCategory = () => {
@@ -130,24 +142,28 @@ const DetailCategory = () => {
   const isActive = cat.status === "active" || cat.isActive === true;
 
   return (
-    <div className="space-y-8">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/category-list")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.category")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{cat.name}</span>
-      </nav>
+    <div className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+              { label: t("breadcrumb.category"), href: "/category-list", i18nKey: "breadcrumb.category" },
+              { label: cat.name, i18nKey: "page.category.detail.title" }
+            ]}
+            title={t("page.category.detail.title")}
+            description={t("page.category.detail.description")}>
+            <Button onClick={() => navigate(`/edit-category?id=${cat.id}`)} className="gap-2 shadow-md">
+              <span className="material-symbols-outlined text-lg">edit</span>
+              {t("page.category.button.edit")}
+            </Button>
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-8 md:p-10">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -268,17 +284,8 @@ const DetailCategory = () => {
           </div>
         </div>
       </div>
-
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => navigate("/category-list")} className="gap-2">
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          {t("page.category.button.back")}
-        </Button>
-        <Button onClick={() => navigate(`/edit-category?id=${cat.id}`)} className="gap-2 shadow-md">
-          <span className="material-symbols-outlined text-lg">edit</span>
-          {t("page.category.button.edit")}
-        </Button>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

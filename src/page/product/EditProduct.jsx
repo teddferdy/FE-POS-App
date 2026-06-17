@@ -44,6 +44,20 @@ import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import UserGuide from "@/components/organism/UserGuide";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -560,377 +574,901 @@ const EditProduct = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.dashboard"),
-            href: role === "super_admin" ? "/dashboard-super-admin" : "/dashboard-admin"
-          },
-          { label: t("breadcrumb.product"), href: "/product-list" },
-          { label: product.nameProduct || t("page.product.edit.title") }
-        ]}
-        title={`${t("page.product.edit.editLabel")} ${product.nameProduct || t("page.product.edit.title")}`}
-        description={t("page.product.edit.description")}>
-        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-          <X size={18} /> {t("page.product.form.cancel")}
-        </Button>
-        <UserGuide guideKey="add-product" />
-      </PageHeader>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("breadcrumb.dashboard"),
+                href: role === "super_admin" ? "/dashboard-super-admin" : "/dashboard-admin"
+              },
+              { label: t("breadcrumb.product"), href: "/product-list" },
+              { label: product.nameProduct || t("page.product.edit.title") }
+            ]}
+            title={`${t("page.product.edit.editLabel")} ${product.nameProduct || t("page.product.edit.title")}`}
+            description={t("page.product.edit.description")}>
+            <UserGuide guideKey="add-product" />
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Stepper */}
-          <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {[
-                {
-                  num: 1,
-                  title: t("page.product.step.info"),
-                  desc: t("page.product.step.infoDesc")
-                },
-                {
-                  num: 2,
-                  title: t("page.product.step.price"),
-                  desc: t("page.product.step.priceDesc")
-                },
-                {
-                  num: 3,
-                  title: t("page.product.step.media"),
-                  desc: t("page.product.step.mediaDesc")
-                }
-              ].map((s, i) => (
-                <React.Fragment key={s.num}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      onClick={() => setCurrentStep(s.num)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
-                        currentStep === s.num
-                          ? "bg-primary text-primary-foreground"
-                          : currentStep > s.num
-                            ? "bg-green-500 text-white"
-                            : "bg-muted text-muted-foreground"
-                      }`}>
-                      {currentStep > s.num ? (
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        s.num
-                      )}
-                    </div>
-                    <div className="hidden sm:block">
-                      <p
-                        className={`text-sm font-semibold ${currentStep >= s.num ? "text-foreground" : "text-muted-foreground"}`}>
-                        {s.title}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">{s.desc}</p>
-                    </div>
-                  </div>
-                  {i < 2 && (
-                    <div
-                      className={`flex-1 h-px mx-4 ${currentStep > s.num ? "bg-green-500" : "bg-border"}`}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
-              {currentStep === 1 && (
-                <>
-                  {/* Informasi Produk */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <Info size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.step.info")}
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="nameProduct"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>
-                              {t("page.product.form.nameProduct")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Input
-                              placeholder={t("page.product.form.namePlaceholder")}
-                              {...field}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="barcode"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.barcode")}</FormLabel>
-                            <Input
-                              placeholder={t("page.product.form.barcodePlaceholder")}
-                              {...field}
-                            />
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.barcodeInfo")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="brand"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.brand")}</FormLabel>
-                            <Input
-                              placeholder={t("page.product.form.brandPlaceholder")}
-                              {...field}
-                            />
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.brandOptional")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {isSuperAdmin && (
-                        <FormField
-                          control={form.control}
-                          name="supplier"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("page.product.form.supplier")}</FormLabel>
-                              <Combobox
-                                options={supplierOptions.map((sOpt) => ({
-                                  value: String(sOpt.id),
-                                  label: sOpt.name
-                                }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder={t("page.product.form.supplierPlaceholder")}
-                                searchPlaceholder={t("page.product.form.supplierSearch")}
-                              />
-                              <FormMessage />
-                            </FormItem>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              {/* Stepper */}
+              <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
+                <div className="flex items-center justify-between max-w-2xl mx-auto">
+                  {[
+                    {
+                      num: 1,
+                      title: t("page.product.step.info"),
+                      desc: t("page.product.step.infoDesc")
+                    },
+                    {
+                      num: 2,
+                      title: t("page.product.step.price"),
+                      desc: t("page.product.step.priceDesc")
+                    },
+                    {
+                      num: 3,
+                      title: t("page.product.step.media"),
+                      desc: t("page.product.step.mediaDesc")
+                    }
+                  ].map((s, i) => (
+                    <React.Fragment key={s.num}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          onClick={() => setCurrentStep(s.num)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors cursor-pointer ${
+                            currentStep === s.num
+                              ? "bg-primary text-primary-foreground"
+                              : currentStep > s.num
+                                ? "bg-green-500 text-white"
+                                : "bg-muted text-muted-foreground"
+                          }`}>
+                          {currentStep > s.num ? (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : (
+                            s.num
                           )}
+                        </div>
+                        <div className="hidden sm:block">
+                          <p
+                            className={`text-sm font-semibold ${currentStep >= s.num ? "text-foreground" : "text-muted-foreground"}`}>
+                            {s.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{s.desc}</p>
+                        </div>
+                      </div>
+                      {i < 2 && (
+                        <div
+                          className={`flex-1 h-px mx-4 ${currentStep > s.num ? "bg-green-500" : "bg-border"}`}
                         />
                       )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
+                  {currentStep === 1 && (
+                    <>
+                      {/* Informasi Produk */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                          <Info size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.step.info")}
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="nameProduct"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>
+                                  {t("page.product.form.nameProduct")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Input
+                                  placeholder={t("page.product.form.namePlaceholder")}
+                                  {...field}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="barcode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.barcode")}</FormLabel>
+                                <Input
+                                  placeholder={t("page.product.form.barcodePlaceholder")}
+                                  {...field}
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.barcodeInfo")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="brand"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.brand")}</FormLabel>
+                                <Input
+                                  placeholder={t("page.product.form.brandPlaceholder")}
+                                  {...field}
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.brandOptional")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {isSuperAdmin && (
+                            <FormField
+                              control={form.control}
+                              name="supplier"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{t("page.product.form.supplier")}</FormLabel>
+                                  <Combobox
+                                    options={supplierOptions.map((sOpt) => ({
+                                      value: String(sOpt.id),
+                                      label: sOpt.name
+                                    }))}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder={t("page.product.form.supplierPlaceholder")}
+                                    searchPlaceholder={t("page.product.form.supplierSearch")}
+                                  />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          {isSuperAdmin && (
+                            <FormField
+                              control={form.control}
+                              name="tax"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{t("page.product.form.tax")}</FormLabel>
+                                  {taxOptions.length === 0 ? (
+                                    <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                      <div className="text-center flex flex-col items-center gap-2">
+                                        <Package size={28} className="text-muted-foreground/60" />
+                                        <p className="text-sm font-medium text-foreground">
+                                          {t("page.product.form.noTax")}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {t("page.product.form.noTaxDesc")}
+                                        </p>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => navigate("/tax-list")}
+                                        className="gap-2">
+                                        <span className="material-symbols-outlined text-base">
+                                          add
+                                        </span>
+                                        {t("page.product.form.addTax")}
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <Combobox
+                                      options={taxOptions.map((tOpt) => ({
+                                        value: String(tOpt.id),
+                                        label: `${tOpt.name} (${tOpt.rate}%)`
+                                      }))}
+                                      value={field.value}
+                                      onChange={field.onChange}
+                                      placeholder={t("page.product.form.taxPlaceholder")}
+                                      searchPlaceholder={t("page.product.form.taxSearch")}
+                                    />
+                                  )}
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {t("page.product.form.category")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Combobox
+                                  options={categories.map((c) => ({
+                                    value: String(c.id),
+                                    label: c.name
+                                  }))}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.categoryPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.categorySearch")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tipeProduk"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
+                                <select
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                                  <option value="menu">
+                                    {t("page.product.form.tipeProdukMenu")}
+                                  </option>
+                                  <option value="bahan_baku">
+                                    {t("page.product.form.tipeProdukBahanBaku")}
+                                  </option>
+                                </select>
+                                <FormMessage />
+                                {noStockOpname && (
+                                  <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                    <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
+                                      warning
+                                    </span>
+                                    <div>
+                                      <p className="text-xs font-semibold text-amber-800">
+                                        {t("page.product.form.noStockOpname")}
+                                      </p>
+                                      <p className="text-[11px] text-amber-700 mt-0.5">
+                                        {t("page.product.form.noStockOpnameWarning")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="unit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.unit")}</FormLabel>
+                                <Combobox
+                                  options={unitOptions}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.unitPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.unitSearch")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="baseUnit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
+                                <Combobox
+                                  options={[
+                                    { value: "pcs", label: t("page.product.form.baseUnitPcs") },
+                                    { value: "gram", label: t("page.product.form.baseUnitGram") },
+                                    { value: "ml", label: t("page.product.form.baseUnitMl") },
+                                    { value: "cm", label: t("page.product.form.baseUnitCm") },
+                                    { value: "buah", label: t("page.product.form.baseUnitBuah") },
+                                    {
+                                      value: "lembar",
+                                      label: t("page.product.form.baseUnitLembar")
+                                    }
+                                  ]}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.baseUnitPlaceholder")}
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {t("page.product.form.baseUnitHelper")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="conversionFactor"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
+                                <Input type="number" min="1" {...field} />
+                                <p className="text-xs text-muted-foreground">
+                                  {t("page.product.form.conversionFactorHelper", {
+                                    value: field.value
+                                  })}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem className="md:col-span-2">
+                                <FormLabel>{t("page.product.form.description")}</FormLabel>
+                                <Textarea
+                                  placeholder={t("page.product.form.descPlaceholder")}
+                                  rows={3}
+                                  {...field}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {form.watch("tipeProduk") === "bahan_baku" && (
+                        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                          <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                            <Package size={18} className="text-primary" />
+                            <h3 className="text-base font-semibold text-foreground">
+                              {t("page.product.form.composition")}{" "}
+                              <span className="text-destructive">*</span>
+                            </h3>
+                          </div>
+                          <div className="space-y-3">
+                            {composition.length > 0 ? (
+                              composition.map((c) => (
+                                <div key={c.id} className="bg-muted/30 rounded-lg p-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                      <select
+                                        value={c.name}
+                                        onChange={(e) =>
+                                          handleCompositionSelect(c.id, e.target.value)
+                                        }
+                                        className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                                        <option value="">
+                                          {t("page.product.form.selectIngredient")}
+                                        </option>
+                                        {compositionOptions.map((opt, i) => (
+                                          <option key={i} value={opt.name}>
+                                            {opt.name} {opt.unit ? `(${opt.unit})` : ""}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="w-24 shrink-0">
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder={t("page.product.form.qty")}
+                                        value={c.qty}
+                                        onChange={(e) =>
+                                          updateComposition(c.id, "qty", e.target.value)
+                                        }
+                                        className="h-9 text-sm"
+                                      />
+                                    </div>
+                                    <div className="w-20 shrink-0">
+                                      <Input
+                                        placeholder={t("page.product.form.unitLabel")}
+                                        value={c.unit}
+                                        onChange={(e) =>
+                                          updateComposition(c.id, "unit", e.target.value)
+                                        }
+                                        className="h-9 text-sm"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive shrink-0"
+                                      onClick={() => removeComposition(c.id)}>
+                                      <Trash2 size={15} />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-muted-foreground">
+                                {t("page.product.form.compositionEmpty")}
+                              </p>
+                            )}
+                            {compositionOptions.length === 0 ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => navigate("/add-stock-opname")}>
+                                <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
+                              </Button>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={addComposition}>
+                                <Plus size={15} /> {t("page.product.form.addIngredient")}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {currentStep === 2 && (
+                    <>
+                      {/* Harga & Stok */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                          <DollarSign size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.step.price")}
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {t("page.product.form.price")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    className="pl-10"
+                                    value={
+                                      field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                    }
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                                      field.onChange(raw ? Number(raw) : "");
+                                    }}
+                                  />
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="costPrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.costPrice")}</FormLabel>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    className="pl-10"
+                                    value={
+                                      field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                    }
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                                      field.onChange(raw ? Number(raw) : "");
+                                    }}
+                                  />
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="stock"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.stock")}</FormLabel>
+                                <Input type="number" placeholder="0" {...field} />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="minStock"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.minStock")}</FormLabel>
+                                <Input type="number" placeholder="0" {...field} />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="point"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.point")}</FormLabel>
+                                <Input type="number" placeholder="0" {...field} />
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.pointInfo")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="redeemPoints"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.redeemPoints")}</FormLabel>
+                                <Input type="number" placeholder="0" {...field} />
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.redeemPointsInfo")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Harga Berjenjang */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                          <TrendingUp size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.form.tierSection")}
+                          </h3>
+                        </div>
+                        <div className="space-y-3">
+                          {priceTiers.map((tier) => (
+                            <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder={t("page.product.form.tierNamePlaceholder")}
+                                  value={tier.name}
+                                  onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
+                                  className="h-9 text-sm flex-1"
+                                />
+                                <div className="relative w-40 shrink-0">
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={Number(tier.price).toLocaleString("id-ID")}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                                      updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
+                                    }}
+                                    className="h-9 text-sm pl-8"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive shrink-0"
+                                  onClick={() => removePriceTier(tier.id)}>
+                                  <Trash2 size={15} />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={addPriceTier}>
+                            <Plus size={15} />
+                            {t("page.product.form.addTier")}
+                          </Button>
+                          {priceTiers.length === 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {t("page.product.form.tierEmpty")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Harga per Toko */}
                       {isSuperAdmin && (
-                        <FormField
-                          control={form.control}
-                          name="tax"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("page.product.form.tax")}</FormLabel>
-                              {taxOptions.length === 0 ? (
-                                <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                                  <div className="text-center flex flex-col items-center gap-2">
-                                    <Package size={28} className="text-muted-foreground/60" />
-                                    <p className="text-sm font-medium text-foreground">
-                                      {t("page.product.form.noTax")}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {t("page.product.form.noTaxDesc")}
-                                    </p>
+                        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                          <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                            <Store size={18} className="text-primary" />
+                            <h3 className="text-base font-semibold text-foreground">
+                              {t("page.product.form.storePriceSection")}
+                            </h3>
+                          </div>
+                          {locations.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              {t("page.product.form.loadingStores")}
+                            </p>
+                          ) : storePrices.length === 0 && storeIds.length > 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              {t("page.product.form.loadingStorePrices")}
+                            </p>
+                          ) : (
+                            <div className="space-y-3">
+                              {storePrices.map((sp) => (
+                                <div key={sp.storeId} className="bg-muted/30 rounded-lg p-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-foreground">
+                                        {sp.storeName}
+                                      </p>
+                                    </div>
+                                    <div className="relative w-40 shrink-0">
+                                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                        Rp
+                                      </span>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={sp.price || ""}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          setStorePrices((prev) =>
+                                            prev.map((p) =>
+                                              p.storeId === sp.storeId ? { ...p, price: val } : p
+                                            )
+                                          );
+                                        }}
+                                        className="h-9 text-sm pl-8"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={savingStoreId === sp.storeId}
+                                      onClick={() => handleSaveStorePrice(sp.storeId, sp.price)}
+                                      className="h-9 shrink-0">
+                                      {t("page.product.form.saveStorePrice")}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {currentStep === 3 && (
+                    <>
+                      {/* Varian & Opsi + Modifiers */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
+                          <Layers size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.form.variantSection")}
+                          </h3>
+                        </div>
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {t("page.product.form.hasVariant")}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {t("page.product.form.hasVariantDesc")}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={form.watch("isOption") || variantGroups.length > 0}
+                              onCheckedChange={handleToggleOption}
+                            />
+                          </div>
+                          {isOption && (
+                            <div className="space-y-3 pl-4 border-l-2 border-primary/20">
+                              {variantGroups.map((group) => (
+                                <div
+                                  key={group.id}
+                                  className="bg-muted/30 rounded-lg p-4 space-y-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <GripVertical
+                                        size={16}
+                                        className="text-muted-foreground shrink-0"
+                                      />
+                                      <Input
+                                        placeholder={t("page.product.form.variantNamePlaceholder")}
+                                        value={group.name}
+                                        onChange={(e) =>
+                                          updateVariantGroup(group.id, "name", e.target.value)
+                                        }
+                                        className="h-9 text-sm flex-1"
+                                      />
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive shrink-0"
+                                      onClick={() => removeVariantGroup(group.id)}>
+                                      <Trash2 size={15} />
+                                    </Button>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {group.options.map((opt, idx) => (
+                                      <div key={idx} className="flex items-center gap-2">
+                                        <Input
+                                          placeholder={t("page.product.form.optionPlaceholder", {
+                                            number: idx + 1
+                                          })}
+                                          value={opt.name}
+                                          onChange={(e) =>
+                                            updateVariantOption(
+                                              group.id,
+                                              idx,
+                                              "name",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="h-9 text-sm flex-1"
+                                        />
+                                        <div className="relative w-28 shrink-0">
+                                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                            Rp
+                                          </span>
+                                          <Input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="0"
+                                            value={Number(opt.price || 0).toLocaleString("id-ID")}
+                                            onChange={(e) => {
+                                              const raw = e.target.value.replace(/[^0-9]/g, "");
+                                              updateVariantOption(
+                                                group.id,
+                                                idx,
+                                                "price",
+                                                raw ? Number(raw) : 0
+                                              );
+                                            }}
+                                            className="h-9 text-sm pl-8"
+                                          />
+                                        </div>
+                                        <Input
+                                          type="number"
+                                          placeholder={t(
+                                            "page.product.form.variantStockPlaceholder"
+                                          )}
+                                          value={opt.stock ?? 0}
+                                          onChange={(e) =>
+                                            updateVariantOption(
+                                              group.id,
+                                              idx,
+                                              "stock",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="h-9 text-sm w-20 shrink-0"
+                                        />
+                                        {group.options.length > 1 && (
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-destructive shrink-0"
+                                            onClick={() => removeVariantOption(group.id, idx)}>
+                                            <Trash2 size={14} />
+                                          </Button>
+                                        )}
+                                      </div>
+                                    ))}
                                   </div>
                                   <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => navigate("/tax-list")}
-                                    className="gap-2">
-                                    <span className="material-symbols-outlined text-base">add</span>
-                                    {t("page.product.form.addTax")}
+                                    onClick={() => addVariantOption(group.id)}
+                                    className="gap-1 h-8 text-xs">
+                                    <Plus size={14} /> {t("page.product.form.addOption")}
                                   </Button>
                                 </div>
-                              ) : (
-                                <Combobox
-                                  options={taxOptions.map((tOpt) => ({
-                                    value: String(tOpt.id),
-                                    label: `${tOpt.name} (${tOpt.rate}%)`
-                                  }))}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.taxPlaceholder")}
-                                  searchPlaceholder={t("page.product.form.taxSearch")}
-                                />
-                              )}
-                              <FormMessage />
-                            </FormItem>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={addVariantGroup}
+                                className="gap-2">
+                                <Plus size={16} /> {t("page.product.form.addVariantGroup")}
+                              </Button>
+                            </div>
                           )}
-                        />
-                      )}
-                      <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t("page.product.form.category")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Combobox
-                              options={categories.map((c) => ({
-                                value: String(c.id),
-                                label: c.name
-                              }))}
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder={t("page.product.form.categoryPlaceholder")}
-                              searchPlaceholder={t("page.product.form.categorySearch")}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="tipeProduk"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
-                            <select
-                              value={field.value}
-                              onChange={field.onChange}
-                              className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                              <option value="menu">{t("page.product.form.tipeProdukMenu")}</option>
-                              <option value="bahan_baku">
-                                {t("page.product.form.tipeProdukBahanBaku")}
-                              </option>
-                            </select>
-                            <FormMessage />
-                            {noStockOpname && (
-                              <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                                <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
-                                  warning
-                                </span>
-                                <div>
-                                  <p className="text-xs font-semibold text-amber-800">
-                                    {t("page.product.form.noStockOpname")}
-                                  </p>
-                                  <p className="text-[11px] text-amber-700 mt-0.5">
-                                    {t("page.product.form.noStockOpnameWarning")}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </FormItem>
-                        )}
-                      />
+                        </div>
 
-                      <FormField
-                        control={form.control}
-                        name="unit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.unit")}</FormLabel>
-                            <Combobox
-                              options={unitOptions}
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder={t("page.product.form.unitPlaceholder")}
-                              searchPlaceholder={t("page.product.form.unitSearch")}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="baseUnit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
-                            <Combobox
-                              options={[
-                                { value: "pcs", label: t("page.product.form.baseUnitPcs") },
-                                { value: "gram", label: t("page.product.form.baseUnitGram") },
-                                { value: "ml", label: t("page.product.form.baseUnitMl") },
-                                { value: "cm", label: t("page.product.form.baseUnitCm") },
-                                { value: "buah", label: t("page.product.form.baseUnitBuah") },
-                                { value: "lembar", label: t("page.product.form.baseUnitLembar") }
-                              ]}
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder={t("page.product.form.baseUnitPlaceholder")}
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t("page.product.form.baseUnitHelper")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="conversionFactor"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
-                            <Input type="number" min="1" {...field} />
-                            <p className="text-xs text-muted-foreground">
-                              {t("page.product.form.conversionFactorHelper", {
-                                value: field.value
-                              })}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>{t("page.product.form.description")}</FormLabel>
-                            <Textarea
-                              placeholder={t("page.product.form.descPlaceholder")}
-                              rows={3}
-                              {...field}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+                        {/* Separator */}
+                        <div className="border-t border-border my-6" />
 
-                  {form.watch("tipeProduk") === "bahan_baku" && (
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                        <Package size={18} className="text-primary" />
-                        <h3 className="text-base font-semibold text-foreground">
-                          {t("page.product.form.composition")}{" "}
-                          <span className="text-destructive">*</span>
-                        </h3>
-                      </div>
-                      <div className="space-y-3">
-                        {composition.length > 0 ? (
-                          composition.map((c) => (
-                            <div key={c.id} className="bg-muted/30 rounded-lg p-4">
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1">
+                        {/* Modifiers */}
+                        <div>
+                          <div className="flex items-center gap-2 pb-4 mb-5">
+                            <Tag size={18} className="text-primary" />
+                            <h3 className="text-base font-semibold text-foreground">
+                              {t("page.product.form.modifierSection")}
+                            </h3>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {t("page.product.form.hasModifier")}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {t("page.product.form.hasModifierDesc")}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={form.watch("hasModifiers") || modifierItems.length > 0}
+                              onCheckedChange={handleToggleModifier}
+                            />
+                          </div>
+                          {hasModifiers && (
+                            <div className="space-y-3 mt-4">
+                              {compositionOptions.length > 0 && (
+                                <div className="bg-muted/30 rounded-lg p-4">
                                   <select
-                                    value={c.name}
-                                    onChange={(e) => handleCompositionSelect(c.id, e.target.value)}
+                                    onChange={(e) => {
+                                      const opt = compositionOptions.find(
+                                        (o) => o.name === e.target.value
+                                      );
+                                      if (opt) {
+                                        setModifierItems((prev) => [
+                                          ...prev,
+                                          { id: Date.now(), name: opt.name, price: 0 }
+                                        ]);
+                                        form.setValue("hasModifiers", true);
+                                      }
+                                      e.target.value = "";
+                                    }}
                                     className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
                                     <option value="">
-                                      {t("page.product.form.selectIngredient")}
+                                      {t("page.product.form.fromStockOpname")}
                                     </option>
                                     {compositionOptions.map((opt, i) => (
                                       <option key={i} value={opt.name}>
@@ -939,750 +1477,270 @@ const EditProduct = () => {
                                     ))}
                                   </select>
                                 </div>
-                                <div className="w-24 shrink-0">
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder={t("page.product.form.qty")}
-                                    value={c.qty}
-                                    onChange={(e) => updateComposition(c.id, "qty", e.target.value)}
-                                    className="h-9 text-sm"
-                                  />
-                                </div>
-                                <div className="w-20 shrink-0">
-                                  <Input
-                                    placeholder={t("page.product.form.unitLabel")}
-                                    value={c.unit}
-                                    onChange={(e) =>
-                                      updateComposition(c.id, "unit", e.target.value)
-                                    }
-                                    className="h-9 text-sm"
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive shrink-0"
-                                  onClick={() => removeComposition(c.id)}>
-                                  <Trash2 size={15} />
-                                </Button>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs text-muted-foreground">
-                            {t("page.product.form.compositionEmpty")}
-                          </p>
-                        )}
-                        {compositionOptions.length === 0 ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-1"
-                            onClick={() => navigate("/add-stock-opname")}>
-                            <Plus size={15} /> {t("page.product.form.addStockOpnameFirst")}
-                          </Button>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-1"
-                            onClick={addComposition}>
-                            <Plus size={15} /> {t("page.product.form.addIngredient")}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {currentStep === 2 && (
-                <>
-                  {/* Harga & Stok */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <DollarSign size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.step.price")}
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t("page.product.form.price")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                Rp
-                              </span>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="0"
-                                className="pl-10"
-                                value={
-                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
-                                }
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(/[^0-9]/g, "");
-                                  field.onChange(raw ? Number(raw) : "");
-                                }}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="costPrice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.costPrice")}</FormLabel>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                Rp
-                              </span>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="0"
-                                className="pl-10"
-                                value={
-                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
-                                }
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(/[^0-9]/g, "");
-                                  field.onChange(raw ? Number(raw) : "");
-                                }}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="stock"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.stock")}</FormLabel>
-                            <Input type="number" placeholder="0" {...field} />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="minStock"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.minStock")}</FormLabel>
-                            <Input type="number" placeholder="0" {...field} />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="point"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.point")}</FormLabel>
-                            <Input type="number" placeholder="0" {...field} />
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.pointInfo")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="redeemPoints"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("page.product.form.redeemPoints")}</FormLabel>
-                            <Input type="number" placeholder="0" {...field} />
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {t("page.product.form.redeemPointsInfo")}
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Harga Berjenjang */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <TrendingUp size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.tierSection")}
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {priceTiers.map((tier) => (
-                        <div key={tier.id} className="bg-muted/30 rounded-lg p-4">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              placeholder={t("page.product.form.tierNamePlaceholder")}
-                              value={tier.name}
-                              onChange={(e) => updatePriceTier(tier.id, "name", e.target.value)}
-                              className="h-9 text-sm flex-1"
-                            />
-                            <div className="relative w-40 shrink-0">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                Rp
-                              </span>
-                              <Input
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="0"
-                                value={Number(tier.price).toLocaleString("id-ID")}
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(/[^0-9]/g, "");
-                                  updatePriceTier(tier.id, "price", raw ? Number(raw) : 0);
-                                }}
-                                className="h-9 text-sm pl-8"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive shrink-0"
-                              onClick={() => removePriceTier(tier.id)}>
-                              <Trash2 size={15} />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="gap-1"
-                        onClick={addPriceTier}>
-                        <Plus size={15} />
-                        {t("page.product.form.addTier")}
-                      </Button>
-                      {priceTiers.length === 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          {t("page.product.form.tierEmpty")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Harga per Toko */}
-                  {isSuperAdmin && (
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                      <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                        <Store size={18} className="text-primary" />
-                        <h3 className="text-base font-semibold text-foreground">
-                          {t("page.product.form.storePriceSection")}
-                        </h3>
-                      </div>
-                      {locations.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          {t("page.product.form.loadingStores")}
-                        </p>
-                      ) : storePrices.length === 0 && storeIds.length > 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          {t("page.product.form.loadingStorePrices")}
-                        </p>
-                      ) : (
-                        <div className="space-y-3">
-                          {storePrices.map((sp) => (
-                            <div key={sp.storeId} className="bg-muted/30 rounded-lg p-4">
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-foreground">
-                                    {sp.storeName}
-                                  </p>
-                                </div>
-                                <div className="relative w-40 shrink-0">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                    Rp
-                                  </span>
-                                  <Input
-                                    type="number"
-                                    placeholder="0"
-                                    value={sp.price || ""}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      setStorePrices((prev) =>
-                                        prev.map((p) =>
-                                          p.storeId === sp.storeId ? { ...p, price: val } : p
-                                        )
-                                      );
-                                    }}
-                                    className="h-9 text-sm pl-8"
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={savingStoreId === sp.storeId}
-                                  onClick={() => handleSaveStorePrice(sp.storeId, sp.price)}
-                                  className="h-9 shrink-0">
-                                  {t("page.product.form.saveStorePrice")}
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {currentStep === 3 && (
-                <>
-                  {/* Varian & Opsi + Modifiers */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
-                      <Layers size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.variantSection")}
-                      </h3>
-                    </div>
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {t("page.product.form.hasVariant")}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {t("page.product.form.hasVariantDesc")}
-                          </p>
-                        </div>
-                        <Switch
-                          checked={form.watch("isOption") || variantGroups.length > 0}
-                          onCheckedChange={handleToggleOption}
-                        />
-                      </div>
-                      {isOption && (
-                        <div className="space-y-3 pl-4 border-l-2 border-primary/20">
-                          {variantGroups.map((group) => (
-                            <div key={group.id} className="bg-muted/30 rounded-lg p-4 space-y-3">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <GripVertical
-                                    size={16}
-                                    className="text-muted-foreground shrink-0"
-                                  />
-                                  <Input
-                                    placeholder={t("page.product.form.variantNamePlaceholder")}
-                                    value={group.name}
-                                    onChange={(e) =>
-                                      updateVariantGroup(group.id, "name", e.target.value)
-                                    }
-                                    className="h-9 text-sm flex-1"
-                                  />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive shrink-0"
-                                  onClick={() => removeVariantGroup(group.id)}>
-                                  <Trash2 size={15} />
-                                </Button>
-                              </div>
-                              <div className="space-y-2">
-                                {group.options.map((opt, idx) => (
-                                  <div key={idx} className="flex items-center gap-2">
+                              )}
+                              {modifierItems.map((mod) => (
+                                <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <Input
-                                      placeholder={t("page.product.form.optionPlaceholder", {
-                                        number: idx + 1
-                                      })}
-                                      value={opt.name}
+                                      placeholder={t("page.product.form.modifierNamePlaceholder")}
+                                      value={mod.name}
                                       onChange={(e) =>
-                                        updateVariantOption(group.id, idx, "name", e.target.value)
+                                        updateModifierItem(mod.id, "name", e.target.value)
                                       }
-                                      className="h-9 text-sm flex-1"
+                                      className="h-9 text-sm"
                                     />
-                                    <div className="relative w-28 shrink-0">
-                                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                        Rp
-                                      </span>
-                                      <Input
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="0"
-                                        value={Number(opt.price || 0).toLocaleString("id-ID")}
-                                        onChange={(e) => {
-                                          const raw = e.target.value.replace(/[^0-9]/g, "");
-                                          updateVariantOption(
-                                            group.id,
-                                            idx,
-                                            "price",
-                                            raw ? Number(raw) : 0
-                                          );
-                                        }}
-                                        className="h-9 text-sm pl-8"
-                                      />
-                                    </div>
-                                    <Input
-                                      type="number"
-                                      placeholder={t("page.product.form.variantStockPlaceholder")}
-                                      value={opt.stock ?? 0}
-                                      onChange={(e) =>
-                                        updateVariantOption(group.id, idx, "stock", e.target.value)
-                                      }
-                                      className="h-9 text-sm w-20 shrink-0"
-                                    />
-                                    {group.options.length > 1 && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="relative flex-1">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                                          Rp
+                                        </span>
+                                        <Input
+                                          type="text"
+                                          inputMode="numeric"
+                                          placeholder="0"
+                                          value={Number(mod.price).toLocaleString("id-ID")}
+                                          onChange={(e) => {
+                                            const raw = e.target.value.replace(/[^0-9]/g, "");
+                                            updateModifierItem(
+                                              mod.id,
+                                              "price",
+                                              raw ? Number(raw) : 0
+                                            );
+                                          }}
+                                          className="h-9 text-sm pl-10"
+                                        />
+                                      </div>
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-destructive shrink-0"
-                                        onClick={() => removeVariantOption(group.id, idx)}>
+                                        onClick={() => removeModifierItem(mod.id)}>
                                         <Trash2 size={14} />
                                       </Button>
-                                    )}
+                                    </div>
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              ))}
                               <Button
                                 type="button"
                                 variant="outline"
-                                size="sm"
-                                onClick={() => addVariantOption(group.id)}
-                                className="gap-1 h-8 text-xs">
-                                <Plus size={14} /> {t("page.product.form.addOption")}
+                                onClick={addModifierItem}
+                                className="gap-2">
+                                <Plus size={16} /> {t("page.product.form.addModifier")}
                               </Button>
                             </div>
-                          ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={addVariantGroup}
-                            className="gap-2">
-                            <Plus size={16} /> {t("page.product.form.addVariantGroup")}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Separator */}
-                    <div className="border-t border-border my-6" />
-
-                    {/* Modifiers */}
-                    <div>
-                      <div className="flex items-center gap-2 pb-4 mb-5">
-                        <Tag size={18} className="text-primary" />
-                        <h3 className="text-base font-semibold text-foreground">
-                          {t("page.product.form.modifierSection")}
-                        </h3>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {t("page.product.form.hasModifier")}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {t("page.product.form.hasModifierDesc")}
-                          </p>
-                        </div>
-                        <Switch
-                          checked={form.watch("hasModifiers") || modifierItems.length > 0}
-                          onCheckedChange={handleToggleModifier}
-                        />
-                      </div>
-                      {hasModifiers && (
-                        <div className="space-y-3 mt-4">
-                          {compositionOptions.length > 0 && (
-                            <div className="bg-muted/30 rounded-lg p-4">
-                              <select
-                                onChange={(e) => {
-                                  const opt = compositionOptions.find(
-                                    (o) => o.name === e.target.value
-                                  );
-                                  if (opt) {
-                                    setModifierItems((prev) => [
-                                      ...prev,
-                                      { id: Date.now(), name: opt.name, price: 0 }
-                                    ]);
-                                    form.setValue("hasModifiers", true);
-                                  }
-                                  e.target.value = "";
-                                }}
-                                className="w-full h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                                <option value="">{t("page.product.form.fromStockOpname")}</option>
-                                {compositionOptions.map((opt, i) => (
-                                  <option key={i} value={opt.name}>
-                                    {opt.name} {opt.unit ? `(${opt.unit})` : ""}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
                           )}
-                          {modifierItems.map((mod) => (
-                            <div key={mod.id} className="bg-muted/30 rounded-lg p-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <Input
-                                  placeholder={t("page.product.form.modifierNamePlaceholder")}
-                                  value={mod.name}
-                                  onChange={(e) =>
-                                    updateModifierItem(mod.id, "name", e.target.value)
-                                  }
-                                  className="h-9 text-sm"
-                                />
-                                <div className="flex items-center gap-2">
-                                  <div className="relative flex-1">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
-                                      Rp
-                                    </span>
-                                    <Input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="0"
-                                      value={Number(mod.price).toLocaleString("id-ID")}
-                                      onChange={(e) => {
-                                        const raw = e.target.value.replace(/[^0-9]/g, "");
-                                        updateModifierItem(mod.id, "price", raw ? Number(raw) : 0);
-                                      }}
-                                      className="h-9 text-sm pl-10"
-                                    />
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive shrink-0"
-                                    onClick={() => removeModifierItem(mod.id)}>
-                                    <Trash2 size={14} />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={addModifierItem}
-                            className="gap-2">
-                            <Plus size={16} /> {t("page.product.form.addModifier")}
-                          </Button>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-              {currentStep === 3 && (
-                <>
-                  {/* Image Upload */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
-                      <CloudUpload size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.imageSection")}
-                      </h3>
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-
-                    {previewImage ? (
-                      <div className="relative rounded-lg overflow-hidden border border-border">
-                        <img
-                          src={previewImage}
-                          alt={t("page.product.form.previewAlt")}
-                          className="w-full aspect-square object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            clearImage();
-                          }}
-                          className="absolute top-2 right-2 w-8 h-8 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
-                          <X size={16} />
-                        </button>
                       </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 rounded-lg p-8 text-center cursor-pointer transition-all group">
-                        <CloudUpload
-                          size={48}
-                          className="mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                    </>
+                  )}
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {currentStep === 3 && (
+                    <>
+                      {/* Image Upload */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
+                          <CloudUpload size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.form.imageSection")}
+                          </h3>
+                        </div>
+
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
                         />
-                        <p className="text-sm font-medium text-foreground">
-                          {t("page.product.form.uploadImage")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.product.form.clickToSelect")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.product.form.imageFormat")}
-                        </p>
+
+                        {previewImage ? (
+                          <div className="relative rounded-lg overflow-hidden border border-border">
+                            <img
+                              src={previewImage}
+                              alt={t("page.product.form.previewAlt")}
+                              className="w-full aspect-square object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                clearImage();
+                              }}
+                              className="absolute top-2 right-2 w-8 h-8 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 rounded-lg p-8 text-center cursor-pointer transition-all group">
+                            <CloudUpload
+                              size={48}
+                              className="mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors"
+                            />
+                            <p className="text-sm font-medium text-foreground">
+                              {t("page.product.form.uploadImage")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("page.product.form.clickToSelect")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("page.product.form.imageFormat")}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {/* Status */}
-                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                    <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
-                      <Tag size={18} className="text-primary" />
-                      <h3 className="text-base font-semibold text-foreground">
-                        {t("page.product.form.statusSection")}
-                      </h3>
-                    </div>
+                      {/* Status */}
+                      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
+                          <Tag size={18} className="text-primary" />
+                          <h3 className="text-base font-semibold text-foreground">
+                            {t("page.product.form.statusSection")}
+                          </h3>
+                        </div>
 
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div
-                              className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                                field.value
-                                  ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
-                                  : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
-                              }`}>
-                              <div className="flex items-center gap-3">
+                        <div className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                              <FormItem>
                                 <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
                                     field.value
-                                      ? "bg-green-600 text-white"
-                                      : "bg-destructive/10 text-destructive"
+                                      ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
                                   }`}>
-                                  {field.value ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                  <div className="flex items-center gap-3">
+                                    <div
+                                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                        field.value
+                                          ? "bg-green-600 text-white"
+                                          : "bg-destructive/10 text-destructive"
+                                      }`}>
+                                      {field.value ? (
+                                        <CheckCircle2 size={20} />
+                                      ) : (
+                                        <XCircle size={20} />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-semibold text-foreground">
+                                        {t("page.product.form.statusLabel")}{" "}
+                                        {field.value
+                                          ? t("page.product.form.active")
+                                          : t("page.product.form.inactive")}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {field.value
+                                          ? t("page.product.form.activeDesc")
+                                          : t("page.product.form.inactiveDesc")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                                 </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {t("page.product.form.statusLabel")}{" "}
-                                    {field.value
-                                      ? t("page.product.form.active")
-                                      : t("page.product.form.inactive")}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {field.value
-                                      ? t("page.product.form.activeDesc")
-                                      : t("page.product.form.inactiveDesc")}
-                                  </p>
-                                </div>
-                              </div>
-                              <Switch checked={field.value} onCheckedChange={field.onChange} />
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+                              </FormItem>
+                            )}
+                          />
 
-                      <FormField
-                        control={form.control}
-                        name="isAvailable"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div
-                              className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                                field.value
-                                  ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
-                                  : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
-                              }`}>
-                              <div className="flex items-center gap-3">
+                          <FormField
+                            control={form.control}
+                            name="isAvailable"
+                            render={({ field }) => (
+                              <FormItem>
                                 <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
                                     field.value
-                                      ? "bg-green-600 text-white"
-                                      : "bg-destructive/10 text-destructive"
+                                      ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800"
+                                      : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
                                   }`}>
-                                  {field.value ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                                  <div className="flex items-center gap-3">
+                                    <div
+                                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                        field.value
+                                          ? "bg-green-600 text-white"
+                                          : "bg-destructive/10 text-destructive"
+                                      }`}>
+                                      {field.value ? (
+                                        <CheckCircle2 size={20} />
+                                      ) : (
+                                        <XCircle size={20} />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-semibold text-foreground">
+                                        {field.value
+                                          ? t("page.product.form.yes")
+                                          : t("page.product.form.no")}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {field.value
+                                          ? t("page.product.form.availableDesc")
+                                          : t("page.product.form.unavailableDesc")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                                 </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {field.value
-                                      ? t("page.product.form.yes")
-                                      : t("page.product.form.no")}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {field.value
-                                      ? t("page.product.form.availableDesc")
-                                      : t("page.product.form.unavailableDesc")}
-                                  </p>
-                                </div>
-                              </div>
-                              <Switch checked={field.value} onCheckedChange={field.onChange} />
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
 
-          {/* Footer Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCancelModal(true)}
-              className="gap-2 w-full sm:w-auto">
-              <X size={18} /> {t("page.product.form.cancel")}
-            </Button>
-            <div className="flex items-center gap-3">
-              {currentStep > 1 && (
-                <Button type="button" variant="outline" onClick={handlePrev} className="gap-2">
-                  <ChevronLeft size={18} /> {t("page.product.form.prev")}
+              {/* Footer Actions */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCancelModal(true)}
+                  className="gap-2 w-full sm:w-auto">
+                  <X size={18} /> {t("page.product.form.cancel")}
                 </Button>
-              )}
-              {currentStep < 3 ? (
-                <Button type="button" onClick={handleNext} className="gap-2 shadow-md">
-                  {t("page.product.form.next")} <ChevronRight size={18} />
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDraftModal(true)}
-                    disabled={isSubmitting}
-                    className="gap-2 shadow-md">
-                    <Save size={18} />
-                    {t("page.product.form.saveDraft")}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
-                    <Save size={18} />
-                    {t("page.product.form.saveEdit")}
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </form>
-      </Form>
+                <div className="flex items-center gap-3">
+                  {currentStep > 1 && (
+                    <Button type="button" variant="outline" onClick={handlePrev} className="gap-2">
+                      <ChevronLeft size={18} /> {t("page.product.form.prev")}
+                    </Button>
+                  )}
+                  {currentStep < 3 ? (
+                    <Button type="button" onClick={handleNext} className="gap-2 shadow-md">
+                      {t("page.product.form.next")} <ChevronRight size={18} />
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setDraftModal(true)}
+                        disabled={isSubmitting}
+                        className="gap-2 shadow-md">
+                        <Save size={18} />
+                        {t("page.product.form.saveDraft")}
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
+                        <Save size={18} />
+                        {t("page.product.form.saveEdit")}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </form>
+          </Form>
+        </motion.div>
+      </motion.div>
 
       <Modal
         type="success"

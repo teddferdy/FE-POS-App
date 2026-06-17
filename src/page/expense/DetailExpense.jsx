@@ -6,6 +6,20 @@ import { useTranslation } from "react-i18next";
 import { getExpenseById } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const statusBadge = {
   pending: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
@@ -40,7 +54,8 @@ const DetailExpense = () => {
   if (!item) return <p className="text-center text-muted-foreground py-12">{t("page.expense.detail.notFound")}</p>;
 
   return (
-    <div className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
@@ -163,6 +178,7 @@ const DetailExpense = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

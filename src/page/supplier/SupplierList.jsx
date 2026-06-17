@@ -5,12 +5,13 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye } from "lucide-react";
-import { getAllSupplier, deleteSupplier } from "@/services/supplier";
+import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye, Loader2 } from "lucide-react";
+import { getAllSupplier, deleteSupplier, downloadSupplierTemplate, downloadSupplierExcel } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import UploadSupplierModal from "./components/UploadSupplierModal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
@@ -23,6 +24,9 @@ const SupplierList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const user = cookie?.user;
   const MENU_KEY = "/supplier";
@@ -205,15 +209,79 @@ const SupplierList = () => {
             {t("page.supplier.list.description")}
           </p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button
-            data-tour="supplier-add"
-            onClick={() => navigate("/add-supplier")}
-            className="gap-2">
-            <Plus size={18} />
-            {t("page.supplier.button.add")}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingTemplate}
+              onClick={async () => {
+                setIsDownloadingTemplate(true);
+                try {
+                  await downloadSupplierTemplate();
+                  toast.success(t("common.success"), {
+                    description: t("page.supplier.toast.templateSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.supplier.toast.templateError")
+                  });
+                } finally {
+                  setIsDownloadingTemplate(false);
+                }
+              }}>
+              {isDownloadingTemplate ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+              )}
+              {t("page.supplier.button.downloadTemplate")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "export") && (
+            <Button
+              variant="outline"
+              disabled={isDownloadingData}
+              onClick={async () => {
+                setIsDownloadingData(true);
+                try {
+                  await downloadSupplierExcel();
+                  toast.success(t("common.success"), {
+                    description: t("page.supplier.toast.dataSuccess")
+                  });
+                } catch (err) {
+                  toast.error(t("common.error"), {
+                    description: err?.response?.data?.message || err.message || t("page.supplier.toast.dataError")
+                  });
+                } finally {
+                  setIsDownloadingData(false);
+                }
+              }}>
+              {isDownloadingData ? (
+                <Loader2 size={16} className="mr-1 animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-lg mr-1">download</span>
+              )}
+              {t("page.supplier.button.downloadData")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "import") && (
+            <Button
+              variant="default"
+              onClick={() => setUploadModalOpen(true)}>
+              <span className="material-symbols-outlined text-lg mr-1">upload</span>
+              {t("page.supplier.button.upload")}
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button
+              data-tour="supplier-add"
+              onClick={() => navigate("/add-supplier")}
+              className="gap-2 shadow-md">
+              <Plus size={18} />
+              {t("page.supplier.button.add")}
+            </Button>
+          )}
+        </div>
       </motion.div>
 
       {/* Stats Cards */}
@@ -289,6 +357,12 @@ const SupplierList = () => {
         description={`Yakin ingin menghapus supplier ${deleteTarget?.name || ""}?`}
         confirmText={t("common.delete")}
         onConfirm={confirmDelete}
+      />
+
+      <UploadSupplierModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["suppliers"])}
       />
     </div>
   );

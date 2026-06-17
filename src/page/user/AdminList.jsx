@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { canAccess } from "@/utils/permission";
+import { motion } from "framer-motion";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -73,6 +74,19 @@ const avatarBg = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
 const AdminList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -121,6 +135,7 @@ const AdminList = () => {
   ];
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
@@ -439,6 +454,7 @@ const AdminList = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

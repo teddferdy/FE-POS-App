@@ -71,10 +71,6 @@ const MemberList = () => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
 
   const { data: tiersData } = useQuery(["member-tiers-all"], () => getAllMemberTier(), {
     staleTime: 5 * 60 * 1000
@@ -234,128 +230,127 @@ const MemberList = () => {
   ];
 
   return (
-    <div data-tour="page-member" className="space-y-8">
-      <PageHeader
-        breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
-        title={t("page.member.list.title")}
-        description={t("page.member.list.description")}>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button
-            data-tour="member-add"
-            onClick={() => navigate("/add-member")}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-            <span className="material-symbols-outlined text-lg">person_add</span>
-            {t("breadcrumb.add")}
-          </Button>
-        )}
-      </PageHeader>
-
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="member-search"
-        className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
-        {tiers.length === 0 ? (
-          <div className="flex items-center gap-3 w-full">
-            <PackageOpen size={20} className="text-muted-foreground" />
-            <span className="text-sm text-muted-foreground flex-1">
-              {t("page.member.list.noTier")}
-            </span>
-            <Button
-              onClick={() => navigate("/add-member-tier")}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
-              <Plus size={16} />
-              {t("page.member.list.addMemberTier")}
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-2 flex-1 flex-wrap">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">
-                {t("page.member.list.filter")}
-              </span>
-              <button
-                onClick={() => {
-                  setTierFilter(null);
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  tierFilter == null
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                }`}>
-                {t("common.all")}
-              </button>
-              {tiers.map((tier) => (
-                <button
-                  key={tier.id || tier._id}
-                  onClick={() => {
-                    setTierFilter(tier.id);
-                    setPage(1);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                    tierFilter === tier.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                  }`}>
-                  {tier.name}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 md:w-40 h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="terbaru">{t("page.member.list.sortNewest")}</option>
-                <option value="poin">{t("page.member.list.sortPoints")}</option>
-                <option value="nama">{t("page.member.list.sortName")}</option>
-              </select>
-              <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:block">
-                {t("page.member.list.totalMembers")}: <strong>{total.toLocaleString()}</strong>
-              </span>
-            </div>
-          </>
-        )}
+    <div data-tour="page-member" className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
+            title={t("page.member.list.title")}
+            description={t("page.member.list.description")}>
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="member-add"
+                onClick={() => navigate("/add-member")}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+                <span className="material-symbols-outlined text-lg">person_add</span>
+                {t("breadcrumb.add")}
+              </Button>
+            )}
+          </PageHeader>
+        </motion.div>
       </motion.div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="member-table">
-        <DataTable
-          columns={columns}
-          data={filteredMembers}
-          isLoading={isLoading}
-          emptyMessage={t("page.member.list.empty")}
-          toolbar={
-            <div className="flex items-center justify-between w-full">
-              <h4 className="text-base font-semibold text-foreground">
-                {t("page.member.list.title")}
-              </h4>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                  search
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div
+            data-tour="member-search"
+            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+            {tiers.length === 0 ? (
+              <div className="flex items-center gap-3 w-full">
+                <PackageOpen size={20} className="text-muted-foreground" />
+                <span className="text-sm text-muted-foreground flex-1">
+                  {t("page.member.list.noTier")}
                 </span>
-                <Input
-                  placeholder={t("page.member.list.search")}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-9 h-9 w-72 text-sm"
-                />
+                <Button
+                  onClick={() => navigate("/add-member-tier")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
+                  <Plus size={16} />
+                  {t("page.member.list.addMemberTier")}
+                </Button>
               </div>
-            </div>
-          }
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-          rowClassName={() => "group"}
-        />
+            ) : (
+              <>
+                <div className="flex items-center gap-2 flex-1 flex-wrap">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">
+                    {t("page.member.list.filter")}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setTierFilter(null);
+                      setPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                      tierFilter == null
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                    }`}>
+                    {t("common.all")}
+                  </button>
+                  {tiers.map((tier) => (
+                    <button
+                      key={tier.id || tier._id}
+                      onClick={() => {
+                        setTierFilter(tier.id);
+                        setPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        tierFilter === tier.id
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                      }`}>
+                      {tier.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="flex-1 md:w-40 h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                    <option value="terbaru">{t("page.member.list.sortNewest")}</option>
+                    <option value="poin">{t("page.member.list.sortPoints")}</option>
+                    <option value="nama">{t("page.member.list.sortName")}</option>
+                  </select>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:block">
+                    {t("page.member.list.totalMembers")}: <strong>{total.toLocaleString()}</strong>
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div data-tour="member-table" className="mt-6">
+            <DataTable
+              columns={columns}
+              data={filteredMembers}
+              isLoading={isLoading}
+              emptyMessage={t("page.member.list.empty")}
+              toolbar={
+                <div className="flex items-center justify-between w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.member.list.title")}
+                  </h4>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                      search
+                    </span>
+                    <Input
+                      placeholder={t("page.member.list.search")}
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                      }}
+                      className="pl-9 h-9 w-72 text-sm"
+                    />
+                  </div>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              rowClassName={() => "group"}
+            />
+          </div>
+        </motion.div>
       </motion.div>
 
       <Modal

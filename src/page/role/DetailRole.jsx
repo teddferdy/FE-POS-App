@@ -12,6 +12,20 @@ import {
 } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const actionLabels = {
   view: "Lihat",
@@ -181,6 +195,7 @@ const DetailRole = () => {
   }
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div>
       <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
         <button
@@ -388,6 +403,7 @@ const DetailRole = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 

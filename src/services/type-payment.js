@@ -50,6 +50,41 @@ export const editTypePayment = async (payload) => {
   return data;
 };
 
+const downloadBlob = async (url, filename) => {
+  const { data, status } = await axiosInstance.get(url, {
+    responseType: "arraybuffer"
+  });
+  if (status !== 200) throw new Error("Download failed");
+  const blob = new Blob([data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+};
+
+export const downloadTypePaymentTemplate = async () => {
+  return downloadBlob("/type-payment/template", `template-type-payment.xlsx`);
+};
+
+export const downloadTypePaymentExcel = async () => {
+  return downloadBlob("/type-payment/download", `${Date.now()}-type-payment.xlsx`);
+};
+
+export const uploadTypePaymentExcel = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data, status } = await axiosInstance.post("/type-payment/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`);
+  return data;
+};
+
 export const deleteTypePayment = async (payload) => {
   const { data, status } = await axiosInstance.delete(
     `/type-payment/delete-type-payment/${payload.id}`,

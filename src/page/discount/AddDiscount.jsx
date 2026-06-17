@@ -25,6 +25,20 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
@@ -174,6 +188,7 @@ const AddDiscount = () => {
   };
 
   return (
+    <motion.div variants={container} initial="hidden" animate="show">
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -675,6 +690,7 @@ const AddDiscount = () => {
         }}
       />
     </div>
+    </motion.div>
   );
 };
 
