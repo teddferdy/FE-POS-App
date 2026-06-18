@@ -176,6 +176,8 @@
   "page.member.table.points": "Total Points",
   "page.member.table.level": "Level",
   "page.member.table.actions": "Actions",
+  "page.member.table.createdAt": "Created At",
+  "page.member.table.updatedAt": "Updated At",
   "page.member.form.personalInfo": "Personal Information",
   "page.member.form.name": "Full Name",
   "page.member.form.email": "Email",

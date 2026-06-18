@@ -117,10 +117,10 @@ const MemberList = () => {
 
   const columns = [
     {
-      header: t("page.member.table.id"),
-      render: (member) => (
-        <span className="text-sm font-mono font-bold text-primary">
-          {member.memberId || member.code || "-"}
+      header: "#",
+      render: (member, idx) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {(page - 1) * limit + idx + 1}
         </span>
       )
     },
@@ -190,10 +190,42 @@ const MemberList = () => {
       )
     },
     {
+      header: t("page.member.table.createdAt"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.createdAt
+            ? new Date(item.createdAt).toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.member.table.updatedAt"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.updatedAt
+            ? new Date(item.updatedAt).toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            : "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.member.table.actions"),
       align: "right",
       render: (member) => (
-        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "edit") && (
             <button
               onClick={(e) => {

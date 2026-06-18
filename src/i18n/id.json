@@ -175,6 +175,8 @@
   "page.member.table.points": "Total Poin",
   "page.member.table.level": "Level",
   "page.member.table.actions": "Aksi",
+  "page.member.table.createdAt": "Dibuat",
+  "page.member.table.updatedAt": "Diupdate",
   "page.member.form.personalInfo": "Informasi Pribadi",
   "page.member.form.name": "Nama Lengkap",
   "page.member.form.email": "Email",
