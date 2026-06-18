@@ -16,7 +16,10 @@ export const SocketProvider = ({ children }) => {
 
     const s = io(ENDPOINT.BASE_URL, {
       auth: { token },
-      transports: ["websocket", "polling"]
+      transports: ["polling"],
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 3000
     });
 
     s.on("connect", () => {
@@ -27,8 +30,14 @@ export const SocketProvider = ({ children }) => {
       setNewNotification(notification);
     });
 
-    s.on("disconnect", () => {
-      console.log("Socket disconnected");
+    s.on("disconnect", (reason) => {
+      if (reason !== "io client disconnect") {
+        console.log("Socket disconnected:", reason);
+      }
+    });
+
+    s.on("connect_error", (err) => {
+      console.warn("Socket connection error (realtime notifications unavailable):", err.message);
     });
 
     setSocket(s);

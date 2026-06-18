@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
@@ -10,220 +10,225 @@ import { setupAutoSync } from "@/services/offline";
 // Tour Guide
 import SuperAdminTour from "./components/organism/SuperAdminTour";
 
-// Auth
-import LoginPage from "./page/auth/login";
-import Register from "./page/auth/register";
-import ResetPassword from "./page/auth/reset-password";
-
 // Layout
 import DashboardLayout from "./components/layout/DashboardLayout";
 
+import Modal from "@/components/organism/modal";
+
+import { Loading } from "@/components/ui/loading";
+
+// Auth
+const LoginPage = React.lazy(() => import("./page/auth/login"));
+const Register = React.lazy(() => import("./page/auth/register"));
+const ResetPassword = React.lazy(() => import("./page/auth/reset-password"));
+
 // Dashboard
-import Dashboard from "./page/dashboard";
+const Dashboard = React.lazy(() => import("./page/dashboard"));
 
 // Location
-import LocationList from "./page/location/LocationList";
-import AddLocation from "./page/location/AddLocation";
-import EditLocation from "./page/location/EditLocation";
-import LocationDetail from "./page/location/LocationDetail";
-import StoreGeospatial from "./page/location/StoreGeospatial";
+const LocationList = React.lazy(() => import("./page/location/LocationList"));
+const AddLocation = React.lazy(() => import("./page/location/AddLocation"));
+const EditLocation = React.lazy(() => import("./page/location/EditLocation"));
+const LocationDetail = React.lazy(() => import("./page/location/LocationDetail"));
+const StoreGeospatial = React.lazy(() => import("./page/location/StoreGeospatial"));
 
 // Invoice
-import InvoicePage from "./page/invoice/InvoicePage";
-// import InvoiceLogoList from "./page/invoice-logo/InvoiceLogoList";
-// import AddInvoiceLogo from "./page/invoice-logo/AddInvoiceLogo";
-// import EditInvoiceLogo from "./page/invoice-logo/EditInvoiceLogo";
-// import AddInvoiceFooter from "./page/invoice-footer/AddInvoiceFooter";
-// import EditInvoiceFooter from "./page/invoice-footer/EditInvoiceFooter";
-// import SocialMediaList from "./page/social-media/SocialMediaList";
+const InvoicePage = React.lazy(() => import("./page/invoice/InvoicePage"));
 
 // Product
-import ProductList from "./page/product/ProductList";
-import AddProduct from "./page/product/AddProduct";
-import EditProduct from "./page/product/EditProduct";
+const ProductList = React.lazy(() => import("./page/product/ProductList"));
+const AddProduct = React.lazy(() => import("./page/product/AddProduct"));
+const EditProduct = React.lazy(() => import("./page/product/EditProduct"));
 
 // Category
-import CategoryList from "./page/category/CategoryList";
-import AddCategory from "./page/category/AddCategory";
-import EditCategory from "./page/category/EditCategory";
-import DetailCategory from "./page/category/DetailCategory";
+const CategoryList = React.lazy(() => import("./page/category/CategoryList"));
+const AddCategory = React.lazy(() => import("./page/category/AddCategory"));
+const EditCategory = React.lazy(() => import("./page/category/EditCategory"));
+const DetailCategory = React.lazy(() => import("./page/category/DetailCategory"));
 
 // User
-import AdminList from "./page/user/AdminList";
-import AddAdmin from "./page/user/AddAdmin";
-// import AddRole from "./page/user/AddRole";
+const AdminList = React.lazy(() => import("./page/user/AdminList"));
+const AddAdmin = React.lazy(() => import("./page/user/AddAdmin"));
 
 // Member
-import MemberList from "./page/member/MemberList";
-import AddMember from "./page/member/AddMember";
-import EditMember from "./page/member/EditMember";
-import MemberDetail from "./page/member/MemberDetail";
-import MemberPointHistory from "./page/member/MemberPointHistory";
+const MemberList = React.lazy(() => import("./page/member/MemberList"));
+const AddMember = React.lazy(() => import("./page/member/AddMember"));
+const EditMember = React.lazy(() => import("./page/member/EditMember"));
+const MemberDetail = React.lazy(() => import("./page/member/MemberDetail"));
+const MemberPointHistory = React.lazy(() => import("./page/member/MemberPointHistory"));
 
-import MemberTier from "./page/member-tier";
+const MemberTier = React.lazy(() => import("./page/member-tier"));
 
 // Report
-import SalesReportPage from "./page/report/SalesReportPage";
-import BestSellingReportPage from "./page/report/BestSellingReportPage";
-import DailyReport from "./page/report/DailyReport";
-import ProfitLossReport from "./page/report/ProfitLossReport";
-import CashFlowReport from "./page/report/CashFlowReport";
-import AddRole from "./page/user/AddRole";
-import RoleManagement from "./page/role/RoleManagement";
-import EditRole from "./page/role/EditRole";
-import DetailRole from "./page/role/DetailRole";
-import AddMemberTier from "./page/member-tier/AddMemberTier";
-import DetailMemberTier from "./page/member-tier/DetailMemberTier";
+const SalesReportPage = React.lazy(() => import("./page/report/SalesReportPage"));
+const BestSellingReportPage = React.lazy(() => import("./page/report/BestSellingReportPage"));
+const DailyReport = React.lazy(() => import("./page/report/DailyReport"));
+const ProfitLossReport = React.lazy(() => import("./page/report/ProfitLossReport"));
+const CashFlowReport = React.lazy(() => import("./page/report/CashFlowReport"));
+const AddRole = React.lazy(() => import("./page/user/AddRole"));
+const RoleManagement = React.lazy(() => import("./page/role/RoleManagement"));
+const EditRole = React.lazy(() => import("./page/role/EditRole"));
+const DetailRole = React.lazy(() => import("./page/role/DetailRole"));
+const AddMemberTier = React.lazy(() => import("./page/member-tier/AddMemberTier"));
+const DetailMemberTier = React.lazy(() => import("./page/member-tier/DetailMemberTier"));
 
 // Employee
-import EmployeeList from "./page/employee/EmployeeList";
-import StockOpnameList from "./page/stock-opname/StockOpnameList";
-import AddStockOpname from "./page/stock-opname/AddStockOpname";
-import DetailStockOpname from "./page/stock-opname/DetailStockOpname";
-import StockHistory from "./page/stock-opname/StockHistory";
-import LowStock from "./page/stock-opname/LowStock";
-import LowStockAll from "./page/stock-opname/LowStockAll";
-import AddEmployee from "./page/employee/AddEmployee";
-import EditEmployee from "./page/employee/EditEmployee";
-import DetailEmployee from "./page/employee/DetailEmployee";
-import PositionList from "./page/position/PositionList";
-import AddPosition from "./page/position/AddPosition";
-import EditPosition from "./page/position/EditPosition";
-import DetailPosition from "./page/position/DetailPosition";
-import DepartmentList from "./page/department/DepartmentList";
-import AddDepartment from "./page/department/AddDepartment";
-import EditDepartment from "./page/department/EditDepartment";
-import DetailDepartment from "./page/department/DetailDepartment";
+const EmployeeList = React.lazy(() => import("./page/employee/EmployeeList"));
+const StockOpnameList = React.lazy(() => import("./page/stock-opname/StockOpnameList"));
+const AddStockOpname = React.lazy(() => import("./page/stock-opname/AddStockOpname"));
+const DetailStockOpname = React.lazy(() => import("./page/stock-opname/DetailStockOpname"));
+const StockHistory = React.lazy(() => import("./page/stock-opname/StockHistory"));
+const LowStock = React.lazy(() => import("./page/stock-opname/LowStock"));
+const LowStockAll = React.lazy(() => import("./page/stock-opname/LowStockAll"));
+const AddEmployee = React.lazy(() => import("./page/employee/AddEmployee"));
+const EditEmployee = React.lazy(() => import("./page/employee/EditEmployee"));
+const DetailEmployee = React.lazy(() => import("./page/employee/DetailEmployee"));
+const PositionList = React.lazy(() => import("./page/position/PositionList"));
+const AddPosition = React.lazy(() => import("./page/position/AddPosition"));
+const EditPosition = React.lazy(() => import("./page/position/EditPosition"));
+const DetailPosition = React.lazy(() => import("./page/position/DetailPosition"));
+const DepartmentList = React.lazy(() => import("./page/department/DepartmentList"));
+const AddDepartment = React.lazy(() => import("./page/department/AddDepartment"));
+const EditDepartment = React.lazy(() => import("./page/department/EditDepartment"));
+const DetailDepartment = React.lazy(() => import("./page/department/DetailDepartment"));
 
 // Supplier
-import SupplierList from "./page/supplier/SupplierList";
-import AddSupplier from "./page/supplier/AddSupplier";
-import EditSupplier from "./page/supplier/EditSupplier";
-import DetailSupplier from "./page/supplier/DetailSupplier";
+const SupplierList = React.lazy(() => import("./page/supplier/SupplierList"));
+const AddSupplier = React.lazy(() => import("./page/supplier/AddSupplier"));
+const EditSupplier = React.lazy(() => import("./page/supplier/EditSupplier"));
+const DetailSupplier = React.lazy(() => import("./page/supplier/DetailSupplier"));
 
 // Ingredient
-import IngredientList from "./page/ingredient/IngredientList";
-import AddIngredient from "./page/ingredient/AddIngredient";
-import EditIngredient from "./page/ingredient/EditIngredient";
-import DetailIngredient from "./page/ingredient/DetailIngredient";
+const IngredientList = React.lazy(() => import("./page/ingredient/IngredientList"));
+const AddIngredient = React.lazy(() => import("./page/ingredient/AddIngredient"));
+const EditIngredient = React.lazy(() => import("./page/ingredient/EditIngredient"));
+const DetailIngredient = React.lazy(() => import("./page/ingredient/DetailIngredient"));
 
 // Ingredient Category
-import IngredientCategoryList from "./page/ingredient-category/CategoryList";
-import AddIngredientCategory from "./page/ingredient-category/AddCategory";
+const IngredientCategoryList = React.lazy(() => import("./page/ingredient-category/CategoryList"));
+const AddIngredientCategory = React.lazy(() => import("./page/ingredient-category/AddCategory"));
 
 // Tax Config
-import TaxConfigList from "./page/tax-config/TaxConfigList";
-import AddTaxConfig from "./page/tax-config/AddTaxConfig";
-import EditTaxConfig from "./page/tax-config/EditTaxConfig";
+const TaxConfigList = React.lazy(() => import("./page/tax-config/TaxConfigList"));
+const AddTaxConfig = React.lazy(() => import("./page/tax-config/AddTaxConfig"));
+const EditTaxConfig = React.lazy(() => import("./page/tax-config/EditTaxConfig"));
 
 // Purchase Order
-import PurchaseOrderList from "./page/purchase-order/PurchaseOrderList";
-import AddPurchaseOrder from "./page/purchase-order/AddPurchaseOrder";
-import DetailPurchaseOrder from "./page/purchase-order/DetailPurchaseOrder";
-import EditPurchaseOrder from "./page/purchase-order/EditPurchaseOrder";
-import PurchasePaymentList from "./page/purchase-order/PurchasePaymentList";
+const PurchaseOrderList = React.lazy(() => import("./page/purchase-order/PurchaseOrderList"));
+const AddPurchaseOrder = React.lazy(() => import("./page/purchase-order/AddPurchaseOrder"));
+const DetailPurchaseOrder = React.lazy(() => import("./page/purchase-order/DetailPurchaseOrder"));
+const EditPurchaseOrder = React.lazy(() => import("./page/purchase-order/EditPurchaseOrder"));
+const PurchasePaymentList = React.lazy(() => import("./page/purchase-order/PurchasePaymentList"));
 
 // Production Order
-import ProductionOrderList from "./page/production-order/ProductionOrderList";
-import AddProductionOrder from "./page/production-order/AddProductionOrder";
-import DetailProductionOrder from "./page/production-order/DetailProductionOrder";
+const ProductionOrderList = React.lazy(() => import("./page/production-order/ProductionOrderList"));
+const AddProductionOrder = React.lazy(() => import("./page/production-order/AddProductionOrder"));
+const DetailProductionOrder = React.lazy(
+  () => import("./page/production-order/DetailProductionOrder")
+);
 
 // Goods Receipt
-import GoodsReceiptList from "./page/goods-receipt/GoodsReceiptList";
-import AddGoodsReceipt from "./page/goods-receipt/AddGoodsReceipt";
-import DetailGoodsReceipt from "./page/goods-receipt/DetailGoodsReceipt";
-import EditGoodsReceipt from "./page/goods-receipt/EditGoodsReceipt";
+const GoodsReceiptList = React.lazy(() => import("./page/goods-receipt/GoodsReceiptList"));
+const AddGoodsReceipt = React.lazy(() => import("./page/goods-receipt/AddGoodsReceipt"));
+const DetailGoodsReceipt = React.lazy(() => import("./page/goods-receipt/DetailGoodsReceipt"));
+const EditGoodsReceipt = React.lazy(() => import("./page/goods-receipt/EditGoodsReceipt"));
 
 // Sales Return
-import SalesReturnList from "./page/sales-return/SalesReturnList";
-import DetailSalesReturn from "./page/sales-return/DetailSalesReturn";
+const SalesReturnList = React.lazy(() => import("./page/sales-return/SalesReturnList"));
+const DetailSalesReturn = React.lazy(() => import("./page/sales-return/DetailSalesReturn"));
 
 // Purchase Return
-import PurchaseReturnList from "./page/purchase-return/PurchaseReturnList";
-import DetailPurchaseReturn from "./page/purchase-return/DetailPurchaseReturn";
+const PurchaseReturnList = React.lazy(() => import("./page/purchase-return/PurchaseReturnList"));
+const DetailPurchaseReturn = React.lazy(
+  () => import("./page/purchase-return/DetailPurchaseReturn")
+);
 
 // Stock Transfer
-import StockTransferList from "./page/stock-transfer/StockTransferList";
-import AddStockTransfer from "./page/stock-transfer/AddStockTransfer";
-import DetailStockTransfer from "./page/stock-transfer/DetailStockTransfer";
+const StockTransferList = React.lazy(() => import("./page/stock-transfer/StockTransferList"));
+const AddStockTransfer = React.lazy(() => import("./page/stock-transfer/AddStockTransfer"));
+const DetailStockTransfer = React.lazy(() => import("./page/stock-transfer/DetailStockTransfer"));
 
 // Cash Register
-import CashRegisterOpenClose from "./page/cash-register/CashRegisterOpenClose";
-import CashRegisterCurrent from "./page/cash-register/CashRegisterCurrent";
-import CashRegisterHistory from "./page/cash-register/CashRegisterHistory";
-import CashRegisterDetail from "./page/cash-register/CashRegisterDetail";
+const CashRegisterOpenClose = React.lazy(
+  () => import("./page/cash-register/CashRegisterOpenClose")
+);
+const CashRegisterCurrent = React.lazy(() => import("./page/cash-register/CashRegisterCurrent"));
+const CashRegisterHistory = React.lazy(() => import("./page/cash-register/CashRegisterHistory"));
+const CashRegisterDetail = React.lazy(() => import("./page/cash-register/CashRegisterDetail"));
 
 // Price Store
-import PriceStoreList from "./page/price-store/PriceStoreList";
+const PriceStoreList = React.lazy(() => import("./page/price-store/PriceStoreList"));
 
 // BOM
-import BomList from "./page/bom/BomList";
-import AddBom from "./page/bom/AddBom";
-import DetailBom from "./page/bom/DetailBom";
+const BomList = React.lazy(() => import("./page/bom/BomList"));
+const AddBom = React.lazy(() => import("./page/bom/AddBom"));
+const DetailBom = React.lazy(() => import("./page/bom/DetailBom"));
 
 // Cashier
-import CashierPage from "./page/cashier/CashierPage";
+const CashierPage = React.lazy(() => import("./page/cashier/CashierPage"));
 
 // Kitchen Display
-import KitchenDisplay from "./page/kitchen-display";
+const KitchenDisplay = React.lazy(() => import("./page/kitchen-display"));
 
 // Customer Order
-import CustomerOrder from "./page/customer-order";
+const CustomerOrder = React.lazy(() => import("./page/customer-order"));
 
 // Customer Display
-import CustomerDisplay from "./page/customer-display";
+const CustomerDisplay = React.lazy(() => import("./page/customer-display"));
 
 // Reservation
-import ReservationList from "./page/reservation/ReservationList";
-import AddReservation from "./page/reservation/AddReservation";
-import EditReservation from "./page/reservation/EditReservation";
+const ReservationList = React.lazy(() => import("./page/reservation/ReservationList"));
+const AddReservation = React.lazy(() => import("./page/reservation/AddReservation"));
+const EditReservation = React.lazy(() => import("./page/reservation/EditReservation"));
 
 // Profile
-import ProfilePage from "./page/profile/ProfilePage";
+const ProfilePage = React.lazy(() => import("./page/profile/ProfilePage"));
 
 // Table
-import TableList from "./page/table/TableList";
+const TableList = React.lazy(() => import("./page/table/TableList"));
 
 // Notification
-import NotificationPage from "./page/notification/NotificationPage";
+const NotificationPage = React.lazy(() => import("./page/notification/NotificationPage"));
 
 // Accounts Receivable
-import AccountsReceivableList from "./page/accounts-receivable/AccountsReceivableList";
-import AccountsReceivableDetail from "./page/accounts-receivable/AccountsReceivableDetail";
+const AccountsReceivableList = React.lazy(
+  () => import("./page/accounts-receivable/AccountsReceivableList")
+);
+const AccountsReceivableDetail = React.lazy(
+  () => import("./page/accounts-receivable/AccountsReceivableDetail")
+);
 
 // Backup
-import BackupPage from "./page/backup/BackupPage";
+const BackupPage = React.lazy(() => import("./page/backup/BackupPage"));
 
 // Discount
-import DiscountList from "./page/discount/DiscountList";
-import AddDiscount from "./page/discount/AddDiscount";
-import EditDiscount from "./page/discount/EditDiscount";
+const DiscountList = React.lazy(() => import("./page/discount/DiscountList"));
+const AddDiscount = React.lazy(() => import("./page/discount/AddDiscount"));
+const EditDiscount = React.lazy(() => import("./page/discount/EditDiscount"));
 
 // Type Payment
-import TypePaymentList from "./page/type-payment/TypePaymentList";
-import AddTypePayment from "./page/type-payment/AddTypePayment";
-import EditTypePayment from "./page/type-payment/EditTypePayment";
-import DetailTypePayment from "./page/type-payment/DetailTypePayment";
+const TypePaymentList = React.lazy(() => import("./page/type-payment/TypePaymentList"));
+const AddTypePayment = React.lazy(() => import("./page/type-payment/AddTypePayment"));
+const EditTypePayment = React.lazy(() => import("./page/type-payment/EditTypePayment"));
+const DetailTypePayment = React.lazy(() => import("./page/type-payment/DetailTypePayment"));
 
 // Shift
-import ShiftList from "./page/shift/ShiftList";
-import AddShift from "./page/shift/AddShift";
-import EditShift from "./page/shift/EditShift";
+const ShiftList = React.lazy(() => import("./page/shift/ShiftList"));
+const AddShift = React.lazy(() => import("./page/shift/AddShift"));
+const EditShift = React.lazy(() => import("./page/shift/EditShift"));
 
 // Expense Category
-import ExpenseCategoryList from "./page/expense-category/ExpenseCategoryList";
-import AddExpenseCategory from "./page/expense-category/AddExpenseCategory";
-import EditExpenseCategory from "./page/expense-category/EditExpenseCategory";
+const ExpenseCategoryList = React.lazy(() => import("./page/expense-category/ExpenseCategoryList"));
+const AddExpenseCategory = React.lazy(() => import("./page/expense-category/AddExpenseCategory"));
+const EditExpenseCategory = React.lazy(() => import("./page/expense-category/EditExpenseCategory"));
 
 // Expense
-import ExpenseList from "./page/expense/ExpenseList";
-import AddExpense from "./page/expense/AddExpense";
-import EditExpense from "./page/expense/EditExpense";
-import DetailExpense from "./page/expense/DetailExpense";
+const ExpenseList = React.lazy(() => import("./page/expense/ExpenseList"));
+const AddExpense = React.lazy(() => import("./page/expense/AddExpense"));
+const EditExpense = React.lazy(() => import("./page/expense/EditExpense"));
+const DetailExpense = React.lazy(() => import("./page/expense/DetailExpense"));
 
-import Support from "./page/support";
-
-import Modal from "@/components/organism/modal";
+const Support = React.lazy(() => import("./page/support"));
 
 function App() {
   const { i18n } = useTranslation();
@@ -254,204 +259,214 @@ function App() {
       <OfflineIndicator />
       <BrowserRouter>
         <SuperAdminTour />
-        <Routes>
-          {/* Auth */}
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <Loading />
+            </div>
+          }>
+          <Routes>
+            {/* Auth */}
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Dashboard Routes */}
-          <Route path="/dashboard-super-admin" element={withLayout(<Dashboard />)} />
-          <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
+            {/* Dashboard Routes */}
+            <Route path="/dashboard-super-admin" element={withLayout(<Dashboard />)} />
+            <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
 
-          <Route path="/home" element={<CashierPage />} />
-          <Route path="/kitchen-display" element={withLayout(<KitchenDisplay />)} />
+            <Route path="/home" element={<CashierPage />} />
+            <Route path="/kitchen-display" element={withLayout(<KitchenDisplay />)} />
 
-          {/* Customer Order */}
-          <Route path="/customer-order" element={<CustomerOrder />} />
+            {/* Customer Order */}
+            <Route path="/customer-order" element={<CustomerOrder />} />
 
-          {/* Customer Display */}
-          <Route path="/customer-display" element={<CustomerDisplay />} />
+            {/* Customer Display */}
+            <Route path="/customer-display" element={<CustomerDisplay />} />
 
-          {/* Reservation Routes */}
-          <Route path="/reservation" element={withLayout(<ReservationList />)} />
-          <Route path="/add-reservation" element={withLayout(<AddReservation />)} />
-          <Route path="/edit-reservation" element={withLayout(<EditReservation />)} />
+            {/* Reservation Routes */}
+            <Route path="/reservation" element={withLayout(<ReservationList />)} />
+            <Route path="/add-reservation" element={withLayout(<AddReservation />)} />
+            <Route path="/edit-reservation" element={withLayout(<EditReservation />)} />
 
-          {/* Super Admin & Admin Routes */}
+            {/* Super Admin & Admin Routes */}
 
-          <Route path="/product-list" element={withLayout(<ProductList />)} />
-          <Route path="/add-product" element={withLayout(<AddProduct />)} />
-          <Route path="/edit-product" element={withLayout(<EditProduct />)} />
+            <Route path="/product-list" element={withLayout(<ProductList />)} />
+            <Route path="/add-product" element={withLayout(<AddProduct />)} />
+            <Route path="/edit-product" element={withLayout(<EditProduct />)} />
 
-          <Route path="/category-list" element={withLayout(<CategoryList />)} />
-          <Route path="/add-category" element={withLayout(<AddCategory />)} />
-          <Route path="/edit-category" element={withLayout(<EditCategory />)} />
-          <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
+            <Route path="/category-list" element={withLayout(<CategoryList />)} />
+            <Route path="/add-category" element={withLayout(<AddCategory />)} />
+            <Route path="/edit-category" element={withLayout(<EditCategory />)} />
+            <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
 
-          <Route path="/member-list" element={withLayout(<MemberList />)} />
-          <Route path="/add-member" element={withLayout(<AddMember />)} />
-          <Route path="/edit-member" element={withLayout(<EditMember />)} />
-          <Route path="/detail-member" element={withLayout(<MemberDetail />)} />
-          <Route path="/member-point-history" element={withLayout(<MemberPointHistory />)} />
+            <Route path="/member-list" element={withLayout(<MemberList />)} />
+            <Route path="/add-member" element={withLayout(<AddMember />)} />
+            <Route path="/edit-member" element={withLayout(<EditMember />)} />
+            <Route path="/detail-member" element={withLayout(<MemberDetail />)} />
+            <Route path="/member-point-history" element={withLayout(<MemberPointHistory />)} />
 
-          <Route path="/member-tier" element={withLayout(<MemberTier />)} />
-          <Route
-            path="/add-member-tier"
-            element={withLayout(<AddMemberTier title="Add Member Tier" />)}
-          />
-          <Route path="/detail-member-tier" element={withLayout(<DetailMemberTier />)} />
+            <Route path="/member-tier" element={withLayout(<MemberTier />)} />
+            <Route
+              path="/add-member-tier"
+              element={withLayout(<AddMemberTier title="Add Member Tier" />)}
+            />
+            <Route path="/detail-member-tier" element={withLayout(<DetailMemberTier />)} />
 
-          <Route path="/discount-list" element={withLayout(<DiscountList />)} />
-          <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
-          <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
+            <Route path="/discount-list" element={withLayout(<DiscountList />)} />
+            <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
+            <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
 
-          <Route path="/accounts-receivable" element={withLayout(<AccountsReceivableList />)} />
-          <Route
-            path="/accounts-receivable/detail"
-            element={withLayout(<AccountsReceivableDetail />)}
-          />
+            <Route path="/accounts-receivable" element={withLayout(<AccountsReceivableList />)} />
+            <Route
+              path="/accounts-receivable/detail"
+              element={withLayout(<AccountsReceivableDetail />)}
+            />
 
-          <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
-          <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
-          <Route path="/edit-type-payment" element={withLayout(<EditTypePayment />)} />
-          <Route path="/detail-type-payment" element={withLayout(<DetailTypePayment />)} />
+            <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
+            <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
+            <Route path="/edit-type-payment" element={withLayout(<EditTypePayment />)} />
+            <Route path="/detail-type-payment" element={withLayout(<DetailTypePayment />)} />
 
-          <Route path="/shift-list" element={withLayout(<ShiftList />)} />
-          <Route path="/add-shift" element={withLayout(<AddShift />)} />
-          <Route path="/edit-shift" element={withLayout(<EditShift />)} />
+            <Route path="/shift-list" element={withLayout(<ShiftList />)} />
+            <Route path="/add-shift" element={withLayout(<AddShift />)} />
+            <Route path="/edit-shift" element={withLayout(<EditShift />)} />
 
-          <Route path="/user-list" element={withLayout(<AdminList />)} />
-          <Route path="/add-user" element={withLayout(<AddAdmin />)} />
-          <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
-          <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
-          <Route path="/add-role" element={withLayout(<AddRole />)} />
-          <Route path="/edit-role/:id" element={withLayout(<EditRole />)} />
-          <Route path="/detail-role/:id" element={withLayout(<DetailRole />)} />
-          <Route path="/role-management" element={withLayout(<RoleManagement />)} />
-          <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
-          <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
+            <Route path="/user-list" element={withLayout(<AdminList />)} />
+            <Route path="/add-user" element={withLayout(<AddAdmin />)} />
+            <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
+            <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
+            <Route path="/add-role" element={withLayout(<AddRole />)} />
+            <Route path="/edit-role/:id" element={withLayout(<EditRole />)} />
+            <Route path="/detail-role/:id" element={withLayout(<DetailRole />)} />
+            <Route path="/role-management" element={withLayout(<RoleManagement />)} />
+            <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
+            <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
 
-          <Route path="/location-list" element={withLayout(<LocationList />)} />
-          <Route path="/add-location" element={withLayout(<AddLocation />)} />
-          <Route path="/edit-location" element={withLayout(<EditLocation />)} />
-          <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
-          <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
+            <Route path="/location-list" element={withLayout(<LocationList />)} />
+            <Route path="/add-location" element={withLayout(<AddLocation />)} />
+            <Route path="/edit-location" element={withLayout(<EditLocation />)} />
+            <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
+            <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
 
-          <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
-          {/* <Route path="/logo-invoice-list" element={withLayout(<InvoiceLogoList />)} />
-          <Route path="/add-logo-invoice" element={withLayout(<AddInvoiceLogo />)} />
-          <Route path="/edit-logo-invoice" element={withLayout(<EditInvoiceLogo />)} /> */}
-          {/* <Route path="/footer-invoice-list" element={withLayout(<AddInvoiceFooter />)} />
-          <Route path="/add-footer-invoice" element={withLayout(<AddInvoiceFooter />)} /> */}
-          {/* <Route path="/edit-footer-invoice" element={withLayout(<EditInvoiceFooter />)} /> */}
-          {/* <Route path="/social-media-invoice-list" element={withLayout(<SocialMediaList />)} />
-          <Route path="/add-social-media-invoice" element={withLayout(<SocialMediaList />)} />
-          <Route path="/edit-social-media-invoice" element={withLayout(<SocialMediaList />)} /> */}
+            <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
 
-          <Route path="/position-list" element={withLayout(<PositionList />)} />
-          <Route path="/add-position" element={withLayout(<AddPosition />)} />
-          <Route path="/edit-position" element={withLayout(<EditPosition />)} />
-          <Route path="/detail-position" element={withLayout(<DetailPosition />)} />
-          <Route path="/department-list" element={withLayout(<DepartmentList />)} />
-          <Route path="/add-department" element={withLayout(<AddDepartment />)} />
-          <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
-          <Route path="/detail-department" element={withLayout(<DetailDepartment />)} />
+            <Route path="/position-list" element={withLayout(<PositionList />)} />
+            <Route path="/add-position" element={withLayout(<AddPosition />)} />
+            <Route path="/edit-position" element={withLayout(<EditPosition />)} />
+            <Route path="/detail-position" element={withLayout(<DetailPosition />)} />
+            <Route path="/department-list" element={withLayout(<DepartmentList />)} />
+            <Route path="/add-department" element={withLayout(<AddDepartment />)} />
+            <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
+            <Route path="/detail-department" element={withLayout(<DetailDepartment />)} />
 
-          {/* Table Routes */}
-          <Route path="/table-list" element={withLayout(<TableList />)} />
-          {/* Mobile add/edit handled in TableList modal */}
+            {/* Table Routes */}
+            <Route path="/table-list" element={withLayout(<TableList />)} />
+            {/* Mobile add/edit handled in TableList modal */}
 
-          <Route path="/supplier" element={withLayout(<SupplierList />)} />
-          <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
-          <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
-          <Route path="/detail-supplier" element={withLayout(<DetailSupplier />)} />
+            <Route path="/supplier" element={withLayout(<SupplierList />)} />
+            <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
+            <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
+            <Route path="/detail-supplier" element={withLayout(<DetailSupplier />)} />
 
-          <Route path="/ingredient" element={withLayout(<IngredientList />)} />
-          <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
-          <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
-          <Route path="/detail-ingredient" element={withLayout(<DetailIngredient />)} />
+            <Route path="/ingredient" element={withLayout(<IngredientList />)} />
+            <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
+            <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
+            <Route path="/detail-ingredient" element={withLayout(<DetailIngredient />)} />
 
-          <Route path="/ingredient-category" element={withLayout(<IngredientCategoryList />)} />
-          <Route path="/add-ingredient-category" element={withLayout(<AddIngredientCategory />)} />
-          <Route path="/edit-ingredient-category" element={withLayout(<AddIngredientCategory />)} />
+            <Route path="/ingredient-category" element={withLayout(<IngredientCategoryList />)} />
+            <Route
+              path="/add-ingredient-category"
+              element={withLayout(<AddIngredientCategory />)}
+            />
+            <Route
+              path="/edit-ingredient-category"
+              element={withLayout(<AddIngredientCategory />)}
+            />
 
-          <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
-          <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
-          <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
+            <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
+            <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
+            <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
 
-          <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
-          <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
-          <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
-          <Route path="/edit-purchase-order" element={withLayout(<EditPurchaseOrder />)} />
-          <Route path="/purchase-payment" element={withLayout(<PurchasePaymentList />)} />
+            <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
+            <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
+            <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
+            <Route path="/edit-purchase-order" element={withLayout(<EditPurchaseOrder />)} />
+            <Route path="/purchase-payment" element={withLayout(<PurchasePaymentList />)} />
 
-          <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
-          <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
-          <Route path="/production-order/detail" element={withLayout(<DetailProductionOrder />)} />
+            <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
+            <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
+            <Route
+              path="/production-order/detail"
+              element={withLayout(<DetailProductionOrder />)}
+            />
 
-          <Route path="/goods-receipt" element={withLayout(<GoodsReceiptList />)} />
-          <Route path="/add-goods-receipt" element={withLayout(<AddGoodsReceipt />)} />
-          <Route path="/goods-receipt/detail" element={withLayout(<DetailGoodsReceipt />)} />
-          <Route path="/edit-goods-receipt" element={withLayout(<EditGoodsReceipt />)} />
+            <Route path="/goods-receipt" element={withLayout(<GoodsReceiptList />)} />
+            <Route path="/add-goods-receipt" element={withLayout(<AddGoodsReceipt />)} />
+            <Route path="/goods-receipt/detail" element={withLayout(<DetailGoodsReceipt />)} />
+            <Route path="/edit-goods-receipt" element={withLayout(<EditGoodsReceipt />)} />
 
-          <Route path="/sales-return" element={withLayout(<SalesReturnList />)} />
-          <Route path="/sales-return/detail" element={withLayout(<DetailSalesReturn />)} />
+            <Route path="/sales-return" element={withLayout(<SalesReturnList />)} />
+            <Route path="/sales-return/detail" element={withLayout(<DetailSalesReturn />)} />
 
-          <Route path="/purchase-return" element={withLayout(<PurchaseReturnList />)} />
-          <Route path="/purchase-return/detail" element={withLayout(<DetailPurchaseReturn />)} />
+            <Route path="/purchase-return" element={withLayout(<PurchaseReturnList />)} />
+            <Route path="/purchase-return/detail" element={withLayout(<DetailPurchaseReturn />)} />
 
-          <Route path="/stock-transfer" element={withLayout(<StockTransferList />)} />
-          <Route path="/add-stock-transfer" element={withLayout(<AddStockTransfer />)} />
-          <Route path="/stock-transfer/detail" element={withLayout(<DetailStockTransfer />)} />
+            <Route path="/stock-transfer" element={withLayout(<StockTransferList />)} />
+            <Route path="/add-stock-transfer" element={withLayout(<AddStockTransfer />)} />
+            <Route path="/stock-transfer/detail" element={withLayout(<DetailStockTransfer />)} />
 
-          <Route path="/cash-register/open-close" element={withLayout(<CashRegisterOpenClose />)} />
-          <Route path="/cash-register/current" element={withLayout(<CashRegisterCurrent />)} />
-          <Route path="/cash-register/history" element={withLayout(<CashRegisterHistory />)} />
-          <Route
-            path="/cash-register/history/detail"
-            element={withLayout(<CashRegisterDetail />)}
-          />
+            <Route
+              path="/cash-register/open-close"
+              element={withLayout(<CashRegisterOpenClose />)}
+            />
+            <Route path="/cash-register/current" element={withLayout(<CashRegisterCurrent />)} />
+            <Route path="/cash-register/history" element={withLayout(<CashRegisterHistory />)} />
+            <Route
+              path="/cash-register/history/detail"
+              element={withLayout(<CashRegisterDetail />)}
+            />
 
-          <Route path="/price-list-template" element={withLayout(<PriceStoreList />)} />
+            <Route path="/price-list-template" element={withLayout(<PriceStoreList />)} />
 
-          <Route path="/bom" element={withLayout(<BomList />)} />
-          <Route path="/bom/add" element={withLayout(<AddBom />)} />
-          <Route path="/bom/detail" element={withLayout(<DetailBom />)} />
+            <Route path="/bom" element={withLayout(<BomList />)} />
+            <Route path="/bom/add" element={withLayout(<AddBom />)} />
+            <Route path="/bom/detail" element={withLayout(<DetailBom />)} />
 
-          <Route path="/stock-opname" element={withLayout(<StockOpnameList />)} />
-          <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />
-          <Route path="/add-stock-opname" element={withLayout(<AddStockOpname />)} />
+            <Route path="/stock-opname" element={withLayout(<StockOpnameList />)} />
+            <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />
+            <Route path="/add-stock-opname" element={withLayout(<AddStockOpname />)} />
 
-          <Route path="/stock-history" element={withLayout(<StockHistory />)} />
-          <Route path="/low-stock" element={withLayout(<LowStock />)} />
-          <Route path="/low-stock-all" element={withLayout(<LowStockAll />)} />
-          <Route path="/notification" element={withLayout(<NotificationPage />)} />
+            <Route path="/stock-history" element={withLayout(<StockHistory />)} />
+            <Route path="/low-stock" element={withLayout(<LowStock />)} />
+            <Route path="/low-stock-all" element={withLayout(<LowStockAll />)} />
+            <Route path="/notification" element={withLayout(<NotificationPage />)} />
 
-          <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
-          <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
-          <Route path="/edit-expense-category" element={withLayout(<EditExpenseCategory />)} />
+            <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
+            <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
+            <Route path="/edit-expense-category" element={withLayout(<EditExpenseCategory />)} />
 
-          <Route path="/expense" element={withLayout(<ExpenseList />)} />
-          <Route path="/add-expense" element={withLayout(<AddExpense />)} />
-          <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
-          <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
+            <Route path="/expense" element={withLayout(<ExpenseList />)} />
+            <Route path="/add-expense" element={withLayout(<AddExpense />)} />
+            <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
+            <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
 
-          <Route path="/backup" element={withLayout(<BackupPage />)} />
+            <Route path="/backup" element={withLayout(<BackupPage />)} />
 
-          <Route path="/support" element={withLayout(<Support />)} />
+            <Route path="/support" element={withLayout(<Support />)} />
 
-          <Route path="/profile" element={withLayout(<ProfilePage />)} />
+            <Route path="/profile" element={withLayout(<ProfilePage />)} />
 
-          <Route path="/report/sales" element={withLayout(<SalesReportPage />)} />
-          <Route path="/best-selling" element={withLayout(<BestSellingReportPage />)} />
-          <Route path="/report/daily" element={withLayout(<DailyReport />)} />
-          <Route path="/report/profit-loss" element={withLayout(<ProfitLossReport />)} />
-          <Route path="/report/cash-flow" element={withLayout(<CashFlowReport />)} />
+            <Route path="/report/sales" element={withLayout(<SalesReportPage />)} />
+            <Route path="/best-selling" element={withLayout(<BestSellingReportPage />)} />
+            <Route path="/report/daily" element={withLayout(<DailyReport />)} />
+            <Route path="/report/profit-loss" element={withLayout(<ProfitLossReport />)} />
+            <Route path="/report/cash-flow" element={withLayout(<CashFlowReport />)} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
 
       <Modal
