@@ -1,5 +1,7 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route } from "react-router-dom";
+import { AnimatedRoutes } from "@/components/ui/page-transition";
+import RouteProgress from "@/components/ui/route-progress";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
 
@@ -265,7 +267,8 @@ function App() {
             </div>
           }>
           <SuperAdminTour />
-          <Routes>
+          <RouteProgress />
+          <AnimatedRoutes>
             {/* Auth */}
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<Register />} />
@@ -362,7 +365,6 @@ function App() {
 
             {/* Table Routes */}
             <Route path="/table-list" element={withLayout(<TableList />)} />
-            {/* Mobile add/edit handled in TableList modal */}
 
             <Route path="/supplier" element={withLayout(<SupplierList />)} />
             <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
@@ -452,9 +454,7 @@ function App() {
             <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
 
             <Route path="/backup" element={withLayout(<BackupPage />)} />
-
             <Route path="/support" element={withLayout(<Support />)} />
-
             <Route path="/profile" element={withLayout(<ProfilePage />)} />
 
             <Route path="/report/sales" element={withLayout(<SalesReportPage />)} />
@@ -465,7 +465,7 @@ function App() {
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </AnimatedRoutes>
         </Suspense>
       </BrowserRouter>
 
