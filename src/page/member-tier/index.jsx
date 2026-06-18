@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/ui/PageHeader";
-import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -169,10 +168,42 @@ const MemberTier = () => {
       render: (tier) => statusBadge(tier.status ?? tier.isActive)
     },
     {
+      header: t("page.memberTier.table.createdAt"),
+      render: (tier) => (
+        <span className="text-sm text-muted-foreground">
+          {tier.createdAt ? new Date(tier.createdAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.memberTier.table.updatedAt"),
+      render: (tier) => (
+        <span className="text-sm text-muted-foreground">
+          {tier.updatedAt ? new Date(tier.updatedAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.memberTier.table.createdBy"),
+      render: (tier) => (
+        <span className="text-sm text-muted-foreground">
+          {tier.createdByUser?.fullName || tier.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.memberTier.table.modifiedBy"),
+      render: (tier) => (
+        <span className="text-sm text-muted-foreground">
+          {tier.modifiedByUser?.fullName || tier.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.memberTier.table.actions"),
       align: "right",
       render: (tier) => (
-        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex justify-end gap-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -239,14 +270,11 @@ const MemberTier = () => {
                 title={t("page.memberTier.list.title")}
                 description={t("page.memberTier.list.description")}>
                 {canAccess(user, MENU_KEY, "add") && (
-                  <Button
-                    onClick={() => navigate("/add-member-tier")}
-                    className="gap-2">
+                  <Button onClick={() => navigate("/add-member-tier")} className="gap-2">
                     <Plus size={18} />
                     {t("page.memberTier.list.addTier")}
                   </Button>
                 )}
-                <UserGuide guideKey="add-member-tier" />
               </PageHeader>
             </motion.div>
           </motion.div>
