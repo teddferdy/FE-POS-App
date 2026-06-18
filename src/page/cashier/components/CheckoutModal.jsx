@@ -103,7 +103,7 @@ const CheckoutModal = ({
     : discountAmount;
   const total = Math.max(0, subtotal + taxAmount - discountValue);
   const cashAmountNum = parseFloat(cashAmount) || 0;
-  const change = fullPayment ? 0 : Math.max(0, cashAmountNum - total);
+  const change = Math.max(0, cashAmountNum - total);
 
   const applyFullPayment = useCallback(() => {
     setFullPayment(true);
