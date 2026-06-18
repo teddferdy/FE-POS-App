@@ -493,12 +493,26 @@ const PurchaseOrderList = () => {
             {t("page.purchaseOrder.list.description")}
           </p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
-            <Plus size={18} />
-            {t("breadcrumb.add")}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
+            <Download size={14} />
+            {t("page.purchaseOrder.list.export")}
           </Button>
-        )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setImportModal(true)}>
+            <Upload size={14} />
+            {t("page.purchaseOrder.list.import")}
+          </Button>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-purchase-order")} className="gap-2">
+              <Plus size={18} />
+              {t("breadcrumb.add")}
+            </Button>
+          )}
+        </div>
       </motion.div>
 
       <motion.div
@@ -569,20 +583,6 @@ const PurchaseOrderList = () => {
               }}
               className="pl-9 h-10"
             />
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownloadExcel}>
-              <Download size={14} />
-              {t("page.purchaseOrder.list.export")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => setImportModal(true)}>
-              <Upload size={14} />
-              {t("page.purchaseOrder.list.import")}
-            </Button>
           </div>
         </div>
 
