@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ArrowLeft, Receipt, Search, Filter, Plus, Wallet } from "lucide-react";
+import { Receipt, Wallet } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,24 +57,22 @@ const AccountsReceivableList = () => {
     refetchInterval: 60000
   });
 
-  const payMutation = useMutation(
-    ({ id, payload }) => recordARPayment(id, payload),
-    {
-      onSuccess: () => {
-        toast.success(t("page.accountsReceivable.list.toast.paymentSuccess"));
-        setPayModal(null);
-        setPayAmount("");
-      },
-      onError: (err) => toast.error(err?.message || t("page.accountsReceivable.list.toast.paymentError"))
-    }
-  );
+  const payMutation = useMutation(({ id, payload }) => recordARPayment(id, payload), {
+    onSuccess: () => {
+      toast.success(t("page.accountsReceivable.list.toast.paymentSuccess"));
+      setPayModal(null);
+      setPayAmount("");
+    },
+    onError: (err) =>
+      toast.error(err?.message || t("page.accountsReceivable.list.toast.paymentError"))
+  });
 
   const arList = data?.data || [];
   const pagination = data?.pagination || {};
   const agingBuckets = agingData?.data?.buckets || {};
   const grandTotal = agingData?.data?.grandTotal || 0;
 
-  const totalOutstanding = arList.reduce((s, ar) => s + Number(ar.outstandingAmount || 0), 0);
+  // const totalOutstanding = arList.reduce((s, ar) => s + Number(ar.outstandingAmount || 0), 0);
 
   const columns = [
     {
@@ -109,19 +107,26 @@ const AccountsReceivableList = () => {
       header: t("page.accountsReceivable.list.header.jatuhTempo"),
       render: (ar) =>
         ar.dueDate
-          ? new Date(ar.dueDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+          ? new Date(ar.dueDate).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+            })
           : "-"
     },
     {
       header: t("page.accountsReceivable.list.header.status"),
       render: (ar) => {
-        const rawStatus = ar.status === 'OVERDUE' || (ar.status !== 'PAID' && ar.overdueDays > 0)
-          ? "OVERDUE"
-          : ar.status || "UNPAID";
+        const rawStatus =
+          ar.status === "OVERDUE" || (ar.status !== "PAID" && ar.overdueDays > 0)
+            ? "OVERDUE"
+            : ar.status || "UNPAID";
         const st = STATUS_LABELS[rawStatus] || STATUS_LABELS.UNPAID;
         return (
           <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${st.color}`}>
-            {t(`page.accountsReceivable.list.status.${statusLabelKeys[rawStatus] || rawStatus.toLowerCase()}`)}
+            {t(
+              `page.accountsReceivable.list.status.${statusLabelKeys[rawStatus] || rawStatus.toLowerCase()}`
+            )}
             {ar.overdueDays > 0 && ` (+${ar.overdueDays}h)`}
           </span>
         );
@@ -148,32 +153,41 @@ const AccountsReceivableList = () => {
     <div className="space-y-6">
       <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.accountsReceivable.list.breadcrumb")}</span>
+          <span className="text-primary font-semibold">
+            {t("page.accountsReceivable.list.breadcrumb")}
+          </span>
         </nav>
       </motion.div>
 
       <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/dashboard-super-admin")}>
-              <ArrowLeft size={18} />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{t("page.accountsReceivable.list.title")}</h1>
-              <p className="text-sm text-muted-foreground mt-1">{t("page.accountsReceivable.list.subtitle")}</p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.accountsReceivable.list.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.accountsReceivable.list.subtitle")}
+            </p>
           </div>
         </div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <motion.div variants={item}>
           <Card className="p-4">
-            <p className="text-xs text-muted-foreground">{t("page.accountsReceivable.list.totalPiutang")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("page.accountsReceivable.list.totalPiutang")}
+            </p>
             <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
           </Card>
         </motion.div>
@@ -187,17 +201,26 @@ const AccountsReceivableList = () => {
         ))}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center gap-2">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex items-center gap-2">
         {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
           <button
             key={s}
-            onClick={() => { setStatusFilter(s); setPage(1); }}
+            onClick={() => {
+              setStatusFilter(s);
+              setPage(1);
+            }}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
               statusFilter === s
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border text-muted-foreground hover:bg-accent"
             }`}>
-            {s ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`) : t("page.accountsReceivable.list.filterAll")}
+            {s
+              ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`)
+              : t("page.accountsReceivable.list.filterAll")}
           </button>
         ))}
       </motion.div>
@@ -209,14 +232,22 @@ const AccountsReceivableList = () => {
           isLoading={isLoading}
           emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
           emptyIcon={Receipt}
-          pagination={{ page, totalPages: pagination.totalPages || 1, total: pagination.total || 0, onPageChange: setPage }}
+          pagination={{
+            page,
+            totalPages: pagination.totalPages || 1,
+            total: pagination.total || 0,
+            onPageChange: setPage
+          }}
         />
       </motion.div>
 
       {payModal && (
         <Modal
           open={!!payModal}
-          onOpenChange={() => { setPayModal(null); setPayAmount(""); }}
+          onOpenChange={() => {
+            setPayModal(null);
+            setPayAmount("");
+          }}
           title={t("page.accountsReceivable.list.modal.title")}
           description={`${t("page.accountsReceivable.list.modal.invoice")}: ${payModal.invoiceNo} | ${t("page.accountsReceivable.list.modal.sisa")}: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
           confirmText={t("page.accountsReceivable.list.modal.confirm")}
@@ -234,7 +265,9 @@ const AccountsReceivableList = () => {
           loading={payMutation.isLoading}>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">{t("page.accountsReceivable.list.modal.amountLabel")}</label>
+              <label className="text-sm font-medium">
+                {t("page.accountsReceivable.list.modal.amountLabel")}
+              </label>
               <Input
                 type="number"
                 value={payAmount}

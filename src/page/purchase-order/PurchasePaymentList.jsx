@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ArrowLeft, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -127,18 +127,13 @@ const PurchasePaymentList = () => {
         initial="hidden"
         animate="show"
         className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.purchasePayment.list.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.purchasePayment.list.description")}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.purchasePayment.list.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.purchasePayment.list.description")}
+          </p>
         </div>
       </motion.div>
 

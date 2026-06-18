@@ -6,7 +6,12 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Plus, Package, Loader2 } from "lucide-react";
-import { getAllIngredientCategory, deleteIngredientCategory, downloadIngredientCategoryTemplate, downloadIngredientCategoryExcel } from "@/services/ingredientCategory";
+import {
+  getAllIngredientCategory,
+  deleteIngredientCategory,
+  downloadIngredientCategoryTemplate,
+  downloadIngredientCategoryExcel
+} from "@/services/ingredientCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
@@ -21,7 +26,11 @@ const formatDate = (dateStr) => {
   try {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return "-";
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + " " + d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    return (
+      d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) +
+      " " +
+      d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    );
   } catch {
     return "-";
   }
@@ -112,14 +121,21 @@ const CategoryList = () => {
     },
     {
       header: t("page.ingredientCategory.list.tableNama"),
-      render: (item) => <span className="text-sm font-semibold text-foreground">{item.name || "-"}</span>
+      render: (item) => (
+        <span className="text-sm font-semibold text-foreground">{item.name || "-"}</span>
+      )
     },
     {
       header: t("page.ingredientCategory.list.tableStatus"),
       render: (item) => (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${item.status === "active" ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${item.status === "active" ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"}`} />
-          {item.status === "active" ? t("page.ingredientCategory.list.active") : t("page.ingredientCategory.list.inactive")}
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${item.status === "active" ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"}`}>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${item.status === "active" ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"}`}
+          />
+          {item.status === "active"
+            ? t("page.ingredientCategory.list.active")
+            : t("page.ingredientCategory.list.inactive")}
         </span>
       )
     },
@@ -142,7 +158,9 @@ const CategoryList = () => {
     {
       header: t("page.ingredientCategory.list.tableDibuat"),
       render: (item) => (
-        <span className="text-sm font-mono text-muted-foreground">{formatDate(item.createdAt)}</span>
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(item.createdAt)}
+        </span>
       )
     },
     {
@@ -176,136 +194,149 @@ const CategoryList = () => {
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-          breadcrumbs={[
-            { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
-            { i18nKey: "page.ingredientCategory.list.breadcrumbCategory" }
-          ]}
-          title={t("page.ingredientCategory.list.title")}
-          description={t("page.ingredientCategory.list.subtitle")}>
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingTemplate}
-              onClick={async () => {
-                setIsDownloadingTemplate(true);
-                try {
-                  await downloadIngredientCategoryTemplate();
-                  toast.success(t("common.success"), {
-                    description: t("page.ingredientCategory.toast.templateSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.ingredientCategory.toast.templateError")
-                  });
-                } finally {
-                  setIsDownloadingTemplate(false);
-                }
-              }}>
-              {isDownloadingTemplate ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-              )}
-              {t("page.ingredientCategory.button.downloadTemplate")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingData}
-              onClick={async () => {
-                setIsDownloadingData(true);
-                try {
-                  await downloadIngredientCategoryExcel();
-                  toast.success(t("common.success"), {
-                    description: t("page.ingredientCategory.toast.dataSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.ingredientCategory.toast.dataError")
-                  });
-                } finally {
-                  setIsDownloadingData(false);
-                }
-              }}>
-              {isDownloadingData ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">download</span>
-              )}
-              {t("page.ingredientCategory.button.downloadData")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "import") && (
-            <Button
-              variant="default"
-              onClick={() => setUploadModalOpen(true)}>
-              <span className="material-symbols-outlined text-lg mr-1">upload</span>
-              {t("page.ingredientCategory.button.upload")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "create") && (
-            <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
-              <Plus size={16} className="mr-1" />
-              {t("page.ingredientCategory.list.addButton")}
-            </Button>
-          )}
-        </PageHeader>
+            breadcrumbs={[
+              { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
+              { i18nKey: "page.ingredientCategory.list.breadcrumbCategory" }
+            ]}
+            title={t("page.ingredientCategory.list.title")}
+            description={t("page.ingredientCategory.list.subtitle")}>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingTemplate}
+                onClick={async () => {
+                  setIsDownloadingTemplate(true);
+                  try {
+                    await downloadIngredientCategoryTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.ingredientCategory.toast.templateSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.ingredientCategory.toast.templateError")
+                    });
+                  } finally {
+                    setIsDownloadingTemplate(false);
+                  }
+                }}>
+                {isDownloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                )}
+                {t("page.ingredientCategory.button.downloadTemplate")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingData}
+                onClick={async () => {
+                  setIsDownloadingData(true);
+                  try {
+                    await downloadIngredientCategoryExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.ingredientCategory.toast.dataSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.ingredientCategory.toast.dataError")
+                    });
+                  } finally {
+                    setIsDownloadingData(false);
+                  }
+                }}>
+                {isDownloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                )}
+                {t("page.ingredientCategory.button.downloadData")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                {t("page.ingredientCategory.button.upload")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "create") && (
+              <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
+                <Plus size={16} className="mr-1" />
+                {t("page.ingredientCategory.list.addButton")}
+              </Button>
+            )}
+          </PageHeader>
         </motion.div>
       </motion.div>
 
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.map((stat) => (
+              <motion.div
+                key={stat.label}
+                variants={item}
+                className="bg-card p-6 rounded-xl border border-border shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center ${stat.iconColor}`}>
+                    <stat.icon size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat) => (
-          <motion.div key={stat.label} variants={item} className="bg-card p-6 rounded-xl border border-border shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center ${stat.iconColor}`}>
-                <stat.icon size={24} />
+        <motion.div variants={item} className="mt-6">
+          <DataTable
+            columns={columns}
+            data={filtered}
+            isLoading={isLoading}
+            emptyMessage={t("page.ingredientCategory.list.emptyText")}
+            emptyIcon={Package}
+            toolbar={
+              <div className="p-4 pb-0">
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                  className="max-w-xs h-10"
+                />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              </div>
-            </div>
-            </motion.div>
-        ))}
-      </div>
+            }
+          />
+        </motion.div>
 
-      <DataTable
-          columns={columns}
-          data={filtered}
-          isLoading={isLoading}
-          emptyMessage={t("page.ingredientCategory.list.emptyText")}
-          emptyIcon={Package}
-          toolbar={
-            <div className="p-4 pb-0">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-                className="max-w-xs h-10"
-              />
-            </div>
-          }
-        />
-
-      <TipsCard
-          tips={[
-            t("page.ingredientCategory.list.tips.1"),
-            t("page.ingredientCategory.list.tips.2"),
-            t("page.ingredientCategory.list.tips.3"),
-            t("page.ingredientCategory.list.tips.4")
-          ]}
-        />
-      </motion.div>
+        <motion.div variants={item} className="mt-6">
+          <TipsCard
+            tips={[
+              t("page.ingredientCategory.list.tips.1"),
+              t("page.ingredientCategory.list.tips.2"),
+              t("page.ingredientCategory.list.tips.3"),
+              t("page.ingredientCategory.list.tips.4")
+            ]}
+          />
+        </motion.div>
       </motion.div>
 
       <Modal
         type="confirm"
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("page.ingredientCategory.list.modalDeleteTitle")}
         description={t("page.ingredientCategory.list.modalDeleteDesc")}
         confirmText={t("page.ingredientCategory.list.modalDeleteConfirm")}

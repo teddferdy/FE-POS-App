@@ -368,7 +368,7 @@ const LocationList = () => {
             </motion.div>
           </div>
 
-          <div data-tour="location-table">
+          <div data-tour="location-table" className="mt-6">
             <DataTable
               columns={columns}
               data={filteredLocations}
@@ -446,7 +446,7 @@ const LocationList = () => {
             />
           </div>
 
-          <div>
+          <div className="mt-6">
             {/* Map Preview */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div
