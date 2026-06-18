@@ -297,212 +297,213 @@ const CategoryList = () => {
       <div>
         <div>
           <PageHeader
-        breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
-        title={t("page.category.list.title")}
-        description={t("page.category.list.description")}>
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            data-tour="category-download-template"
-            variant="outline"
-            disabled={isDownloadingTemplate}
-            onClick={async () => {
-              setIsDownloadingTemplate(true);
-              try {
-                await downloadTemplate();
-                toast.success(t("common.success"), {
-                  description: t("page.category.toast.templateSuccess")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.category.toast.templateError")
-                });
-              } finally {
-                setIsDownloadingTemplate(false);
-              }
-            }}>
-            {isDownloadingTemplate ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            breadcrumbs={[
+              { label: t("breadcrumb.adminConsole") },
+              { label: t("breadcrumb.category") }
+            ]}
+            title={t("page.category.list.title")}
+            description={t("page.category.list.description")}>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                data-tour="category-download-template"
+                variant="outline"
+                disabled={isDownloadingTemplate}
+                onClick={async () => {
+                  setIsDownloadingTemplate(true);
+                  try {
+                    await downloadTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.category.toast.templateSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.category.toast.templateError")
+                    });
+                  } finally {
+                    setIsDownloadingTemplate(false);
+                  }
+                }}>
+                {isDownloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                )}
+                {isDownloadingTemplate
+                  ? t("page.category.button.downloading")
+                  : t("page.category.button.downloadTemplate")}
+              </Button>
             )}
-            {isDownloadingTemplate
-              ? t("page.category.button.downloading")
-              : t("page.category.button.downloadTemplate")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            data-tour="category-download-data"
-            variant="outline"
-            disabled={isDownloadingData}
-            onClick={async () => {
-              setIsDownloadingData(true);
-              try {
-                await downloadExcel();
-                toast.success(t("common.success"), {
-                  description: t("page.category.toast.dataSuccess")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.category.toast.dataError")
-                });
-              } finally {
-                setIsDownloadingData(false);
-              }
-            }}>
-            {isDownloadingData ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                data-tour="category-download-data"
+                variant="outline"
+                disabled={isDownloadingData}
+                onClick={async () => {
+                  setIsDownloadingData(true);
+                  try {
+                    await downloadExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.category.toast.dataSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.category.toast.dataError")
+                    });
+                  } finally {
+                    setIsDownloadingData(false);
+                  }
+                }}>
+                {isDownloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                )}
+                {isDownloadingData
+                  ? t("page.category.button.downloading")
+                  : t("page.category.button.downloadData")}
+              </Button>
             )}
-            {isDownloadingData
-              ? t("page.category.button.downloading")
-              : t("page.category.button.downloadData")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-        {canAccess(user, MENU_KEY, "import") && (
-          <Button
-            data-tour="category-upload"
-            variant="default"
-            onClick={() => setUploadModalOpen(true)}>
-            <span className="material-symbols-outlined text-lg">upload</span>
-            {t("page.category.button.upload")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button
-            data-tour="category-add"
-            onClick={() => navigate("/add-category")}
-            className="shadow-md">
-            <span className="material-symbols-outlined text-lg">add</span>
-            {t("page.category.button.add")}
-          </Button>
-        )}
-      </PageHeader>
+            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button
+                data-tour="category-upload"
+                variant="default"
+                onClick={() => setUploadModalOpen(true)}>
+                <span className="material-symbols-outlined text-lg">upload</span>
+                {t("page.category.button.upload")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="category-add"
+                onClick={() => navigate("/add-category")}
+                className="shadow-md">
+                <span className="material-symbols-outlined text-lg">add</span>
+                {t("page.category.button.add")}
+              </Button>
+            )}
+          </PageHeader>
         </div>
       </div>
 
       <div>
         <div>
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {stats.map((stat) => (
-          <div
-            key={stat.label}
-            data-tour={stat.dataTour}
-            className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
-            <div className="flex justify-between items-start w-full mb-4">
               <div
-                className={`p-3 ${stat.danger ? "bg-red-700 dark:bg-red-950" : stat.iconBg} rounded-lg`}>
-                <span
-                  className={`material-symbols-outlined ${stat.danger ? "text-white" : stat.iconColor}`}>
-                  {stat.icon}
-                </span>
-              </div>
-              <span
-                className={`text-xs font-semibold px-2 py-1 rounded ${stat.danger ? "bg-red-500/30 text-red-100" : "bg-muted text-muted-foreground"}`}>
-                {stat.badge}
-              </span>
-            </div>
-            <p
-              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
-              {stat.label}
-            </p>
-            <h3 className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
-              {stat.value}
-            </h3>
-            </div>
-        ))}
-      </div>
-
-      <div
-        data-tour="category-table">
-        <DataTable
-          columns={columns}
-          data={filtered}
-          isLoading={isLoading}
-          emptyMessage={t("page.category.list.empty")}
-          toolbar={
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-              <h4 className="text-base font-semibold text-foreground">
-                {t("page.category.list.sectionTitle")}
-              </h4>
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-64">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                    search
+                key={stat.label}
+                data-tour={stat.dataTour}
+                className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
+                <div className="flex justify-between items-start w-full mb-4">
+                  <div
+                    className={`p-3 ${stat.danger ? "bg-red-700 dark:bg-red-950" : stat.iconBg} rounded-lg`}>
+                    <span
+                      className={`material-symbols-outlined ${stat.danger ? "text-white" : stat.iconColor}`}>
+                      {stat.icon}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded ${stat.danger ? "bg-red-500/30 text-red-100" : "bg-muted text-muted-foreground"}`}>
+                    {stat.badge}
                   </span>
-                  <Input
-                    placeholder={t("page.category.list.search")}
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-9 h-9 text-sm"
-                  />
                 </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                  <option value="">{t("page.category.list.statusAll")}</option>
-                  <option value="active">{t("common.active")}</option>
-                  <option value="inactive">{t("common.inactive")}</option>
-                </select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 h-9"
-                  onClick={() => setStatusFilter("")}>
-                  <span className="material-symbols-outlined text-base">filter_list</span>
-                  {t("page.category.button.filter")}
-                </Button>
+                <p
+                  className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
+                  {stat.label}
+                </p>
+                <h3
+                  className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
+                  {stat.value}
+                </h3>
               </div>
-            </div>
-          }
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-          rowClassName={() => ""}
-        />
-      </div>
+            ))}
+          </div>
 
-      <div
-        className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="material-symbols-outlined opacity-80">lightbulb</span>
-          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-            {t("page.category.tips.title")}
-          </h4>
-        </div>
-        <ul className="space-y-2">
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.category.tips.1")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.category.tips.2")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.category.tips.3")}</span>
-          </li>
-          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-            <span className="text-primary-foreground/60 mt-0.5">•</span>
-            <span>{t("page.category.tips.4")}</span>
-          </li>
-        </ul>
-      </div>
+          <div data-tour="category-table">
+            <DataTable
+              columns={columns}
+              data={filtered}
+              isLoading={isLoading}
+              emptyMessage={t("page.category.list.empty")}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.category.list.sectionTitle")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                        search
+                      </span>
+                      <Input
+                        placeholder={t("page.category.list.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                      <option value="">{t("page.category.list.statusAll")}</option>
+                      <option value="active">{t("common.active")}</option>
+                      <option value="inactive">{t("common.inactive")}</option>
+                    </select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 h-9"
+                      onClick={() => setStatusFilter("")}>
+                      <span className="material-symbols-outlined text-base">filter_list</span>
+                      {t("page.category.button.filter")}
+                    </Button>
+                  </div>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              rowClassName={() => ""}
+            />
+          </div>
+
+          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined opacity-80">lightbulb</span>
+              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                {t("page.category.tips.title")}
+              </h4>
+            </div>
+            <ul className="space-y-2">
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.category.tips.1")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.category.tips.2")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.category.tips.3")}</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>{t("page.category.tips.4")}</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -514,11 +515,12 @@ const CategoryList = () => {
         confirmText={t("page.category.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
-      <UploadCategoryModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["categories"])}
-      />
+      {uploadModalOpen && (
+        <UploadCategoryModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploadSuccess={() => queryClient.invalidateQueries(["categories"])}
+        />
+      )}
     </div>
   );
 };

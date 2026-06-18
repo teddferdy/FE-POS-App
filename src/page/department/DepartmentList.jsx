@@ -479,11 +479,12 @@ const DepartmentList = () => {
         confirmText={t("page.department.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
-      <UploadDepartmentModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["departments"])}
-      />
+      {uploadModalOpen && (
+        <UploadDepartmentModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploadSuccess={() => queryClient.invalidateQueries(["departments"])}
+        />
+      )}
     </div>
   );
 };

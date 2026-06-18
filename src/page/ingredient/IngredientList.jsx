@@ -359,11 +359,12 @@ const IngredientList = () => {
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
 
-      <ImportIngredientModal
-        open={importModal}
-        onOpenChange={setImportModal}
-        onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
-      />
+      {importModal && (
+        <ImportIngredientModal
+          onClose={() => setImportModal(false)}
+          onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
+        />
+      )}
     </div>
   );
 };

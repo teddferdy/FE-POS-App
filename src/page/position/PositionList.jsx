@@ -417,11 +417,12 @@ const PositionList = () => {
         confirmText={t("common.confirmDelete")}
         onConfirm={confirmDelete}
       />
-      <UploadPositionModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["positions"])}
-      />
+      {uploadModalOpen && (
+        <UploadPositionModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploadSuccess={() => queryClient.invalidateQueries(["positions"])}
+        />
+      )}
       <Modal
         type="confirm"
         open={noDepartmentModal}

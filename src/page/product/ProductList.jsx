@@ -427,11 +427,12 @@ const ProductList = () => {
         onConfirm={() => navigate("/add-location")}
       />
 
-      <UploadProductModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["products"])}
-      />
+      {uploadModalOpen && (
+        <UploadProductModal
+          onClose={() => setUploadModalOpen(false)}
+          onUploadSuccess={() => queryClient.invalidateQueries(["products"])}
+        />
+      )}
     </div>
   );
 };
