@@ -2,6 +2,7 @@
 /* eslint-disable no-empty */
 /* eslint-disable react/prop-types */
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, Loader } from "lucide-react";
 import {
   Dialog,
@@ -113,6 +114,7 @@ export default function AccessMenuModal({
   roleAccessMenu,
   onSave
 }) {
+  const { t } = useTranslation();
   const groups = useMemo(() => getLeafItemsGrouped(), []);
   const [collapsed, setCollapsed] = useState({});
 
@@ -204,9 +206,7 @@ export default function AccessMenuModal({
       <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("accessMenu.additionalAccess")}</DialogTitle>
-          <DialogDescription>
-            {t("accessMenu.additionalAccessDescription")}
-          </DialogDescription>
+          <DialogDescription>{t("accessMenu.additionalAccessDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-between py-2">

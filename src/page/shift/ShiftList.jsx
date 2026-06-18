@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -43,7 +44,7 @@ const ShiftList = () => {
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
     () => getAllShift({ store: locationParam, page, limit, statusShift: search }),
     { keepPreviousData: true }
@@ -161,53 +162,67 @@ const ShiftList = () => {
         </div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
-          </Card>
-        </motion.div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
+                <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+              </Card>
+            </motion.div>
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+              </Card>
+            </motion.div>
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+                <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+              </Card>
+            </motion.div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.shift.list.search")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-sm"
-          />
-        </div>
-      </motion.div>
+          <motion.div variants={fadeInUp} initial="hidden" animate="show">
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.shift.list.search")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }} data-tour="shift-table">
-        <DataTable
-          columns={columns}
-          data={shifts}
-          isLoading={isLoading}
-          emptyIcon={Clock}
-          emptyMessage={t("page.shift.list.empty")}
-          pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
-        />
-      </motion.div>
-
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            data-tour="shift-table">
+            <DataTable
+              columns={columns}
+              data={shifts}
+              isLoading={isLoading}
+              emptyIcon={Clock}
+              emptyMessage={t("page.shift.list.empty")}
+              pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
+            />
+          </motion.div>
+        </>
+      )}
       <Modal
         type="confirm"
         open={!!deleteTarget}

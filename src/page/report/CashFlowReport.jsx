@@ -9,6 +9,7 @@ import { Loading } from "@/components/ui/loading";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,7 +29,7 @@ const CashFlowReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["cash-flow", startDate, endDate],
     () =>
       getCashFlow({
@@ -39,6 +40,8 @@ const CashFlowReport = () => {
   );
 
   const cf = data?.data || {};
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   const summaryCards = [
     {
@@ -69,7 +72,10 @@ const CashFlowReport = () => {
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-            breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.cashFlow.title" }]}
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home" },
+              { i18nKey: "page.report.cashFlow.title" }
+            ]}
             title={t("page.report.cashFlow.title")}
             description={t("page.report.cashFlow.description")}>
             <div className="flex items-center gap-2">

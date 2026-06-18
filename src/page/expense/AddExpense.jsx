@@ -34,11 +34,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const AddExpense = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -101,189 +96,192 @@ const AddExpense = () => {
   return (
     <motion.div variants={container} initial="hidden" animate="show">
       <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/expense")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.management")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
-      </nav>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <button
+            onClick={() => navigate("/expense")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.management")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
+        </nav>
 
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
-      </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.add.description")}</p>
+        </div>
 
-      <Card className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.expense.add.category")} <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("page.expense.add.categoryPlaceholder")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.length === 0 ? (
-                          <SelectItem value="__none" disabled>
-                            {t("page.expense.add.noCategories")}
-                          </SelectItem>
-                        ) : (
-                          categories.map((cat) => (
-                            <SelectItem key={cat.id || cat._id} value={String(cat.id || cat._id)}>
-                              {cat.name}
+        <Card className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.expense.add.category")} <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("page.expense.add.categoryPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.length === 0 ? (
+                            <SelectItem value="__none" disabled>
+                              {t("page.expense.add.noCategories")}
                             </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.expense.add.description")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input placeholder={t("page.expense.add.descriptionPlaceholder")} {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.expense.add.amount")} <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                        Rp
-                      </span>
+                          ) : (
+                            categories.map((cat) => (
+                              <SelectItem key={cat.id || cat._id} value={String(cat.id || cat._id)}>
+                                {cat.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.expense.add.description")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
                       <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="0"
-                        className="pl-10"
-                        value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
-                        onChange={(e) => {
-                          const raw = e.target.value.replace(/[^0-9]/g, "");
-                          field.onChange(raw ? Number(raw) : "");
-                        }}
+                        placeholder={t("page.expense.add.descriptionPlaceholder")}
+                        {...field}
                       />
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.expense.add.amount")} <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                          Rp
+                        </span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0"
+                          className="pl-10"
+                          value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9]/g, "");
+                            field.onChange(raw ? Number(raw) : "");
+                          }}
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.expense.add.date")} <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
-                name="date"
+                name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {t("page.expense.add.date")} <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <DatePicker date={field.value} setDate={field.onChange} />
+                    <FormLabel>{t("page.expense.add.notes")}</FormLabel>
+                    <Textarea
+                      placeholder={t("page.expense.add.notesPlaceholder")}
+                      rows={3}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("page.expense.add.notes")}</FormLabel>
-                  <Textarea
-                    placeholder={t("page.expense.add.notesPlaceholder")}
-                    rows={3}
-                    {...field}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-                <X size={18} />
-                {t("common.cancel")}
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setDraftModal(true)}
-                  disabled={createMutation.isLoading}>
-                  {t("page.expense.add.saveAsDraft")}
+              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                  <X size={18} />
+                  {t("common.cancel")}
                 </Button>
-                <Button
-                  onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                  disabled={createMutation.isLoading}
-                  className="gap-2">
-                  <Save size={18} />
-                  {createMutation.isLoading ? t("button.saving") : t("button.save")}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={createMutation.isLoading}>
+                    {t("page.expense.add.saveAsDraft")}
+                  </Button>
+                  <Button
+                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    disabled={createMutation.isLoading}
+                    className="gap-2">
+                    <Save size={18} />
+                    {createMutation.isLoading ? t("button.saving") : t("button.save")}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
-        </Form>
-      </Card>
+            </form>
+          </Form>
+        </Card>
 
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={setCancelModal}
-        title={t("page.expense.add.cancelTitle")}
-        description={t("page.expense.add.cancelDescription")}
-        confirmText={t("page.expense.add.cancelConfirm")}
-        onConfirm={() => navigate("/expense")}
-      />
-      <Modal
-        type="success"
-        open={successModal}
-        onOpenChange={setSuccessModal}
-        title={t("page.expense.add.successTitle")}
-        description={t("page.expense.add.successDescription")}
-        confirmText={t("page.expense.add.successConfirm")}
-        onConfirm={() => navigate("/expense")}
-      />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title={t("page.expense.add.draftTitle")}
-        description={t("page.expense.add.draftDescription")}
-        confirmText={t("page.expense.add.draftConfirm")}
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
-      />
-    </div>
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={setCancelModal}
+          title={t("page.expense.add.cancelTitle")}
+          description={t("page.expense.add.cancelDescription")}
+          confirmText={t("page.expense.add.cancelConfirm")}
+          onConfirm={() => navigate("/expense")}
+        />
+        <Modal
+          type="success"
+          open={successModal}
+          onOpenChange={setSuccessModal}
+          title={t("page.expense.add.successTitle")}
+          description={t("page.expense.add.successDescription")}
+          confirmText={t("page.expense.add.successConfirm")}
+          onConfirm={() => navigate("/expense")}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title={t("page.expense.add.draftTitle")}
+          description={t("page.expense.add.draftDescription")}
+          confirmText={t("page.expense.add.draftConfirm")}
+          onConfirm={() => {
+            setDraftModal(false);
+            const values = form.getValues();
+            onSubmit(values, true);
+          }}
+        />
+      </div>
     </motion.div>
   );
 };

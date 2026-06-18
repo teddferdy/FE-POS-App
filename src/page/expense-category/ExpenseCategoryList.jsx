@@ -8,12 +8,12 @@ import { Plus, Search, Edit, Trash2, Tag } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -31,15 +31,21 @@ const ExpenseCategoryList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useQuery(["expense-categories"], () => getExpenseCategories());
+  const { data, isLoading, isError, refetch } = useQuery(["expense-categories"], () =>
+    getExpenseCategories()
+  );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {
     onSuccess: () => {
-      toast.success(t("page.expenseCategory.list.toast.success"), { description: t("page.expenseCategory.list.toast.successDescription") });
+      toast.success(t("page.expenseCategory.list.toast.success"), {
+        description: t("page.expenseCategory.list.toast.successDescription")
+      });
       queryClient.invalidateQueries(["expense-categories"]);
     },
     onError: (err) => {
-      toast.error(t("page.expenseCategory.list.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expenseCategory.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -121,7 +127,11 @@ const ExpenseCategoryList = () => {
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.expenseCategory.list.title")}
@@ -138,44 +148,62 @@ const ExpenseCategoryList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={fadeInUp} className="bg-card p-5 rounded-xl border border-border">
-          <p className="text-sm text-muted-foreground">{t("page.expenseCategory.list.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{categories.length}</p>
-        </motion.div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <motion.div variants={fadeInUp} className="bg-card p-5 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">
+                {t("page.expenseCategory.list.total")}
+              </p>
+              <p className="text-2xl font-bold text-foreground mt-1">{categories.length}</p>
+            </motion.div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.expenseCategory.list.search")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
-          />
-        </div>
-      </motion.div>
+          <motion.div variants={fadeInUp} initial="hidden" animate="show">
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.expenseCategory.list.search")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filtered}
-        isLoading={isLoading}
-        emptyIcon={Tag}
-        emptyMessage={t("page.expenseCategory.list.empty")}
-      />
-      </motion.div>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={filtered}
+              isLoading={isLoading}
+              emptyIcon={Tag}
+              emptyMessage={t("page.expenseCategory.list.empty")}
+            />
+          </motion.div>
+        </>
+      )}
 
       <Modal
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("page.expenseCategory.list.deleteTitle")}
-        description={t("page.expenseCategory.list.deleteDescription", { name: deleteTarget?.name || "" })}
+        description={t("page.expenseCategory.list.deleteDescription", {
+          name: deleteTarget?.name || ""
+        })}
         confirmText={t("page.expenseCategory.list.deleteConfirm")}
         onConfirm={confirmDelete}
       />

@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import {
-  Search,
-  AlertTriangle,
-  Package,
-  ShoppingBasket,
-  Store,
-  Filter
-} from "lucide-react";
+import { Search, AlertTriangle, Package, ShoppingBasket, Store, Filter } from "lucide-react";
 import { getLowStockAll } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
@@ -22,6 +15,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -37,7 +31,7 @@ const item = {
 };
 
 const LowStockAll = () => {
-  const { t } = useTranslation();
+  useTranslation();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [search, setSearch] = useState("");
@@ -49,7 +43,7 @@ const LowStockAll = () => {
   });
   const locations = locationsData?.data || locationsData || [];
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock-all", page, limit, storeFilter, typeFilter, search],
     () =>
       getLowStockAll({
@@ -151,7 +145,10 @@ const LowStockAll = () => {
   const filters = (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative w-56">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           placeholder="Cari nama barang..."
           value={search}
@@ -209,31 +206,34 @@ const LowStockAll = () => {
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-          title="Low Stock - Semua Toko"
-          description="Daftar barang dengan stok menipis di seluruh toko"
-        ></PageHeader>
+            title="Low Stock - Semua Toko"
+            description="Daftar barang dengan stok menipis di seluruh toko"></PageHeader>
         </motion.div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <DataTable
-            columns={columns}
-            data={items}
-            isLoading={isLoading}
-            emptyMessage="Tidak ada barang dengan stok menipis"
-            emptyIcon={AlertTriangle}
-            toolbar={filters}
-            pagination={{
-              page,
-              totalPages,
-              total,
-              onPageChange: setPage,
-              showingText: `Menampilkan ${items.length} dari ${total} data`
-            }}
-          />
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div variants={container} initial="hidden" animate="show">
+          <motion.div variants={item}>
+            <DataTable
+              columns={columns}
+              data={items}
+              isLoading={isLoading}
+              emptyMessage="Tidak ada barang dengan stok menipis"
+              emptyIcon={AlertTriangle}
+              toolbar={filters}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: setPage,
+                showingText: `Menampilkan ${items.length} dari ${total} data`
+              }}
+            />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </div>
   );
 };

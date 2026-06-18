@@ -1,26 +1,47 @@
-/* eslint-disable react/prop-types */
-import { Button } from "@/components/ui/button";
 import React from "react";
+import PropTypes from "prop-types";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const AbortController = ({ refetch }) => {
   const { t } = useTranslation();
+
   return (
-    <div className="flex h-[470px] flex-col rounded-lg">
-      <div className="flex flex-col flex-1 items-center justify-center bg-slate-300/30 text-4xl rounded-lg gap-4">
-        <p className="text-rose-700 font-bold text-base md:text-lg xl:text-lg">
-          {t("error.internalServerError")}
-        </p>
-        <Button
-          className="py-2 px-4 w-fit bg-[#6853F0] rounded-full text-white font-bold text-lg hover:bg-[#1ACB0A] duration-200"
-          onClick={refetch}>
-          <div className="flex items-center gap-4">
-            <p>{t("common.tryAgain")}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="flex h-[470px] flex-col rounded-lg">
+      <div className="flex flex-col flex-1 items-center justify-center rounded-lg gap-5 px-6">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.15, type: "spring", stiffness: 200, damping: 15 }}>
+          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertTriangle size={40} className="text-destructive" />
           </div>
+        </motion.div>
+        <div className="text-center max-w-md space-y-2">
+          <p className="text-destructive font-bold text-lg md:text-xl">
+            {t("error.internalServerError")}
+          </p>
+          <p className="text-muted-foreground text-sm leading-relaxed">{t("error.tryAgainDesc")}</p>
+        </div>
+        <Button
+          onClick={refetch}
+          className="flex items-center gap-2 px-8 py-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          <RefreshCw size={18} />
+          {t("common.tryAgain")}
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
+};
+
+AbortController.propTypes = {
+  refetch: PropTypes.func.isRequired
 };
 
 export default AbortController;

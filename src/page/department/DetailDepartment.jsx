@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import { motion } from "framer-motion";
-
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -50,11 +50,14 @@ const DetailDepartment = () => {
   const [searchParams] = useSearchParams();
   const departmentId = searchParams.get("id");
 
-  const { data: departmentData, isLoading } = useQuery(
-    ["department-detail", departmentId],
-    () => getDepartmentById({ id: departmentId }),
-    { enabled: !!departmentId }
-  );
+  const {
+    data: departmentData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(["department-detail", departmentId], () => getDepartmentById({ id: departmentId }), {
+    enabled: !!departmentId
+  });
 
   const dept = departmentData?.data || departmentData?.department || {};
 
@@ -133,6 +136,10 @@ const DetailDepartment = () => {
     );
   }
 
+  if (isError) {
+    return <AbortController refetch={refetch} />;
+  }
+
   if (!dept || !dept.id) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
@@ -170,102 +177,104 @@ const DetailDepartment = () => {
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-              <span className="material-symbols-outlined text-primary">domain</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.department.detail.info")}
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.department.detail.name")}
-                </label>
-                <p className="text-sm font-semibold text-foreground mt-1">{dept.name || "-"}</p>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.department.detail.id")}
-                </label>
-                <p className="text-sm font-semibold text-foreground mt-1 font-mono">
-                  #{dept.id || "-"}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.department.detail.status")}
-                </label>
-                <div>
-                  <span
-                    className={`inline-flex items-center gap-1 px-3 py-1 mt-1 rounded-full text-xs font-bold uppercase tracking-tight ${
-                      dept.status === "active"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
-                    }`}>
-                    <span className="material-symbols-outlined text-sm">
-                      {dept.status === "active" ? "check_circle" : "cancel"}
-                    </span>
-                    {dept.status === "active" ? t("common.active") : t("common.inactive")}
-                  </span>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                  <span className="material-symbols-outlined text-primary">domain</span>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.department.detail.info")}
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.department.detail.name")}
+                    </label>
+                    <p className="text-sm font-semibold text-foreground mt-1">{dept.name || "-"}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.department.detail.id")}
+                    </label>
+                    <p className="text-sm font-semibold text-foreground mt-1 font-mono">
+                      #{dept.id || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.department.detail.status")}
+                    </label>
+                    <div>
+                      <span
+                        className={`inline-flex items-center gap-1 px-3 py-1 mt-1 rounded-full text-xs font-bold uppercase tracking-tight ${
+                          dept.status === "active"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+                        }`}>
+                        <span className="material-symbols-outlined text-sm">
+                          {dept.status === "active" ? "check_circle" : "cancel"}
+                        </span>
+                        {dept.status === "active" ? t("common.active") : t("common.inactive")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 pt-5 border-t border-border">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.department.table.description")}
+                  </label>
+                  <p className="text-sm text-foreground mt-1">
+                    {dept.description || t("page.department.detail.noDescription")}
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="mt-5 pt-5 border-t border-border">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t("page.department.table.description")}
-              </label>
-              <p className="text-sm text-foreground mt-1">
-                {dept.description || t("page.department.detail.noDescription")}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        <div className="space-y-6">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-              <span className="material-symbols-outlined text-primary">info</span>
-              <h3 className="text-base font-semibold text-foreground">
-                {t("page.department.detail.systemInfo")}
-              </h3>
-            </div>
-            <div className="space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-primary text-base">
-                    calendar_today
-                  </span>
+            <div className="space-y-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                  <span className="material-symbols-outlined text-primary">info</span>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.department.detail.systemInfo")}
+                  </h3>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.detail.createdAt")}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {formatDate(dept.createdAt)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{dept.createdBy || "System"}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-primary text-base">update</span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.detail.updatedAt")}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {formatDate(dept.updatedAt)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{dept.modifiedBy || "System"}</p>
+                <div className="space-y-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="material-symbols-outlined text-primary text-base">
+                        calendar_today
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.department.detail.createdAt")}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                        {formatDate(dept.createdAt)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{dept.createdBy || "System"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="material-symbols-outlined text-primary text-base">
+                        update
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.department.detail.updatedAt")}
+                      </p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">
+                        {formatDate(dept.updatedAt)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{dept.modifiedBy || "System"}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
         </motion.div>
       </motion.div>
     </div>

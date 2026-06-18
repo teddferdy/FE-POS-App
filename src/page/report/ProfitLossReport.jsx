@@ -9,6 +9,7 @@ import { Loading } from "@/components/ui/loading";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,7 +29,7 @@ const ProfitLossReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["profit-loss", startDate, endDate],
     () =>
       getProfitLoss({
@@ -68,12 +69,17 @@ const ProfitLossReport = () => {
     }
   ];
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   return (
     <div className="space-y-6">
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-            breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.profitLoss.title" }]}
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home" },
+              { i18nKey: "page.report.profitLoss.title" }
+            ]}
             title={t("page.report.profitLoss.title")}
             description={t("page.report.profitLoss.description")}>
             <div className="flex items-center gap-2">

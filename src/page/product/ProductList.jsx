@@ -10,8 +10,7 @@ import {
   getAllProductTable,
   deleteProduct,
   downloadProductTemplate,
-  downloadProductExcel,
-  uploadProductExcel
+  downloadProductExcel
 } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
@@ -23,6 +22,7 @@ import UploadProductModal from "./components/UploadProductModal";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const ProductList = () => {
   const { t } = useTranslation();
@@ -67,7 +67,7 @@ const ProductList = () => {
     return null;
   }
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["products", page, limit, locationParam],
     () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
     { keepPreviousData: true }
@@ -377,64 +377,68 @@ const ProductList = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <div
-            data-tour="product-search"
-            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
-            <div className="flex-1 w-full relative">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.product.list.searchSku")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10"
-              />
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div variants={container} initial="hidden" animate="show">
+          <motion.div variants={item}>
+            <div
+              data-tour="product-search"
+              className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+              <div className="flex-1 w-full relative">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  placeholder={t("page.product.list.searchSku")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-10"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                  <option value="">{t("common.all")} Kategori</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={sortFilter}
+                  onChange={(e) => setSortFilter(e.target.value)}
+                  className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                  <option value="">{t("page.product.list.filter.newest")}</option>
+                  <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
+                  <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
+                  <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
+                </select>
+              </div>
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">{t("common.all")} Kategori</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={sortFilter}
-                onChange={(e) => setSortFilter(e.target.value)}
-                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">{t("page.product.list.filter.newest")}</option>
-                <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
-                <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
-                <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
-              </select>
-            </div>
-          </div>
 
-          <div data-tour="product-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={filteredProducts}
-              isLoading={isLoading}
-              emptyMessage={t("page.product.list.empty")}
-              emptyIcon={Package}
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage
-              }}
-            />
-          </div>
+            <div data-tour="product-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={filteredProducts}
+                isLoading={isLoading}
+                emptyMessage={t("page.product.list.empty")}
+                emptyIcon={Package}
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage
+                }}
+              />
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
 
       <Modal
         type="confirm"

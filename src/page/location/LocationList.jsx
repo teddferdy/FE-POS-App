@@ -13,6 +13,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ const LocationList = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["locations", page, limit, statusFilter, categoryFilter],
     () =>
       getAllLocationTable({
@@ -280,196 +281,200 @@ const LocationList = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <motion.div
-              variants={item}
-              data-tour="location-stat-total"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.location.stats.total")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">store</span>
-                  {t("page.location.stats.totalSub")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">store</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="location-stat-active"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.location.stats.active")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {(data?.stats?.active ?? 0).toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {(data?.stats?.total ?? 0) > 0
-                    ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100)
-                    : 0}
-                  % {t("page.location.stats.activeSub")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">check_circle</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="location-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.location.stats.inactive")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">
-                  {((data?.stats?.total ?? 0) - (data?.stats?.active ?? 0)).toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.location.stats.inactiveSub")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">cancel</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="location-stat-cities"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.location.stats.cities")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {(data?.stats?.cities ?? 0).toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-tertiary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">location_city</span>
-                  {t("page.location.stats.citiesSub")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">location_city</span>
-              </div>
-            </motion.div>
-          </div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div variants={container} initial="hidden" animate="show">
+          <motion.div variants={item}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div
+                variants={item}
+                data-tour="location-stat-total"
+                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    {t("page.location.stats.total")}
+                  </p>
+                  <h3 className="text-3xl font-bold text-foreground">
+                    {(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-sm">store</span>
+                    {t("page.location.stats.totalSub")}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">store</span>
+                </div>
+              </motion.div>
+              <motion.div
+                variants={item}
+                data-tour="location-stat-active"
+                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    {t("page.location.stats.active")}
+                  </p>
+                  <h3 className="text-3xl font-bold text-foreground">
+                    {(data?.stats?.active ?? 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-sm">check_circle</span>
+                    {(data?.stats?.total ?? 0) > 0
+                      ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100)
+                      : 0}
+                    % {t("page.location.stats.activeSub")}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">check_circle</span>
+                </div>
+              </motion.div>
+              <motion.div
+                variants={item}
+                data-tour="location-stat-inactive"
+                className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+                <div>
+                  <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+                    {t("page.location.stats.inactive")}
+                  </p>
+                  <h3 className="text-3xl font-bold text-white">
+                    {((data?.stats?.total ?? 0) - (data?.stats?.active ?? 0)).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-sm">cancel</span>
+                    {t("page.location.stats.inactiveSub")}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">cancel</span>
+                </div>
+              </motion.div>
+              <motion.div
+                variants={item}
+                data-tour="location-stat-cities"
+                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    {t("page.location.stats.cities")}
+                  </p>
+                  <h3 className="text-3xl font-bold text-foreground">
+                    {(data?.stats?.cities ?? 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-tertiary flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-sm">location_city</span>
+                    {t("page.location.stats.citiesSub")}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">location_city</span>
+                </div>
+              </motion.div>
+            </div>
 
-          <div data-tour="location-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={filteredLocations}
-              isLoading={isLoading}
-              emptyMessage={t("page.location.list.empty")}
-              toolbar={
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2 w-full">
-                    <div className="relative flex-1">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder={t("page.location.list.search")}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-9 text-sm"
-                      />
+            <div data-tour="location-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={filteredLocations}
+                isLoading={isLoading}
+                emptyMessage={t("page.location.list.empty")}
+                toolbar={
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 w-full">
+                      <div className="relative flex-1">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.location.list.search")}
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {t("common.status")}:
+                        </span>
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                          <option value="all">{t("common.all")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {t("common.category")}:
+                        </span>
+                        <select
+                          value={categoryFilter}
+                          onChange={(e) => {
+                            setCategoryFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                          <option value="all">{t("common.all")}</option>
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 gap-1.5"
+                        onClick={() => navigate("/store-geospatial")}>
+                        <Map size={14} />
+                        {t("page.location.button.viewMap")}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {t("common.status")}:
-                      </span>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                        <option value="all">{t("common.all")}</option>
-                        <option value="active">{t("common.active")}</option>
-                        <option value="inactive">{t("common.inactive")}</option>
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {t("common.category")}:
-                      </span>
-                      <select
-                        value={categoryFilter}
-                        onChange={(e) => {
-                          setCategoryFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                        <option value="all">{t("common.all")}</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 gap-1.5"
-                      onClick={() => navigate("/store-geospatial")}>
-                      <Map size={14} />
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage
+                }}
+              />
+            </div>
+
+            <div className="mt-6">
+              {/* Map Preview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div
+                  className="md:col-span-2 bg-card rounded-xl border border-border p-6 h-48 relative overflow-hidden flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors group"
+                  onClick={() => navigate("/store-geospatial")}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 group-hover:from-primary/10 group-hover:to-primary/20 transition-all" />
+                  <div className="relative z-10 text-center">
+                    <Map size={32} className="text-primary mx-auto mb-2" />
+                    <p className="text-sm font-medium text-foreground">
+                      {t("page.location.button.viewMap")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.location.button.viewMapDescription")}
+                    </p>
+                    <Button variant="outline" size="sm" className="mt-3">
                       {t("page.location.button.viewMap")}
                     </Button>
                   </div>
                 </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage
-              }}
-            />
-          </div>
-
-          <div className="mt-6">
-            {/* Map Preview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div
-                className="md:col-span-2 bg-card rounded-xl border border-border p-6 h-48 relative overflow-hidden flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors group"
-                onClick={() => navigate("/store-geospatial")}>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 group-hover:from-primary/10 group-hover:to-primary/20 transition-all" />
-                <div className="relative z-10 text-center">
-                  <Map size={32} className="text-primary mx-auto mb-2" />
-                  <p className="text-sm font-medium text-foreground">
-                    {t("page.location.button.viewMap")}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("page.location.button.viewMapDescription")}
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-3">
-                    {t("page.location.button.viewMap")}
-                  </Button>
-                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
 
       <Modal
         type="confirm"

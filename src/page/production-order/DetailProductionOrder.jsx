@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, ClipboardList, Clock, Play, CheckCircle, XCircle } from "lucide-react";
 import { getProductionOrderById } from "@/services/production-order";
 import { Button } from "@/components/ui/button";
+import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const container = {
@@ -26,23 +27,45 @@ const fadeInUp = {
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
   const statusDetail = {
-    draft: { label: t("page.productionOrder.status.draft"), class: "bg-yellow-100 text-yellow-800", icon: Clock },
-    planned: { label: t("page.productionOrder.status.planned"), class: "bg-blue-100 text-blue-800", icon: ClipboardList },
-    in_progress: { label: t("page.productionOrder.status.inProgress"), class: "bg-indigo-100 text-indigo-800", icon: Play },
-    completed: { label: t("page.productionOrder.status.completed"), class: "bg-green-100 text-green-800", icon: CheckCircle },
-    cancelled: { label: t("page.productionOrder.status.cancelled"), class: "bg-red-100 text-red-800", icon: XCircle }
+    draft: {
+      label: t("page.productionOrder.status.draft"),
+      class: "bg-yellow-100 text-yellow-800",
+      icon: Clock
+    },
+    planned: {
+      label: t("page.productionOrder.status.planned"),
+      class: "bg-blue-100 text-blue-800",
+      icon: ClipboardList
+    },
+    in_progress: {
+      label: t("page.productionOrder.status.inProgress"),
+      class: "bg-indigo-100 text-indigo-800",
+      icon: Play
+    },
+    completed: {
+      label: t("page.productionOrder.status.completed"),
+      class: "bg-green-100 text-green-800",
+      icon: CheckCircle
+    },
+    cancelled: {
+      label: t("page.productionOrder.status.cancelled"),
+      class: "bg-red-100 text-red-800",
+      icon: XCircle
+    }
   };
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["production-order-detail", id],
     () => getProductionOrderById(id),
     { enabled: !!id }
   );
 
   const order = data?.data;
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
     return (
@@ -81,11 +104,17 @@ const DetailProductionOrder = () => {
             {t("page.productionOrder.detail.breadcrumbPO")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.productionOrder.detail.breadcrumbDetail")}</span>
+          <span className="text-primary font-semibold">
+            {t("page.productionOrder.detail.breadcrumbDetail")}
+          </span>
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center justify-between">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.productionOrder.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{order.productionNo}</p>
@@ -96,15 +125,24 @@ const DetailProductionOrder = () => {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div variants={container} initial="hidden" animate="show" className="lg:col-span-2 space-y-6">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="lg:col-span-2 space-y-6">
           <motion.div variants={item}>
             <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.informasiProduksi")}</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                {t("page.productionOrder.detail.informasiProduksi")}
+              </h2>
               <table className="w-full text-sm">
                 <tbody>
                   {[
                     [t("page.productionOrder.detail.noProduksi"), order.productionNo],
-                    [t("page.productionOrder.detail.produk"), order.productData?.nameProduct || "-"],
+                    [
+                      t("page.productionOrder.detail.produk"),
+                      order.productData?.nameProduct || "-"
+                    ],
                     [t("page.productionOrder.detail.sku"), order.productData?.sku || "-"],
                     [t("page.productionOrder.detail.jumlahRencana"), order.plannedQty],
                     [t("page.productionOrder.detail.jumlahHasil"), order.producedQty || 0],
@@ -136,7 +174,9 @@ const DetailProductionOrder = () => {
           {order.bomComponents?.length > 0 && (
             <motion.div variants={item}>
               <div className="bg-card p-6 rounded-xl border border-border">
-                <h2 className="text-lg font-semibold mb-4">{t("page.productionOrder.detail.bomComponents")}</h2>
+                <h2 className="text-lg font-semibold mb-4">
+                  {t("page.productionOrder.detail.bomComponents")}
+                </h2>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">

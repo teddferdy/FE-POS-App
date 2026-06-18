@@ -6,7 +6,12 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye, Loader2 } from "lucide-react";
-import { getAllSupplier, deleteSupplier, downloadSupplierTemplate, downloadSupplierExcel } from "@/services/supplier";
+import {
+  getAllSupplier,
+  deleteSupplier,
+  downloadSupplierTemplate,
+  downloadSupplierExcel
+} from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -14,6 +19,7 @@ import Modal from "@/components/organism/modal";
 import UploadSupplierModal from "./components/UploadSupplierModal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const SupplierList = () => {
   const { t } = useTranslation();
@@ -30,7 +36,7 @@ const SupplierList = () => {
 
   const user = cookie?.user;
   const MENU_KEY = "/supplier";
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["suppliers", page, limit, search],
     () => getAllSupplier({ page, limit, search }),
     { keepPreviousData: true }
@@ -112,12 +118,12 @@ const SupplierList = () => {
           }`}>
           <span
             className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-              item.status === "active" || item.status === true
-                ? "bg-green-500"
-                : "bg-red-500"
+              item.status === "active" || item.status === true ? "bg-green-500" : "bg-red-500"
             }`}
           />
-          {item.status === "active" || item.status === true ? t("common.active") : t("common.inactive")}
+          {item.status === "active" || item.status === true
+            ? t("common.active")
+            : t("common.inactive")}
         </span>
       )
     },
@@ -223,7 +229,10 @@ const SupplierList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.supplier.toast.templateError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.supplier.toast.templateError")
                   });
                 } finally {
                   setIsDownloadingTemplate(false);
@@ -250,7 +259,10 @@ const SupplierList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.supplier.toast.dataError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.supplier.toast.dataError")
                   });
                 } finally {
                   setIsDownloadingData(false);
@@ -265,9 +277,7 @@ const SupplierList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "import") && (
-            <Button
-              variant="default"
-              onClick={() => setUploadModalOpen(true)}>
+            <Button variant="default" onClick={() => setUploadModalOpen(true)}>
               <span className="material-symbols-outlined text-lg mr-1">upload</span>
               {t("page.supplier.button.upload")}
             </Button>
@@ -333,21 +343,25 @@ const SupplierList = () => {
         />
       </motion.div>
 
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="supplier-table">
-        <DataTable
-          columns={columns}
-          data={suppliers}
-          isLoading={isLoading}
-          emptyMessage={t("page.supplier.list.empty")}
-          emptyIcon={Building2}
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-        />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={item}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          data-tour="supplier-table">
+          <DataTable
+            columns={columns}
+            data={suppliers}
+            isLoading={isLoading}
+            emptyMessage={t("page.supplier.list.empty")}
+            emptyIcon={Building2}
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <Modal
         type="confirm"

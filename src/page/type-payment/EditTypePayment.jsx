@@ -24,6 +24,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pembayaran wajib diisi"),
@@ -53,11 +54,14 @@ const EditTypePayment = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
 
-  const { data: detailData, isLoading } = useQuery(
-    ["type-payment-detail", paymentId],
-    () => getTypePaymentById(paymentId),
-    { enabled: !!paymentId }
-  );
+  const {
+    data: detailData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(["type-payment-detail", paymentId], () => getTypePaymentById(paymentId), {
+    enabled: !!paymentId
+  });
 
   const item = detailData?.data || {};
 
@@ -126,6 +130,10 @@ const EditTypePayment = () => {
 
   if (isLoading) {
     return <Loading fullscreen size="lg" label="Memuat data..." />;
+  }
+
+  if (isError) {
+    return <AbortController refetch={refetch} />;
   }
 
   return (

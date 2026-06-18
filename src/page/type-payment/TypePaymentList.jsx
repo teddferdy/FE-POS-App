@@ -20,6 +20,7 @@ import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import UploadTypePaymentModal from "./components/UploadTypePaymentModal";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -64,7 +65,7 @@ const TypePaymentList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/type-payment-list";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["type-payments", page, limit, search],
     () => getAllTypePaymentListActive({ page, limit, statusPayment: "all" }),
     { keepPreviousData: true }
@@ -229,7 +230,10 @@ const TypePaymentList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.typePayment.toast.templateError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.typePayment.toast.templateError")
                   });
                 } finally {
                   setIsDownloadingTemplate(false);
@@ -256,7 +260,10 @@ const TypePaymentList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.typePayment.toast.dataError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.typePayment.toast.dataError")
                   });
                 } finally {
                   setIsDownloadingData(false);
@@ -271,9 +278,7 @@ const TypePaymentList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "import") && (
-            <Button
-              variant="default"
-              onClick={() => setUploadModalOpen(true)}>
+            <Button variant="default" onClick={() => setUploadModalOpen(true)}>
               <span className="material-symbols-outlined text-lg mr-1">upload</span>
               {t("page.typePayment.button.upload")}
             </Button>
@@ -288,49 +293,65 @@ const TypePaymentList = () => {
       </div>
 
       {/* Stats Cards */}
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.typePayment.stats.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-        </Card>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.typePayment.stats.total")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
+            </Card>
+          </motion.div>
 
-      {/* Search */}
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          placeholder={t("page.typePayment.list.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
-        />
-      </motion.div>
+          {/* Search */}
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="relative w-full sm:w-72">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder={t("page.typePayment.list.search")}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 h-10"
+            />
+          </motion.div>
 
-      {/* Table */}
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={payments}
-        isLoading={isLoading}
-        emptyIcon={CreditCard}
-        emptyMessage={t("page.typePayment.list.empty")}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+          {/* Table */}
+          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={payments}
+              isLoading={isLoading}
+              emptyIcon={CreditCard}
+              emptyMessage={t("page.typePayment.list.empty")}
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
+        </>
+      )}
 
       <Modal
         type="confirm"
@@ -352,7 +373,7 @@ const TypePaymentList = () => {
           queryClient.invalidateQueries(["type-payments-all"]);
         }}
       />
-      </motion.div>
+    </motion.div>
   );
 };
 

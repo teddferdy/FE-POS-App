@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
   pending: {
@@ -51,7 +52,7 @@ const PurchaseReturnList = () => {
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-returns", page, limit, statusFilter],
     () =>
       getAllPurchaseReturn({
@@ -76,22 +77,30 @@ const PurchaseReturnList = () => {
 
   const approveMut = useMutation(approvePurchaseReturn, {
     onSuccess: () => {
-      toast.success(t("page.purchaseReturn.list.toast.success"), { description: t("page.purchaseReturn.list.toast.approveDesc") });
+      toast.success(t("page.purchaseReturn.list.toast.success"), {
+        description: t("page.purchaseReturn.list.toast.approveDesc")
+      });
       queryClient.invalidateQueries(["purchase-returns"]);
       setActionTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.purchaseReturn.list.toast.error"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.purchaseReturn.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const rejectMut = useMutation(rejectPurchaseReturn, {
     onSuccess: () => {
-      toast.success(t("page.purchaseReturn.list.toast.success"), { description: t("page.purchaseReturn.list.toast.rejectDesc") });
+      toast.success(t("page.purchaseReturn.list.toast.success"), {
+        description: t("page.purchaseReturn.list.toast.rejectDesc")
+      });
       queryClient.invalidateQueries(["purchase-returns"]);
       setActionTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.purchaseReturn.list.toast.error"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.purchaseReturn.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const columns = [
@@ -194,61 +203,79 @@ const PurchaseReturnList = () => {
       <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <div>
           <h1 className="text-2xl font-bold">{t("page.purchaseReturn.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.purchaseReturn.list.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.purchaseReturn.list.subtitle")}
+          </p>
         </div>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
-        toolbar={
-          <div className="flex items-center gap-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
-              {Object.entries(statusCfg).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.purchaseReturn.list.placeholder.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={filteredItems}
+            isLoading={isLoading}
+            emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
+            toolbar={
+              <div className="flex items-center gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                  <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
+                  {Object.entries(statusCfg).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.purchaseReturn.list.placeholder.search")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+              </div>
+            }
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <Modal
         type="confirm"
         open={!!actionTarget}
         onOpenChange={(o) => !o && setActionTarget(null)}
-        title={actionType === "approve" ? t("page.purchaseReturn.list.modal.approveTitle") : t("page.purchaseReturn.list.modal.rejectTitle")}
+        title={
+          actionType === "approve"
+            ? t("page.purchaseReturn.list.modal.approveTitle")
+            : t("page.purchaseReturn.list.modal.rejectTitle")
+        }
         description={
           actionType === "approve"
             ? t("page.purchaseReturn.list.modal.approveDesc")
             : t("page.purchaseReturn.list.modal.rejectDesc")
         }
-        confirmText={actionType === "approve" ? t("page.purchaseReturn.list.modal.approveConfirm") : t("page.purchaseReturn.list.modal.rejectConfirm")}
+        confirmText={
+          actionType === "approve"
+            ? t("page.purchaseReturn.list.modal.approveConfirm")
+            : t("page.purchaseReturn.list.modal.rejectConfirm")
+        }
         confirmVariant={actionType === "approve" ? "default" : "destructive"}
         onConfirm={() => {
           if (actionType === "approve") approveMut.mutate(actionTarget);

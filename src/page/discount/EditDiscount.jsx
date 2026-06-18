@@ -25,6 +25,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -35,11 +36,6 @@ const container = {
     opacity: 1,
     transition: { staggerChildren: 0.05 }
   }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const PROMO_TYPES = {
@@ -91,7 +87,7 @@ const EditDiscount = () => {
   const user = cookie?.user;
   const locationParam = user?.store || "";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["discounts-all"],
     () => getAllDiscount({ location: locationParam, page: 1, limit: 9999, statusDiscount: "" }),
     { enabled: !!id }
@@ -248,6 +244,8 @@ const EditDiscount = () => {
     );
   }
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   if (isLoading) {
     return <Loading fullscreen size="lg" label={t("common.loading")} />;
   }
@@ -264,479 +262,482 @@ const EditDiscount = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/discount")}
-          className="hover:text-foreground transition-colors">
-          {t("page.discount.list.title")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.discount.edit.title")}</span>
-      </nav>
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <button
+            onClick={() => navigate("/discount")}
+            className="hover:text-foreground transition-colors">
+            {t("page.discount.list.title")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.discount.edit.title")}</span>
+        </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.discount.edit.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.discount.edit.description")}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.discount.edit.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.discount.edit.description")}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <X size={18} />
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={updateMutation.isLoading}>
+              {t("page.discount.edit.saveAsDraft")}
+            </Button>
+            <Button
+              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+              disabled={updateMutation.isLoading}
+              className="gap-2">
+              <Save size={18} />
+              {updateMutation.isLoading ? t("button.saving") : t("button.save")}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            {t("common.cancel")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={updateMutation.isLoading}>
-            {t("page.discount.edit.saveAsDraft")}
-          </Button>
-          <Button
-            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-            disabled={updateMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {updateMutation.isLoading ? t("button.saving") : t("button.save")}
-          </Button>
-        </div>
-      </div>
 
-      <Card className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.discount.form.name")} <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input placeholder={t("page.discount.form.namePlaceholder")} {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="promoType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.discount.form.promoTypeLabel")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("page.discount.form.promoTypePlaceholder")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(PROMO_TYPES).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>
-                            {t(label)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {currentPromoType === "standard" && (
+        <Card className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.discount.form.typeLabel")}{" "}
+                        {t("page.discount.form.name")} <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input placeholder={t("page.discount.form.namePlaceholder")} {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="promoType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.discount.form.promoTypeLabel")}{" "}
                         <span className="text-destructive">*</span>
                       </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
-                          <SelectValue placeholder={t("page.discount.form.typePlaceholder")} />
+                          <SelectValue placeholder={t("page.discount.form.promoTypePlaceholder")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Persentase">
-                            {t("page.discount.form.percent")}
-                          </SelectItem>
-                          <SelectItem value="Nominal">{t("page.discount.form.nominal")}</SelectItem>
+                          {Object.entries(PROMO_TYPES).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>
+                              {t(label)}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("page.discount.form.value")} <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        placeholder={t("page.discount.form.valuePlaceholder")}
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value));
-                        }}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
-            )}
 
-            {currentPromoType === "bogo" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="buyQty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Beli (Qty) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="cth: 2"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="freeQty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Gratis (Qty) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="cth: 1"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {currentPromoType === "bundling" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="bundlePrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Harga Paket (Rp) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="cth: 50000"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="productIds"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        ID Produk <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input placeholder="cth: 1,2,3" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {currentPromoType === "happyHour" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="discountPercent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Diskon (%) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="100"
-                        placeholder="cth: 10"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Jam Mulai <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam mulai" />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Jam Selesai <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam selesai" />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="daysOfWeek"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hari (0=Minggu, 6=Sabtu)</FormLabel>
-                      <Input placeholder="cth: 1,2,3,4,5" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {currentPromoType === "category" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="catDiscountPercent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Diskon (%) <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="100"
-                        placeholder="cth: 15"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="categoryIds"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        ID Kategori <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Input placeholder="cth: 1,2,3" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Tanggal Mulai <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <DatePicker date={field.value} setDate={field.onChange} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.discount.form.endDate")}</FormLabel>
-                    <DatePicker date={field.value} setDate={field.onChange} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               {currentPromoType === "standard" && (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="minPurchase"
+                    name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("page.discount.form.minPurchase")}</FormLabel>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                          }
-                        />
+                        <FormLabel>
+                          {t("page.discount.form.typeLabel")}{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("page.discount.form.typePlaceholder")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Persentase">
+                              {t("page.discount.form.percent")}
+                            </SelectItem>
+                            <SelectItem value="Nominal">
+                              {t("page.discount.form.nominal")}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={form.control}
-                    name="maxDiscount"
+                    name="value"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("page.discount.form.maxDiscount")}</FormLabel>
+                        <FormLabel>
+                          {t("page.discount.form.value")}{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
                         <Input
                           type="number"
-                          placeholder="0 (0 = unlimited)"
+                          placeholder={t("page.discount.form.valuePlaceholder")}
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                          }
+                          onChange={(e) => {
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                          }}
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </>
+                </div>
               )}
+
+              {currentPromoType === "bogo" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="buyQty"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Beli (Qty) <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="cth: 2"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="freeQty"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Gratis (Qty) <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="cth: 1"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {currentPromoType === "bundling" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="bundlePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Harga Paket (Rp) <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="cth: 50000"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="productIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          ID Produk <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input placeholder="cth: 1,2,3" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {currentPromoType === "happyHour" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="discountPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Diskon (%) <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="100"
+                          placeholder="cth: 10"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Jam Mulai <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <TimePicker {...field} placeholder="Pilih jam mulai" />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Jam Selesai <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <TimePicker {...field} placeholder="Pilih jam selesai" />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="daysOfWeek"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hari (0=Minggu, 6=Sabtu)</FormLabel>
+                        <Input placeholder="cth: 1,2,3,4,5" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {currentPromoType === "category" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="catDiscountPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Diskon (%) <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="100"
+                          placeholder="cth: 15"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="categoryIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          ID Kategori <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Input placeholder="cth: 1,2,3" {...field} />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Tanggal Mulai <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.discount.form.endDate")}</FormLabel>
+                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {currentPromoType === "standard" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="minPurchase"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.discount.form.minPurchase")}</FormLabel>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                            }
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="maxDiscount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("page.discount.form.maxDiscount")}</FormLabel>
+                          <Input
+                            type="number"
+                            placeholder="0 (0 = unlimited)"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                            }
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+                <FormField
+                  control={form.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.discount.form.promoCode")}</FormLabel>
+                      <Input
+                        placeholder={t("page.discount.form.promoCodePlaceholder")}
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
-                name="code"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("page.discount.form.promoCode")}</FormLabel>
-                    <Input
-                      placeholder={t("page.discount.form.promoCodePlaceholder")}
+                    <FormLabel>{t("page.discount.form.description")}</FormLabel>
+                    <Textarea
+                      placeholder={t("page.discount.form.descriptionPlaceholder")}
+                      rows={3}
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("page.discount.form.description")}</FormLabel>
-                  <Textarea
-                    placeholder={t("page.discount.form.descriptionPlaceholder")}
-                    rows={3}
-                    {...field}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>{t("page.discount.form.status")}</FormLabel>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-      </Card>
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>{t("page.discount.form.status")}</FormLabel>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </Card>
 
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={setCancelModal}
-        title={t("page.discount.edit.cancelTitle")}
-        description={t("page.discount.edit.cancelDescription")}
-        confirmText={t("page.discount.edit.cancelConfirm")}
-        onConfirm={() => navigate("/discount")}
-      />
-      <Modal
-        type="success"
-        open={successModal}
-        onOpenChange={setSuccessModal}
-        title={t("page.discount.edit.successTitle")}
-        description={t("page.discount.edit.successDescription")}
-        confirmText={t("page.discount.edit.successConfirm")}
-        onConfirm={() => navigate("/discount")}
-      />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title={t("page.discount.edit.draftTitle")}
-        description={t("page.discount.edit.draftDescription")}
-        confirmText={t("page.discount.edit.draftConfirm")}
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
-      />
-    </div>
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={setCancelModal}
+          title={t("page.discount.edit.cancelTitle")}
+          description={t("page.discount.edit.cancelDescription")}
+          confirmText={t("page.discount.edit.cancelConfirm")}
+          onConfirm={() => navigate("/discount")}
+        />
+        <Modal
+          type="success"
+          open={successModal}
+          onOpenChange={setSuccessModal}
+          title={t("page.discount.edit.successTitle")}
+          description={t("page.discount.edit.successDescription")}
+          confirmText={t("page.discount.edit.successConfirm")}
+          onConfirm={() => navigate("/discount")}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title={t("page.discount.edit.draftTitle")}
+          description={t("page.discount.edit.draftDescription")}
+          confirmText={t("page.discount.edit.draftConfirm")}
+          onConfirm={() => {
+            setDraftModal(false);
+            const values = form.getValues();
+            onSubmit(values, true);
+          }}
+        />
+      </div>
     </motion.div>
   );
 };

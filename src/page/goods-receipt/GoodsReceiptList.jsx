@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import * as XLSX from "xlsx";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusMap = {
   draft: {
@@ -70,7 +71,7 @@ const GoodsReceiptList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["goods-receipts", page, limit, statusFilter, storeFilter],
     () =>
       getAllGoodsReceipt({
@@ -258,7 +259,11 @@ const GoodsReceiptList = () => {
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.goodsReceipt.list.title")}
@@ -274,7 +279,11 @@ const GoodsReceiptList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
             label: t("page.goodsReceipt.list.stats.total"),
@@ -297,88 +306,101 @@ const GoodsReceiptList = () => {
             color: "text-red-600"
           }
         ].map((s, i) => (
-          <motion.div key={i} variants={item} className="bg-card p-4 rounded-xl border border-border">
+          <motion.div
+            key={i}
+            variants={item}
+            className="bg-card p-4 rounded-xl border border-border">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
             <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
           </motion.div>
         ))}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.goodsReceipt.list.empty")}
-        emptyIcon={FileText}
-        toolbar={
-          <div className="flex items-center gap-3">
-            {isSuperAdmin && (
-              <select
-                value={storeFilter}
-                onChange={(e) => {
-                  setStoreFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="all">{t("page.goodsReceipt.list.filter.allStores")}</option>
-                {(locations?.data || []).map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-            )}
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.goodsReceipt.list.filter.allStatuses")}</option>
-              {Object.keys(statusMap).map((k) => (
-                <option key={k} value={k}>
-                  {t(`page.goodsReceipt.list.status.${k}`)}
-                </option>
-              ))}
-            </select>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              disabled={exportLoading}
-              className="gap-1.5">
-              <Download size={14} />
-              {exportLoading ? "..." : t("common.export")}
-            </Button>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={filteredItems}
+              isLoading={isLoading}
+              emptyMessage={t("page.goodsReceipt.list.empty")}
+              emptyIcon={FileText}
+              toolbar={
+                <div className="flex items-center gap-3">
+                  {isSuperAdmin && (
+                    <select
+                      value={storeFilter}
+                      onChange={(e) => {
+                        setStoreFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                      <option value="all">{t("page.goodsReceipt.list.filter.allStores")}</option>
+                      {(locations?.data || []).map((loc) => (
+                        <option key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                    <option value="all">{t("page.goodsReceipt.list.filter.allStatuses")}</option>
+                    {Object.keys(statusMap).map((k) => (
+                      <option key={k} value={k}>
+                        {t(`page.goodsReceipt.list.status.${k}`)}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="relative w-full sm:w-64">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExport}
+                    disabled={exportLoading}
+                    className="gap-1.5">
+                    <Download size={14} />
+                    {exportLoading ? "..." : t("common.export")}
+                  </Button>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.goodsReceipt.list.modal.deleteTitle")}
-        description={t("page.goodsReceipt.list.modal.deleteDescription")}
-        confirmText={t("page.goodsReceipt.list.modal.confirmDelete")}
-        onConfirm={() => deleteMutation.mutate(deleteTarget)}
-      />
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
+            title={t("page.goodsReceipt.list.modal.deleteTitle")}
+            description={t("page.goodsReceipt.list.modal.deleteDescription")}
+            confirmText={t("page.goodsReceipt.list.modal.confirmDelete")}
+            onConfirm={() => deleteMutation.mutate(deleteTarget)}
+          />
+        </>
+      )}
     </div>
   );
 };

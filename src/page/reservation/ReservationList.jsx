@@ -11,6 +11,7 @@ import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import AbortController from "@/components/organism/abort-controller";
 
 const ReservationList = () => {
   const { t } = useTranslation();
@@ -50,7 +51,7 @@ const ReservationList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["reservations", page, limit, dateFilter, statusFilter],
     () =>
       getReservations({
@@ -180,42 +181,53 @@ const ReservationList = () => {
         </Button>
       </div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="flex flex-col sm:flex-row gap-3">
-        <div className="w-full sm:w-60">
-          <DatePicker
-            date={dateFilter}
-            setDate={(date) => {
-              setDateFilter(date);
-              setPage(1);
-            }}
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="h-10 rounded-lg border border-input bg-background px-3 text-sm">
-          <option value="all">{t("page.reservation.filter.allStatus")}</option>
-          <option value="pending">{t("page.reservation.status.pending")}</option>
-          <option value="confirmed">{t("page.reservation.status.confirmed")}</option>
-          <option value="cancelled">{t("page.reservation.status.cancelled")}</option>
-          <option value="completed">{t("page.reservation.status.completed")}</option>
-          <option value="no_show">{t("page.reservation.status.noShow")}</option>
-        </select>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row gap-3">
+            <div className="w-full sm:w-60">
+              <DatePicker
+                date={dateFilter}
+                setDate={(date) => {
+                  setDateFilter(date);
+                  setPage(1);
+                }}
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="h-10 rounded-lg border border-input bg-background px-3 text-sm">
+              <option value="all">{t("page.reservation.filter.allStatus")}</option>
+              <option value="pending">{t("page.reservation.status.pending")}</option>
+              <option value="confirmed">{t("page.reservation.status.confirmed")}</option>
+              <option value="cancelled">{t("page.reservation.status.cancelled")}</option>
+              <option value="completed">{t("page.reservation.status.completed")}</option>
+              <option value="no_show">{t("page.reservation.status.noShow")}</option>
+            </select>
+          </motion.div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={reservations}
-        isLoading={isLoading}
-        emptyMessage={t("page.reservation.empty")}
-        emptyIcon={Calendar}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={reservations}
+              isLoading={isLoading}
+              emptyMessage={t("page.reservation.empty")}
+              emptyIcon={Calendar}
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
+        </>
+      )}
 
       <Modal
         type="confirm"
@@ -229,7 +241,7 @@ const ReservationList = () => {
           setDeleteTarget(null);
         }}
       />
-      </motion.div>
+    </motion.div>
   );
 };
 

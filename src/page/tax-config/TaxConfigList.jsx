@@ -6,7 +6,12 @@ import { useCookies } from "react-cookie";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Percent, Loader2 } from "lucide-react";
-import { getAllTaxConfig, deleteTaxConfig, downloadTaxConfigTemplate, downloadTaxConfigExcel } from "@/services/tax-config";
+import {
+  getAllTaxConfig,
+  deleteTaxConfig,
+  downloadTaxConfigTemplate,
+  downloadTaxConfigExcel
+} from "@/services/tax-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -14,6 +19,7 @@ import Modal from "@/components/organism/modal";
 import UploadTaxConfigModal from "./components/UploadTaxConfigModal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -50,7 +56,7 @@ const TaxConfigList = () => {
   const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search],
     () => getAllTaxConfig({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
@@ -184,7 +190,10 @@ const TaxConfigList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.taxConfig.toast.templateError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.taxConfig.toast.templateError")
                   });
                 } finally {
                   setIsDownloadingTemplate(false);
@@ -211,7 +220,10 @@ const TaxConfigList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.taxConfig.toast.dataError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.taxConfig.toast.dataError")
                   });
                 } finally {
                   setIsDownloadingData(false);
@@ -226,15 +238,16 @@ const TaxConfigList = () => {
             </Button>
           )}
           {canAccess(user, MENU_KEY, "import") && (
-            <Button
-              variant="default"
-              onClick={() => setUploadModalOpen(true)}>
+            <Button variant="default" onClick={() => setUploadModalOpen(true)}>
               <span className="material-symbols-outlined text-lg mr-1">upload</span>
               {t("page.taxConfig.button.upload")}
             </Button>
           )}
           {canAccess(user, MENU_KEY, "add") && (
-            <Button data-tour="tax-add" onClick={() => navigate("/add-tax")} className="gap-2 shadow-md">
+            <Button
+              data-tour="tax-add"
+              onClick={() => navigate("/add-tax")}
+              className="gap-2 shadow-md">
               <Plus size={18} />
               {t("page.taxConfig.button.add")}
             </Button>
@@ -242,48 +255,69 @@ const TaxConfigList = () => {
         </div>
       </div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card data-tour="tax-stat-total" className="p-5">
-          <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </Card>
-        <Card data-tour="tax-stat-active" className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
-        </Card>
-        <Card data-tour="tax-stat-inactive" className="p-5">
-          <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
-        </Card>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card data-tour="tax-stat-total" className="p-5">
+              <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+            </Card>
+            <Card data-tour="tax-stat-active" className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+            </Card>
+            <Card data-tour="tax-stat-inactive" className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+            </Card>
+          </motion.div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="relative w-full sm:w-72">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          data-tour="tax-search"
-          placeholder={t("page.taxConfig.list.search")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="pl-9 h-10"
-        />
-      </motion.div>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="relative w-full sm:w-72">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              data-tour="tax-search"
+              placeholder={t("page.taxConfig.list.search")}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 h-10"
+            />
+          </motion.div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} data-tour="tax-table">
-        <DataTable
-          columns={columns}
-          data={items}
-          isLoading={isLoading}
-          emptyMessage={t("page.taxConfig.list.empty")}
-          emptyIcon={Percent}
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-        />
-      </motion.div>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            data-tour="tax-table">
+            <DataTable
+              columns={columns}
+              data={items}
+              isLoading={isLoading}
+              emptyMessage={t("page.taxConfig.list.empty")}
+              emptyIcon={Percent}
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
+        </>
+      )}
 
       <Modal
         type="confirm"
@@ -302,7 +336,7 @@ const TaxConfigList = () => {
         onOpenChange={setUploadModalOpen}
         onUploadSuccess={() => queryClient.invalidateQueries(["tax-configs"])}
       />
-      </motion.div>
+    </motion.div>
   );
 };
 

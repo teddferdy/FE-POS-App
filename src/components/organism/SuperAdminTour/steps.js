@@ -344,7 +344,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-
   // ── Supplier ──
   {
     id: "supplier-intro",
@@ -473,7 +472,6 @@ export const superAdminSteps = [
     actionKey: "guide.dashboard.next"
   },
 
-
   // ── Purchase Order ──
   {
     id: "purchase-order",
@@ -483,7 +481,6 @@ export const superAdminSteps = [
     descKey: "guide.page.purchaseOrder.desc",
     actionKey: "guide.dashboard.next"
   },
-
 
   // ── Pelanggan ──
   // ── Member Tier ──

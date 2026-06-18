@@ -58,7 +58,9 @@ export const checkStockOpnameExists = async (store) => {
 };
 
 export const getStockOpnameCompositionItems = async (store) => {
-  const { data, status } = await axiosInstance.get(`/stock-opname/composition-items?store=${store}`);
+  const { data, status } = await axiosInstance.get(
+    `/stock-opname/composition-items?store=${store}`
+  );
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

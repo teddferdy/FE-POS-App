@@ -19,6 +19,7 @@ import UploadPositionModal from "@/page/position/components/UploadPositionModal"
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -57,7 +58,7 @@ const PositionList = () => {
 
   const departments = departmentData?.data || departmentData?.departments || [];
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["positions", page, limit, search],
     () =>
       getAllPositionTable({
@@ -284,144 +285,152 @@ const PositionList = () => {
 
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div
-              data-tour="position-stat-total"
-              className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.position.stats.total")}
-                </p>
-                <h3 className="text-2xl font-bold text-foreground">{total.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">work</span>
-                  {t("page.position.stats.totalSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-primary text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  work
-                </span>
-              </div>
-            </div>
-            <div
-              data-tour="position-stat-active"
-              className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.position.stats.active")}
-                </p>
-                <h3 className="text-2xl font-bold text-foreground">
-                  {activeCount.toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
-                  {t("page.position.stats.activeSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-secondary text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              </div>
-            </div>
-            <div
-              data-tour="position-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.position.stats.inactive")}
-                </p>
-                <h3 className="text-2xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.position.stats.inactiveSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-red-700 dark:bg-red-950 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-white text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  cancel
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div data-tour="position-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={positions}
-              isLoading={isLoading}
-              emptyMessage={t("page.position.list.empty")}
-              toolbar={
-                <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {t("page.position.list.show")}:
-                    </span>
-                    <select
-                      value={limit}
-                      className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                      <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
-                      <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
-                      <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
-                    </select>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div
+                  data-tour="position-stat-total"
+                  className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.position.stats.total")}
+                    </p>
+                    <h3 className="text-2xl font-bold text-foreground">{total.toLocaleString()}</h3>
+                    <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
+                      <span className="material-symbols-outlined text-sm">work</span>
+                      {t("page.position.stats.totalSub")}
+                    </p>
                   </div>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                      search
+                  <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-primary text-[28px]"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>
+                      work
                     </span>
-                    <input
-                      data-tour="position-search"
-                      placeholder={t("page.position.list.search")}
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                      }}
-                      className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    />
                   </div>
                 </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-              rowClassName={() => "group"}
-              onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
-            />
-          </div>
+                <div
+                  data-tour="position-stat-active"
+                  className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.position.stats.active")}
+                    </p>
+                    <h3 className="text-2xl font-bold text-foreground">
+                      {activeCount.toLocaleString()}
+                    </h3>
+                    <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+                      <span className="material-symbols-outlined text-sm">check_circle</span>
+                      {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
+                      {t("page.position.stats.activeSub")}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-secondary text-[28px]"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>
+                      check_circle
+                    </span>
+                  </div>
+                </div>
+                <div
+                  data-tour="position-stat-inactive"
+                  className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+                      {t("page.position.stats.inactive")}
+                    </p>
+                    <h3 className="text-2xl font-bold text-white">
+                      {inactiveCount.toLocaleString()}
+                    </h3>
+                    <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+                      <span className="material-symbols-outlined text-sm">cancel</span>
+                      {t("page.position.stats.inactiveSub")}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-red-700 dark:bg-red-950 flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-white text-[28px]"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>
+                      cancel
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
-              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-                {t("page.position.list.tips")}
-              </h4>
-            </div>
-            <ul className="space-y-2">
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip1")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip2")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip3")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip4")}</span>
-              </li>
-            </ul>
-          </div>
+              <div data-tour="position-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={positions}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.position.list.empty")}
+                  toolbar={
+                    <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {t("page.position.list.show")}:
+                        </span>
+                        <select
+                          value={limit}
+                          className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                          <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
+                          <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
+                          <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
+                        </select>
+                      </div>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                          search
+                        </span>
+                        <input
+                          data-tour="position-search"
+                          placeholder={t("page.position.list.search")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        />
+                      </div>
+                    </div>
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  rowClassName={() => "group"}
+                  onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
+                />
+              </div>
+
+              <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                    {t("page.position.list.tips")}
+                  </h4>
+                </div>
+                <ul className="space-y-2">
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.position.list.tip1")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.position.list.tip2")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.position.list.tip3")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.position.list.tip4")}</span>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </motion.div>
       </motion.div>
 

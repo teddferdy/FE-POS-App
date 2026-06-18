@@ -136,7 +136,7 @@ const policyContent = {
 };
 
 const PolicyDialog = ({ type, open, onOpenChange }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith("en") ? "en" : "id";
 
   const content = policyContent[type]?.[lang] || policyContent[type]?.id;

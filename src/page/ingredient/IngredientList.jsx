@@ -20,6 +20,7 @@ import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import ImportIngredientModal from "./components/ImportIngredientModal";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -55,7 +56,7 @@ const IngredientList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/ingredient";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["ingredients", search],
     () => getAllIngredients({ store: user?.store, search }),
     { keepPreviousData: true }
@@ -250,7 +251,10 @@ const IngredientList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.ingredient.list.toastError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.ingredient.list.toastError")
                   });
                 } finally {
                   setDownloadingTemplate(false);
@@ -277,7 +281,10 @@ const IngredientList = () => {
                   });
                 } catch (err) {
                   toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.ingredient.list.toastError")
+                    description:
+                      err?.response?.data?.message ||
+                      err.message ||
+                      t("page.ingredient.list.toastError")
                   });
                 } finally {
                   setDownloadingData(false);
@@ -305,91 +312,105 @@ const IngredientList = () => {
         </div>
       </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statTotal")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statAktif")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">
-              {ingredients.filter((i) => i.status === "active").length}
-            </p>
-          </Card>
-        </motion.div>
-        <motion.div variants={item}>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">
-              {t("page.ingredient.list.statStokMenipis")}
-            </p>
-            <p className="text-2xl font-bold text-destructive mt-1">
-              {ingredients.filter((i) => i.stock <= i.minStock).length}
-            </p>
-          </Card>
-        </motion.div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">
+                  {t("page.ingredient.list.statTotal")}
+                </p>
+                <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+              </Card>
+            </motion.div>
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">
+                  {t("page.ingredient.list.statAktif")}
+                </p>
+                <p className="text-2xl font-bold text-green-600 mt-1">
+                  {ingredients.filter((i) => i.status === "active").length}
+                </p>
+              </Card>
+            </motion.div>
+            <motion.div variants={item}>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">
+                  {t("page.ingredient.list.statStokMenipis")}
+                </p>
+                <p className="text-2xl font-bold text-destructive mt-1">
+                  {ingredients.filter((i) => i.stock <= i.minStock).length}
+                </p>
+              </Card>
+            </motion.div>
+          </motion.div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="space-y-4">
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="space-y-4">
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.ingredient.list.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={ingredients}
+              isLoading={isLoading}
+              emptyMessage={t("page.ingredient.list.emptyMessage")}
+              emptyIcon={Package}
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <TipsCard
+              tips={[
+                t("page.ingredient.list.tips.1"),
+                t("page.ingredient.list.tips.2"),
+                t("page.ingredient.list.tips.3"),
+                t("page.ingredient.list.tips.4")
+              ]}
+            />
+          </motion.div>
+
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
+            title={t("page.ingredient.list.modalDeleteTitle")}
+            description={t("page.ingredient.list.modalDeleteDesc")}
+            confirmText={t("page.ingredient.list.modalDeleteConfirm")}
+            onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
           />
-          <Input
-            placeholder={t("page.ingredient.list.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
+
+          <ImportIngredientModal
+            open={importModal}
+            onOpenChange={setImportModal}
+            onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
           />
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={ingredients}
-          isLoading={isLoading}
-          emptyMessage={t("page.ingredient.list.emptyMessage")}
-          emptyIcon={Package}
-        />
-      </motion.div>
-
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-        <TipsCard
-          tips={[
-            t("page.ingredient.list.tips.1"),
-            t("page.ingredient.list.tips.2"),
-            t("page.ingredient.list.tips.3"),
-            t("page.ingredient.list.tips.4")
-          ]}
-        />
-      </motion.div>
-
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.ingredient.list.modalDeleteTitle")}
-        description={t("page.ingredient.list.modalDeleteDesc")}
-        confirmText={t("page.ingredient.list.modalDeleteConfirm")}
-        onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
-      />
-
-      <ImportIngredientModal
-        open={importModal}
-        onOpenChange={setImportModal}
-        onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
-      />
+        </>
+      )}
     </div>
   );
 };

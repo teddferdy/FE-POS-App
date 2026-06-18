@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -23,11 +24,6 @@ const container = {
     opacity: 1,
     transition: { staggerChildren: 0.05 }
   }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const formSchema = z.object({
@@ -45,9 +41,13 @@ const EditExpenseCategory = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data, isLoading } = useQuery(["expense-categories"], () => getExpenseCategories(), {
-    enabled: !!id
-  });
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["expense-categories"],
+    () => getExpenseCategories(),
+    {
+      enabled: !!id
+    }
+  );
 
   const categoryItem = useMemo(() => {
     if (!data) return {};
@@ -101,10 +101,10 @@ const EditExpenseCategory = () => {
     );
   }
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   if (isLoading) {
-    return (
-      <Loading fullscreen size="lg" label={t("page.expenseCategory.edit.loading")} />
-    );
+    return <Loading fullscreen size="lg" label={t("page.expenseCategory.edit.loading")} />;
   }
 
   if (!categoryItem?.id) {
@@ -117,114 +117,130 @@ const EditExpenseCategory = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("page.expenseCategory.edit.breadcrumbDashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/expense-category")}
-          className="hover:text-foreground transition-colors">
-          {t("page.expenseCategory.edit.breadcrumbList")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.expenseCategory.edit.breadcrumb")}</span>
-      </nav>
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("page.expenseCategory.edit.breadcrumbDashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button
+            onClick={() => navigate("/expense-category")}
+            className="hover:text-foreground transition-colors">
+            {t("page.expenseCategory.edit.breadcrumbList")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">
+            {t("page.expenseCategory.edit.breadcrumb")}
+          </span>
+        </nav>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.expenseCategory.edit.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.expenseCategory.edit.desc")}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.expenseCategory.edit.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.expenseCategory.edit.desc")}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+              <X size={18} />
+              {t("page.expenseCategory.edit.cancel")}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={updateMutation.isLoading}>
+              {t("page.expenseCategory.edit.saveDraft")}
+            </Button>
+            <Button
+              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+              disabled={updateMutation.isLoading}
+              className="gap-2">
+              <Save size={18} />
+              {updateMutation.isLoading
+                ? t("page.expenseCategory.edit.saving")
+                : t("page.expenseCategory.edit.save")}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-            <X size={18} />
-            {t("page.expenseCategory.edit.cancel")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={updateMutation.isLoading}>
-            {t("page.expenseCategory.edit.saveDraft")}
-          </Button>
-          <Button
-            onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-            disabled={updateMutation.isLoading}
-            className="gap-2">
-            <Save size={18} />
-            {updateMutation.isLoading ? t("page.expenseCategory.edit.saving") : t("page.expenseCategory.edit.save")}
-          </Button>
-        </div>
+
+        <Card className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.expenseCategory.edit.nameLabel")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        placeholder={t("page.expenseCategory.edit.namePlaceholder")}
+                        {...field}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.expenseCategory.edit.descriptionLabel")}</FormLabel>
+                      <Textarea
+                        placeholder={t("page.expenseCategory.edit.descriptionPlaceholder")}
+                        rows={3}
+                        {...field}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        </Card>
+
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={setCancelModal}
+          title={t("page.expenseCategory.edit.modalCancelTitle")}
+          description={t("page.expenseCategory.edit.modalCancelDesc")}
+          confirmText={t("page.expenseCategory.edit.modalCancelConfirm")}
+          onConfirm={() => navigate("/expense-category")}
+        />
+        <Modal
+          type="success"
+          open={successModal}
+          onOpenChange={setSuccessModal}
+          title={t("page.expenseCategory.edit.modalSuccessTitle")}
+          description={t("page.expenseCategory.edit.modalSuccessDesc")}
+          confirmText={t("page.expenseCategory.edit.modalSuccessConfirm")}
+          onConfirm={() => navigate("/expense-category")}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title={t("page.expenseCategory.edit.modalDraftTitle")}
+          description={t("page.expenseCategory.edit.modalDraftDesc")}
+          confirmText={t("page.expenseCategory.edit.modalDraftConfirm")}
+          onConfirm={() => {
+            setDraftModal(false);
+            const values = form.getValues();
+            onSubmit(values, true);
+          }}
+        />
       </div>
-
-      <Card className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.expenseCategory.edit.nameLabel")} <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input placeholder={t("page.expenseCategory.edit.namePlaceholder")} {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.expenseCategory.edit.descriptionLabel")}</FormLabel>
-                    <Textarea placeholder={t("page.expenseCategory.edit.descriptionPlaceholder")} rows={3} {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </form>
-        </Form>
-      </Card>
-
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={setCancelModal}
-        title={t("page.expenseCategory.edit.modalCancelTitle")}
-        description={t("page.expenseCategory.edit.modalCancelDesc")}
-        confirmText={t("page.expenseCategory.edit.modalCancelConfirm")}
-        onConfirm={() => navigate("/expense-category")}
-      />
-      <Modal
-        type="success"
-        open={successModal}
-        onOpenChange={setSuccessModal}
-        title={t("page.expenseCategory.edit.modalSuccessTitle")}
-        description={t("page.expenseCategory.edit.modalSuccessDesc")}
-        confirmText={t("page.expenseCategory.edit.modalSuccessConfirm")}
-        onConfirm={() => navigate("/expense-category")}
-      />
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title={t("page.expenseCategory.edit.modalDraftTitle")}
-        description={t("page.expenseCategory.edit.modalDraftDesc")}
-        confirmText={t("page.expenseCategory.edit.modalDraftConfirm")}
-        onConfirm={() => {
-          setDraftModal(false);
-          const values = form.getValues();
-          onSubmit(values, true);
-        }}
-      />
-    </div>
     </motion.div>
   );
 };

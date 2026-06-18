@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
   pending: {
@@ -47,7 +48,7 @@ const SalesReturnList = () => {
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["sales-returns", page, limit, statusFilter],
     () =>
       getAllSalesReturn({ page, limit, status: statusFilter !== "all" ? statusFilter : undefined }),
@@ -194,49 +195,59 @@ const SalesReturnList = () => {
       <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <div>
           <h1 className="text-2xl font-bold">{t("page.salesReturn.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.salesReturn.list.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.salesReturn.list.subtitle")}
+          </p>
         </div>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.salesReturn.list.emptyMessage")}
-        toolbar={
-          <div className="flex items-center gap-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
-              {Object.entries(statusCfg).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.salesReturn.list.placeholder.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={filteredItems}
+            isLoading={isLoading}
+            emptyMessage={t("page.salesReturn.list.emptyMessage")}
+            toolbar={
+              <div className="flex items-center gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                  <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
+                  {Object.entries(statusCfg).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.salesReturn.list.placeholder.search")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+              </div>
+            }
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <Modal
         type="confirm"

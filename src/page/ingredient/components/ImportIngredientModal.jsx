@@ -24,11 +24,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
@@ -133,161 +128,161 @@ const ImportIngredientModal = ({ open, onOpenChange, onUploadSuccess }) => {
   return (
     <motion.div variants={container} initial="hidden" animate="show">
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative z-50 w-full max-w-lg mx-4 animate-in zoom-in-95 fade-in duration-200">
-        <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
-                <FileSpreadsheet size={22} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {t("page.ingredient.import.title")}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.ingredient.import.subtitle")}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-5">
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              className={`relative rounded-xl border-2 border-dashed transition-all p-10 text-center cursor-pointer
-                ${dragOver ? "border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 scale-[1.01]" : "border-muted-foreground/25 hover:border-emerald-300 hover:bg-muted/20"}`}
-              onClick={() => fileInputRef.current?.click()}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <div
-                className={`flex flex-col items-center gap-3 transition-all ${dragOver ? "scale-105" : ""}`}>
-                <div
-                  className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors ${dragOver ? "bg-emerald-100 dark:bg-emerald-900/40" : "bg-muted"}`}>
-                  {dragOver ? (
-                    <ArrowUpToLine size={32} className="text-emerald-500" />
-                  ) : (
-                    <Upload size={32} className="text-muted-foreground/60" />
-                  )}
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
+        <div className="relative z-50 w-full max-w-lg mx-4 animate-in zoom-in-95 fade-in duration-200">
+          <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center">
+                  <FileSpreadsheet size={22} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {dragOver
-                      ? t("page.ingredient.import.dragActive")
-                      : t("page.ingredient.import.dragInactive")}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("page.ingredient.import.formatHint")}
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {t("page.ingredient.import.title")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {t("page.ingredient.import.subtitle")}
                   </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                <X size={18} />
+              </button>
             </div>
 
-            {file && (
-              <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 animate-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileSpreadsheet size={24} className="text-emerald-600 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
-                  }}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {uploadStatus === "success" && (
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 size={18} />
-                  <span className="font-medium">{t("page.ingredient.import.success")}</span>
-                </div>
-                {importResult && (
-                  <p className="text-xs ml-6">
-                    {t("page.ingredient.import.newAdded", { count: importResult.inserted })}
-                    {importResult.duplicates > 0 &&
-                      t("page.ingredient.import.duplicates", { count: importResult.duplicates })}
-                  </p>
-                )}
-              </div>
-            )}
-            {uploadStatus === "warning" && (
-              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <AlertCircle size={18} />
-                  <span className="font-medium">{t("page.ingredient.import.noNewData")}</span>
-                </div>
-                {importResult && importResult.errors?.length > 0 && (
-                  <div className="ml-6 mt-1 space-y-0.5">
-                    {importResult.errors.slice(0, 5).map((e, i) => (
-                      <p key={i} className="text-xs">
-                        {e}
-                      </p>
-                    ))}
-                    {importResult.errors.length > 5 && (
-                      <p className="text-xs">
-                        {t("page.ingredient.import.andMore", {
-                          count: importResult.errors.length - 5
-                        })}
-                      </p>
+            <div className="p-6 space-y-5">
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`relative rounded-xl border-2 border-dashed transition-all p-10 text-center cursor-pointer
+                ${dragOver ? "border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 scale-[1.01]" : "border-muted-foreground/25 hover:border-emerald-300 hover:bg-muted/20"}`}
+                onClick={() => fileInputRef.current?.click()}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <div
+                  className={`flex flex-col items-center gap-3 transition-all ${dragOver ? "scale-105" : ""}`}>
+                  <div
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors ${dragOver ? "bg-emerald-100 dark:bg-emerald-900/40" : "bg-muted"}`}>
+                    {dragOver ? (
+                      <ArrowUpToLine size={32} className="text-emerald-500" />
+                    ) : (
+                      <Upload size={32} className="text-muted-foreground/60" />
                     )}
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {dragOver
+                        ? t("page.ingredient.import.dragActive")
+                        : t("page.ingredient.import.dragInactive")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.ingredient.import.formatHint")}
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-            {uploadStatus === "error" && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{uploadError || t("page.ingredient.import.errorDefault")}</span>
-              </div>
-            )}
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={handleClose}>
-                {t("page.ingredient.import.cancelButton")}
-              </Button>
-              <Button
-                disabled={!file || uploading}
-                onClick={handleDirectUpload}
-                className="gap-2 min-w-[140px]">
-                {uploading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    {t("page.ingredient.import.uploading")}
-                  </>
-                ) : (
-                  <>
-                    <Database size={16} />
-                    {t("page.ingredient.import.importButton")}
-                  </>
-                )}
-              </Button>
+              {file && (
+                <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 animate-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileSpreadsheet size={24} className="text-emerald-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
+              {uploadStatus === "success" && (
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle2 size={18} />
+                    <span className="font-medium">{t("page.ingredient.import.success")}</span>
+                  </div>
+                  {importResult && (
+                    <p className="text-xs ml-6">
+                      {t("page.ingredient.import.newAdded", { count: importResult.inserted })}
+                      {importResult.duplicates > 0 &&
+                        t("page.ingredient.import.duplicates", { count: importResult.duplicates })}
+                    </p>
+                  )}
+                </div>
+              )}
+              {uploadStatus === "warning" && (
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle size={18} />
+                    <span className="font-medium">{t("page.ingredient.import.noNewData")}</span>
+                  </div>
+                  {importResult && importResult.errors?.length > 0 && (
+                    <div className="ml-6 mt-1 space-y-0.5">
+                      {importResult.errors.slice(0, 5).map((e, i) => (
+                        <p key={i} className="text-xs">
+                          {e}
+                        </p>
+                      ))}
+                      {importResult.errors.length > 5 && (
+                        <p className="text-xs">
+                          {t("page.ingredient.import.andMore", {
+                            count: importResult.errors.length - 5
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              {uploadStatus === "error" && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 text-sm animate-in slide-in-from-bottom-2 duration-200">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                  <span>{uploadError || t("page.ingredient.import.errorDefault")}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button variant="outline" onClick={handleClose}>
+                  {t("page.ingredient.import.cancelButton")}
+                </Button>
+                <Button
+                  disabled={!file || uploading}
+                  onClick={handleDirectUpload}
+                  className="gap-2 min-w-[140px]">
+                  {uploading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      {t("page.ingredient.import.uploading")}
+                    </>
+                  ) : (
+                    <>
+                      <Database size={16} />
+                      {t("page.ingredient.import.importButton")}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </motion.div>
   );
 };

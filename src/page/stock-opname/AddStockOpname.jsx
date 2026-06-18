@@ -57,6 +57,7 @@ import {
 import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -239,7 +240,11 @@ const AddStockOpname = () => {
   ];
 
   // Fetch existing stock opname if editing
-  const { data: stockOpnameData } = useQuery(["stock-opname", id], () => getStockOpnameById(id), {
+  const {
+    data: stockOpnameData,
+    isError,
+    refetch
+  } = useQuery(["stock-opname", id], () => getStockOpnameById(id), {
     enabled: !!id
   });
 
@@ -469,43 +474,45 @@ const AddStockOpname = () => {
     }
   };
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   return (
     <div className="space-y-6">
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-          breadcrumbs={[
-            { i18nKey: "breadcrumb.home" },
-            { i18nKey: "page.stockOpname.list.title" },
-            { i18nKey: id ? "breadcrumb.edit" : "breadcrumb.add" }
-          ]}
-          title={id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
-          description={t("page.stockOpname.add.description")}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setUploadModalOpen(true)}
-            className="transition-all">
-            <UploadIcon size={15} className="mr-1.5" />
-            {t("page.stockOpname.button.uploadExcel")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isDownloading}
-            onClick={handleDownloadTemplate}
-            className="transition-all">
-            {isDownloading ? (
-              <Loader2 size={15} className="mr-1.5 animate-spin" />
-            ) : (
-              <Download size={15} className="mr-1.5" />
-            )}
-            {isDownloading
-              ? t("page.stockOpname.button.downloading")
-              : t("page.stockOpname.button.downloadTemplate")}
-          </Button>
-          <UserGuide guideKey="add-stock-opname" />
-        </PageHeader>
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home" },
+              { i18nKey: "page.stockOpname.list.title" },
+              { i18nKey: id ? "breadcrumb.edit" : "breadcrumb.add" }
+            ]}
+            title={id ? t("page.stockOpname.edit.title") : t("page.stockOpname.add.title")}
+            description={t("page.stockOpname.add.description")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUploadModalOpen(true)}
+              className="transition-all">
+              <UploadIcon size={15} className="mr-1.5" />
+              {t("page.stockOpname.button.uploadExcel")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isDownloading}
+              onClick={handleDownloadTemplate}
+              className="transition-all">
+              {isDownloading ? (
+                <Loader2 size={15} className="mr-1.5 animate-spin" />
+              ) : (
+                <Download size={15} className="mr-1.5" />
+              )}
+              {isDownloading
+                ? t("page.stockOpname.button.downloading")
+                : t("page.stockOpname.button.downloadTemplate")}
+            </Button>
+            <UserGuide guideKey="add-stock-opname" />
+          </PageHeader>
         </motion.div>
       </motion.div>
 
@@ -517,7 +524,8 @@ const AddStockOpname = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="tanggalAudit">
-                    {t("page.stockOpname.form.auditDate")} <span className="text-destructive">*</span>
+                    {t("page.stockOpname.form.auditDate")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <DatePicker
                     date={formMeta.tanggalAudit}
@@ -613,7 +621,9 @@ const AddStockOpname = () => {
                               <input
                                 type="text"
                                 value={row.kodeBarang}
-                                onChange={(e) => updateRowField(row.id, "kodeBarang", e.target.value)}
+                                onChange={(e) =>
+                                  updateRowField(row.id, "kodeBarang", e.target.value)
+                                }
                                 placeholder={t("page.stockOpname.form.kodePlaceholder")}
                                 className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                               />
@@ -639,7 +649,10 @@ const AddStockOpname = () => {
                                       <Search size={14} />
                                     </button>
                                   </PopoverTrigger>
-                                  <PopoverContent align="start" side="bottom" className="p-0 w-[280px]">
+                                  <PopoverContent
+                                    align="start"
+                                    side="bottom"
+                                    className="p-0 w-[280px]">
                                     <Command>
                                       <CommandInput placeholder={t("common.search")} />
                                       <CommandList>
@@ -728,7 +741,11 @@ const AddStockOpname = () => {
                                   inputMode="numeric"
                                   value={row[field]}
                                   onChange={(e) =>
-                                    updateRowField(row.id, field, sanitizeNumberInput(e.target.value))
+                                    updateRowField(
+                                      row.id,
+                                      field,
+                                      sanitizeNumberInput(e.target.value)
+                                    )
                                   }
                                   placeholder="0"
                                   className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm text-right outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1 tabular-nums"
@@ -752,7 +769,9 @@ const AddStockOpname = () => {
                               <input
                                 type="text"
                                 value={row.keterangan}
-                                onChange={(e) => updateRowField(row.id, "keterangan", e.target.value)}
+                                onChange={(e) =>
+                                  updateRowField(row.id, "keterangan", e.target.value)
+                                }
                                 placeholder={t("page.stockOpname.form.keteranganPlaceholder")}
                                 className="w-full bg-transparent border-0 border-b border-dashed border-muted-foreground/20 text-sm outline-none focus:border-primary focus:border-solid transition-colors px-0 py-1"
                               />
@@ -810,7 +829,10 @@ const AddStockOpname = () => {
             </div>
 
             <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="transition-all">
+              <Button
+                variant="outline"
+                onClick={() => setCancelModal(true)}
+                className="transition-all">
                 <X size={16} className="mr-1" />
                 {t("common.cancel")}
               </Button>

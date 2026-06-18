@@ -9,7 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
+  CommandList
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,15 +32,10 @@ const TIME_PRESETS = [
   { label: "Pagi", value: "08:00" },
   { label: "Siang", value: "12:00" },
   { label: "Sore", value: "17:00" },
-  { label: "Malam", value: "20:00" },
+  { label: "Malam", value: "20:00" }
 ];
 
-export function TimePicker({
-  value,
-  onChange,
-  placeholder = "Pilih jam",
-  disabled = false,
-}) {
+export function TimePicker({ value, onChange, placeholder = "Pilih jam", disabled = false }) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -54,8 +49,7 @@ export function TimePicker({
           className={cn(
             "w-full justify-between font-normal h-10",
             !value && "text-muted-foreground"
-          )}
-        >
+          )}>
           <span className="flex items-center gap-2">
             <Clock className="h-4 w-4 shrink-0" />
             {value || placeholder}
@@ -80,8 +74,7 @@ export function TimePicker({
                       onClick={() => {
                         onChange(preset.value);
                         setOpen(false);
-                      }}
-                    >
+                      }}>
                       {preset.label}
                     </Button>
                   ))}
@@ -97,13 +90,9 @@ export function TimePicker({
                     onSelect={() => {
                       onChange(time);
                       setOpen(false);
-                    }}
-                  >
+                    }}>
                     <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === time ? "opacity-100" : "opacity-0"
-                      )}
+                      className={cn("mr-2 h-4 w-4", value === time ? "opacity-100" : "opacity-0")}
                     />
                     {time}
                   </CommandItem>

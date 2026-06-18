@@ -47,7 +47,9 @@ export const adjustIngredientStock = async (id, payload) => {
 const downloadBlob = async (url, filename) => {
   const { data, status } = await axiosInstance.get(url, { responseType: "arraybuffer" });
   if (status !== 200) throw new Error("Download failed");
-  const blob = new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const blob = new Blob([data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.setAttribute("download", filename);

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -34,9 +35,13 @@ const MemberPointHistory = () => {
   const [activeTab, setActiveTab] = useState("transactions");
   const [pointPage, setPointPage] = useState(1);
 
-  const { data, isLoading } = useQuery(["member-detail", id], () => getMemberById({ id }), {
-    enabled: !!id
-  });
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["member-detail", id],
+    () => getMemberById({ id }),
+    {
+      enabled: !!id
+    }
+  );
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
     ["member-point-history", id, pointPage],
@@ -48,6 +53,8 @@ const MemberPointHistory = () => {
   const transactions = member?.transactions || [];
   const name = member?.name || "-";
   const points = member?.points ?? member?.totalPoints ?? 0;
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
     return (
@@ -72,7 +79,7 @@ const MemberPointHistory = () => {
         <span className="material-symbols-outlined text-5xl">groups</span>
         <p>Member tidak ditemukan</p>
         <Button variant="outline" onClick={() => navigate("/member-list")}>
-          Kembali
+          {t("page.member.pointHistory.back")}
         </Button>
       </div>
     );
@@ -86,11 +93,12 @@ const MemberPointHistory = () => {
             onClick={() => navigate("/member-list")}
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-1">
             <span className="material-symbols-outlined text-base">arrow_back</span>
-            Kembali ke Member List
+            {t("page.member.pointHistory.backToList")}
           </button>
           <h1 className="text-2xl font-bold text-foreground">{name}</h1>
           <p className="text-sm text-muted-foreground">
-            Total Poin: <span className="font-semibold text-foreground">{points.toLocaleString()}</span>
+            Total Poin:{" "}
+            <span className="font-semibold text-foreground">{points.toLocaleString()}</span>
           </p>
         </div>
       </motion.div>
@@ -104,7 +112,7 @@ const MemberPointHistory = () => {
                 ? "text-primary border-primary"
                 : "text-muted-foreground border-transparent hover:text-foreground"
             }`}>
-            Riwayat Transaksi
+            {t("page.member.pointHistory.transactionHistory")}
           </button>
           <button
             onClick={() => setActiveTab("points")}
@@ -113,7 +121,7 @@ const MemberPointHistory = () => {
                 ? "text-primary border-primary"
                 : "text-muted-foreground border-transparent hover:text-foreground"
             }`}>
-            Aktivitas Poin
+            {t("page.member.pointHistory.pointActivity")}
           </button>
         </div>
 
@@ -122,20 +130,34 @@ const MemberPointHistory = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-muted/30 border-b border-border">
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transaction ID</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Store</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Total Amount</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Action</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.member.pointHistory.transactionId")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.member.pointHistory.date")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.member.pointHistory.store")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                    {t("page.member.pointHistory.totalAmount")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                    {t("page.member.pointHistory.status")}
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                    {t("page.member.pointHistory.action")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {transactions.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                      <span className="material-symbols-outlined text-4xl block mb-2">receipt_long</span>
-                      Tidak ada transaksi ditemukan
+                      <span className="material-symbols-outlined text-4xl block mb-2">
+                        receipt_long
+                      </span>
+                      {t("page.member.pointHistory.noTransaction")}
                     </td>
                   </tr>
                 ) : (
@@ -146,9 +168,17 @@ const MemberPointHistory = () => {
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {trx.date
-                          ? new Date(trx.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                          ? new Date(trx.date).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })
                           : "-"}
-                        {trx.time && <>, <span className="text-xs">{trx.time}</span></>}
+                        {trx.time && (
+                          <>
+                            , <span className="text-xs">{trx.time}</span>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {trx.store || trx.storeName || "-"}
@@ -180,8 +210,15 @@ const MemberPointHistory = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-muted/30 border-b border-border">
-                    {["Tanggal", "Deskripsi", "Poin", "Saldo"].map((_, i) => (
-                      <th key={i} className="px-4 py-3"><Skeleton className="h-3 w-16" /></th>
+                    {[
+                      t("page.member.pointHistory.date"),
+                      t("page.member.pointHistory.description"),
+                      t("page.member.pointHistory.points"),
+                      t("page.member.pointHistory.balance")
+                    ].map((_, i) => (
+                      <th key={i} className="px-4 py-3">
+                        <Skeleton className="h-3 w-16" />
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -189,7 +226,9 @@ const MemberPointHistory = () => {
                   {[...Array(4)].map((_, r) => (
                     <tr key={r}>
                       {[...Array(4)].map((_, c) => (
-                        <td key={c} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td>
+                        <td key={c} className="px-4 py-3">
+                          <Skeleton className="h-4 w-full" />
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -199,10 +238,18 @@ const MemberPointHistory = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-muted/30 border-b border-border">
-                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tanggal</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deskripsi</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Poin</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Saldo</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.member.pointHistory.date")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.member.pointHistory.description")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                      {t("page.member.pointHistory.points")}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                      {t("page.member.pointHistory.balance")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -210,7 +257,7 @@ const MemberPointHistory = () => {
                     <tr>
                       <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">
                         <span className="material-symbols-outlined text-4xl block mb-2">stars</span>
-                        <p className="text-sm">Belum ada aktivitas poin</p>
+                        <p className="text-sm">{t("page.member.pointHistory.noActivity")}</p>
                       </td>
                     </tr>
                   ) : (
@@ -218,14 +265,20 @@ const MemberPointHistory = () => {
                       <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {pt.date || pt.createdAt
-                            ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                            ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                              })
                             : "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-foreground">
                           {pt.description || pt.reason || "-"}
                         </td>
-                        <td className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
-                          {pt.points > 0 ? "+" : ""}{pt.points?.toLocaleString() || 0}
+                        <td
+                          className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
+                          {pt.points > 0 ? "+" : ""}
+                          {pt.points?.toLocaleString() || 0}
                         </td>
                         <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
                           {pt.balance?.toLocaleString() || "-"}
@@ -238,20 +291,21 @@ const MemberPointHistory = () => {
             )}
             <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
               <p className="text-xs text-muted-foreground">
-                Menampilkan {(pointData?.data || []).length} dari {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
+                Menampilkan {(pointData?.data || []).length} dari{" "}
+                {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
               </p>
               <div className="flex gap-1">
                 <button
                   onClick={() => setPointPage(Math.max(1, pointPage - 1))}
                   disabled={pointPage <= 1}
                   className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  Sebelumnya
+                  {t("page.member.pointHistory.previous")}
                 </button>
                 <button
                   onClick={() => setPointPage(pointPage + 1)}
                   disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
                   className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  Selanjutnya
+                  {t("page.member.pointHistory.next")}
                 </button>
               </div>
             </div>

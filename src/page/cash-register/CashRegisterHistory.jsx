@@ -7,6 +7,7 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
+import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -43,7 +44,7 @@ const CashRegisterHistory = () => {
   });
   const storeList = stores?.data || stores || [];
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["cash-register-history", page, limit, selectedStore],
     () => getCashRegisterHistory({ page, limit, store: selectedStore }),
     { keepPreviousData: true, enabled: !!selectedStore }
@@ -219,16 +220,20 @@ const CashRegisterHistory = () => {
         </div>
       </div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={items}
-        isLoading={isLoading}
-        emptyMessage={t("page.cashRegister.history.empty")}
-        onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={items}
+            isLoading={isLoading}
+            emptyMessage={t("page.cashRegister.history.empty")}
+            onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
     </motion.div>
   );
 };

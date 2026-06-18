@@ -9,6 +9,7 @@ import { Loading } from "@/components/ui/loading";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,7 +29,7 @@ const DailyReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["daily-report", startDate, endDate],
     () =>
       getDailyReport({
@@ -39,6 +40,8 @@ const DailyReport = () => {
   );
 
   const reports = data?.data || [];
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   return (
     <div className="space-y-6">

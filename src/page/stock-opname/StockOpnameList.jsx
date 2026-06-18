@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -75,7 +76,7 @@ const StockOpnameList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["stockOpname", page, limit, warehouseFilter, statusFilter],
     () =>
       getStockOpname({
@@ -129,7 +130,8 @@ const StockOpnameList = () => {
       })
       .catch((err) => {
         toast.error(t("common.failed"), {
-          description: err?.response?.data?.message || err.message || t("page.stockOpname.list.exportFailed")
+          description:
+            err?.response?.data?.message || err.message || t("page.stockOpname.list.exportFailed")
         });
       });
   }, [selectedItems]);
@@ -163,7 +165,9 @@ const StockOpnameList = () => {
       toastIdRef.current = toast(
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{t("page.stockOpname.list.exportTitle")}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {t("page.stockOpname.list.exportTitle")}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t("page.stockOpname.list.exportSelected", { count: selectedItems.length })}
             </p>
@@ -380,7 +384,9 @@ const StockOpnameList = () => {
       <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.stockOpname.list.title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.stockOpname.list.title")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.stockOpname.list.description")}
             </p>
@@ -394,7 +400,11 @@ const StockOpnameList = () => {
         </div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
           <motion.div
             key={idx}
@@ -421,87 +431,95 @@ const StockOpnameList = () => {
         ))}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.stockOpname.list.empty")}
-        emptyIcon={ClipboardList}
-        selectable
-        selectedIds={selectedItems}
-        onSelectionChange={setSelectedItems}
-        isSelectable={(row) => row.status !== "completed"}
-        rowClassName={(row) => {
-          const status = row.status || "draft";
-          const classes = [];
-          if (selectedItems.includes(row.id || row._id)) classes.push("bg-primary/5");
-          if (status === "completed") classes.push("bg-green-50/50 dark:bg-green-950/10");
-          if (status === "cancelled") classes.push("bg-red-50/50 dark:bg-red-950/10");
-          return classes.join(" ");
-        }}
-        toolbar={
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="relative">
-                <select
-                  value={warehouseFilter}
-                  onChange={(e) => {
-                    setWarehouseFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                  <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
-                  <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
-                  <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
-                  <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
-                </select>
-                <ChevronLeft
-                  size={14}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                />
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={filteredItems}
+            isLoading={isLoading}
+            emptyMessage={t("page.stockOpname.list.empty")}
+            emptyIcon={ClipboardList}
+            selectable
+            selectedIds={selectedItems}
+            onSelectionChange={setSelectedItems}
+            isSelectable={(row) => row.status !== "completed"}
+            rowClassName={(row) => {
+              const status = row.status || "draft";
+              const classes = [];
+              if (selectedItems.includes(row.id || row._id)) classes.push("bg-primary/5");
+              if (status === "completed") classes.push("bg-green-50/50 dark:bg-green-950/10");
+              if (status === "cancelled") classes.push("bg-red-50/50 dark:bg-red-950/10");
+              return classes.join(" ");
+            }}
+            toolbar={
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="relative">
+                    <select
+                      value={warehouseFilter}
+                      onChange={(e) => {
+                        setWarehouseFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                      <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
+                      <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
+                      <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
+                      <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
+                    </select>
+                    <ChevronLeft
+                      size={14}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                    />
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                      <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                      <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                      <option value="completed">{t("page.stockOpname.status.completed")}</option>
+                      <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
+                    </select>
+                    <ChevronLeft
+                      size={14}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                    />
+                  </div>
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                  <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                  <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                  <option value="completed">{t("page.stockOpname.status.completed")}</option>
-                  <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
-                </select>
-                <ChevronLeft
-                  size={14}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                />
-              </div>
-            </div>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-          </div>
-        }
-        pagination={{
-          page,
-          totalPages,
-          total,
-          onPageChange: setPage
-        }}
-      />
-      </motion.div>
+            }
+            pagination={{
+              page,
+              totalPages,
+              total,
+              onPageChange: setPage
+            }}
+          />
+        </motion.div>
+      )}
 
       <Modal
         type="confirm"

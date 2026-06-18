@@ -45,6 +45,7 @@ import { getProductPriceByStore, updateProductPriceByStore } from "@/services/pr
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import UserGuide from "@/components/organism/UserGuide";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -124,11 +125,15 @@ const EditProduct = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const { data: productData, isLoading: loadingProduct } = useQuery(
-    ["product-edit", productId],
-    () => getProductById(productId),
-    { enabled: !!productId, refetchOnMount: true }
-  );
+  const {
+    data: productData,
+    isLoading: loadingProduct,
+    isError,
+    refetch
+  } = useQuery(["product-edit", productId], () => getProductById(productId), {
+    enabled: !!productId,
+    refetchOnMount: true
+  });
   const product = productData?.data || {};
 
   const { data: categoriesData } = useQuery(
@@ -555,6 +560,8 @@ const EditProduct = () => {
 
     editMutation.mutate(payload);
   };
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   if (loadingProduct) {
     return <Loading fullscreen size="lg" label="Memuat data..." />;

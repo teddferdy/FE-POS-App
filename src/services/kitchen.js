@@ -8,7 +8,11 @@ export const getKitchenOrders = async (params = {}) => {
 };
 
 export const updateOrderItemStatus = async (id, itemId, itemStatus) => {
-  const { data, status } = await axiosInstance.put("/order/update-item-status", { id, itemId, itemStatus });
+  const { data, status } = await axiosInstance.put("/order/update-item-status", {
+    id,
+    itemId,
+    itemStatus
+  });
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };

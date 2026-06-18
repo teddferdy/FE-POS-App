@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/ui/PageHeader";
 import { motion } from "framer-motion";
-
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -30,7 +30,7 @@ const DetailPosition = () => {
   const [searchParams] = useSearchParams();
   const positionId = searchParams.get("positionID");
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["position-detail", positionId],
     () => getAllPositionTable({ page: 1, limit: 100, statusRole: "all" }),
     {
@@ -137,6 +137,10 @@ const DetailPosition = () => {
     );
   }
 
+  if (isError) {
+    return <AbortController refetch={refetch} />;
+  }
+
   if (!position) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
@@ -187,7 +191,9 @@ const DetailPosition = () => {
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       {t("page.position.detail.positionName")}
                     </label>
-                    <p className="text-sm font-semibold text-foreground mt-1">{position.name || "-"}</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">
+                      {position.name || "-"}
+                    </p>
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -249,12 +255,16 @@ const DetailPosition = () => {
                       <p className="text-sm font-semibold text-foreground mt-0.5">
                         {formatDate(position.createdAt)}
                       </p>
-                      <p className="text-xs text-muted-foreground">{position.createdBy || "System"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {position.createdBy || "System"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="material-symbols-outlined text-primary text-base">update</span>
+                      <span className="material-symbols-outlined text-primary text-base">
+                        update
+                      </span>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

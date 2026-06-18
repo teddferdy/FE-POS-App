@@ -8,20 +8,11 @@ import { useTranslation } from "react-i18next";
 import { Plus, Search, Eye, Trash2 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import { getAllBom, deleteBom } from "@/services/bom";
+import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -40,7 +31,7 @@ const BomList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["bom-list", page, limit, search],
     () => getAllBom({ page, limit, search }),
     { keepPreviousData: true }
@@ -137,7 +128,11 @@ const BomList = () => {
           <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
         </nav>
       </motion.div>
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{t("page.bom.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.bom.list.description")}</p>
@@ -149,33 +144,40 @@ const BomList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={items}
-        isLoading={isLoading}
-        emptyMessage={t("page.bom.list.empty")}
-        toolbar={
-          <div className="relative w-full sm:w-64">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder={t("page.bom.list.searchPlaceholder")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-9 text-sm"
-            />
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
-
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={items}
+            isLoading={isLoading}
+            emptyMessage={t("page.bom.list.empty")}
+            toolbar={
+              <div className="relative w-full sm:w-64">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  placeholder={t("page.bom.list.searchPlaceholder")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+            }
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
       <Modal
         type="confirm"
         open={!!deleteTarget}

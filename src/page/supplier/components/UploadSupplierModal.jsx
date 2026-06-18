@@ -36,11 +36,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const UploadSupplierModal = ({ open, onOpenChange, onUploadSuccess }) => {
   const { t } = useTranslation();
   const [file, setFile] = useState(null);
@@ -119,9 +114,7 @@ const UploadSupplierModal = ({ open, onOpenChange, onUploadSuccess }) => {
       }, 1500);
     } catch (err) {
       const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        t("page.supplier.toast.uploadError");
+        err?.response?.data?.message || err?.message || t("page.supplier.toast.uploadError");
       if (msg.includes("baris") || msg.includes("Row") || msg.includes("validasi")) {
         setParseError(true);
       }
@@ -143,134 +136,134 @@ const UploadSupplierModal = ({ open, onOpenChange, onUploadSuccess }) => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative bg-background rounded-xl border border-border shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Upload size={18} className="text-primary" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold">{t("page.supplier.upload.title")}</h2>
-              <p className="text-xs text-muted-foreground">{t("page.supplier.upload.description")}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-5">
-          <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border border-border">
-            <Database size={18} className="text-muted-foreground shrink-0 mt-0.5" />
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>{t("page.supplier.upload.formatHint")}</p>
-              <p className="text-xs">{t("page.supplier.upload.columnsHint")}</p>
-            </div>
-          </div>
-
-          {!file ? (
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onClick={() => fileInputRef.current?.click()}
-              className={`relative cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                dragOver
-                  ? "border-primary bg-primary/5 scale-[1.02]"
-                  : "border-border hover:border-primary/50 hover:bg-muted/30"
-              }`}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <ArrowUpToLine size={24} className="text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {t("common.dropOrClick")}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t("common.supportedFormats")}
-                  </p>
-                </div>
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+        <div className="relative bg-background rounded-xl border border-border shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between p-5 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Upload size={18} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold">{t("page.supplier.upload.title")}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {t("page.supplier.upload.description")}
+                </p>
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <FileSpreadsheet size={20} className="text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={removeFile}
-                  disabled={uploading}
-                  className="w-8 h-8 rounded-lg hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0 ml-2">
-                  <X size={16} className="text-destructive" />
-                </button>
+            <button
+              onClick={handleClose}
+              className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="p-5 space-y-5">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border border-border">
+              <Database size={18} className="text-muted-foreground shrink-0 mt-0.5" />
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>{t("page.supplier.upload.formatHint")}</p>
+                <p className="text-xs">{t("page.supplier.upload.columnsHint")}</p>
               </div>
+            </div>
 
-              {uploadStatus === "success" && (
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <CheckCircle2 size={20} className="text-green-600 shrink-0" />
-                  <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                    {t("common.uploadSuccess")}
-                  </p>
-                </div>
-              )}
-
-              {uploadStatus === "error" && (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                  <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
+            {!file ? (
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() => fileInputRef.current?.click()}
+                className={`relative cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                  dragOver
+                    ? "border-primary bg-primary/5 scale-[1.02]"
+                    : "border-border hover:border-primary/50 hover:bg-muted/30"
+                }`}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ArrowUpToLine size={24} className="text-primary" />
+                  </div>
                   <div>
-                    <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                      {t("common.uploadFailed")}
+                    <p className="text-sm font-medium text-foreground">{t("common.dropOrClick")}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("common.supportedFormats")}
                     </p>
-                    {parseError && (
-                      <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                        {t("common.checkFileFormat")}
-                      </p>
-                    )}
                   </div>
                 </div>
-              )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileSpreadsheet size={20} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={removeFile}
+                    disabled={uploading}
+                    className="w-8 h-8 rounded-lg hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0 ml-2">
+                    <X size={16} className="text-destructive" />
+                  </button>
+                </div>
 
-              <Button
-                onClick={handleUpload}
-                disabled={uploading || uploadStatus === "success"}
-                className="w-full gap-2"
-                size="lg">
-                {uploading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    {t("common.uploading")}
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    {t("common.upload")}
-                  </>
+                {uploadStatus === "success" && (
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                    <CheckCircle2 size={20} className="text-green-600 shrink-0" />
+                    <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                      {t("common.uploadSuccess")}
+                    </p>
+                  </div>
                 )}
-              </Button>
-            </div>
-          )}
+
+                {uploadStatus === "error" && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                    <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                        {t("common.uploadFailed")}
+                      </p>
+                      {parseError && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          {t("common.checkFileFormat")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleUpload}
+                  disabled={uploading || uploadStatus === "success"}
+                  className="w-full gap-2"
+                  size="lg">
+                  {uploading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      {t("common.uploading")}
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} />
+                      {t("common.upload")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </motion.div>
   );
 };

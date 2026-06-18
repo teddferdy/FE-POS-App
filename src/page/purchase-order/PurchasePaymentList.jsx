@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
+import AbortController from "@/components/organism/abort-controller";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,7 +22,7 @@ const PurchasePaymentList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-payments", page, limit],
     () => getAllPayments({ page, limit }),
     { keepPreviousData: true }
@@ -151,21 +152,25 @@ const PurchasePaymentList = () => {
         </Card>
       </motion.div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="space-y-4">
-        <DataTable
-          columns={columns}
-          data={payments}
-          isLoading={isLoading}
-          emptyMessage={t("page.purchasePayment.list.empty")}
-          emptyIcon={Wallet}
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-        />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="space-y-4">
+          <DataTable
+            columns={columns}
+            data={payments}
+            isLoading={isLoading}
+            emptyMessage={t("page.purchasePayment.list.empty")}
+            emptyIcon={Wallet}
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
         <TipsCard

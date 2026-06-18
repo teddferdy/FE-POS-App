@@ -9,9 +9,7 @@ export const getAllCategory = async () => {
 };
 
 export const getAllCategoryActive = async () => {
-  const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?status=active`
-  );
+  const { data, status } = await axiosInstance.get(`/category/get-category-all?status=active`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

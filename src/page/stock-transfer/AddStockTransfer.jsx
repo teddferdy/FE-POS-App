@@ -24,11 +24,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const AddStockTransfer = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -65,11 +60,15 @@ const AddStockTransfer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!fromStore || !toStore || fromStore === toStore) {
-      toast.error(t("page.stockTransfer.add.toast.validation"), { description: t("page.stockTransfer.add.toast.storeMustDiff") });
+      toast.error(t("page.stockTransfer.add.toast.validation"), {
+        description: t("page.stockTransfer.add.toast.storeMustDiff")
+      });
       return;
     }
     if (!items[0].productId) {
-      toast.error(t("page.stockTransfer.add.toast.validation"), { description: t("page.stockTransfer.add.toast.minItem") });
+      toast.error(t("page.stockTransfer.add.toast.validation"), {
+        description: t("page.stockTransfer.add.toast.minItem")
+      });
       return;
     }
     setIsSubmitting(true);
@@ -88,11 +87,15 @@ const AddStockTransfer = () => {
             notes: it.notes
           }))
       });
-      toast.success(t("page.stockTransfer.add.toast.success"), { description: t("page.stockTransfer.add.toast.successDesc") });
+      toast.success(t("page.stockTransfer.add.toast.success"), {
+        description: t("page.stockTransfer.add.toast.successDesc")
+      });
       queryClient.invalidateQueries(["stock-transfers"]);
       navigate("/stock-transfer");
     } catch (err) {
-      toast.error(t("page.stockTransfer.add.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.stockTransfer.add.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -100,190 +103,201 @@ const AddStockTransfer = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.stockTransfer.add.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
-          {t("page.stockTransfer.add.breadcrumb.list")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.stockTransfer.add.breadcrumb.add")}</span>
-      </nav>
-      <div>
-        <h1 className="text-2xl font-bold">{t("page.stockTransfer.add.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.stockTransfer.add.subtitle")}</p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="bg-card p-6 rounded-xl border border-border space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>
-              {t("page.stockTransfer.add.form.fromStore")} <span className="text-destructive">*</span>
-            </Label>
-            <select
-              value={fromStore}
-              onChange={(e) => setFromStore(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label>
-              {t("page.stockTransfer.add.form.toStore")} <span className="text-destructive">*</span>
-            </Label>
-            <select
-              value={toStore}
-              onChange={(e) => setToStore(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.stockTransfer.add.breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button onClick={() => navigate("/stock-transfer")} className="hover:text-foreground">
+            {t("page.stockTransfer.add.breadcrumb.list")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">
+            {t("page.stockTransfer.add.breadcrumb.add")}
+          </span>
+        </nav>
+        <div>
+          <h1 className="text-2xl font-bold">{t("page.stockTransfer.add.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.stockTransfer.add.subtitle")}
+          </p>
         </div>
 
-        <div className="space-y-2">
-          <Label>{t("page.stockTransfer.add.form.transferredBy")}</Label>
-          <Input
-            value={transferredBy}
-            onChange={(e) => setTransferredBy(e.target.value)}
-            placeholder={t("page.stockTransfer.add.form.transferredByPlaceholder")}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("page.stockTransfer.add.form.items")}</Label>
-          <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/60 border-b">
-                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    {t("page.stockTransfer.add.table.product")}
-                  </th>
-                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                    {t("page.stockTransfer.add.table.qty")}
-                  </th>
-                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                    {t("page.stockTransfer.add.table.unit")}
-                  </th>
-                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    {t("page.stockTransfer.add.table.notes")}
-                  </th>
-                  <th className="w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, idx) => (
-                  <tr key={idx} className="border-b border-muted/20">
-                    <td className="px-3 py-2">
-                      <select
-                        value={item.productId}
-                        onChange={(e) => updateItem(idx, "productId", e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="">{t("page.stockTransfer.add.table.selectProduct")}</option>
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nameProduct}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.qty}
-                        onChange={(e) => updateItem(idx, "qty", e.target.value)}
-                        className="h-8 text-xs text-right"
-                        placeholder="0"
-                      />
-                    </td>
-                    <td className="px-3 py-2">
-                      <select
-                        value={item.unit}
-                        onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="pcs">pcs</option>
-                        <option value="kg">kg</option>
-                        <option value="liter">liter</option>
-                        <option value="box">box</option>
-                      </select>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Input
-                        value={item.notes}
-                        onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                        className="h-8 text-xs"
-                        placeholder="Catatan"
-                      />
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      <button
-                        type="button"
-                        disabled={items.length <= 1}
-                        onClick={() => removeItem(idx)}
-                        className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card p-6 rounded-xl border border-border space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                {t("page.stockTransfer.add.form.fromStore")}{" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <select
+                value={fromStore}
+                onChange={(e) => setFromStore(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
                 ))}
-              </tbody>
-            </table>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>
+                {t("page.stockTransfer.add.form.toStore")}{" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <select
+                value={toStore}
+                onChange={(e) => setToStore(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
-            <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
-          </Button>
-        </div>
 
-        <div className="space-y-2">
-          <Label>{t("page.stockTransfer.add.form.notes")}</Label>
-          <Textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={t("page.stockTransfer.add.form.notesPlaceholder")}
-          />
-        </div>
+          <div className="space-y-2">
+            <Label>{t("page.stockTransfer.add.form.transferredBy")}</Label>
+            <Input
+              value={transferredBy}
+              onChange={(e) => setTransferredBy(e.target.value)}
+              placeholder={t("page.stockTransfer.add.form.transferredByPlaceholder")}
+            />
+          </div>
 
-        <div className="flex items-center justify-between gap-4 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-            <X size={16} className="mr-1" /> {t("page.stockTransfer.add.cancel")}
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            <Save size={16} className="mr-1" /> {isSubmitting ? t("page.stockTransfer.add.saving") : t("page.stockTransfer.add.save")}
-          </Button>
-        </div>
-      </form>
-      {isSubmitting && <Loading fullscreen size="lg" label={t("page.stockTransfer.add.saving")} />}
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={(o) => !o && setCancelModal(false)}
-        title={t("page.stockTransfer.add.modal.cancelTitle")}
-        description={t("page.stockTransfer.add.modal.cancelDesc")}
-        confirmText={t("page.stockTransfer.add.modal.cancelConfirm")}
-        onConfirm={() => {
-          setCancelModal(false);
-          navigate("/stock-transfer");
-        }}
-      />
-    </div>
+          <div className="space-y-2">
+            <Label>{t("page.stockTransfer.add.form.items")}</Label>
+            <div className="overflow-x-auto border rounded-lg">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/60 border-b">
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                      {t("page.stockTransfer.add.table.product")}
+                    </th>
+                    <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                      {t("page.stockTransfer.add.table.qty")}
+                    </th>
+                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                      {t("page.stockTransfer.add.table.unit")}
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                      {t("page.stockTransfer.add.table.notes")}
+                    </th>
+                    <th className="w-10"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={idx} className="border-b border-muted/20">
+                      <td className="px-3 py-2">
+                        <select
+                          value={item.productId}
+                          onChange={(e) => updateItem(idx, "productId", e.target.value)}
+                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
+                          <option value="">
+                            {t("page.stockTransfer.add.table.selectProduct")}
+                          </option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.nameProduct}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.qty}
+                          onChange={(e) => updateItem(idx, "qty", e.target.value)}
+                          className="h-8 text-xs text-right"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <select
+                          value={item.unit}
+                          onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
+                          <option value="pcs">pcs</option>
+                          <option value="kg">kg</option>
+                          <option value="liter">liter</option>
+                          <option value="box">box</option>
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Input
+                          value={item.notes}
+                          onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                          className="h-8 text-xs"
+                          placeholder="Catatan"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          type="button"
+                          disabled={items.length <= 1}
+                          onClick={() => removeItem(idx)}
+                          className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
+              <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("page.stockTransfer.add.form.notes")}</Label>
+            <Textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t("page.stockTransfer.add.form.notesPlaceholder")}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+              <X size={16} className="mr-1" /> {t("page.stockTransfer.add.cancel")}
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              <Save size={16} className="mr-1" />{" "}
+              {isSubmitting ? t("page.stockTransfer.add.saving") : t("page.stockTransfer.add.save")}
+            </Button>
+          </div>
+        </form>
+        {isSubmitting && (
+          <Loading fullscreen size="lg" label={t("page.stockTransfer.add.saving")} />
+        )}
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={(o) => !o && setCancelModal(false)}
+          title={t("page.stockTransfer.add.modal.cancelTitle")}
+          description={t("page.stockTransfer.add.modal.cancelDesc")}
+          confirmText={t("page.stockTransfer.add.modal.cancelConfirm")}
+          onConfirm={() => {
+            setCancelModal(false);
+            navigate("/stock-transfer");
+          }}
+        />
+      </div>
     </motion.div>
   );
 };

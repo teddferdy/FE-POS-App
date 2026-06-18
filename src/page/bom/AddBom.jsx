@@ -14,16 +14,6 @@ import { Label } from "@/components/ui/label";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0 }
@@ -122,141 +112,141 @@ const AddBom = () => {
       </motion.div>
 
       <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <form
-        onSubmit={handleSubmit}
-        className="bg-card p-6 rounded-xl border border-border space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>
-              {t("page.bom.add.form.product")} <span className="text-destructive">*</span>
-            </Label>
-            <select
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="">{t("page.bom.add.form.selectProduct")}</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nameProduct} ({p.sku || "-"})
-                </option>
-              ))}
-            </select>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card p-6 rounded-xl border border-border space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                {t("page.bom.add.form.product")} <span className="text-destructive">*</span>
+              </Label>
+              <select
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="">{t("page.bom.add.form.selectProduct")}</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nameProduct} ({p.sku || "-"})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("page.bom.add.form.name")}</Label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("page.bom.add.placeholder.name")}
+              />
+            </div>
           </div>
+
           <div className="space-y-2">
-            <Label>{t("page.bom.add.form.name")}</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("page.bom.add.placeholder.name")}
+            <Label>{t("page.bom.add.form.ingredients")}</Label>
+            <div className="overflow-x-auto border rounded-lg">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/60 border-b">
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                      {t("page.bom.add.table.ingredient")}
+                    </th>
+                    <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                      {t("page.bom.add.table.qty")}
+                    </th>
+                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                      {t("page.bom.add.table.unit")}
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                      {t("page.bom.add.table.notes")}
+                    </th>
+                    <th className="w-10"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.map((line, idx) => (
+                    <tr key={idx} className="border-b border-muted/20">
+                      <td className="px-3 py-2">
+                        <select
+                          value={line.ingredientId}
+                          onChange={(e) => updateLine(idx, "ingredientId", e.target.value)}
+                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
+                          <option value="">{t("page.bom.add.form.selectIngredient")}</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.nameProduct}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Input
+                          type="number"
+                          min="1"
+                          value={line.qty}
+                          onChange={(e) => updateLine(idx, "qty", e.target.value)}
+                          className="h-8 text-xs text-right"
+                          placeholder={t("page.bom.add.placeholder.qty")}
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <select
+                          value={line.unit}
+                          onChange={(e) => updateLine(idx, "unit", e.target.value)}
+                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
+                          <option value="pcs">{t("unit.pcs")}</option>
+                          <option value="kg">{t("unit.kg")}</option>
+                          <option value="liter">{t("unit.liter")}</option>
+                          <option value="box">{t("unit.box")}</option>
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Input
+                          value={line.notes}
+                          onChange={(e) => updateLine(idx, "notes", e.target.value)}
+                          className="h-8 text-xs"
+                          placeholder={t("page.bom.add.placeholder.notes")}
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          type="button"
+                          disabled={lines.length <= 1}
+                          onClick={() => removeLine(idx)}
+                          className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addLine} className="gap-1">
+              <Plus size={14} /> {t("page.bom.add.form.addRow")}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("page.bom.add.form.notesLabel")}</Label>
+            <Textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t("page.bom.add.placeholder.globalNotes")}
             />
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label>{t("page.bom.add.form.ingredients")}</Label>
-          <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/60 border-b">
-                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    {t("page.bom.add.table.ingredient")}
-                  </th>
-                  <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
-                    {t("page.bom.add.table.qty")}
-                  </th>
-                  <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
-                    {t("page.bom.add.table.unit")}
-                  </th>
-                  <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
-                    {t("page.bom.add.table.notes")}
-                  </th>
-                  <th className="w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lines.map((line, idx) => (
-                  <tr key={idx} className="border-b border-muted/20">
-                    <td className="px-3 py-2">
-                      <select
-                        value={line.ingredientId}
-                        onChange={(e) => updateLine(idx, "ingredientId", e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="">{t("page.bom.add.form.selectIngredient")}</option>
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nameProduct}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={line.qty}
-                        onChange={(e) => updateLine(idx, "qty", e.target.value)}
-                        className="h-8 text-xs text-right"
-                        placeholder={t("page.bom.add.placeholder.qty")}
-                      />
-                    </td>
-                    <td className="px-3 py-2">
-                      <select
-                        value={line.unit}
-                        onChange={(e) => updateLine(idx, "unit", e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                        <option value="pcs">{t("unit.pcs")}</option>
-                        <option value="kg">{t("unit.kg")}</option>
-                        <option value="liter">{t("unit.liter")}</option>
-                        <option value="box">{t("unit.box")}</option>
-                      </select>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Input
-                        value={line.notes}
-                        onChange={(e) => updateLine(idx, "notes", e.target.value)}
-                        className="h-8 text-xs"
-                        placeholder={t("page.bom.add.placeholder.notes")}
-                      />
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      <button
-                        type="button"
-                        disabled={lines.length <= 1}
-                        onClick={() => removeLine(idx)}
-                        className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-center justify-between gap-4 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
+              <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              <Save size={16} className="mr-1" />{" "}
+              {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
+            </Button>
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={addLine} className="gap-1">
-            <Plus size={14} /> {t("page.bom.add.form.addRow")}
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("page.bom.add.form.notesLabel")}</Label>
-          <Textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={t("page.bom.add.placeholder.globalNotes")}
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-4 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
-            <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            <Save size={16} className="mr-1" />{" "}
-            {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
-          </Button>
-        </div>
-      </form>
+        </form>
       </motion.div>
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.bom.add.form.saving")} />}
       <Modal

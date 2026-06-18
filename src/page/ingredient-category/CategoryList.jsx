@@ -20,6 +20,7 @@ import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -49,7 +50,7 @@ const CategoryList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["ingredient-categories"],
     () => getAllIngredientCategory(),
     {}
@@ -299,25 +300,29 @@ const CategoryList = () => {
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="mt-6">
-          <DataTable
-            columns={columns}
-            data={filtered}
-            isLoading={isLoading}
-            emptyMessage={t("page.ingredientCategory.list.emptyText")}
-            emptyIcon={Package}
-            toolbar={
-              <div className="p-4 pb-0">
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-                  className="max-w-xs h-10"
-                />
-              </div>
-            }
-          />
-        </motion.div>
+        {isError ? (
+          <AbortController refetch={refetch} />
+        ) : (
+          <motion.div variants={item} className="mt-6">
+            <DataTable
+              columns={columns}
+              data={filtered}
+              isLoading={isLoading}
+              emptyMessage={t("page.ingredientCategory.list.emptyText")}
+              emptyIcon={Package}
+              toolbar={
+                <div className="p-4 pb-0">
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                    className="max-w-xs h-10"
+                  />
+                </div>
+              }
+            />
+          </motion.div>
+        )}
 
         <motion.div variants={item} className="mt-6">
           <TipsCard

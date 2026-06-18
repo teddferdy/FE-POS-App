@@ -20,7 +20,7 @@ export const getCurrentCashRegister = async (storeId) => {
 
 export const getCashRegisterHistory = async (payload) => {
   const { data, status } = await axiosInstance.get(
-    `/cash-register/history?page=${payload?.page || 1}&limit=${payload?.limit || 10}&store=${payload?.store || ''}`
+    `/cash-register/history?page=${payload?.page || 1}&limit=${payload?.limit || 10}&store=${payload?.store || ""}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

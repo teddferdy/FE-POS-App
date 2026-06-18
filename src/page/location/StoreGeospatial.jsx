@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -83,10 +84,12 @@ const StoreGeospatial = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const { data: detailData, isLoading: detailLoading } = useQuery(
-    ["all-locations-detail"],
-    getAllLocation
-  );
+  const {
+    data: detailData,
+    isLoading: detailLoading,
+    isError,
+    refetch
+  } = useQuery(["all-locations-detail"], getAllLocation);
   const { data: tableData, isLoading: tableLoading } = useQuery(["all-locations-table"], () =>
     getAllLocationTable({ page: 1, limit: 1000 })
   );
@@ -133,6 +136,8 @@ const StoreGeospatial = () => {
   };
 
   const isLoading = detailLoading || tableLoading;
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">

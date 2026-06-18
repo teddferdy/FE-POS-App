@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,7 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
       type="custom"
       open={open}
       onOpenChange={onOpenChange}
-      title={t("tableQR.title", { name: table.name })}
-    >
+      title={t("tableQR.title", { name: table.name })}>
       <div className="flex flex-col items-center gap-4 p-4">
         <div ref={qrRef} className="bg-white p-4 rounded-xl">
           <QRCodeSVG value={orderUrl} size={200} />
@@ -58,28 +58,30 @@ const TableQRModal = ({ open, onOpenChange, table }) => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigator.clipboard.writeText(orderUrl)}
-          >
+            onClick={() => navigator.clipboard.writeText(orderUrl)}>
             Salin Tautan
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrint}
-          >
+          <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer size={15} className="mr-1" />
             Print
           </Button>
-          <Button
-            size="sm"
-            onClick={() => window.open(orderUrl, "_blank")}
-          >
+          <Button size="sm" onClick={() => window.open(orderUrl, "_blank")}>
             Buka Halaman
           </Button>
         </div>
       </div>
     </Modal>
   );
+};
+
+TableQRModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onOpenChange: PropTypes.func.isRequired,
+  table: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string.isRequired,
+    store: PropTypes.string
+  })
 };
 
 export default TableQRModal;

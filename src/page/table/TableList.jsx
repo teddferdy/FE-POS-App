@@ -26,6 +26,7 @@ import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -63,7 +64,7 @@ const TableList = () => {
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || [];
 
-  const { data, isLoading, refetch } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
     () => getTablesByStore({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
@@ -205,152 +206,176 @@ const TableList = () => {
         )}
       </div>
 
-      {locations.length === 0 ? (
-        <Card className="p-12">
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <Store size={32} className="text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-foreground">
-                {t("page.table.noStore.title")}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("page.table.noStore.description")}
-              </p>
-            </div>
-            <Button onClick={() => navigate("/add-location")}>
-              {t("page.table.noStore.action")}
-            </Button>
-          </div>
-        </Card>
+      {isError ? (
+        <AbortController refetch={refetch} />
       ) : (
         <>
-          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+          {locations.length === 0 ? (
+            <Card className="p-12">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <Store size={32} className="text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">
+                    {t("page.table.noStore.title")}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("page.table.noStore.description")}
+                  </p>
+                </div>
+                <Button onClick={() => navigate("/add-location")}>
+                  {t("page.table.noStore.action")}
+                </Button>
+              </div>
             </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
-                {data?.stats?.available ?? 0}
-              </p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
-              <p className="text-2xl font-bold text-yellow-600 mt-1">
-                {data?.stats?.reserved ?? 0}
-              </p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.occupied ?? 0}</p>
-            </Card>
-          </motion.div>
+          ) : (
+            <>
+              <motion.div
+                variants={item}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="p-5">
+                  <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+                </Card>
+                <Card className="p-5">
+                  <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
+                  <p className="text-2xl font-bold text-green-600 mt-1">
+                    {data?.stats?.available ?? 0}
+                  </p>
+                </Card>
+                <Card className="p-5">
+                  <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
+                  <p className="text-2xl font-bold text-yellow-600 mt-1">
+                    {data?.stats?.reserved ?? 0}
+                  </p>
+                </Card>
+                <Card className="p-5">
+                  <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
+                  <p className="text-2xl font-bold text-red-600 mt-1">
+                    {data?.stats?.occupied ?? 0}
+                  </p>
+                </Card>
+              </motion.div>
 
-          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="relative w-full sm:w-72">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder={t("page.table.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-10"
-            />
-          </motion.div>
+              <motion.div
+                variants={item}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                className="relative w-full sm:w-72">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  placeholder={t("page.table.list.search")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-9 h-10"
+                />
+              </motion.div>
 
-          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
-          <DataTable
-            columns={columns}
-            data={tables}
-            isLoading={isLoading}
-            emptyIcon={Sofa}
-            emptyMessage={t("page.table.list.empty")}
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
+              <motion.div
+                variants={item}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}>
+                <DataTable
+                  columns={columns}
+                  data={tables}
+                  isLoading={isLoading}
+                  emptyIcon={Sofa}
+                  emptyMessage={t("page.table.list.empty")}
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                />
+              </motion.div>
+            </>
+          )}
+
+          <Modal
+            type="form"
+            open={showAddModal || editTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setShowAddModal(false);
+                setEditTarget(null);
+              }
+            }}
+            title={editTarget ? t("page.table.modal.editTitle") : t("page.table.modal.addTitle")}
+            confirmText={t("common.save")}
+            onConfirm={handleSave}>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  {t("page.table.form.name")}
+                </label>
+                <Input
+                  placeholder={t("page.table.form.namePlaceholder")}
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  {t("page.table.form.capacity")}
+                </label>
+                <Input
+                  type="number"
+                  placeholder="4"
+                  value={formCapacity}
+                  onChange={(e) => setFormCapacity(Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  {t("page.table.form.store")}
+                </label>
+                <Select value={formStore} onValueChange={setFormStore}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id.toString()}>
+                        {loc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </Modal>
+
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
+            title={t("page.table.modal.deleteTitle")}
+            description={t("page.table.modal.deleteDescription", {
+              name: deleteTarget?.name || ""
+            })}
+            confirmText={t("page.table.modal.confirmDelete")}
+            onConfirm={() => {
+              deleteMutation.mutate(deleteTarget.id);
+              setDeleteTarget(null);
+            }}
           />
-          </motion.div>
+
+          <TableQRModal
+            open={!!qrTarget}
+            onOpenChange={(o) => !o && setQrTarget(null)}
+            table={qrTarget}
+          />
         </>
       )}
-
-      <Modal
-        type="form"
-        open={showAddModal || editTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowAddModal(false);
-            setEditTarget(null);
-          }
-        }}
-        title={editTarget ? t("page.table.modal.editTitle") : t("page.table.modal.addTitle")}
-        confirmText={t("common.save")}
-        onConfirm={handleSave}>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.table.form.name")}
-            </label>
-            <Input
-              placeholder={t("page.table.form.namePlaceholder")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.table.form.capacity")}
-            </label>
-            <Input
-              type="number"
-              placeholder="4"
-              value={formCapacity}
-              onChange={(e) => setFormCapacity(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.table.form.store")}
-            </label>
-            <Select value={formStore} onValueChange={setFormStore}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id.toString()}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.table.modal.deleteTitle")}
-        description={t("page.table.modal.deleteDescription", { name: deleteTarget?.name || "" })}
-        confirmText={t("page.table.modal.confirmDelete")}
-        onConfirm={() => {
-          deleteMutation.mutate(deleteTarget.id);
-          setDeleteTarget(null);
-        }}
-      />
-
-      <TableQRModal
-        open={!!qrTarget}
-        onOpenChange={(o) => !o && setQrTarget(null)}
-        table={qrTarget}
-      />
-      </motion.div>
+    </motion.div>
   );
 };
 

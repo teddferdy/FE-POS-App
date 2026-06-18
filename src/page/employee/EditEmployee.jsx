@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AccessMenuModal from "@/components/organism/AccessMenuModal";
+import AbortController from "@/components/organism/abort-controller";
 import {
   Select,
   SelectContent,
@@ -42,7 +43,6 @@ import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import { motion } from "framer-motion";
-
 
 const container = {
   hidden: { opacity: 0 },
@@ -106,7 +106,11 @@ const EditEmployee = () => {
       isActive: z.boolean().default(true),
       roleId: z.string().optional().or(z.literal("")),
       accessMenu: z.string().optional().or(z.literal("")),
-      monthlySalary: z.coerce.number().min(0, t("page.employee.edit.validation.salaryNegative")).optional().or(z.literal(""))
+      monthlySalary: z.coerce
+        .number()
+        .min(0, t("page.employee.edit.validation.salaryNegative"))
+        .optional()
+        .or(z.literal(""))
     });
   }, []);
 
@@ -138,11 +142,14 @@ const EditEmployee = () => {
     }
   });
 
-  const { data: employeeData, isLoading: isEmployeeLoading } = useQuery(
-    ["employee-edit", employeeId],
-    () => getEmployeeById({ id: employeeId }),
-    { enabled: !!employeeId }
-  );
+  const {
+    data: employeeData,
+    isLoading: isEmployeeLoading,
+    isError,
+    refetch
+  } = useQuery(["employee-edit", employeeId], () => getEmployeeById({ id: employeeId }), {
+    enabled: !!employeeId
+  });
 
   const employee = employeeData?.data || employeeData?.employee || {};
 
@@ -446,6 +453,10 @@ const EditEmployee = () => {
     return <Loading fullscreen size="lg" label={t("page.employee.edit.loading")} />;
   }
 
+  if (isError) {
+    return <AbortController refetch={refetch} />;
+  }
+
   if (!employeeId || !employee.id) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
@@ -460,139 +471,255 @@ const EditEmployee = () => {
 
   return (
     <div className="space-y-6">
-    <motion.div variants={container} initial="hidden" animate="show">
-    <motion.div variants={item}>
-      <PageHeader
-        breadcrumbs={[
-          { label: t("breadcrumb.hrm") },
-          { label: t("breadcrumb.employee"), href: "/employee-list" },
-          {
-            label: t("breadcrumb.detail"),
-            href: `/detail-employee?employeeID=${employee.employeeID}`
-          },
-          { label: t("breadcrumb.edit") }
-        ]}
-        title={t("page.employee.edit.title")}
-        description={t("page.employee.edit.description")}
-      />
-    </motion.div>
-    </motion.div>
-    <motion.div variants={container} initial="hidden" animate="show">
-    <motion.div variants={item}>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-8 space-y-6">
-              {/* Section 1: Informasi Pribadi */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                  <span className="material-symbols-outlined text-primary">person</span>
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.employee.edit.personalInfo")}
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="flex flex-col items-center gap-3">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("page.employee.edit.photo")}
-                    </label>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <div
-                      onClick={handleImageClick}
-                      className="relative w-full aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
-                      {previewImage ? (
-                        <>
-                          <img
-                            src={previewImage}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={clearImage}
-                            className="absolute top-2 right-2 z-10 p-1.5 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
-                            <X size={14} />
-                          </button>
-                        </>
-                      ) : (
-                        <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-4">
-                          <CloudUpload size={36} className="mb-2" />
-                          <span className="text-xs font-semibold text-center">
-                            {t("page.employee.edit.uploadPhoto")}
-                          </span>
-                        </div>
-                      )}
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.hrm") },
+              { label: t("breadcrumb.employee"), href: "/employee-list" },
+              {
+                label: t("breadcrumb.detail"),
+                href: `/detail-employee?employeeID=${employee.employeeID}`
+              },
+              { label: t("breadcrumb.edit") }
+            ]}
+            title={t("page.employee.edit.title")}
+            description={t("page.employee.edit.description")}
+          />
+        </motion.div>
+      </motion.div>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="grid grid-cols-12 gap-6">
+                <div className="col-span-12 lg:col-span-8 space-y-6">
+                  {/* Section 1: Informasi Pribadi */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                      <span className="material-symbols-outlined text-primary">person</span>
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.employee.edit.personalInfo")}
+                      </h4>
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">
-                      {t("page.employee.edit.photoHint")}
-                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="flex flex-col items-center gap-3">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t("page.employee.edit.photo")}
+                        </label>
+
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                        <div
+                          onClick={handleImageClick}
+                          className="relative w-full aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center bg-muted/30 overflow-hidden cursor-pointer group">
+                          {previewImage ? (
+                            <>
+                              <img
+                                src={previewImage}
+                                alt="Preview"
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={clearImage}
+                                className="absolute top-2 right-2 z-10 p-1.5 bg-background/90 rounded-full text-muted-foreground hover:text-foreground shadow-md">
+                                <X size={14} />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center text-muted-foreground group-hover:text-primary transition-colors p-4">
+                              <CloudUpload size={36} className="mb-2" />
+                              <span className="text-xs font-semibold text-center">
+                                {t("page.employee.edit.uploadPhoto")}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground text-center">
+                          {t("page.employee.edit.photoHint")}
+                        </p>
+                      </div>
+
+                      <div className="md:col-span-2 space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <FormField
+                            control={form.control}
+                            name="fullName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.fullName")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.employee.form.fullNamePlaceholder")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.email")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="email"
+                                  placeholder={t("page.employee.form.emailPlaceholder")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.phone")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="tel"
+                                  placeholder={t("page.employee.form.phonePlaceholder")}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                    field.onChange(value);
+                                  }}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.gender")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue
+                                      placeholder={t("page.employee.form.selectPlaceholder")}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Laki-laki">
+                                      {t("page.employee.edit.male")}
+                                    </SelectItem>
+                                    <SelectItem value="Perempuan">
+                                      {t("page.employee.edit.female")}
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <FormField
+                            control={form.control}
+                            name="placeOfBirth"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.placeOfBirth")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.employee.form.placeOfBirthPlaceholder")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="dateOfBirth"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.dateOfBirth")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <DatePicker
+                                  date={field.value ? new Date(field.value) : undefined}
+                                  setDate={(date) => field.onChange(date ? date.toISOString() : "")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.employee.form.address")}{" "}
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                rows={3}
+                                className="resize-none"
+                                placeholder={t("page.employee.form.addressPlaceholder")}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="md:col-span-2 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <FormField
-                        control={form.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.fullName")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder={t("page.employee.form.fullNamePlaceholder")}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.email")}{" "}
-                              <span className="text-destructive">*</span>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder={t("page.employee.form.emailPlaceholder")}
-                            />
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  {/* Section 2: Informasi Pekerjaan */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                      <span className="material-symbols-outlined text-primary">work</span>
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.employee.edit.jobInfo")}
+                      </h4>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <FormField
                         control={form.control}
-                        name="phoneNumber"
+                        name="employeeId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.phone")}{" "}
+                              {t("page.employee.form.employeeId")}{" "}
                               <span className="text-destructive">*</span>
                             </FormLabel>
                             <Input
                               {...field}
-                              type="tel"
-                              placeholder={t("page.employee.form.phonePlaceholder")}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, "").slice(0, 14);
-                                field.onChange(value);
-                              }}
+                              disabled
+                              className="font-mono bg-muted/50"
+                              placeholder={t("page.employee.form.employeeIdPlaceholder")}
                             />
                             <FormMessage />
                           </FormItem>
@@ -600,42 +727,243 @@ const EditEmployee = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="gender"
+                        name="department"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.gender")}{" "}
-                              <span className="text-destructive">*</span>
+                              {t("page.employee.form.department")}
+                            </FormLabel>
+                            {departments.length === 0 ? (
+                              <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                <span className="material-symbols-outlined text-3xl text-muted-foreground">
+                                  domain
+                                </span>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-foreground">
+                                    {t("page.employee.edit.noDepartments")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {t("page.employee.edit.addDepartmentFirst")}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate("/add-department")}
+                                  className="gap-2">
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                  {t("page.employee.edit.addDepartment")}
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger>
+                                      <SelectValue
+                                        placeholder={t("page.employee.form.departmentPlaceholder")}
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {departments.map((d) => (
+                                        <SelectItem key={d.id} value={d.name}>
+                                          {d.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={() => navigate("/add-department")}
+                                  title={t("page.employee.edit.addDepartmentNew")}>
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                </Button>
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.table.position")}
+                            </FormLabel>
+                            {positions.length === 0 ? (
+                              <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                <span className="material-symbols-outlined text-3xl text-muted-foreground">
+                                  badge
+                                </span>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-foreground">
+                                    {t("page.employee.edit.noPositions")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {t("page.employee.edit.addPositionFirst")}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate("/add-position")}
+                                  className="gap-2">
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                  {t("page.employee.edit.addPosition")}
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <Combobox
+                                    options={(positions || []).map((p) => ({
+                                      value: String(p.id),
+                                      label: p.name
+                                    }))}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder={t("page.employee.form.positionPlaceholder")}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={() => navigate("/add-position")}
+                                  title={t("page.employee.edit.addPositionNew")}>
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                </Button>
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="store"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.form.store")}
+                            </FormLabel>
+                            {locations.length === 0 ? (
+                              <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                                <span className="material-symbols-outlined text-3xl text-muted-foreground">
+                                  store
+                                </span>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-foreground">
+                                    {t("page.employee.edit.noStores")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {t("page.employee.edit.addStoreFirst")}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate("/add-location")}
+                                  className="gap-2">
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                  {t("page.employee.edit.addStore")}
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <Combobox
+                                    options={(locations || []).map((loc) => ({
+                                      value: String(loc.id || loc._id),
+                                      label: loc.name
+                                    }))}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder={t("page.employee.form.storePlaceholder")}
+                                    searchPlaceholder={t(
+                                      "page.employee.form.storeSearchPlaceholder"
+                                    )}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={() => navigate("/add-location")}
+                                  title={t("page.employee.edit.addStoreNew")}>
+                                  <span className="material-symbols-outlined text-base">add</span>
+                                </Button>
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="employmentType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.detail.employmentType")}
                             </FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <SelectTrigger>
                                 <SelectValue
-                                  placeholder={t("page.employee.form.selectPlaceholder")}
+                                  placeholder={t("page.employee.form.employmentTypePlaceholder")}
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Laki-laki">{t("page.employee.edit.male")}</SelectItem>
-                                <SelectItem value="Perempuan">{t("page.employee.edit.female")}</SelectItem>
+                                <SelectItem value="full-time">
+                                  {t("page.employee.detail.employmentTypeFullTime")}
+                                </SelectItem>
+                                <SelectItem value="part-time">
+                                  {t("page.employee.detail.employmentTypePartTime")}
+                                </SelectItem>
+                                <SelectItem value="contract">
+                                  {t("page.employee.detail.employmentTypeContract")}
+                                </SelectItem>
+                                <SelectItem value="internship">
+                                  {t("page.employee.detail.employmentTypeInternship")}
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <FormField
                         control={form.control}
-                        name="placeOfBirth"
+                        name="shift"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.placeOfBirth")}{" "}
-                              <span className="text-destructive">*</span>
+                              {t("page.employee.form.shift")}
                             </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder={t("page.employee.form.placeOfBirthPlaceholder")}
+                            <Combobox
+                              options={(shifts || []).map((s) => ({
+                                value: String(s.id),
+                                label: s.shiftName || s.name
+                              }))}
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              placeholder={
+                                selectedStore
+                                  ? t("page.employee.form.shiftPlaceholder")
+                                  : t("page.employee.form.shiftSelectStoreFirst")
+                              }
+                              disabled={!selectedStore}
                             />
                             <FormMessage />
                           </FormItem>
@@ -643,12 +971,11 @@ const EditEmployee = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="dateOfBirth"
+                        name="startDate"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.form.dateOfBirth")}{" "}
-                              <span className="text-destructive">*</span>
+                              {t("page.employee.detail.startDate")}
                             </FormLabel>
                             <DatePicker
                               date={field.value ? new Date(field.value) : undefined}
@@ -658,339 +985,239 @@ const EditEmployee = () => {
                           </FormItem>
                         )}
                       />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.employee.form.address")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <Textarea
-                            {...field}
-                            rows={3}
-                            className="resize-none"
-                            placeholder={t("page.employee.form.addressPlaceholder")}
+                      {["contract", "internship"].includes(employmentType) && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="contractDuration"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {employmentType === "internship"
+                                    ? t("page.employee.detail.internshipDuration")
+                                    : t("page.employee.detail.contractDuration")}
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger>
+                                    <SelectValue
+                                      placeholder={t("page.employee.form.durationPlaceholder")}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {contractDurations.map((d) => (
+                                      <SelectItem key={d.value} value={d.value}>
+                                        {d.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                          <FormMessage />
-                        </FormItem>
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.detail.endDate")}
+                                </FormLabel>
+                                <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                                  {field.value
+                                    ? format(new Date(field.value), "dd MMM yyyy")
+                                    : contractDuration && startDate
+                                      ? t("page.employee.form.selectDurationFirst")
+                                      : t("page.employee.form.selectStartDateAndDuration")}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       )}
-                    />
+                      <div className="flex flex-col gap-1.5 justify-end">
+                        <FormField
+                          control={form.control}
+                          name="isActive"
+                          render={({ field }) => (
+                            <div
+                              className={`flex items-center justify-between p-4 rounded-lg mt-auto transition-all ${
+                                field.value
+                                  ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                                  : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                              }`}>
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    field.value
+                                      ? "bg-green-600 text-white"
+                                      : "bg-destructive/10 text-destructive"
+                                  }`}>
+                                  <span className="material-symbols-outlined text-lg">
+                                    {field.value ? "check" : "close"}
+                                  </span>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {t("common.status")}{" "}
+                                    {field.value ? t("common.active") : t("common.inactive")}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {field.value
+                                      ? t("page.employee.edit.statusActiveDesc")
+                                      : t("page.employee.edit.statusInactiveDesc")}
+                                  </p>
+                                </div>
+                              </div>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </div>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Section 2: Informasi Pekerjaan */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                  <span className="material-symbols-outlined text-primary">work</span>
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.employee.edit.jobInfo")}
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FormField
-                    control={form.control}
-                    name="employeeId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.employeeId")}{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          disabled
-                          className="font-mono bg-muted/50"
-                          placeholder={t("page.employee.form.employeeIdPlaceholder")}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.department")}
-                        </FormLabel>
-                        {departments.length === 0 ? (
-                          <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                            <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                              domain
-                            </span>
-                            <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">
-                                {t("page.employee.edit.noDepartments")}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {t("page.employee.edit.addDepartmentFirst")}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate("/add-department")}
-                              className="gap-2">
-                              <span className="material-symbols-outlined text-base">add</span>
-                              {t("page.employee.edit.addDepartment")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <div className="flex-1">
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger>
-                                  <SelectValue
-                                    placeholder={t("page.employee.form.departmentPlaceholder")}
-                                  />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {departments.map((d) => (
-                                    <SelectItem key={d.id} value={d.name}>
-                                      {d.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                              onClick={() => navigate("/add-department")}
-                              title={t("page.employee.edit.addDepartmentNew")}>
-                              <span className="material-symbols-outlined text-base">add</span>
-                            </Button>
-                          </div>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="position"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.table.position")}
-                        </FormLabel>
-                        {positions.length === 0 ? (
-                          <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                            <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                              badge
-                            </span>
-                            <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">
-                                {t("page.employee.edit.noPositions")}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {t("page.employee.edit.addPositionFirst")}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate("/add-position")}
-                              className="gap-2">
-                              <span className="material-symbols-outlined text-base">add</span>
-                              {t("page.employee.edit.addPosition")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <div className="flex-1">
-                              <Combobox
-                                options={(positions || []).map((p) => ({
-                                  value: String(p.id),
-                                  label: p.name
-                                }))}
-                                value={field.value || ""}
-                                onChange={field.onChange}
-                                placeholder={t("page.employee.form.positionPlaceholder")}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                              onClick={() => navigate("/add-position")}
-                              title={t("page.employee.edit.addPositionNew")}>
-                              <span className="material-symbols-outlined text-base">add</span>
-                            </Button>
-                          </div>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="store"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.store")}
-                        </FormLabel>
-                        {locations.length === 0 ? (
-                          <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
-                            <span className="material-symbols-outlined text-3xl text-muted-foreground">
-                              store
-                            </span>
-                            <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">
-                                {t("page.employee.edit.noStores")}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {t("page.employee.edit.addStoreFirst")}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate("/add-location")}
-                              className="gap-2">
-                              <span className="material-symbols-outlined text-base">add</span>
-                              {t("page.employee.edit.addStore")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <div className="flex-1">
-                              <Combobox
-                                options={(locations || []).map((loc) => ({
-                                  value: String(loc.id || loc._id),
-                                  label: loc.name
-                                }))}
-                                value={field.value || ""}
-                                onChange={field.onChange}
-                                placeholder={t("page.employee.form.storePlaceholder")}
-                                searchPlaceholder={t("page.employee.form.storeSearchPlaceholder")}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                              onClick={() => navigate("/add-location")}
-                              title={t("page.employee.edit.addStoreNew")}>
-                              <span className="material-symbols-outlined text-base">add</span>
-                            </Button>
-                          </div>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="employmentType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.detail.employmentType")}
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={t("page.employee.form.employmentTypePlaceholder")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="full-time">
-                              {t("page.employee.detail.employmentTypeFullTime")}
-                            </SelectItem>
-                            <SelectItem value="part-time">
-                              {t("page.employee.detail.employmentTypePartTime")}
-                            </SelectItem>
-                            <SelectItem value="contract">
-                              {t("page.employee.detail.employmentTypeContract")}
-                            </SelectItem>
-                            <SelectItem value="internship">
-                              {t("page.employee.detail.employmentTypeInternship")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="shift"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.shift")}
-                        </FormLabel>
-                        <Combobox
-                          options={(shifts || []).map((s) => ({
-                            value: String(s.id),
-                            label: s.shiftName || s.name
-                          }))}
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          placeholder={
-                            selectedStore
-                              ? t("page.employee.form.shiftPlaceholder")
-                              : t("page.employee.form.shiftSelectStoreFirst")
-                          }
-                          disabled={!selectedStore}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.detail.startDate")}
-                        </FormLabel>
-                        <DatePicker
-                          date={field.value ? new Date(field.value) : undefined}
-                          setDate={(date) => field.onChange(date ? date.toISOString() : "")}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {["contract", "internship"].includes(employmentType) && (
-                    <>
+                  {/* Penggajian */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                      <span className="material-symbols-outlined text-primary">payments</span>
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.employee.edit.payroll")}
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <FormField
                         control={form.control}
-                        name="contractDuration"
+                        name="monthlySalary"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {employmentType === "internship"
-                                ? t("page.employee.detail.internshipDuration")
-                                : t("page.employee.detail.contractDuration")}
+                              {t("page.employee.form.monthlySalary")}
                             </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                Rp
+                              </span>
+                              <Input
+                                type="text"
+                                className="pl-10"
+                                placeholder="0"
+                                value={
+                                  field.value ? Number(field.value).toLocaleString("id-ID") : ""
+                                }
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/\D/g, "");
+                                  field.onChange(raw ? parseInt(raw) : "");
+                                }}
+                              />
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t("page.employee.form.dailySalary")}
+                        </FormLabel>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                            Rp
+                          </span>
+                          <Input
+                            value={dailySalary ? dailySalary.toLocaleString("id-ID") : ""}
+                            readOnly
+                            className="pl-10 bg-muted/50 text-muted-foreground"
+                            placeholder={t("page.employee.form.dailySalaryPlaceholder")}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.employee.form.dailySalaryHint", { days: daysInMonth })}
+                        </p>
+                      </FormItem>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Akun & Hak Akses */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                      <span className="material-symbols-outlined text-primary">lock</span>
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.employee.edit.accountAccess")}
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <FormField
+                        control={form.control}
+                        name="userName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.form.username")}{" "}
+                              <span className="text-destructive">*</span>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder={t("page.employee.form.usernamePlaceholder")}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.form.password")}
+                            </FormLabel>
+                            <div className="relative">
+                              <Input
+                                {...field}
+                                type={showPassword ? "text" : "password"}
+                                className="pr-10"
+                                placeholder={t("page.employee.form.passwordPlaceholder")}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer">
+                                <span className="material-symbols-outlined text-base">
+                                  {showPassword ? "visibility" : "visibility_off"}
+                                </span>
+                              </button>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("page.employee.form.passwordHint")}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="roleId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.employee.form.roleSelect")}
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={String(field.value || "")}>
                               <SelectTrigger>
                                 <SelectValue
-                                  placeholder={t("page.employee.form.durationPlaceholder")}
+                                  placeholder={t("page.employee.form.rolePlaceholder")}
                                 />
                               </SelectTrigger>
                               <SelectContent>
-                                {contractDurations.map((d) => (
-                                  <SelectItem key={d.value} value={d.value}>
-                                    {d.label}
+                                {roles.map((role) => (
+                                  <SelectItem
+                                    key={role.id || role._id}
+                                    value={String(role.id || role._id)}>
+                                    {role.name || role.role}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1001,434 +1228,236 @@ const EditEmployee = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="endDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.employee.detail.endDate")}
-                            </FormLabel>
-                            <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
-                              {field.value
-                                ? format(new Date(field.value), "dd MMM yyyy")
-                                : contractDuration && startDate
-                                  ? t("page.employee.form.selectDurationFirst")
-                                  : t("page.employee.form.selectStartDateAndDuration")}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        name="accessMenu"
+                        render={({ field }) => {
+                          let permCount = 0;
+                          try {
+                            const parsed = field.value ? JSON.parse(field.value) : [];
+                            if (Array.isArray(parsed)) permCount = parsed.length;
+                          } catch {
+                            permCount = 0;
+                          }
+                          const selectedRoleId = form.watch("roleId");
+                          const disableAccess = !selectedRoleId;
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.employee.form.accessMenu")}
+                              </FormLabel>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                  disabled={disableAccess}
+                                  onClick={() => setAccessMenuModalOpen(true)}>
+                                  {disableAccess
+                                    ? t("page.employee.edit.selectRoleFirst")
+                                    : permCount > 0
+                                      ? t("page.employee.form.accessMenuCount", {
+                                          count: permCount
+                                        })
+                                      : t("page.employee.form.accessMenuButton")}
+                                </Button>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
-                    </>
-                  )}
-                  <div className="flex flex-col gap-1.5 justify-end">
-                    <FormField
-                      control={form.control}
-                      name="isActive"
-                      render={({ field }) => (
-                        <div
-                          className={`flex items-center justify-between p-4 rounded-lg mt-auto transition-all ${
-                            field.value
-                              ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                              : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                          }`}>
-                          <div className="flex items-center gap-3">
+                      <AccessMenuModal
+                        open={accessMenuModalOpen}
+                        onOpenChange={setAccessMenuModalOpen}
+                        value={form.watch("accessMenu")}
+                        roleAccessMenu={selectedRoleAccessMenu}
+                        onSave={(json) => form.setValue("accessMenu", json)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 5: Dokumen */}
+                  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                      <span className="material-symbols-outlined text-primary">description</span>
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.employee.edit.documents")}
+                      </h4>
+                    </div>
+
+                    <input
+                      ref={documentInputRef}
+                      type="file"
+                      multiple
+                      onChange={handleDocumentSelect}
+                      className="hidden"
+                    />
+
+                    <div className="space-y-4">
+                      <div
+                        onClick={() => documentInputRef.current?.click()}
+                        className="w-full rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center py-8 bg-muted/30 cursor-pointer group">
+                        <CloudUpload
+                          size={40}
+                          className="text-muted-foreground group-hover:text-primary transition-colors mb-2"
+                        />
+                        <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                          {t("page.employee.edit.uploadDocument")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t("page.employee.edit.documentTypes")}
+                        </p>
+                      </div>
+
+                      {existingDocuments.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.employee.edit.savedDocuments")}
+                          </p>
+                          {existingDocuments.map((doc, index) => (
                             <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                field.value
-                                  ? "bg-green-600 text-white"
-                                  : "bg-destructive/10 text-destructive"
-                              }`}>
-                              <span className="material-symbols-outlined text-lg">
-                                {field.value ? "check" : "close"}
-                              </span>
+                              key={doc.id || index}
+                              className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+                                {getFileIcon(
+                                  doc.mimeType || doc.fileType,
+                                  doc.fileName || doc.name
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">
+                                    {doc.fileName || doc.name}
+                                  </p>
+                                </div>
+                                <Download
+                                  size={16}
+                                  className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                                />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => removeExistingDocument(index)}
+                                className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
+                                <X size={16} />
+                              </button>
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">
-                                {t("common.status")}{" "}
-                                {field.value ? t("common.active") : t("common.inactive")}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {field.value
-                                  ? t("page.employee.edit.statusActiveDesc")
-                                  : t("page.employee.edit.statusInactiveDesc")}
-                              </p>
-                            </div>
-                          </div>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          ))}
                         </div>
                       )}
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Penggajian */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                  <span className="material-symbols-outlined text-primary">payments</span>
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.employee.edit.payroll")}
-                  </h4>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FormField
-                    control={form.control}
-                    name="monthlySalary"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.monthlySalary")}
-                        </FormLabel>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                            Rp
-                          </span>
-                          <Input
-                            type="text"
-                            className="pl-10"
-                            placeholder="0"
-                            value={field.value ? Number(field.value).toLocaleString("id-ID") : ""}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/\D/g, "");
-                              field.onChange(raw ? parseInt(raw) : "");
-                            }}
-                          />
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("page.employee.form.dailySalary")}
-                    </FormLabel>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                        Rp
-                      </span>
-                      <Input
-                        value={dailySalary ? dailySalary.toLocaleString("id-ID") : ""}
-                        readOnly
-                        className="pl-10 bg-muted/50 text-muted-foreground"
-                        placeholder={t("page.employee.form.dailySalaryPlaceholder")}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("page.employee.form.dailySalaryHint", { days: daysInMonth })}
-                    </p>
-                  </FormItem>
-                </div>
-              </div>
-
-              {/* Section 3: Akun & Hak Akses */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                  <span className="material-symbols-outlined text-primary">lock</span>
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.employee.edit.accountAccess")}
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FormField
-                    control={form.control}
-                    name="userName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.username")}{" "}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          placeholder={t("page.employee.form.usernamePlaceholder")}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.password")}
-                        </FormLabel>
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showPassword ? "text" : "password"}
-                            className="pr-10"
-                            placeholder={t("page.employee.form.passwordPlaceholder")}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer">
-                            <span className="material-symbols-outlined text-base">
-                              {showPassword ? "visibility" : "visibility_off"}
-                            </span>
-                          </button>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t("page.employee.form.passwordHint")}
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="roleId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.employee.form.roleSelect")}
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} value={String(field.value || "")}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("page.employee.form.rolePlaceholder")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {roles.map((role) => (
-                              <SelectItem
-                                key={role.id || role._id}
-                                value={String(role.id || role._id)}>
-                                {role.name || role.role}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="accessMenu"
-                    render={({ field }) => {
-                      let permCount = 0;
-                      try {
-                        const parsed = field.value ? JSON.parse(field.value) : [];
-                        if (Array.isArray(parsed)) permCount = parsed.length;
-                      } catch {
-                        permCount = 0;
-                      }
-                      const selectedRoleId = form.watch("roleId");
-                      const disableAccess = !selectedRoleId;
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.employee.form.accessMenu")}
-                          </FormLabel>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full justify-start text-left font-normal"
-                              disabled={disableAccess}
-                              onClick={() => setAccessMenuModalOpen(true)}>
-                              {disableAccess
-                                ? t("page.employee.edit.selectRoleFirst")
-                                : permCount > 0
-                                  ? t("page.employee.form.accessMenuCount", { count: permCount })
-                                  : t("page.employee.form.accessMenuButton")}
-                            </Button>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <AccessMenuModal
-                    open={accessMenuModalOpen}
-                    onOpenChange={setAccessMenuModalOpen}
-                    value={form.watch("accessMenu")}
-                    roleAccessMenu={selectedRoleAccessMenu}
-                    onSave={(json) => form.setValue("accessMenu", json)}
-                  />
-                </div>
-              </div>
-
-              {/* Section 5: Dokumen */}
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                  <span className="material-symbols-outlined text-primary">description</span>
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.employee.edit.documents")}
-                  </h4>
-                </div>
-
-                <input
-                  ref={documentInputRef}
-                  type="file"
-                  multiple
-                  onChange={handleDocumentSelect}
-                  className="hidden"
-                />
-
-                <div className="space-y-4">
-                  <div
-                    onClick={() => documentInputRef.current?.click()}
-                    className="w-full rounded-lg border-2 border-dashed border-border hover:border-primary transition-all flex flex-col items-center justify-center py-8 bg-muted/30 cursor-pointer group">
-                    <CloudUpload
-                      size={40}
-                      className="text-muted-foreground group-hover:text-primary transition-colors mb-2"
-                    />
-                    <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                      {t("page.employee.edit.uploadDocument")}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("page.employee.edit.documentTypes")}
-                    </p>
-                  </div>
-
-                  {existingDocuments.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.employee.edit.savedDocuments")}
-                      </p>
-                      {existingDocuments.map((doc, index) => (
-                        <div
-                          key={doc.id || index}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20">
-                          <a
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
-                            {getFileIcon(doc.mimeType || doc.fileType, doc.fileName || doc.name)}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {doc.fileName || doc.name}
-                              </p>
+                      {documents.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.employee.edit.newDocuments")}
+                          </p>
+                          {documents.map((doc, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                              {getFileIcon(doc.file?.type, doc.name)}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {doc.name}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handlePreviewDocument(doc)}
+                                className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                title={t("common.view")}>
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeDocument(index)}
+                                className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                <X size={16} />
+                              </button>
                             </div>
-                            <Download
-                              size={16}
-                              className="text-muted-foreground hover:text-primary transition-colors shrink-0"
-                            />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => removeExistingDocument(index)}
-                            className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
-                            <X size={16} />
-                          </button>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
+                  </div>
+                </div>
 
-                  {documents.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.employee.edit.newDocuments")}
+                {/* Sidebar */}
+                <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                  <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
+                    <div className="relative z-10">
+                      <span className="material-symbols-outlined text-3xl text-primary mb-3">
+                        badge
+                      </span>
+                      <h3 className="text-base font-semibold text-primary mb-2">
+                        {t("page.employee.edit.guidance")}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t("page.employee.edit.guidanceDescription")}
                       </p>
-                      {documents.map((doc, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20">
-                          {getFileIcon(doc.file?.type, doc.name)}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">
-                              {doc.name}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handlePreviewDocument(doc)}
-                            className="p-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                            title={t("common.view")}>
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeDocument(index)}
-                            className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ))}
+                      <ul className="space-y-3">
+                        <li className="flex items-center gap-3 text-sm text-foreground">
+                          <span className="material-symbols-outlined text-primary text-base">
+                            check_circle
+                          </span>
+                          <span>{t("page.employee.edit.guidanceRequired")}</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-sm text-foreground">
+                          <span className="material-symbols-outlined text-primary text-base">
+                            check_circle
+                          </span>
+                          <span>{t("page.employee.edit.guidancePassword")}</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-sm text-foreground">
+                          <span className="material-symbols-outlined text-primary text-base">
+                            check_circle
+                          </span>
+                          <span>{t("page.employee.edit.guidanceRole")}</span>
+                        </li>
+                      </ul>
                     </div>
-                  )}
+                    <div className="absolute -right-10 -bottom-10 opacity-10">
+                      <span className="material-symbols-outlined text-[200px] text-primary">
+                        admin_panel_settings
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-span-12">
+                  <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                      onClick={() => setCancelModal(true)}>
+                      <span className="material-symbols-outlined text-lg">arrow_back</span>
+                      {t("common.cancel")}
+                    </Button>
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setDraftModal(true)}
+                        disabled={isSubmitting}>
+                        {t("page.employee.edit.saveAsDraft")}
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full sm:w-auto gap-2">
+                        <span className="material-symbols-outlined text-lg">save</span>
+                        {t("page.employee.edit.saveChanges")}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-              <div className="bg-primary/10 text-primary-foreground p-6 rounded-xl shadow-sm border border-primary/20 overflow-hidden relative">
-                <div className="relative z-10">
-                  <span className="material-symbols-outlined text-3xl text-primary mb-3">
-                    badge
-                  </span>
-                  <h3 className="text-base font-semibold text-primary mb-2">
-                    {t("page.employee.edit.guidance")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("page.employee.edit.guidanceDescription")}
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3 text-sm text-foreground">
-                      <span className="material-symbols-outlined text-primary text-base">
-                        check_circle
-                      </span>
-                      <span>{t("page.employee.edit.guidanceRequired")}</span>
-                    </li>
-                    <li className="flex items-center gap-3 text-sm text-foreground">
-                      <span className="material-symbols-outlined text-primary text-base">
-                        check_circle
-                      </span>
-                      <span>{t("page.employee.edit.guidancePassword")}</span>
-                    </li>
-                    <li className="flex items-center gap-3 text-sm text-foreground">
-                      <span className="material-symbols-outlined text-primary text-base">
-                        check_circle
-                      </span>
-                      <span>{t("page.employee.edit.guidanceRole")}</span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="absolute -right-10 -bottom-10 opacity-10">
-                  <span className="material-symbols-outlined text-[200px] text-primary">
-                    admin_panel_settings
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-span-12">
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setCancelModal(true)}>
-                  <span className="material-symbols-outlined text-lg">arrow_back</span>
-                  {t("common.cancel")}
-                </Button>
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDraftModal(true)}
-                    disabled={isSubmitting}>
-                    {t("page.employee.edit.saveAsDraft")}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto gap-2">
-                    <span className="material-symbols-outlined text-lg">save</span>
-                    {t("page.employee.edit.saveChanges")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      </Form>
-
-    </motion.div>
-    </motion.div>
+            </form>
+          </Form>
+        </motion.div>
+      </motion.div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

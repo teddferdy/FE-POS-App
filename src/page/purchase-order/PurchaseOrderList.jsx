@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
+import AbortController from "@/components/organism/abort-controller";
 
 const PurchaseOrderList = () => {
   const { t } = useTranslation();
@@ -152,7 +153,7 @@ const PurchaseOrderList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-orders", page, limit, search, storeFilter],
     () => getAllPurchaseOrder({ location: locationParam, page, limit, search }),
     { keepPreviousData: true }
@@ -546,55 +547,59 @@ const PurchaseOrderList = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {isSuperAdmin && (
-            <select
-              value={storeFilter}
-              onChange={(e) => {
-                setStoreFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
-              {(locations?.data || []).map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <div className="relative w-full sm:w-72">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-10"
-            />
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {isSuperAdmin && (
+              <select
+                value={storeFilter}
+                onChange={(e) => {
+                  setStoreFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+                <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
+                {(locations?.data || []).map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 h-10"
+              />
+            </div>
           </div>
-        </div>
 
-        <DataTable
-          columns={columns}
-          data={orders}
-          isLoading={isLoading}
-          emptyMessage={t("page.purchaseOrder.list.empty")}
-          emptyIcon={Package}
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-        />
-      </motion.div>
+          <DataTable
+            columns={columns}
+            data={orders}
+            isLoading={isLoading}
+            emptyMessage={t("page.purchaseOrder.list.empty")}
+            emptyIcon={Package}
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
         <TipsCard

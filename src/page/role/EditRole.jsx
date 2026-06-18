@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const actionLabels = {
   view: "Lihat",
@@ -115,11 +116,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const EditRole = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -137,22 +133,23 @@ const EditRole = () => {
 
   const groups = useMemo(() => getLeafItemsGrouped(), []);
 
-  const { data: roleData, isLoading: isLoadingRole } = useQuery(
-    ["role-by-id", id],
-    () => getRoleById(id),
-    {
-      enabled: !!id,
-      onSuccess: (res) => {
-        const role = res?.data || res;
-        if (role) {
-          setName(role.name || "");
-          setDescription(role.description || "");
-          const existingPerms = parseAccessMenuToPermissions(role.accessMenu);
-          setPermissions(buildInitialPermissions(groups, existingPerms));
-        }
+  const {
+    data: roleData,
+    isLoading: isLoadingRole,
+    isError,
+    refetch
+  } = useQuery(["role-by-id", id], () => getRoleById(id), {
+    enabled: !!id,
+    onSuccess: (res) => {
+      const role = res?.data || res;
+      if (role) {
+        setName(role.name || "");
+        setDescription(role.description || "");
+        const existingPerms = parseAccessMenuToPermissions(role.accessMenu);
+        setPermissions(buildInitialPermissions(groups, existingPerms));
       }
     }
-  );
+  });
 
   const editMutation = useMutation(editRole, {
     onSuccess: () => {
@@ -235,246 +232,252 @@ const EditRole = () => {
     setCollapsedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   if (isLoadingRole) {
     return <Loading fullscreen size="lg" label="Memuat data..." />;
   }
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div>
-      <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/role-management")}
-          className="hover:text-primary transition-colors">
-          Manajemen Role & Izin
-        </button>
-        <ChevronRight size={14} />
-        <span className="text-foreground font-bold">Edit Role</span>
-      </nav>
+      <div>
+        <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/role-management")}
+            className="hover:text-primary transition-colors">
+            Manajemen Role & Izin
+          </button>
+          <ChevronRight size={14} />
+          <span className="text-foreground font-bold">Edit Role</span>
+        </nav>
 
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Role: {name}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Ubah informasi role dan atur hak akses untuk setiap menu sistem
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => setCancelModal(true)}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            data-tour="role-save-draft"
-            variant="outline"
-            onClick={() => setDraftModal(true)}
-            disabled={isSubmitting}>
-            Simpan sebagai Draft
-          </Button>
-          <Button
-            data-tour="role-save"
-            onClick={(e) => handleSubmit(e, false)}
-            disabled={isSubmitting}>
-            Simpan Perubahan
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-primary">info</span>
-              <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
-            </div>
-            <div className="space-y-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Nama Role <span className="text-destructive">*</span>
-                </label>
-                <input
-                  data-tour="role-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  placeholder="cth: Kasir, Supervisor, Owner"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Deskripsi Role
-                </label>
-                <textarea
-                  data-tour="role-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                  placeholder="Deskripsi singkat tentang role ini"
-                  rows={5}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
-            <h4 className="text-base font-semibold text-primary mb-2">Panduan Izin Akses</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Setiap menu memiliki aksi yang bisa diizinkan atau tidak. Centang aksi yang ingin
-              diberikan untuk role ini. Menu yang tidak memiliki izin tertentu (strip) tidak dapat
-              diubah.
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Role: {name}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Ubah informasi role dan atur hak akses untuk setiap menu sistem
             </p>
           </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setCancelModal(true)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              data-tour="role-save-draft"
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={isSubmitting}>
+              Simpan sebagai Draft
+            </Button>
+            <Button
+              data-tour="role-save"
+              onClick={(e) => handleSubmit(e, false)}
+              disabled={isSubmitting}>
+              Simpan Perubahan
+            </Button>
+          </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-8">
-          <div
-            data-tour="role-permissions-matrix"
-            className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">rule</span>
-                <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary">info</span>
+                <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer select-none group">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected()}
-                  onChange={(e) => selectAll(e.target.checked)}
-                  className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
-                />
-                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                  Pilih Semua
-                </span>
-              </label>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Nama Role <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    data-tour="role-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    placeholder="cth: Kasir, Supervisor, Owner"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Deskripsi Role
+                  </label>
+                  <textarea
+                    data-tour="role-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                    placeholder="Deskripsi singkat tentang role ini"
+                    rows={5}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="divide-y divide-border">
-              {groups.map((group, idx) => {
-                const visibleActions = getVisibleActions(
-                  group.items.reduce((acc, item) => {
-                    (item.actions || []).forEach((a) => {
-                      if (!acc.includes(a)) acc.push(a);
-                    });
-                    return acc;
-                  }, [])
-                );
-                const isCollapsed = collapsedGroups[idx];
-
-                return (
-                  <div key={idx}>
-                    {group.parentTitle && (
-                      <button
-                        type="button"
-                        onClick={() => toggleGroup(idx)}
-                        className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
-                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                          {group.parentTitle}
-                        </span>
-                      </button>
-                    )}
-                    {!isCollapsed && (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="bg-muted/10">
-                              <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
-                                Menu
-                              </th>
-                              {visibleActions.map((action) => (
-                                <th
-                                  key={action}
-                                  className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
-                                  {actionLabels[action] || action}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border">
-                            {group.items.map((item) => {
-                              const itemActions = getVisibleActions(item.actions || []);
-                              return (
-                                <tr key={item.href} className="hover:bg-muted/10 transition-colors">
-                                  <td className="px-6 py-3">
-                                    <div className="flex items-center gap-2">
-                                      {item.icon && (
-                                        <item.icon
-                                          size={16}
-                                          className="text-muted-foreground shrink-0"
-                                        />
-                                      )}
-                                      <span className="text-sm text-foreground">{item.title}</span>
-                                    </div>
-                                  </td>
-                                  {itemActions.map((action) => {
-                                    const val = permissions[item.href]?.[action];
-                                    const isDisabled = val === null;
-                                    return (
-                                      <td key={action} className="px-2 py-3 text-center">
-                                        {isDisabled ? (
-                                          <span className="text-muted-foreground/30">—</span>
-                                        ) : (
-                                          <input
-                                            type="checkbox"
-                                            checked={!!val}
-                                            onChange={() => togglePermission(item.href, action)}
-                                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                                          />
-                                        )}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="p-4 bg-muted/20 text-right border-t border-border">
-              <p className="text-xs text-muted-foreground italic">
-                Perubahan izin akses akan diterapkan setelah disimpan
+            <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
+              <h4 className="text-base font-semibold text-primary mb-2">Panduan Izin Akses</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Setiap menu memiliki aksi yang bisa diizinkan atau tidak. Centang aksi yang ingin
+                diberikan untuk role ini. Menu yang tidak memiliki izin tertentu (strip) tidak dapat
+                diubah.
               </p>
             </div>
           </div>
+
+          <div className="col-span-12 lg:col-span-8">
+            <div
+              data-tour="role-permissions-matrix"
+              className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+              <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">rule</span>
+                  <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer select-none group">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected()}
+                    onChange={(e) => selectAll(e.target.checked)}
+                    className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                    Pilih Semua
+                  </span>
+                </label>
+              </div>
+
+              <div className="divide-y divide-border">
+                {groups.map((group, idx) => {
+                  const visibleActions = getVisibleActions(
+                    group.items.reduce((acc, item) => {
+                      (item.actions || []).forEach((a) => {
+                        if (!acc.includes(a)) acc.push(a);
+                      });
+                      return acc;
+                    }, [])
+                  );
+                  const isCollapsed = collapsedGroups[idx];
+
+                  return (
+                    <div key={idx}>
+                      {group.parentTitle && (
+                        <button
+                          type="button"
+                          onClick={() => toggleGroup(idx)}
+                          className="w-full flex items-center gap-2 px-6 py-3 bg-muted/10 hover:bg-muted/20 transition-colors text-left">
+                          {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            {group.parentTitle}
+                          </span>
+                        </button>
+                      )}
+                      {!isCollapsed && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="bg-muted/10">
+                                <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
+                                  Menu
+                                </th>
+                                {visibleActions.map((action) => (
+                                  <th
+                                    key={action}
+                                    className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
+                                    {actionLabels[action] || action}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {group.items.map((item) => {
+                                const itemActions = getVisibleActions(item.actions || []);
+                                return (
+                                  <tr
+                                    key={item.href}
+                                    className="hover:bg-muted/10 transition-colors">
+                                    <td className="px-6 py-3">
+                                      <div className="flex items-center gap-2">
+                                        {item.icon && (
+                                          <item.icon
+                                            size={16}
+                                            className="text-muted-foreground shrink-0"
+                                          />
+                                        )}
+                                        <span className="text-sm text-foreground">
+                                          {item.title}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    {itemActions.map((action) => {
+                                      const val = permissions[item.href]?.[action];
+                                      const isDisabled = val === null;
+                                      return (
+                                        <td key={action} className="px-2 py-3 text-center">
+                                          {isDisabled ? (
+                                            <span className="text-muted-foreground/30">—</span>
+                                          ) : (
+                                            <input
+                                              type="checkbox"
+                                              checked={!!val}
+                                              onChange={() => togglePermission(item.href, action)}
+                                              className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                                            />
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="p-4 bg-muted/20 text-right border-t border-border">
+                <p className="text-xs text-muted-foreground italic">
+                  Perubahan izin akses akan diterapkan setelah disimpan
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+
+        <Modal
+          type="success"
+          open={successModal}
+          onOpenChange={setSuccessModal}
+          title="Role Berhasil Diperbarui"
+          onConfirm={() => navigate("/role-management")}
+        />
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={setCancelModal}
+          title="Batalkan?"
+          confirmText="Ya, Batalkan"
+          onConfirm={() => navigate("/role-management")}
+        />
+
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title="Simpan sebagai Draft?"
+          description="Data yang belum lengkap bisa dilengkapi nanti"
+          confirmText="Ya, Simpan Draft"
+          onConfirm={() => {
+            setDraftModal(false);
+            handleSubmit(new Event("submit"), true);
+          }}
+        />
       </div>
-
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
-
-      <Modal
-        type="success"
-        open={successModal}
-        onOpenChange={setSuccessModal}
-        title="Role Berhasil Diperbarui"
-        onConfirm={() => navigate("/role-management")}
-      />
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={setCancelModal}
-        title="Batalkan?"
-        confirmText="Ya, Batalkan"
-        onConfirm={() => navigate("/role-management")}
-      />
-
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          handleSubmit(new Event("submit"), true);
-        }}
-      />
-    </div>
     </motion.div>
   );
 };

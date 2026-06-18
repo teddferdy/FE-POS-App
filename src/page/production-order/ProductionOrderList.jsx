@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -88,7 +89,7 @@ const ProductionOrderList = () => {
   const [completeTarget, setCompleteTarget] = useState(null);
   const [completeQty, setCompleteQty] = useState("");
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["production-orders", page, limit, statusFilter],
     () =>
       getAllProductionOrder({
@@ -118,22 +119,30 @@ const ProductionOrderList = () => {
 
   const deleteMutation = useMutation(deleteProductionOrder, {
     onSuccess: () => {
-      toast.success(t("page.productionOrder.list.toastSuccess"), { description: t("page.productionOrder.list.toastDeleteDesc") });
+      toast.success(t("page.productionOrder.list.toastSuccess"), {
+        description: t("page.productionOrder.list.toastDeleteDesc")
+      });
       queryClient.invalidateQueries(["production-orders"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.productionOrder.list.toastError"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const startMutation = useMutation(startProduction, {
     onSuccess: () => {
-      toast.success(t("page.productionOrder.list.toastSuccess"), { description: t("page.productionOrder.list.toastStartDesc") });
+      toast.success(t("page.productionOrder.list.toastSuccess"), {
+        description: t("page.productionOrder.list.toastStartDesc")
+      });
       queryClient.invalidateQueries(["production-orders"]);
       setStartTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.productionOrder.list.toastError"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const completeMutation = useMutation(
@@ -149,7 +158,9 @@ const ProductionOrderList = () => {
         setCompleteQty("");
       },
       onError: (err) =>
-        toast.error(t("page.productionOrder.list.toastError"), { description: err?.response?.data?.message || err.message })
+        toast.error(t("page.productionOrder.list.toastError"), {
+          description: err?.response?.data?.message || err.message
+        })
     }
   );
 
@@ -260,13 +271,21 @@ const ProductionOrderList = () => {
             {t("page.productionOrder.list.breadcrumbDashboard")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.productionOrder.list.breadcrumbPO")}</span>
+          <span className="text-primary font-semibold">
+            {t("page.productionOrder.list.breadcrumbPO")}
+          </span>
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.productionOrder.list.title")}</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.productionOrder.list.title")}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t("page.productionOrder.list.subtitle")}
           </p>
@@ -278,7 +297,11 @@ const ProductionOrderList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           {
             label: t("page.productionOrder.list.statTotal"),
@@ -320,103 +343,117 @@ const ProductionOrderList = () => {
         ))}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.productionOrder.list.emptyMessage")}
-        emptyIcon={ClipboardList}
-        toolbar={
-          <div className="flex items-center gap-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.productionOrder.list.filterAll")}</option>
-              {Object.entries(statusConfig).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={filteredItems}
+              isLoading={isLoading}
+              emptyMessage={t("page.productionOrder.list.emptyMessage")}
+              emptyIcon={ClipboardList}
+              toolbar={
+                <div className="flex items-center gap-3">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                    <option value="all">{t("page.productionOrder.list.filterAll")}</option>
+                    {Object.entries(statusConfig).map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="relative w-full sm:w-64">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder={t("page.productionOrder.list.searchPlaceholder")}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
+
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
+            title={t("page.productionOrder.list.modalDeleteTitle")}
+            description={t("page.productionOrder.list.modalDeleteDesc")}
+            confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
+            onConfirm={() => deleteMutation.mutate(deleteTarget)}
+          />
+
+          <Modal
+            type="confirm"
+            open={!!startTarget}
+            onOpenChange={(o) => !o && setStartTarget(null)}
+            title={t("page.productionOrder.list.modalStartTitle")}
+            description={t("page.productionOrder.list.modalStartDesc")}
+            confirmText={t("page.productionOrder.list.modalStartConfirm")}
+            onConfirm={() => startMutation.mutate(startTarget)}
+          />
+
+          <Modal
+            type="form"
+            open={!!completeTarget}
+            onOpenChange={(o) => {
+              if (!o) {
+                setCompleteTarget(null);
+                setCompleteQty("");
+              }
+            }}
+            title={t("page.productionOrder.list.modalCompleteTitle")}
+            description={t("page.productionOrder.list.modalCompleteDesc")}>
+            <div className="space-y-3">
+              <label className="text-sm font-medium">
+                {t("page.productionOrder.list.modalCompleteLabel")}
+              </label>
               <Input
-                placeholder={t("page.productionOrder.list.searchPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
+                type="number"
+                min="1"
+                value={completeQty}
+                onChange={(e) => setCompleteQty(e.target.value)}
+                placeholder={t("page.productionOrder.list.modalCompletePlaceholder")}
               />
             </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
-
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.productionOrder.list.modalDeleteTitle")}
-        description={t("page.productionOrder.list.modalDeleteDesc")}
-        confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
-        onConfirm={() => deleteMutation.mutate(deleteTarget)}
-      />
-
-      <Modal
-        type="confirm"
-        open={!!startTarget}
-        onOpenChange={(o) => !o && setStartTarget(null)}
-        title={t("page.productionOrder.list.modalStartTitle")}
-        description={t("page.productionOrder.list.modalStartDesc")}
-        confirmText={t("page.productionOrder.list.modalStartConfirm")}
-        onConfirm={() => startMutation.mutate(startTarget)}
-      />
-
-      <Modal
-        type="form"
-        open={!!completeTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setCompleteTarget(null);
-            setCompleteQty("");
-          }
-        }}
-        title={t("page.productionOrder.list.modalCompleteTitle")}
-        description={t("page.productionOrder.list.modalCompleteDesc")}>
-        <div className="space-y-3">
-          <label className="text-sm font-medium">{t("page.productionOrder.list.modalCompleteLabel")}</label>
-          <Input
-            type="number"
-            min="1"
-            value={completeQty}
-            onChange={(e) => setCompleteQty(e.target.value)}
-            placeholder={t("page.productionOrder.list.modalCompletePlaceholder")}
-          />
-        </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setCompleteTarget(null);
-              setCompleteQty("");
-            }}>
-            {t("page.productionOrder.list.modalCompleteCancel")}
-          </Button>
-          <Button
-            onClick={() => completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })}>
-            {t("page.productionOrder.list.modalCompleteConfirm")}
-          </Button>
-        </div>
-      </Modal>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCompleteTarget(null);
+                  setCompleteQty("");
+                }}>
+                {t("page.productionOrder.list.modalCompleteCancel")}
+              </Button>
+              <Button
+                onClick={() =>
+                  completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })
+                }>
+                {t("page.productionOrder.list.modalCompleteConfirm")}
+              </Button>
+            </div>
+          </Modal>
+        </>
+      )}
     </div>
   );
 };

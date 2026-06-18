@@ -27,11 +27,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -76,9 +71,12 @@ const ResetPasswordPage = () => {
     () =>
       z
         .object({
-          email: z.string().min(1, { message: t("page.resetPassword.validation.emailRequired") }).email({
-            message: t("page.resetPassword.validation.emailInvalid")
-          }),
+          email: z
+            .string()
+            .min(1, { message: t("page.resetPassword.validation.emailRequired") })
+            .email({
+              message: t("page.resetPassword.validation.emailInvalid")
+            }),
           newPassword: z.string().min(6, {
             message: t("page.resetPassword.validation.passwordMin")
           }),

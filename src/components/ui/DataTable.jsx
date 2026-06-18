@@ -33,7 +33,6 @@ const DataTable = ({
   const isRowSelectable = (row) => (isSelectable ? isSelectable(row) : true);
 
   const currentPageSelectableIds = data.filter(isRowSelectable).map(getRowId);
-  const currentPageIds = data.map(getRowId);
   const isAllSelected =
     currentPageSelectableIds.length > 0 &&
     currentPageSelectableIds.every((id) => selectedIds.includes(id));

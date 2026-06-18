@@ -21,6 +21,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { getDashboardSummary } from "@/services/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+import AbortController from "@/components/organism/abort-controller";
 
 const FILTERS = [
   { key: "daily", label: "Harian" },
@@ -59,7 +60,12 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const [chartFilter, setChartFilter] = useState("weekly");
 
-  const { data: dashData, isLoading } = useQuery(
+  const {
+    data: dashData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(
     ["dashboard-summary", store, chartFilter],
     () => getDashboardSummary({ store, filter: chartFilter }),
     { enabled: true }
@@ -172,6 +178,8 @@ const Dashboard = () => {
     show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
   };
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -244,7 +252,7 @@ const Dashboard = () => {
                 </motion.div>
               );
             })}
-            </motion.div>
+          </motion.div>
 
           <motion.div
             variants={item}

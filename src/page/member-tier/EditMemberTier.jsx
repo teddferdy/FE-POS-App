@@ -97,318 +97,318 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
-      {/* Header */}
-      <div className="px-xl py-lg border-b border-outline-variant/20 flex items-center justify-between">
-        <div className="flex items-center gap-md">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
-            style={{
-              backgroundColor: formData.selectedColor,
-              boxShadow: `0 8px 16px ${formData.selectedColor}20`
-            }}>
-            <IconComponent
-              size={24}
-              className="text-white"
-              style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
-            />
-          </div>
-          <div>
-            <h2 className="font-headline-lg text-headline-lg text-on-surface">
-              {t("page.memberTier.edit.title")}
-            </h2>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.edit.description", { tierName: formData.tierName || "Tier" })}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-md">
-          <span
-            className={`font-label-md font-bold ${formData.isActive ? "text-[#006c49]" : "text-error"}`}>
-            {formData.isActive ? t("common.active") : t("common.inactive")}
-          </span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isActive}
-              onChange={(e) => handleInputChange("isActive", e.target.checked)}
-              className="sr-only peer"
-            />
+      <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
+        {/* Header */}
+        <div className="px-xl py-lg border-b border-outline-variant/20 flex items-center justify-between">
+          <div className="flex items-center gap-md">
             <div
-              className={`w-11 h-6 rounded-full peer-focus:outline-none peer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                formData.isActive ? "bg-[#006c49]" : "bg-error"
-              } peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white`}
-            />
-          </label>
-        </div>
-      </div>
-
-      <div className="p-xl space-y-xl">
-        {/* General Information */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.edit.basicInfo")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.edit.basicInfoDesc")}
-            </p>
-          </div>
-          <div className="col-span-12 lg:col-span-8 space-y-lg">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
-                  {t("page.memberTier.edit.tierName")}
-                </label>
-                <input
-                  type="text"
-                  value={formData.tierName}
-                  onChange={(e) => handleInputChange("tierName", e.target.value)}
-                  disabled={!formData.isActive}
-                  className="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 outline-none border-primary/50 transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder={t("page.memberTier.edit.tierNamePlaceholder")}
-                />
-              </div>
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
-                  {t("page.memberTier.edit.minPoints")}
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={formData.minPoints}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "minPoints",
-                        e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                      )
-                    }
-                    disabled={!formData.isActive}
-                    className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="0"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
-                    PTS
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
-                  {t("page.memberTier.edit.discountPercent")}
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={formData.discountPercent}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "discountPercent",
-                        e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                      )
-                    }
-                    disabled={!formData.isActive}
-                    className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="0"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
-                    %
-                  </span>
-                </div>
-              </div>
+              className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{
+                backgroundColor: formData.selectedColor,
+                boxShadow: `0 8px 16px ${formData.selectedColor}20`
+              }}>
+              <IconComponent
+                size={24}
+                className="text-white"
+                style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
+              />
+            </div>
+            <div>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface">
+                {t("page.memberTier.edit.title")}
+              </h2>
+              <p className="font-body-md text-on-surface-variant">
+                {t("page.memberTier.edit.description", { tierName: formData.tierName || "Tier" })}
+              </p>
             </div>
           </div>
-        </div>
-
-        <hr className="border-outline-variant/20" />
-
-        {/* Visual Identity */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.edit.visualIdentity")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.edit.visualIdentityDesc")}
-            </p>
-          </div>
-          <div className="col-span-12 lg:col-span-8 space-y-lg">
-            <div className="flex flex-wrap gap-xl">
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
-                  {t("page.memberTier.edit.selectIcon")}
-                </label>
-                <div className="flex gap-sm">
-                  {icons.map((icon) => {
-                    const Icon = icon.component;
-                    const isSelected = formData.selectedIcon === icon.name;
-                    return (
-                      <button
-                        key={icon.name}
-                        disabled={!formData.isActive}
-                        onClick={() => handleInputChange("selectedIcon", icon.name)}
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                          isSelected
-                            ? "bg-surface-container-low border-2 border-primary text-primary"
-                            : "bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
-                        }`}>
-                        <Icon size={24} style={icon.fill ? { fill: "currentColor" } : {}} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-xs">
-                <label className="font-label-md text-on-surface-variant">
-                  {t("page.memberTier.edit.badgeColor")}
-                </label>
-                <div className="flex gap-sm">
-                  {colors.map((color) => {
-                    const isSelected = formData.selectedColor === color.value;
-                    return (
-                      <button
-                        key={color.name}
-                        disabled={!formData.isActive}
-                        onClick={() => handleInputChange("selectedColor", color.value)}
-                        className={`w-8 h-8 rounded-full border-4 border-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                          color.tailwind
-                        } ${isSelected ? "ring-2 ring-primary scale-110" : "ring-1 ring-outline-variant"}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Preview Card */}
-            <div className="bg-surface-container-low rounded-xl p-lg border border-outline-variant/30 flex items-center gap-lg max-w-sm">
+          <div className="flex items-center gap-md">
+            <span
+              className={`font-label-md font-bold ${formData.isActive ? "text-[#006c49]" : "text-error"}`}>
+              {formData.isActive ? t("common.active") : t("common.inactive")}
+            </span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => handleInputChange("isActive", e.target.checked)}
+                className="sr-only peer"
+              />
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
-                style={{
-                  backgroundColor: formData.selectedColor,
-                  boxShadow: `0 8px 16px ${formData.selectedColor}20`
-                }}>
-                <IconComponent
-                  size={32}
-                  className="text-white"
-                  style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
-                />
+                className={`w-11 h-6 rounded-full peer-focus:outline-none peer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                  formData.isActive ? "bg-[#006c49]" : "bg-error"
+                } peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white`}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="p-xl space-y-xl">
+          {/* General Information */}
+          <div className="grid grid-cols-12 gap-xl">
+            <div className="col-span-12 lg:col-span-4">
+              <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+                {t("page.memberTier.edit.basicInfo")}
+              </h3>
+              <p className="font-body-md text-on-surface-variant">
+                {t("page.memberTier.edit.basicInfoDesc")}
+              </p>
+            </div>
+            <div className="col-span-12 lg:col-span-8 space-y-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.tierName")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tierName}
+                    onChange={(e) => handleInputChange("tierName", e.target.value)}
+                    disabled={!formData.isActive}
+                    className="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 outline-none border-primary/50 transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder={t("page.memberTier.edit.tierNamePlaceholder")}
+                  />
+                </div>
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.minPoints")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.minPoints}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "minPoints",
+                          e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={!formData.isActive}
+                      className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
+                      PTS
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.discountPercent")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.discountPercent}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "discountPercent",
+                          e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={!formData.isActive}
+                      className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
+                      %
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="font-label-md text-on-surface-variant uppercase tracking-widest">
-                  {t("page.memberTier.edit.previewBadge")}
-                </p>
-                <h4 className="font-headline-md text-on-surface">
-                  {formData.tierName || t("page.memberTier.edit.goldMember")}
-                </h4>
-                <p className="font-body-md text-on-surface-variant">
-                  {t("page.memberTier.edit.startFrom")}{" "}
-                  {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
-                    "id-ID"
-                  )}{" "}
-                  PTS
-                </p>
+            </div>
+          </div>
+
+          <hr className="border-outline-variant/20" />
+
+          {/* Visual Identity */}
+          <div className="grid grid-cols-12 gap-xl">
+            <div className="col-span-12 lg:col-span-4">
+              <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+                {t("page.memberTier.edit.visualIdentity")}
+              </h3>
+              <p className="font-body-md text-on-surface-variant">
+                {t("page.memberTier.edit.visualIdentityDesc")}
+              </p>
+            </div>
+            <div className="col-span-12 lg:col-span-8 space-y-lg">
+              <div className="flex flex-wrap gap-xl">
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.selectIcon")}
+                  </label>
+                  <div className="flex gap-sm">
+                    {icons.map((icon) => {
+                      const Icon = icon.component;
+                      const isSelected = formData.selectedIcon === icon.name;
+                      return (
+                        <button
+                          key={icon.name}
+                          disabled={!formData.isActive}
+                          onClick={() => handleInputChange("selectedIcon", icon.name)}
+                          className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                            isSelected
+                              ? "bg-surface-container-low border-2 border-primary text-primary"
+                              : "bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
+                          }`}>
+                          <Icon size={24} style={icon.fill ? { fill: "currentColor" } : {}} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.badgeColor")}
+                  </label>
+                  <div className="flex gap-sm">
+                    {colors.map((color) => {
+                      const isSelected = formData.selectedColor === color.value;
+                      return (
+                        <button
+                          key={color.name}
+                          disabled={!formData.isActive}
+                          onClick={() => handleInputChange("selectedColor", color.value)}
+                          className={`w-8 h-8 rounded-full border-4 border-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                            color.tailwind
+                          } ${isSelected ? "ring-2 ring-primary scale-110" : "ring-1 ring-outline-variant"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
+
+              {/* Preview Card */}
+              <div className="bg-surface-container-low rounded-xl p-lg border border-outline-variant/30 flex items-center gap-lg max-w-sm">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+                  style={{
+                    backgroundColor: formData.selectedColor,
+                    boxShadow: `0 8px 16px ${formData.selectedColor}20`
+                  }}>
+                  <IconComponent
+                    size={32}
+                    className="text-white"
+                    style={formData.selectedIcon === "star" ? { fill: "currentColor" } : {}}
+                  />
+                </div>
+                <div>
+                  <p className="font-label-md text-on-surface-variant uppercase tracking-widest">
+                    {t("page.memberTier.edit.previewBadge")}
+                  </p>
+                  <h4 className="font-headline-md text-on-surface">
+                    {formData.tierName || t("page.memberTier.edit.goldMember")}
+                  </h4>
+                  <p className="font-body-md text-on-surface-variant">
+                    {t("page.memberTier.edit.startFrom")}{" "}
+                    {(formData.minPoints === "" ? 0 : Number(formData.minPoints)).toLocaleString(
+                      "id-ID"
+                    )}{" "}
+                    PTS
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr className="border-outline-variant/20" />
+
+          {/* Benefits */}
+          <div className="grid grid-cols-12 gap-xl">
+            <div className="col-span-12 lg:col-span-4">
+              <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
+                {t("page.memberTier.edit.benefits")}
+              </h3>
+              <p className="font-body-md text-on-surface-variant">
+                {t("page.memberTier.edit.benefitsDesc")}
+              </p>
+            </div>
+            <div className="col-span-12 lg:col-span-8 space-y-md">
+              <div className="space-y-sm">
+                {formData.perks.map((perk) => (
+                  <div key={perk.id} className="flex items-center gap-sm group">
+                    <div className="flex-1 relative">
+                      <CheckCircle
+                        size={18}
+                        className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                          perk.text.trim() ? "text-[#006c49]" : "text-outline"
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        value={perk.text}
+                        onChange={(e) => handlePerkChange(perk.id, e.target.value)}
+                        disabled={!formData.isActive}
+                        className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        placeholder={t("page.memberTier.edit.perkPlaceholder")}
+                      />
+                    </div>
+                    <button
+                      onClick={() => removePerk(perk.id)}
+                      disabled={!formData.isActive}
+                      className="p-3 text-outline hover:text-error hover:bg-error/5 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed">
+                      <X size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={addPerk}
+                disabled={!formData.isActive}
+                className="flex items-center gap-sm px-lg py-2 rounded-lg border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary transition-all active:scale-[0.98] w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-outline">
+                <Plus size={20} />
+                <span className="font-label-md">{t("page.memberTier.edit.addBenefit")}</span>
+              </button>
             </div>
           </div>
         </div>
 
-        <hr className="border-outline-variant/20" />
-
-        {/* Benefits */}
-        <div className="grid grid-cols-12 gap-xl">
-          <div className="col-span-12 lg:col-span-4">
-            <h3 className="font-title-lg text-title-lg text-on-surface mb-xs">
-              {t("page.memberTier.edit.benefits")}
-            </h3>
-            <p className="font-body-md text-on-surface-variant">
-              {t("page.memberTier.edit.benefitsDesc")}
-            </p>
-          </div>
-          <div className="col-span-12 lg:col-span-8 space-y-md">
-            <div className="space-y-sm">
-              {formData.perks.map((perk) => (
-                <div key={perk.id} className="flex items-center gap-sm group">
-                  <div className="flex-1 relative">
-                    <CheckCircle
-                      size={18}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                        perk.text.trim() ? "text-[#006c49]" : "text-outline"
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      value={perk.text}
-                      onChange={(e) => handlePerkChange(perk.id, e.target.value)}
-                      disabled={!formData.isActive}
-                      className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-3 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-body-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder={t("page.memberTier.edit.perkPlaceholder")}
-                    />
-                  </div>
-                  <button
-                    onClick={() => removePerk(perk.id)}
-                    disabled={!formData.isActive}
-                    className="p-3 text-outline hover:text-error hover:bg-error/5 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed">
-                    <X size={20} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
+        {/* Footer */}
+        <div className="px-xl py-lg bg-surface-container-low/50 border-t border-outline-variant/20 flex justify-between items-center">
+          <button
+            onClick={handleDelete}
+            className="px-lg py-3 rounded-lg font-label-md border border-error text-error hover:bg-error/5 transition-all active:scale-95 flex items-center gap-sm">
+            <Trash2 size={18} />
+            {t("page.memberTier.edit.deleteTier")}
+          </button>
+          <div className="flex items-center gap-md">
             <button
-              onClick={addPerk}
+              onClick={onClose}
+              className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
+              {t("common.cancel")}
+            </button>
+            <button
+              onClick={() => setDraftModal(true)}
               disabled={!formData.isActive}
-              className="flex items-center gap-sm px-lg py-2 rounded-lg border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary transition-all active:scale-[0.98] w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-outline">
-              <Plus size={20} />
-              <span className="font-label-md">{t("page.memberTier.edit.addBenefit")}</span>
+              className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
+              {t("page.memberTier.edit.saveDraft")}
+            </button>
+            <button
+              onClick={() => handleSave(false)}
+              disabled={!formData.isActive}
+              className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed">
+              <Save size={20} />
+              {t("page.memberTier.edit.updateTier")}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="px-xl py-lg bg-surface-container-low/50 border-t border-outline-variant/20 flex justify-between items-center">
-        <button
-          onClick={handleDelete}
-          className="px-lg py-3 rounded-lg font-label-md border border-error text-error hover:bg-error/5 transition-all active:scale-95 flex items-center gap-sm">
-          <Trash2 size={18} />
-          {t("page.memberTier.edit.deleteTier")}
-        </button>
-        <div className="flex items-center gap-md">
-          <button
-            onClick={onClose}
-            className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            {t("common.cancel")}
-          </button>
-          <button
-            onClick={() => setDraftModal(true)}
-            disabled={!formData.isActive}
-            className="px-lg py-3 rounded-lg font-label-md text-on-surface hover:bg-surface-container-high transition-all active:scale-95">
-            {t("page.memberTier.edit.saveDraft")}
-          </button>
-          <button
-            onClick={() => handleSave(false)}
-            disabled={!formData.isActive}
-            className="px-xl py-3 bg-primary text-white rounded-lg font-label-md shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-sm disabled:opacity-40 disabled:cursor-not-allowed">
-            <Save size={20} />
-            {t("page.memberTier.edit.updateTier")}
-          </button>
-        </div>
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title={t("page.memberTier.edit.draftModalTitle")}
+          description={t("page.memberTier.edit.draftModalDesc")}
+          confirmText={t("page.memberTier.edit.draftModalConfirm")}
+          onConfirm={() => {
+            setDraftModal(false);
+            if (onSave) onSave({ ...formData, saveAsDraft: true });
+          }}
+        />
       </div>
-
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title={t("page.memberTier.edit.draftModalTitle")}
-        description={t("page.memberTier.edit.draftModalDesc")}
-        confirmText={t("page.memberTier.edit.draftModalConfirm")}
-        onConfirm={() => {
-          setDraftModal(false);
-          if (onSave) onSave({ ...formData, saveAsDraft: true });
-        }}
-      />
-    </div>
     </motion.div>
   );
 };

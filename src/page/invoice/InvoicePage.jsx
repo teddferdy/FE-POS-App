@@ -46,6 +46,7 @@ import {
   getPostalCode
 } from "@/services/general";
 import { printViaBrowser } from "@/utils/thermalPrint";
+import AbortController from "@/components/organism/abort-controller";
 
 const DEFAULT_INVOICE_TEMPLATE = {
   showStoreName: true,
@@ -234,11 +235,14 @@ const InvoicePage = () => {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [selectedStores, setSelectedStores] = useState([]);
 
-  const { data: storeData, isError: storeError } = useQuery(
-    ["store-detail", store],
-    () => getLocationById({ id: store }),
-    { enabled: !!store, staleTime: 60 * 1000 }
-  );
+  const {
+    data: storeData,
+    isError: storeError,
+    refetch: refetchStore
+  } = useQuery(["store-detail", store], () => getLocationById({ id: store }), {
+    enabled: !!store,
+    staleTime: 60 * 1000
+  });
   const locationDetail = (storeData?.data || storeData) ?? null;
   const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
   const storeName = hasStore ? locationDetail?.name || locationDetail?.storeName : "Nama Toko";
@@ -445,8 +449,15 @@ const InvoicePage = () => {
     });
   };
 
+  if (storeError) return <AbortController refetch={refetchStore} />;
+
   return (
-    <motion.div variants={item} initial="hidden" animate="show" data-tour="page-settings" className="space-y-6">
+    <motion.div
+      variants={item}
+      initial="hidden"
+      animate="show"
+      data-tour="page-settings"
+      className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">{t("page.invoice.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("page.invoice.description")}</p>

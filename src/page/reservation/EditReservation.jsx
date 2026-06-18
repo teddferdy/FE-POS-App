@@ -27,6 +27,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -64,11 +65,12 @@ const EditReservation = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [availableTables, setAvailableTables] = useState([]);
 
-  const { data: listData, isLoading } = useQuery(
-    ["reservations-all"],
-    () => getReservations({ limit: 9999 }),
-    { enabled: !!id }
-  );
+  const {
+    data: listData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(["reservations-all"], () => getReservations({ limit: 9999 }), { enabled: !!id });
 
   const reservation = useMemo(() => {
     if (!listData?.data) return null;
@@ -147,6 +149,7 @@ const EditReservation = () => {
     });
   };
 
+  if (isError) return <AbortController refetch={refetch} />;
   if (!id)
     return (
       <div className="p-10 text-center text-muted-foreground">
@@ -163,247 +166,249 @@ const EditReservation = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.reservation.edit.breadcrumb.dashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button onClick={() => navigate("/reservation")} className="hover:text-foreground">
-          {t("page.reservation.edit.breadcrumb.list")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {t("page.reservation.edit.breadcrumb.edit")}
-        </span>
-      </nav>
+      <div className="space-y-6">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.reservation.edit.breadcrumb.dashboard")}
+          </button>
+          <span className="text-xs">/</span>
+          <button onClick={() => navigate("/reservation")} className="hover:text-foreground">
+            {t("page.reservation.edit.breadcrumb.list")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">
+            {t("page.reservation.edit.breadcrumb.edit")}
+          </span>
+        </nav>
 
-      <div>
-        <h1 className="text-2xl font-bold">{t("page.reservation.edit.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("page.reservation.edit.subtitle")}</p>
-      </div>
+        <div>
+          <h1 className="text-2xl font-bold">{t("page.reservation.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.reservation.edit.subtitle")}
+          </p>
+        </div>
 
-      <Card className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.reservation.edit.form.customerName")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="customerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.reservation.edit.form.customerPhone")}</FormLabel>
-                    <Input {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="customerEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.reservation.edit.form.customerEmail")}</FormLabel>
-                    <Input type="email" {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="guestCount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.reservation.edit.form.guestCount")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                      }
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reservationDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.reservation.edit.form.date")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <DatePicker date={field.value} setDate={field.onChange} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t("page.reservation.edit.form.startTime")}{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <TimePicker
-                      {...field}
-                      placeholder={t("page.reservation.edit.form.startTimePlaceholder")}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.reservation.edit.form.endTime")}</FormLabel>
-                    <TimePicker
-                      {...field}
-                      placeholder={t("page.reservation.edit.form.endTimePlaceholder")}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.reservation.edit.form.status")}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">
-                          {t("page.reservation.edit.form.statusPending")}
-                        </SelectItem>
-                        <SelectItem value="confirmed">
-                          {t("page.reservation.edit.form.statusConfirmed")}
-                        </SelectItem>
-                        <SelectItem value="cancelled">
-                          {t("page.reservation.edit.form.statusCancelled")}
-                        </SelectItem>
-                        <SelectItem value="completed">
-                          {t("page.reservation.edit.form.statusCompleted")}
-                        </SelectItem>
-                        <SelectItem value="no_show">
-                          {t("page.reservation.edit.form.statusNoShow")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tableId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.reservation.edit.form.table")}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("page.reservation.edit.form.tablePlaceholder")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          {t("page.reservation.edit.form.noTable")}
-                        </SelectItem>
-                        {availableTables.map((t) => (
-                          <SelectItem key={t.id} value={String(t.id)}>
-                            {t.name} (Kap. {t.capacity})
+        <Card className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="customerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.customerName")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.customerPhone")}</FormLabel>
+                      <Input {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.customerEmail")}</FormLabel>
+                      <Input type="email" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="guestCount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.guestCount")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        min="1"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="reservationDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.date")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <DatePicker date={field.value} setDate={field.onChange} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.startTime")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <TimePicker
+                        {...field}
+                        placeholder={t("page.reservation.edit.form.startTimePlaceholder")}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.endTime")}</FormLabel>
+                      <TimePicker
+                        {...field}
+                        placeholder={t("page.reservation.edit.form.endTimePlaceholder")}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.status")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            {t("page.reservation.edit.form.statusPending")}
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={loadAvailableTables}>
-                      {t("page.reservation.edit.form.searchTable")}
-                    </Button>
+                          <SelectItem value="confirmed">
+                            {t("page.reservation.edit.form.statusConfirmed")}
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            {t("page.reservation.edit.form.statusCancelled")}
+                          </SelectItem>
+                          <SelectItem value="completed">
+                            {t("page.reservation.edit.form.statusCompleted")}
+                          </SelectItem>
+                          <SelectItem value="no_show">
+                            {t("page.reservation.edit.form.statusNoShow")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tableId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.table")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t("page.reservation.edit.form.tablePlaceholder")}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            {t("page.reservation.edit.form.noTable")}
+                          </SelectItem>
+                          {availableTables.map((t) => (
+                            <SelectItem key={t.id} value={String(t.id)}>
+                              {t.name} (Kap. {t.capacity})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={loadAvailableTables}>
+                        {t("page.reservation.edit.form.searchTable")}
+                      </Button>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("page.reservation.edit.form.notes")}</FormLabel>
+                    <Textarea rows={3} {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("page.reservation.edit.form.notes")}</FormLabel>
-                  <Textarea rows={3} {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-              <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-                <X size={18} /> {t("page.reservation.edit.cancel")}
-              </Button>
-              <Button type="submit" disabled={updateMutation.isLoading} className="gap-2">
-                <Save size={18} />
-                {updateMutation.isLoading
-                  ? t("page.reservation.edit.saving")
-                  : t("page.reservation.edit.save")}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </Card>
+              <div className="flex justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                  <X size={18} /> {t("page.reservation.edit.cancel")}
+                </Button>
+                <Button type="submit" disabled={updateMutation.isLoading} className="gap-2">
+                  <Save size={18} />
+                  {updateMutation.isLoading
+                    ? t("page.reservation.edit.saving")
+                    : t("page.reservation.edit.save")}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </Card>
 
-      <Modal
-        type="confirm"
-        open={cancelModal}
-        onOpenChange={setCancelModal}
-        title={t("page.reservation.edit.modal.cancelTitle")}
-        description={t("page.reservation.edit.modal.cancelDesc")}
-        confirmText={t("page.reservation.edit.modal.cancelConfirm")}
-        onConfirm={() => navigate("/reservation")}
-      />
-      <Modal
-        type="success"
-        open={successModal}
-        onOpenChange={setSuccessModal}
-        title={t("page.reservation.edit.modal.successTitle")}
-        description={t("page.reservation.edit.modal.successDesc")}
-        confirmText={t("page.reservation.edit.modal.successConfirm")}
-        onConfirm={() => navigate("/reservation")}
-      />
-    </div>
+        <Modal
+          type="confirm"
+          open={cancelModal}
+          onOpenChange={setCancelModal}
+          title={t("page.reservation.edit.modal.cancelTitle")}
+          description={t("page.reservation.edit.modal.cancelDesc")}
+          confirmText={t("page.reservation.edit.modal.cancelConfirm")}
+          onConfirm={() => navigate("/reservation")}
+        />
+        <Modal
+          type="success"
+          open={successModal}
+          onOpenChange={setSuccessModal}
+          title={t("page.reservation.edit.modal.successTitle")}
+          description={t("page.reservation.edit.modal.successDesc")}
+          confirmText={t("page.reservation.edit.modal.successConfirm")}
+          onConfirm={() => navigate("/reservation")}
+        />
+      </div>
     </motion.div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { ShoppingCart, X, Package, Menu, Sun, Moon } from "lucide-react";
+import AbortController from "@/components/organism/abort-controller";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
@@ -74,11 +75,14 @@ const CashierPage = () => {
 
   const cart = orderList();
 
-  const { data: productsData, isLoading } = useQuery(
-    ["products-outlet", store],
-    () => getProductByOutlet({ location: store }),
-    { enabled: !!store }
-  );
+  const {
+    data: productsData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(["products-outlet", store], () => getProductByOutlet({ location: store }), {
+    enabled: !!store
+  });
 
   const products = productsData?.data || productsData || [];
 
@@ -223,19 +227,25 @@ const CashierPage = () => {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          <motion.div layout className="flex-1 flex flex-col overflow-hidden">
-            <ProductGrid
-              products={filteredProducts}
-              isLoading={isLoading}
-              search={search}
-              onSearchChange={setSearch}
-              barcode={barcode}
-              onBarcodeChange={setBarcode}
-              categoryId={categoryId}
-              onCategoryChange={setCategoryId}
-              store={store}
-            />
-          </motion.div>
+          {isError ? (
+            <div className="flex-1 flex items-center justify-center">
+              <AbortController refetch={refetch} />
+            </div>
+          ) : (
+            <motion.div layout className="flex-1 flex flex-col overflow-hidden">
+              <ProductGrid
+                products={filteredProducts}
+                isLoading={isLoading}
+                search={search}
+                onSearchChange={setSearch}
+                barcode={barcode}
+                onBarcodeChange={setBarcode}
+                categoryId={categoryId}
+                onCategoryChange={setCategoryId}
+                store={store}
+              />
+            </motion.div>
+          )}
 
           {/* Mobile cart overlay */}
           <AnimatePresence>

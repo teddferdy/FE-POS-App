@@ -8,6 +8,7 @@ import { Loading } from "@/components/ui/loading";
 import { getSalesSummary } from "@/services/report";
 import { getDateRangeForPeriod, formatCurrency, formatNumber } from "@/utils/reportUtils";
 import GlobalSalesTab from "./GlobalSalesTab";
+import AbortController from "@/components/organism/abort-controller";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,9 +22,13 @@ const SalesReportPage = () => {
 
   const dateRange = getDateRangeForPeriod(salesPeriod);
 
-  const { data: salesData, isLoading: salesLoading } = useQuery(
-    ["sales-summary", salesPeriod],
-    () => getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange })
+  const {
+    data: salesData,
+    isLoading: salesLoading,
+    isError,
+    refetch
+  } = useQuery(["sales-summary", salesPeriod], () =>
+    getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange })
   );
 
   const handleExport = async () => {
@@ -61,7 +66,11 @@ const SalesReportPage = () => {
 
   return (
     <div data-tour="page-reports" className="space-y-8">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
             {t("page.report.sales.title")}
@@ -77,19 +86,27 @@ const SalesReportPage = () => {
         </button>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="relative min-h-[300px]">
-        {!salesData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="show"
+          className="relative min-h-[300px]">
+          {!salesData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
-        {salesData?.data && (
-          <GlobalSalesTab
-            t={t}
-            period={salesPeriod}
-            setPeriod={setSalesPeriod}
-            data={salesData?.data}
-            isLoading={salesLoading}
-          />
-        )}
-      </motion.div>
+          {salesData?.data && (
+            <GlobalSalesTab
+              t={t}
+              period={salesPeriod}
+              setPeriod={setSalesPeriod}
+              data={salesData?.data}
+              isLoading={salesLoading}
+            />
+          )}
+        </motion.div>
+      )}
     </div>
   );
 };

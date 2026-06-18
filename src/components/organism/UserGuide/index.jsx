@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import { BookOpen, X } from "lucide-react";
+import PropTypes from "prop-types";
+import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const guides = {
   "add-location": {
@@ -210,6 +207,10 @@ const UserGuide = ({ guideKey }) => {
       </Dialog>
     </>
   );
+};
+
+UserGuide.propTypes = {
+  guideKey: PropTypes.string.isRequired
 };
 
 export default UserGuide;

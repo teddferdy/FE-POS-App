@@ -13,6 +13,7 @@ import { getAllProduct } from "@/services/product";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
+import AbortController from "@/components/organism/abort-controller";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -40,7 +41,11 @@ const PriceStoreList = () => {
   });
   const products = prodData?.data || [];
 
-  const { isLoading: priceLoading } = useQuery(
+  const {
+    isLoading: priceLoading,
+    isError,
+    refetch
+  } = useQuery(
     ["prices-by-store", selectedStore],
     () => getProductPriceByStore({ productId: "", storeIds: [selectedStore] }),
     {
@@ -59,12 +64,16 @@ const PriceStoreList = () => {
 
   const updateMut = useMutation((payload) => updateProductPriceByStore(payload), {
     onSuccess: () => {
-      toast.success(t("page.priceStore.list.success"), { description: t("page.priceStore.list.updatedDesc") });
+      toast.success(t("page.priceStore.list.success"), {
+        description: t("page.priceStore.list.updatedDesc")
+      });
       queryClient.invalidateQueries(["prices-by-store"]);
       setEditMode(false);
     },
     onError: (err) =>
-      toast.error(t("page.priceStore.list.fail"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.priceStore.list.fail"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const filteredProducts = products.filter((p) => {
@@ -78,7 +87,9 @@ const PriceStoreList = () => {
       ([, v]) => v !== undefined && v !== "" && v !== null
     );
     if (entries.length === 0) {
-      toast.error(t("page.priceStore.list.validation"), { description: t("page.priceStore.list.noChanges") });
+      toast.error(t("page.priceStore.list.validation"), {
+        description: t("page.priceStore.list.noChanges")
+      });
       return;
     }
     const payload = {
@@ -94,13 +105,14 @@ const PriceStoreList = () => {
   const columns = [
     {
       header: t("page.priceStore.list.image"),
-      render: (item) => (
+      render: (item) =>
         item.image ? (
           <img src={item.image} alt={item.nameProduct} className="w-10 h-10 object-cover rounded" />
         ) : (
-          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">-</div>
+          <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">
+            -
+          </div>
         )
-      )
     },
     {
       header: t("page.priceStore.list.barcode"),
@@ -222,51 +234,66 @@ const PriceStoreList = () => {
         </div>
       </div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }} className="flex items-center gap-3">
-        <div className="relative w-full sm:w-64">
-          <Store
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <select
-            value={selectedStore}
-            onChange={(e) => {
-              setSelectedStore(e.target.value);
-              setEditMode(false);
-            }}
-            className="w-full h-9 pl-9 pr-3 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-            <option value="">{t("page.priceStore.list.selectStore")}</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="relative w-full sm:w-64">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.priceStore.list.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-sm"
-          />
-        </div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={item}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="flex items-center gap-3">
+            <div className="relative w-full sm:w-64">
+              <Store
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <select
+                value={selectedStore}
+                onChange={(e) => {
+                  setSelectedStore(e.target.value);
+                  setEditMode(false);
+                }}
+                className="w-full h-9 pl-9 pr-3 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                <option value="">{t("page.priceStore.list.selectStore")}</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.priceStore.list.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredProducts}
-        isLoading={priceLoading}
-        emptyMessage={!selectedStore ? t("page.priceStore.list.emptySelectStore") : t("page.priceStore.list.emptyProducts")}
-        pagination={false}
-      />
-      </motion.div>
-      </motion.div>
+          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={filteredProducts}
+              isLoading={priceLoading}
+              emptyMessage={
+                !selectedStore
+                  ? t("page.priceStore.list.emptySelectStore")
+                  : t("page.priceStore.list.emptyProducts")
+              }
+              pagination={false}
+            />
+          </motion.div>
+        </>
+      )}
+    </motion.div>
   );
 };
 

@@ -147,15 +147,15 @@ const AddShift = () => {
       <motion.div variants={container} initial="hidden" animate="show">
         <motion.div variants={item}>
           <PageHeader
-          breadcrumbs={[
-            { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
-            { i18nKey: "page.shift.list.title", href: "/shift" },
-            { i18nKey: "page.shift.add.title" }
-          ]}
-          title={t("page.shift.add.title")}
-          description={t("page.shift.list.description")}>
-          <UserGuide guideKey="add-shift" />
-        </PageHeader>
+            breadcrumbs={[
+              { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+              { i18nKey: "page.shift.list.title", href: "/shift" },
+              { i18nKey: "page.shift.add.title" }
+            ]}
+            title={t("page.shift.add.title")}
+            description={t("page.shift.list.description")}>
+            <UserGuide guideKey="add-shift" />
+          </PageHeader>
         </motion.div>
       </motion.div>
 
@@ -273,7 +273,9 @@ const AddShift = () => {
                                     {loc.city || loc.address || ""}
                                   </p>
                                 </div>
-                                {isSelected && <Check size={16} className="text-primary shrink-0" />}
+                                {isSelected && (
+                                  <Check size={16} className="text-primary shrink-0" />
+                                )}
                               </button>
                             );
                           })}
@@ -439,7 +441,9 @@ const AddShift = () => {
                                       {emp.position || emp.department || ""}
                                     </p>
                                   </div>
-                                  {isSelected && <Check size={14} className="text-primary shrink-0" />}
+                                  {isSelected && (
+                                    <Check size={14} className="text-primary shrink-0" />
+                                  )}
                                 </label>
                               );
                             })

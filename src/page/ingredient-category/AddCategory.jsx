@@ -22,6 +22,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import { motion } from "framer-motion";
 import PageHeader from "@/components/ui/PageHeader";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -68,27 +69,27 @@ const AddCategory = () => {
     defaultValues: { name: "", isActive: true }
   });
 
-  const { isLoading: loadingData } = useQuery(
-    ["ingredient-category", editId],
-    () => getIngredientCategoryById(editId),
-    {
-      enabled: isEdit,
-      onSuccess: (res) => {
-        const d = res.data;
-        form.reset({
-          name: d.name || "",
-          isActive: d.status !== "inactive"
-        });
-        setSelectedStore(d.store || null);
-      },
-      onError: () => {
-        toast.error(t("page.ingredientCategory.add.toastError"), {
-          description: t("page.ingredientCategory.add.toastErrorDesc")
-        });
-        navigate("/ingredient-category");
-      }
+  const {
+    isLoading: loadingData,
+    isError,
+    refetch
+  } = useQuery(["ingredient-category", editId], () => getIngredientCategoryById(editId), {
+    enabled: isEdit,
+    onSuccess: (res) => {
+      const d = res.data;
+      form.reset({
+        name: d.name || "",
+        isActive: d.status !== "inactive"
+      });
+      setSelectedStore(d.store || null);
+    },
+    onError: () => {
+      toast.error(t("page.ingredientCategory.add.toastError"), {
+        description: t("page.ingredientCategory.add.toastErrorDesc")
+      });
+      navigate("/ingredient-category");
     }
-  );
+  });
 
   const createMutation = useMutation(addIngredientCategory, {
     onSuccess: () => {
@@ -133,6 +134,8 @@ const AddCategory = () => {
 
   const isSubmitting = createMutation.isLoading || editMutation.isLoading;
 
+  if (isError) return <AbortController refetch={refetch} />;
+
   return (
     <div className="space-y-6">
       <motion.div variants={container} initial="hidden" animate="show">
@@ -140,11 +143,26 @@ const AddCategory = () => {
           <PageHeader
             breadcrumbs={[
               { label: t("page.ingredientCategory.add.breadcrumbSettings") },
-              { label: t("page.ingredientCategory.add.breadcrumbCategory"), href: "/ingredient-category" },
-              { label: isEdit ? t("page.ingredientCategory.add.breadcrumbEdit") : t("page.ingredientCategory.add.breadcrumbAdd") }
+              {
+                label: t("page.ingredientCategory.add.breadcrumbCategory"),
+                href: "/ingredient-category"
+              },
+              {
+                label: isEdit
+                  ? t("page.ingredientCategory.add.breadcrumbEdit")
+                  : t("page.ingredientCategory.add.breadcrumbAdd")
+              }
             ]}
-            title={isEdit ? t("page.ingredientCategory.add.titleEdit") : t("page.ingredientCategory.add.titleAdd")}
-            description={isEdit ? t("page.ingredientCategory.add.subtitleEdit") : t("page.ingredientCategory.add.subtitleAdd")}
+            title={
+              isEdit
+                ? t("page.ingredientCategory.add.titleEdit")
+                : t("page.ingredientCategory.add.titleAdd")
+            }
+            description={
+              isEdit
+                ? t("page.ingredientCategory.add.subtitleEdit")
+                : t("page.ingredientCategory.add.subtitleAdd")
+            }
           />
         </motion.div>
       </motion.div>
@@ -198,7 +216,15 @@ const AddCategory = () => {
                                   }`}>
                                   {loc.name}
                                   {isChecked && (
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round">
                                       <polyline points="20 6 9 17 4 12" />
                                     </svg>
                                   )}
@@ -293,7 +319,9 @@ const AddCategory = () => {
 
                     <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 mt-6">
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary text-base">info</span>
+                        <span className="material-symbols-outlined text-primary text-base">
+                          info
+                        </span>
                         <span className="text-sm font-semibold text-primary">
                           {t("page.ingredientCategory.add.tipsPenamaan")}
                         </span>
@@ -301,20 +329,31 @@ const AddCategory = () => {
                       <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
                         <p>
                           {t("page.ingredientCategory.add.tip1a")}{" "}
-                          <span className="text-foreground font-medium">{t("page.ingredientCategory.add.tip1b")}</span>{" "}
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredientCategory.add.tip1b")}
+                          </span>{" "}
                           {t("page.ingredientCategory.add.tip1c")}{" "}
-                          <span className="text-foreground font-medium">{t("page.ingredientCategory.add.tip1d")}</span>{" "}
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredientCategory.add.tip1d")}
+                          </span>{" "}
                           {t("page.ingredientCategory.add.tip1e")}{" "}
-                          <span className="text-foreground font-medium">{t("page.ingredientCategory.add.tip1f")}</span>.
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredientCategory.add.tip1f")}
+                          </span>
+                          .
                         </p>
                         <p>
                           {t("page.ingredientCategory.add.tip2a")}{" "}
-                          <span className="text-foreground font-medium">{t("page.ingredientCategory.add.tip2b")}</span>{" "}
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredientCategory.add.tip2b")}
+                          </span>{" "}
                           {t("page.ingredientCategory.add.tip2c")}
                         </p>
                         <p>
                           {t("page.ingredientCategory.add.tip3a")}{" "}
-                          <span className="text-foreground font-medium">{t("page.ingredientCategory.add.tip3b")}</span>{" "}
+                          <span className="text-foreground font-medium">
+                            {t("page.ingredientCategory.add.tip3b")}
+                          </span>{" "}
                           {t("page.ingredientCategory.add.tip3c")}
                         </p>
                       </div>
@@ -350,7 +389,11 @@ const AddCategory = () => {
         type="success"
         open={showSuccess}
         onOpenChange={setShowSuccess}
-        title={isEdit ? t("page.ingredientCategory.add.modalSuccessTitleEdit") : t("page.ingredientCategory.add.modalSuccessTitleAdd")}
+        title={
+          isEdit
+            ? t("page.ingredientCategory.add.modalSuccessTitleEdit")
+            : t("page.ingredientCategory.add.modalSuccessTitleAdd")
+        }
         onConfirm={() => {
           queryClient.invalidateQueries(["ingredient-categories"]);
           navigate("/ingredient-category");

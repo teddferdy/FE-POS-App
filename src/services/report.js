@@ -30,9 +30,7 @@ export const getDailyReport = async (payload = {}) => {
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(
-    `/report/daily${query ? `?${query}` : ""}`
-  );
+  const { data, status } = await axiosInstance.get(`/report/daily${query ? `?${query}` : ""}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
@@ -56,9 +54,7 @@ export const getCashFlow = async (payload = {}) => {
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(
-    `/report/cash-flow${query ? `?${query}` : ""}`
-  );
+  const { data, status } = await axiosInstance.get(`/report/cash-flow${query ? `?${query}` : ""}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

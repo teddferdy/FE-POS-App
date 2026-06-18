@@ -12,6 +12,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -39,11 +40,14 @@ const EditDepartment = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { data: departmentData, isLoading: departmentsLoading } = useQuery(
-    ["department-detail", departmentId],
-    () => getDepartmentById({ id: departmentId }),
-    { enabled: !!departmentId }
-  );
+  const {
+    data: departmentData,
+    isLoading: departmentsLoading,
+    isError,
+    refetch
+  } = useQuery(["department-detail", departmentId], () => getDepartmentById({ id: departmentId }), {
+    enabled: !!departmentId
+  });
   const department = departmentData?.data || null;
 
   useEffect(() => {
@@ -99,6 +103,10 @@ const EditDepartment = () => {
 
   if (departmentsLoading) {
     return <Loading fullscreen size="lg" label="Memuat data..." />;
+  }
+
+  if (isError) {
+    return <AbortController refetch={refetch} />;
   }
 
   if (!department) {

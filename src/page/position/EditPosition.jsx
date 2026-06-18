@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import Modal from "@/components/organism/modal";
 import { motion } from "framer-motion";
-
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -49,11 +49,12 @@ const EditPosition = () => {
   const [errors, setErrors] = useState({});
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: allPositionsData, isLoading: positionsLoading } = useQuery(
-    ["positions-all"],
-    () => getAllPosition(),
-    { enabled: !!positionId }
-  );
+  const {
+    data: allPositionsData,
+    isLoading: positionsLoading,
+    isError,
+    refetch
+  } = useQuery(["positions-all"], () => getAllPosition(), { enabled: !!positionId });
   const allPositions = allPositionsData?.data || allPositionsData?.positions || [];
   const position = allPositions.find((p) => String(p.id) === positionId);
 
@@ -119,6 +120,10 @@ const EditPosition = () => {
 
   if (positionsLoading) {
     return <Loading fullscreen size="lg" label={t("common.loading")} />;
+  }
+
+  if (isError) {
+    return <AbortController refetch={refetch} />;
   }
 
   if (!position) {

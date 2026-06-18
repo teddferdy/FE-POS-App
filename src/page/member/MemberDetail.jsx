@@ -7,6 +7,7 @@ import { Stars } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: { opacity: 0 },
@@ -14,11 +15,6 @@ const container = {
     opacity: 1,
     transition: { staggerChildren: 0.05 }
   }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const levelConfig = {
@@ -86,9 +82,13 @@ const MemberDetail = () => {
   const [activeTab, setActiveTab] = useState("transactions");
   const [pointPage, setPointPage] = useState(1);
 
-  const { data, isLoading } = useQuery(["member-detail", id], () => getMemberById({ id }), {
-    enabled: !!id
-  });
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["member-detail", id],
+    () => getMemberById({ id }),
+    {
+      enabled: !!id
+    }
+  );
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
     ["member-point-history", id, pointPage],
@@ -97,6 +97,8 @@ const MemberDetail = () => {
   );
 
   const member = data?.data || data?.member || data;
+
+  if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
     return (
@@ -147,7 +149,9 @@ const MemberDetail = () => {
           <div className="lg:col-span-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                <div
+                  key={i}
+                  className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
                   <Skeleton className="h-3 w-24" />
                   <div className="flex items-center justify-between">
                     <Skeleton className="h-6 w-28" />
@@ -277,413 +281,437 @@ const MemberDetail = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div>
-          <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
-            <span>{t("breadcrumb.management")}</span>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <button
-              onClick={() => navigate("/member-list")}
-              className="hover:text-primary transition-colors">
-              {t("breadcrumb.list")}
-            </button>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
-          </nav>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Detail Member: {name}
-          </h2>
-        </div>
-        <Button
-          onClick={() => navigate(`/edit-member?id=${id}`)}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-          <span className="material-symbols-outlined text-lg">edit</span>
-          Edit Member
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col items-center">
-            <div className="relative mb-4">
-              <div
-                className={`w-24 h-24 rounded-full border-4 border-background shadow-md ${avatarBg(name)} flex items-center justify-center text-2xl font-bold`}>
-                {getInitials(name)}
-              </div>
-              <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-1 border-2 border-card">
-                <span
-                  className="material-symbols-outlined text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  verified
-                </span>
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
-            <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
-            <span className="px-3 py-1 bg-primary-fixed text-primary-fixed-foreground rounded-full text-xs font-bold mb-4">
-              Member Active
-            </span>
-            <div className="w-full space-y-4 border-t border-border pt-4">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground text-base">
-                  calendar_today
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">{t("page.member.detail.joinedDate")}</span>
-                  <span className="text-sm font-medium">{formattedJoinDate}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground text-base">
-                  mail
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">{t("page.member.detail.emailAddress")}</span>
-                  <span className="text-sm font-medium">{email}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground text-base">
-                  call
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">{t("page.member.detail.phoneNumber")}</span>
-                  <span className="text-sm font-medium">{phone}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground text-base">
-                  location_on
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">{t("page.member.detail.address")}</span>
-                  <span className="text-sm font-medium">{address}</span>
-                </div>
-              </div>
-            </div>
+      <div className="space-y-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div>
+            <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
+              <span>{t("breadcrumb.management")}</span>
+              <span className="material-symbols-outlined text-sm">chevron_right</span>
+              <button
+                onClick={() => navigate("/member-list")}
+                className="hover:text-primary transition-colors">
+                {t("breadcrumb.list")}
+              </button>
+              <span className="material-symbols-outlined text-sm">chevron_right</span>
+              <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
+            </nav>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
+              Detail Member: {name}
+            </h2>
           </div>
+          <Button
+            onClick={() => navigate(`/edit-member?id=${id}`)}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            <span className="material-symbols-outlined text-lg">edit</span>
+            Edit Member
+          </Button>
+        </div>
 
-          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-            <div className="bg-foreground text-background p-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-tertiary-fixed-dim">
-                  workspace_premium
-                </span>
-                <span className="text-sm font-semibold">{t("page.member.detail.membershipStatus")}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col items-center">
+              <div className="relative mb-4">
+                <div
+                  className={`w-24 h-24 rounded-full border-4 border-background shadow-md ${avatarBg(name)} flex items-center justify-center text-2xl font-bold`}>
+                  {getInitials(name)}
+                </div>
+                <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-1 border-2 border-card">
+                  <span
+                    className="material-symbols-outlined text-sm"
+                    style={{ fontVariationSettings: "'FILL' 1" }}>
+                    verified
+                  </span>
+                </div>
               </div>
-              <span
-                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${level.bg}`}>
-                <span
-                  className="material-symbols-outlined text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  {level.icon}
-                </span>
-                {level.label}
+              <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
+              <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
+              <span className="px-3 py-1 bg-primary-fixed text-primary-fixed-foreground rounded-full text-xs font-bold mb-4">
+                Member Active
               </span>
-            </div>
-            <div className="p-4 space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Total Points
+              <div className="w-full space-y-4 border-t border-border pt-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-muted-foreground text-base">
+                    calendar_today
                   </span>
-                  <span className="text-lg font-bold text-primary">
-                    {points.toLocaleString()} Pts
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full"
-                    style={{
-                      width: `${Math.min(80, (points / (points + pointsRemaining)) * 100)}%`
-                    }}
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Next Tier: <span className="font-bold">{nextTier}</span> (
-                  {pointsRemaining.toLocaleString()} pts remaining)
-                </p>
-              </div>
-              <div className="bg-error/10 border border-error/20 p-3 rounded-lg flex items-center gap-3">
-                <span className="material-symbols-outlined text-error text-base">
-                  notification_important
-                </span>
-                <div>
-                  <p className="text-xs font-bold text-on-error-container">Points expiring soon</p>
-                  <p className="text-xs text-error">
-                    {expiringPoints.toLocaleString()} points expire on {expiringDate}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                <span className="text-xs font-semibold text-muted-foreground block mb-3">
-                  {stat.label}
-                </span>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-foreground">{stat.value}</span>
-                  <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
-                    <span className="material-symbols-outlined text-base">{stat.icon}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      {t("page.member.detail.joinedDate")}
+                    </span>
+                    <span className="text-sm font-medium">{formattedJoinDate}</span>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center">
-                  <span className={`material-symbols-outlined text-sm mr-1 ${stat.trendColor}`}>
-                    {stat.trendIcon}
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-muted-foreground text-base">
+                    mail
                   </span>
-                  <span className={`text-xs font-semibold ${stat.trendColor}`}>{stat.trend}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      {t("page.member.detail.emailAddress")}
+                    </span>
+                    <span className="text-sm font-medium">{email}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-muted-foreground text-base">
+                    call
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      {t("page.member.detail.phoneNumber")}
+                    </span>
+                    <span className="text-sm font-medium">{phone}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-muted-foreground text-base">
+                    location_on
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      {t("page.member.detail.address")}
+                    </span>
+                    <span className="text-sm font-medium">{address}</span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="bg-card rounded-xl border border-border shadow-sm">
-            <div className="flex border-b border-border px-4">
-              <button
-                onClick={() => setActiveTab("transactions")}
-                className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                  activeTab === "transactions"
-                    ? "text-primary border-primary"
-                    : "text-muted-foreground border-transparent hover:text-foreground"
-                }`}>
-                Riwayat Transaksi
-              </button>
-              <button
-                onClick={() => setActiveTab("points")}
-                className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                  activeTab === "points"
-                    ? "text-primary border-primary"
-                    : "text-muted-foreground border-transparent hover:text-foreground"
-                }`}>
-                Aktivitas Poin
-              </button>
             </div>
 
-            {activeTab === "transactions" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-muted/30 border-b border-border">
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Transaction ID
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Store
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                        Total Amount
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {transactions.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                          <span className="material-symbols-outlined text-4xl block mb-2">
-                            receipt_long
-                          </span>
-                          Tidak ada transaksi ditemukan
-                        </td>
-                      </tr>
-                    ) : (
-                      transactions.map((trx, idx) => (
-                        <tr key={trx.id || idx} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3 text-sm font-mono text-foreground">
-                            {trx.code || trx.invoice || `#TRX-${idx.toString().padStart(8, "0")}`}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {trx.date
-                              ? new Date(trx.date).toLocaleDateString("id-ID", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric"
-                                })
-                              : "-"}
-                            {trx.time && (
-                              <>
-                                , <span className="text-xs">{trx.time}</span>
-                              </>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {trx.store || trx.storeName || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-bold text-foreground text-right">
-                            {formatCurrency(trx.amount || trx.total || 0)}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className="px-2.5 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full">
-                              {trx.status || "Completed"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
-                              <span className="material-symbols-outlined text-lg">receipt</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+              <div className="bg-foreground text-background p-4 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-tertiary-fixed-dim">
+                    workspace_premium
+                  </span>
+                  <span className="text-sm font-semibold">
+                    {t("page.member.detail.membershipStatus")}
+                  </span>
+                </div>
+                <span
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${level.bg}`}>
+                  <span
+                    className="material-symbols-outlined text-sm"
+                    style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {level.icon}
+                  </span>
+                  {level.label}
+                </span>
               </div>
-            )}
+              <div className="p-4 space-y-4">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                      Total Points
+                    </span>
+                    <span className="text-lg font-bold text-primary">
+                      {points.toLocaleString()} Pts
+                    </span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full"
+                      style={{
+                        width: `${Math.min(80, (points / (points + pointsRemaining)) * 100)}%`
+                      }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Next Tier: <span className="font-bold">{nextTier}</span> (
+                    {pointsRemaining.toLocaleString()} pts remaining)
+                  </p>
+                </div>
+                <div className="bg-error/10 border border-error/20 p-3 rounded-lg flex items-center gap-3">
+                  <span className="material-symbols-outlined text-error text-base">
+                    notification_important
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-on-error-container">
+                      Points expiring soon
+                    </p>
+                    <p className="text-xs text-error">
+                      {expiringPoints.toLocaleString()} points expire on {expiringDate}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            {activeTab === "points" && (
-              <>
+          <div className="lg:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-card p-4 rounded-xl border border-border shadow-sm">
+                  <span className="text-xs font-semibold text-muted-foreground block mb-3">
+                    {stat.label}
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-bold text-foreground">{stat.value}</span>
+                    <div className={`${stat.iconBg} ${stat.iconColor} p-2 rounded-lg`}>
+                      <span className="material-symbols-outlined text-base">{stat.icon}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center">
+                    <span className={`material-symbols-outlined text-sm mr-1 ${stat.trendColor}`}>
+                      {stat.trendIcon}
+                    </span>
+                    <span className={`text-xs font-semibold ${stat.trendColor}`}>{stat.trend}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-card rounded-xl border border-border shadow-sm">
+              <div className="flex border-b border-border px-4">
+                <button
+                  onClick={() => setActiveTab("transactions")}
+                  className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === "transactions"
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground border-transparent hover:text-foreground"
+                  }`}>
+                  Riwayat Transaksi
+                </button>
+                <button
+                  onClick={() => setActiveTab("points")}
+                  className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === "points"
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground border-transparent hover:text-foreground"
+                  }`}>
+                  Aktivitas Poin
+                </button>
+              </div>
+
+              {activeTab === "transactions" && (
                 <div className="overflow-x-auto">
-                  {pointLoading ? (
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="bg-muted/30 border-b border-border">
-                          {["Tanggal", "Deskripsi", "Poin", "Saldo"].map((_, i) => (
-                            <th key={i} className="px-4 py-3">
-                              <Skeleton className="h-3 w-16" />
-                            </th>
-                          ))}
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-muted/30 border-b border-border">
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Transaction ID
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Store
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                          Total Amount
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {transactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                            <span className="material-symbols-outlined text-4xl block mb-2">
+                              receipt_long
+                            </span>
+                            Tidak ada transaksi ditemukan
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {[...Array(4)].map((_, r) => (
-                          <tr key={r}>
-                            {[...Array(4)].map((_, c) => (
-                              <td key={c} className="px-4 py-3">
-                                <Skeleton className="h-4 w-full" />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="bg-muted/30 border-b border-border">
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Tanggal
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Deskripsi
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                            Poin
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                            Saldo
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {(pointData?.data || []).length === 0 ? (
-                          <tr>
-                            <td
-                              colSpan={4}
-                              className="px-4 py-12 text-center text-muted-foreground">
-                              <Stars size={36} className="mx-auto mb-2 opacity-30" />
-                              <p className="text-sm">Belum ada aktivitas poin</p>
+                      ) : (
+                        transactions.map((trx, idx) => (
+                          <tr key={trx.id || idx} className="hover:bg-muted/20 transition-colors">
+                            <td className="px-4 py-3 text-sm font-mono text-foreground">
+                              {trx.code || trx.invoice || `#TRX-${idx.toString().padStart(8, "0")}`}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">
+                              {trx.date
+                                ? new Date(trx.date).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric"
+                                  })
+                                : "-"}
+                              {trx.time && (
+                                <>
+                                  , <span className="text-xs">{trx.time}</span>
+                                </>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">
+                              {trx.store || trx.storeName || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-bold text-foreground text-right">
+                              {formatCurrency(trx.amount || trx.total || 0)}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className="px-2.5 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full">
+                                {trx.status || "Completed"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <button className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition-all">
+                                <span className="material-symbols-outlined text-lg">receipt</span>
+                              </button>
                             </td>
                           </tr>
-                        ) : (
-                          (pointData?.data || []).map((pt, idx) => (
-                            <tr key={pt.id || idx} className="hover:bg-muted/20 transition-colors">
-                              <td className="px-4 py-3 text-sm text-muted-foreground">
-                                {pt.date || pt.createdAt
-                                  ? new Date(pt.date || pt.createdAt).toLocaleDateString("id-ID", {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric"
-                                    })
-                                  : "-"}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-foreground">
-                                {pt.description || pt.reason || "-"}
-                              </td>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {activeTab === "points" && (
+                <>
+                  <div className="overflow-x-auto">
+                    {pointLoading ? (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-muted/30 border-b border-border">
+                            {[
+                              t("page.member.detail.pointHistoryTable.date"),
+                              t("page.member.detail.pointHistoryTable.description"),
+                              t("page.member.detail.pointHistoryTable.points"),
+                              t("page.member.detail.pointHistoryTable.balance")
+                            ].map((_, i) => (
+                              <th key={i} className="px-4 py-3">
+                                <Skeleton className="h-3 w-16" />
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {[...Array(4)].map((_, r) => (
+                            <tr key={r}>
+                              {[...Array(4)].map((_, c) => (
+                                <td key={c} className="px-4 py-3">
+                                  <Skeleton className="h-4 w-full" />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-muted/30 border-b border-border">
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.member.detail.pointHistoryTable.date")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.member.detail.pointHistoryTable.description")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                              {t("page.member.detail.pointHistoryTable.points")}
+                            </th>
+                            <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                              {t("page.member.detail.pointHistoryTable.balance")}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {(pointData?.data || []).length === 0 ? (
+                            <tr>
                               <td
-                                className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
-                                {pt.points > 0 ? "+" : ""}
-                                {pt.points?.toLocaleString() || 0}
-                              </td>
-                              <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                                {pt.balance?.toLocaleString() || "-"}
+                                colSpan={4}
+                                className="px-4 py-12 text-center text-muted-foreground">
+                                <Stars size={36} className="mx-auto mb-2 opacity-30" />
+                                <p className="text-sm">
+                                  {t("page.member.detail.pointHistoryTable.empty")}
+                                </p>
                               </td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
+                          ) : (
+                            (pointData?.data || []).map((pt, idx) => (
+                              <tr
+                                key={pt.id || idx}
+                                className="hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3 text-sm text-muted-foreground">
+                                  {pt.date || pt.createdAt
+                                    ? new Date(pt.date || pt.createdAt).toLocaleDateString(
+                                        "id-ID",
+                                        {
+                                          day: "numeric",
+                                          month: "short",
+                                          year: "numeric"
+                                        }
+                                      )
+                                    : "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-foreground">
+                                  {pt.description || pt.reason || "-"}
+                                </td>
+                                <td
+                                  className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
+                                  {pt.points > 0 ? "+" : ""}
+                                  {pt.points?.toLocaleString() || 0}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
+                                  {pt.balance?.toLocaleString() || "-"}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                  <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+                    <p className="text-xs text-muted-foreground">
+                      Menampilkan {(pointData?.data || []).length} dari{" "}
+                      {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
+                    </p>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setPointPage(Math.max(1, pointPage - 1))}
+                        disabled={pointPage <= 1}
+                        className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                        <span className="material-symbols-outlined text-lg">chevron_left</span>
+                      </button>
+                      <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                        {pointPage}
+                      </button>
+                      <button
+                        onClick={() => setPointPage(pointPage + 1)}
+                        disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
+                        className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                        <span className="material-symbols-outlined text-lg">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === "transactions" && (
                 <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
                   <p className="text-xs text-muted-foreground">
-                    Menampilkan {(pointData?.data || []).length} dari{" "}
-                    {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
+                    Showing {transactions.length} of {totalTransactions} transactions
                   </p>
                   <div className="flex gap-1">
-                    <button
-                      onClick={() => setPointPage(Math.max(1, pointPage - 1))}
-                      disabled={pointPage <= 1}
-                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <span className="material-symbols-outlined text-lg">chevron_left</span>
                     </button>
                     <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                      {pointPage}
+                      1
                     </button>
-                    <button
-                      onClick={() => setPointPage(pointPage + 1)}
-                      disabled={pointPage >= (pointData?.pagination?.totalPages || 1)}
-                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
+                      2
+                    </button>
+                    <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
+                      3
+                    </button>
+                    <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground">
                       <span className="material-symbols-outlined text-lg">chevron_right</span>
                     </button>
                   </div>
                 </div>
-              </>
-            )}
-
-            {activeTab === "transactions" && (
-              <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
-                <p className="text-xs text-muted-foreground">
-                  Showing {transactions.length} of {totalTransactions} transactions
-                </p>
-                <div className="flex gap-1">
-                  <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
-                    <span className="material-symbols-outlined text-lg">chevron_left</span>
-                  </button>
-                  <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                    1
-                  </button>
-                  <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                    2
-                  </button>
-                  <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                    3
-                  </button>
-                  <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground">
-                    <span className="material-symbols-outlined text-lg">chevron_right</span>
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </motion.div>
   );
 };

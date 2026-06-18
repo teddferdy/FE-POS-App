@@ -13,6 +13,7 @@ import { TipsCard } from "@/components/ui/tips-card";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import AbortController from "@/components/organism/abort-controller";
 
 const STATUS_LABELS = {
   UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
@@ -47,7 +48,7 @@ const AccountsReceivableList = () => {
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["ar-list", page, limit, statusFilter],
     () => getARList({ page, limit, status: statusFilter || undefined }),
     { keepPreviousData: true }
@@ -225,21 +226,29 @@ const AccountsReceivableList = () => {
         ))}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-        <DataTable
-          columns={columns}
-          data={arList}
-          isLoading={isLoading}
-          emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
-          emptyIcon={Receipt}
-          pagination={{
-            page,
-            totalPages: pagination.totalPages || 1,
-            total: pagination.total || 0,
-            onPageChange: setPage
-          }}
-        />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={arList}
+            isLoading={isLoading}
+            emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
+            emptyIcon={Receipt}
+            pagination={{
+              page,
+              totalPages: pagination.totalPages || 1,
+              total: pagination.total || 0,
+              onPageChange: setPage
+            }}
+          />
+        </motion.div>
+      )}
 
       {payModal && (
         <Modal

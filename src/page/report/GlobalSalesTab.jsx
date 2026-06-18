@@ -20,11 +20,6 @@ const container = {
   }
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const STORE_COLORS = [
   "#3B82F6",
   "#F59E0B",
@@ -94,231 +89,235 @@ const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            icon: "payments",
-            iconBg: "bg-blue-100",
-            iconColor: "text-blue-600",
-            labelKey: "page.report.sales.kpi.totalSales",
-            value: formatCurrency(data?.totalSales || 0)
-          },
-          {
-            icon: "receipt_long",
-            iconBg: "bg-blue-50",
-            iconColor: "text-blue-500",
-            labelKey: "page.report.sales.kpi.avgTransaction",
-            value: formatCurrency(data?.avgTransaction || 0)
-          },
-          {
-            icon: "group",
-            iconBg: "bg-indigo-100",
-            iconColor: "text-indigo-600",
-            labelKey: "page.report.sales.kpi.totalCustomers",
-            value: formatNumber(data?.totalCustomers || 0)
-          },
-          {
-            icon: "storefront",
-            iconBg: "bg-sky-100",
-            iconColor: "text-sky-600",
-            labelKey: "page.report.sales.kpi.totalOutlets",
-            value: formatNumber(data?.totalStores || 0)
-          }
-        ].map((kpi) => (
-          <div
-            key={kpi.labelKey}
-            className="bg-card p-4 rounded-xl border-l-4 border-blue-500 border border-border shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div className={`p-2 ${kpi.iconBg} rounded-lg`}>
-                <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
-              </div>
-            </div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              {t(kpi.labelKey)}
-            </p>
-            <p className="text-xl font-bold text-foreground">{kpi.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <div className="w-8 h-1 bg-blue-500 rounded-full mb-2" />
-            <h3 className="text-base font-semibold text-foreground">
-              {t("page.report.sales.revenueTrend")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t("page.report.sales.revenueTrendDesc")}
-            </p>
-          </div>
-          {hasMultipleStores && (
-            <div className="flex flex-wrap gap-3">
-              {storeSalesChart.map((s, i) => (
-                <div key={s.storeId} className="flex items-center gap-1.5">
-                  <div
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundColor: STORE_COLORS[i % STORE_COLORS.length] }}
-                  />
-                  <span className="text-xs font-medium text-muted-foreground">{s.storeName}</span>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              icon: "payments",
+              iconBg: "bg-blue-100",
+              iconColor: "text-blue-600",
+              labelKey: "page.report.sales.kpi.totalSales",
+              value: formatCurrency(data?.totalSales || 0)
+            },
+            {
+              icon: "receipt_long",
+              iconBg: "bg-blue-50",
+              iconColor: "text-blue-500",
+              labelKey: "page.report.sales.kpi.avgTransaction",
+              value: formatCurrency(data?.avgTransaction || 0)
+            },
+            {
+              icon: "group",
+              iconBg: "bg-indigo-100",
+              iconColor: "text-indigo-600",
+              labelKey: "page.report.sales.kpi.totalCustomers",
+              value: formatNumber(data?.totalCustomers || 0)
+            },
+            {
+              icon: "storefront",
+              iconBg: "bg-sky-100",
+              iconColor: "text-sky-600",
+              labelKey: "page.report.sales.kpi.totalOutlets",
+              value: formatNumber(data?.totalStores || 0)
+            }
+          ].map((kpi) => (
+            <div
+              key={kpi.labelKey}
+              className="bg-card p-4 rounded-xl border-l-4 border-blue-500 border border-border shadow-sm">
+              <div className="flex justify-between items-start mb-3">
+                <div className={`p-2 ${kpi.iconBg} rounded-lg`}>
+                  <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
                 </div>
+              </div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                {t(kpi.labelKey)}
+              </p>
+              <p className="text-xl font-bold text-foreground">{kpi.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <div className="w-8 h-1 bg-blue-500 rounded-full mb-2" />
+              <h3 className="text-base font-semibold text-foreground">
+                {t("page.report.sales.revenueTrend")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t("page.report.sales.revenueTrendDesc")}
+              </p>
+            </div>
+            {hasMultipleStores && (
+              <div className="flex flex-wrap gap-3">
+                {storeSalesChart.map((s, i) => (
+                  <div key={s.storeId} className="flex items-center gap-1.5">
+                    <div
+                      className="w-3 h-3 rounded-sm"
+                      style={{ backgroundColor: STORE_COLORS[i % STORE_COLORS.length] }}
+                    />
+                    <span className="text-xs font-medium text-muted-foreground">{s.storeName}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-card border border-border rounded-lg p-1 flex">
+              {periods.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setPeriod(p.label)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                    period === p.label
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}>
+                  {t(`page.report.sales.${p.label.toLowerCase()}`)}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-card border border-border rounded-lg p-1 flex">
-            {periods.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => setPeriod(p.label)}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                  period === p.label
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}>
-                {t(`page.report.sales.${p.label.toLowerCase()}`)}
-              </button>
-            ))}
           </div>
-        </div>
-        <div className="h-[300px] w-full">
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <defs>
+          <div className="h-[300px] w-full">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <defs>
+                    {hasMultipleStores ? (
+                      storeSalesChart.map((s, i) => (
+                        <linearGradient
+                          key={s.storeId}
+                          id={`gradient-${s.storeId}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1">
+                          <stop
+                            offset="5%"
+                            stopColor={STORE_COLORS[i % STORE_COLORS.length]}
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={STORE_COLORS[i % STORE_COLORS.length]}
+                            stopOpacity={0.05}
+                          />
+                        </linearGradient>
+                      ))
+                    ) : (
+                      <linearGradient id="gradient-single" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                      </linearGradient>
+                    )}
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => formatCurrency(v)}
+                  />
+                  <Tooltip content={<CustomTooltip t={t} />} />
                   {hasMultipleStores ? (
                     storeSalesChart.map((s, i) => (
-                      <linearGradient
+                      <Area
                         key={s.storeId}
-                        id={`gradient-${s.storeId}`}
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1">
-                        <stop
-                          offset="5%"
-                          stopColor={STORE_COLORS[i % STORE_COLORS.length]}
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor={STORE_COLORS[i % STORE_COLORS.length]}
-                          stopOpacity={0.05}
-                        />
-                      </linearGradient>
+                        type="monotone"
+                        dataKey={s.storeName}
+                        stackId="1"
+                        stroke={STORE_COLORS[i % STORE_COLORS.length]}
+                        fill={`url(#gradient-${s.storeId})`}
+                        strokeWidth={2}
+                      />
                     ))
                   ) : (
-                    <linearGradient id="gradient-single" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
-                    </linearGradient>
-                  )}
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={{ stroke: "hsl(var(--border))" }}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => formatCurrency(v)}
-                />
-                <Tooltip content={<CustomTooltip t={t} />} />
-                {hasMultipleStores ? (
-                  storeSalesChart.map((s, i) => (
                     <Area
-                      key={s.storeId}
                       type="monotone"
-                      dataKey={s.storeName}
+                      dataKey="total"
                       stackId="1"
-                      stroke={STORE_COLORS[i % STORE_COLORS.length]}
-                      fill={`url(#gradient-${s.storeId})`}
+                      stroke="#3B82F6"
+                      fill="url(#gradient-single)"
                       strokeWidth={2}
                     />
+                  )}
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                {t("page.report.sales.noData")}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex justify-between items-center">
+            <h3 className="text-base font-semibold text-foreground">
+              {t("page.report.sales.storePerformance")}
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-muted/30">
+                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.report.sales.table.storeName")}
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("page.report.sales.table.location")}
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                    {t("page.report.sales.table.totalSales")}
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                    {t("page.report.sales.table.transactions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {stores.length > 0 ? (
+                  stores.map((store) => (
+                    <tr key={store.id} className="hover:bg-muted/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-bold">
+                            {store.name?.charAt(0) || "S"}
+                          </div>
+                          <p className="text-sm font-semibold text-foreground">{store.name}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {store.city || "-"}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
+                        {formatCurrency(store.sales)}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
+                        {formatNumber(store.transactions)}
+                      </td>
+                    </tr>
                   ))
                 ) : (
-                  <Area
-                    type="monotone"
-                    dataKey="total"
-                    stackId="1"
-                    stroke="#3B82F6"
-                    fill="url(#gradient-single)"
-                    strokeWidth={2}
-                  />
-                )}
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-              {t("page.report.sales.noData")}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-          <h3 className="text-base font-semibold text-foreground">
-            {t("page.report.sales.storePerformance")}
-          </h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.report.sales.table.storeName")}
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.report.sales.table.location")}
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                  {t("page.report.sales.table.totalSales")}
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                  {t("page.report.sales.table.transactions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {stores.length > 0 ? (
-                stores.map((store) => (
-                  <tr key={store.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-bold">
-                          {store.name?.charAt(0) || "S"}
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">{store.name}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{store.city || "-"}</td>
-                    <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
-                      {formatCurrency(store.sales)}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-mono font-semibold text-foreground text-right">
-                      {formatNumber(store.transactions)}
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-6 py-12 text-center text-sm text-muted-foreground">
+                      {t("page.report.sales.noStoreData")}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                    {t("page.report.sales.noStoreData")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
     </motion.div>
   );
 };

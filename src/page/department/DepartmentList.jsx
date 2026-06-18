@@ -18,6 +18,7 @@ import UploadDepartmentModal from "@/page/department/components/UploadDepartment
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const container = {
   hidden: {},
@@ -71,7 +72,7 @@ const DepartmentList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["departments", page, limit, search],
     () => getAllDepartmentTable({ page, limit, statusRole: "all", search }),
     { keepPreviousData: true }
@@ -325,8 +326,10 @@ const DepartmentList = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
           <motion.div
             variants={container}
             initial="hidden"
@@ -499,8 +502,8 @@ const DepartmentList = () => {
               </li>
             </ul>
           </motion.div>
-        </motion.div>
-      </motion.div>
+        </>
+      )}
 
       <Modal
         type="confirm"

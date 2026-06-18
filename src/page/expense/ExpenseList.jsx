@@ -7,11 +7,11 @@ import { Plus, Search, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye } from "
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -44,7 +44,7 @@ const ExpenseList = () => {
   const MENU_KEY = "/expense";
   const locationParam = user?.store || "";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["expenses", page, limit],
     () => getAllExpenses({ location: locationParam, page, limit }),
     { keepPreviousData: true }
@@ -53,20 +53,28 @@ const ExpenseList = () => {
   const approveMutation = useMutation(approveExpense, {
     onSuccess: () => {
       queryClient.invalidateQueries(["expenses"]);
-      toast.success(t("page.expense.list.toast.approveSuccess"), { description: t("page.expense.list.toast.approveDescription") });
+      toast.success(t("page.expense.list.toast.approveSuccess"), {
+        description: t("page.expense.list.toast.approveDescription")
+      });
     },
     onError: (err) => {
-      toast.error(t("page.expense.list.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expense.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
   const rejectMutation = useMutation(rejectExpense, {
     onSuccess: () => {
       queryClient.invalidateQueries(["expenses"]);
-      toast.success(t("page.expense.list.toast.rejectSuccess"), { description: t("page.expense.list.toast.rejectDescription") });
+      toast.success(t("page.expense.list.toast.rejectSuccess"), {
+        description: t("page.expense.list.toast.rejectDescription")
+      });
     },
     onError: (err) => {
-      toast.error(t("page.expense.list.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.expense.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -242,7 +250,11 @@ const ExpenseList = () => {
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.expense.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.expense.list.description")}</p>
@@ -255,53 +267,67 @@ const ExpenseList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
-          <p className="text-sm text-muted-foreground">{t("page.expense.list.total")}</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-        </motion.div>
-        <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
-          <p className="text-sm text-muted-foreground">{t("page.expense.list.pending")}</p>
-          <p className="text-2xl font-bold text-orange-600 mt-1">{pendingExpenses}</p>
-        </motion.div>
-        <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
-          <p className="text-sm text-muted-foreground">{t("page.expense.list.approved")}</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{approvedExpenses}</p>
-        </motion.div>
-        <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
-          <p className="text-sm text-muted-foreground">{t("page.expense.list.rejected")}</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{rejectedExpenses}</p>
-        </motion.div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">{t("page.expense.list.total")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+            </motion.div>
+            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">{t("page.expense.list.pending")}</p>
+              <p className="text-2xl font-bold text-orange-600 mt-1">{pendingExpenses}</p>
+            </motion.div>
+            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">{t("page.expense.list.approved")}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{approvedExpenses}</p>
+            </motion.div>
+            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">{t("page.expense.list.rejected")}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{rejectedExpenses}</p>
+            </motion.div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.expense.list.search")}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9 h-10"
-          />
-        </div>
-      </motion.div>
+          <motion.div variants={fadeInUp} initial="hidden" animate="show">
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.expense.list.search")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 h-10"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filtered}
-        isLoading={isLoading}
-        emptyMessage={t("page.expense.list.empty")}
-        emptyIcon={DollarSign}
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={filtered}
+              isLoading={isLoading}
+              emptyMessage={t("page.expense.list.empty")}
+              emptyIcon={DollarSign}
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
+        </>
+      )}
     </div>
   );
 };

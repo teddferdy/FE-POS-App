@@ -57,12 +57,7 @@ const BackupPage = () => {
             </div>
           </div>
 
-          <Button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="w-full gap-2"
-            size="lg"
-          >
+          <Button onClick={handleExport} disabled={isExporting} className="w-full gap-2" size="lg">
             {isExporting ? (
               <>
                 <RefreshCw size={16} className="animate-spin" />
@@ -89,9 +84,7 @@ const BackupPage = () => {
           </div>
 
           <div className="space-y-3 mb-6">
-            <p className="text-sm text-muted-foreground">
-              {t("page.backup.restoreNote")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("page.backup.restoreNote")}</p>
           </div>
 
           <ul className="space-y-2 mb-6">
@@ -106,8 +99,7 @@ const BackupPage = () => {
               <li key={item.href}>
                 <a
                   href={item.href}
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
-                >
+                  className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <FileSpreadsheet size={14} />
                   {item.label}
                 </a>
@@ -115,9 +107,7 @@ const BackupPage = () => {
             ))}
           </ul>
 
-          <p className="text-xs text-muted-foreground italic">
-            {t("page.backup.restoreHint")}
-          </p>
+          <p className="text-xs text-muted-foreground italic">{t("page.backup.restoreHint")}</p>
         </div>
       </div>
 
@@ -132,7 +122,9 @@ const BackupPage = () => {
             </h4>
             <ul className="space-y-1.5">
               {t("page.backup.tips", { returnObjects: true }).map((tip, i) => (
-                <li key={i} className="text-sm text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                <li
+                  key={i}
+                  className="text-sm text-amber-700 dark:text-amber-400 flex items-start gap-2">
                   <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                   {tip}
                 </li>

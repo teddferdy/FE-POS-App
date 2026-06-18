@@ -325,8 +325,12 @@ const RegisterPage = () => {
                           <AlertTriangle className="h-5 w-5 text-warning" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-warning">{t("page.register.noLocationTitle")}</h3>
-                          <p className="text-sm text-warning/80">{t("page.register.noLocationDescription")}</p>
+                          <h3 className="font-medium text-warning">
+                            {t("page.register.noLocationTitle")}
+                          </h3>
+                          <p className="text-sm text-warning/80">
+                            {t("page.register.noLocationDescription")}
+                          </p>
                         </div>
                       </div>
                     </div>

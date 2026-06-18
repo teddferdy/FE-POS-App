@@ -13,6 +13,7 @@ import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const PROMO_TYPE_LABELS = {
   bogo: "BOGO",
@@ -24,7 +25,11 @@ const PROMO_TYPE_LABELS = {
 const getPromoLabel = (item) => {
   const promoType = item.conditions?.promoType;
   if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
-  return item.type === "Persentase" ? "Persentase" : item.type === "Nominal" ? "Nominal" : item.type || "-";
+  return item.type === "Persentase"
+    ? "Persentase"
+    : item.type === "Nominal"
+      ? "Nominal"
+      : item.type || "-";
 };
 
 const container = {
@@ -56,7 +61,7 @@ const DiscountList = () => {
   const MENU_KEY = "/discount";
   const locationParam = user?.store || "";
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["discounts", page, limit, search],
     () => getAllDiscount({ location: locationParam, page, limit, statusDiscount: "" }),
     { keepPreviousData: true }
@@ -64,11 +69,15 @@ const DiscountList = () => {
 
   const deleteMutation = useMutation(deleteDiscount, {
     onSuccess: () => {
-      toast.success(t("page.discount.list.toast.success"), { description: t("page.discount.list.toast.successDescription") });
+      toast.success(t("page.discount.list.toast.success"), {
+        description: t("page.discount.list.toast.successDescription")
+      });
       queryClient.invalidateQueries(["discounts"]);
     },
     onError: (err) => {
-      toast.error(t("page.discount.list.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.discount.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -127,7 +136,9 @@ const DiscountList = () => {
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
           }`}>
-          {item.status === "active" ? t("page.discount.list.active") : t("page.discount.list.inactive")}
+          {item.status === "active"
+            ? t("page.discount.list.active")
+            : t("page.discount.list.inactive")}
         </span>
       )
     },
@@ -194,7 +205,11 @@ const DiscountList = () => {
         </div>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <motion.div variants={item}>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
@@ -215,44 +230,56 @@ const DiscountList = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
-        <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.discount.list.search")}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9 h-10"
-          />
-        </div>
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <>
+          <motion.div variants={fadeInUp} initial="hidden" animate="show">
+            <div className="relative w-full sm:w-72">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                placeholder={t("page.discount.list.search")}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9 h-10"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-        <DataTable
-          columns={columns}
-          data={discounts}
-          isLoading={isLoading}
-          emptyMessage={t("page.discount.list.empty")}
-          emptyIcon={Gift}
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
-        />
-      </motion.div>
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}>
+            <DataTable
+              columns={columns}
+              data={discounts}
+              isLoading={isLoading}
+              emptyMessage={t("page.discount.list.empty")}
+              emptyIcon={Gift}
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </motion.div>
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.discount.list.deleteTitle")}
-        description={t("page.discount.list.deleteDescription", { name: deleteTarget?.name || "" })}
-        confirmText={t("page.discount.list.deleteConfirm")}
-        onConfirm={confirmDelete}
-      />
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+            title={t("page.discount.list.deleteTitle")}
+            description={t("page.discount.list.deleteDescription", {
+              name: deleteTarget?.name || ""
+            })}
+            confirmText={t("page.discount.list.deleteConfirm")}
+            onConfirm={confirmDelete}
+          />
+        </>
+      )}
     </div>
   );
 };

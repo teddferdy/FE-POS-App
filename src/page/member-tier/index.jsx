@@ -14,6 +14,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const MemberTier = () => {
   const { t } = useTranslation();
@@ -36,7 +37,12 @@ const MemberTier = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  const { data: tiersData, isLoading } = useQuery(["member-tiers"], getAllMemberTier);
+  const {
+    data: tiersData,
+    isLoading,
+    isError,
+    refetch
+  } = useQuery(["member-tiers"], getAllMemberTier);
   const tiers = tiersData?.data || tiersData?.tiers || [];
   const activeTierCount =
     tiersData?.activeCount ??
@@ -297,127 +303,131 @@ const MemberTier = () => {
             </motion.div>
           </motion.div>
 
-          <motion.div variants={container} initial="hidden" animate="show">
-            <motion.div variants={item}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <motion.div
-                  variants={item}
-                  data-tour="tier-stat-active"
-                  className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                      <Award size={24} />
-                    </div>
-                    <span className="text-secondary font-mono flex items-center gap-1">
-                      <Award size={16} /> +{tiers.length}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.memberTier.list.totalTiers")}
-                  </p>
-                  <h3 className="text-xl font-bold mt-1">
-                    {activeTierCount} {t("page.memberTier.list.active")}
-                  </h3>
-                  <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-2/3" />
-                  </div>
-                </motion.div>
-                <motion.div
-                  variants={item}
-                  data-tour="tier-stat-members"
-                  className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                      <Users size={24} />
-                    </div>
-                    <span className="text-secondary font-mono flex items-center gap-1">
-                      <TrendingUp size={16} />
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.memberTier.list.totalMembers")}
-                  </p>
-                  <h3 className="text-xl font-bold mt-1">{tiers.length}</h3>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t("page.memberTier.list.acrossTiers")}
-                  </p>
-                </motion.div>
-                <motion.div
-                  variants={item}
-                  data-tour="tier-stat-growth"
-                  className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
-                      <TrendingUp size={24} />
-                    </div>
-                    <span className="text-tertiary font-mono">
-                      {tiers.length > 0 ? tiers[0].name?.toUpperCase() : "-"}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.memberTier.list.highestGrowth")}
-                  </p>
-                  <h3 className="text-xl font-bold mt-1">{t("page.memberTier.list.members")}</h3>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t("page.memberTier.list.conversions")}
-                  </p>
-                </motion.div>
-              </div>
-
-              {tiers.length === 0 ? (
-                <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
-                  <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
-                  <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
-                    <Plus size={16} className="mr-2" />
-                    {t("page.memberTier.list.addTier")}
-                  </Button>
-                </div>
-              ) : (
-                <div data-tour="tier-table" className="mt-6">
-                  <DataTable
-                    columns={columns}
-                    data={paginatedTiers}
-                    isLoading={isLoading}
-                    rowClassName={() => "group"}
-                    toolbar={
-                      <div className="flex items-center justify-between w-full">
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.memberTier.list.tableTitle")}
-                        </h4>
-                        <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                            search
-                          </span>
-                          <Input
-                            data-tour="tier-search"
-                            placeholder={t("common.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setCurrentPage(1);
-                            }}
-                            className="pl-9 h-9 w-72 text-sm"
-                          />
-                        </div>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <motion.div variants={container} initial="hidden" animate="show">
+              <motion.div variants={item}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <motion.div
+                    variants={item}
+                    data-tour="tier-stat-active"
+                    className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <Award size={24} />
                       </div>
-                    }
-                    pagination={{
-                      page: currentPage,
-                      totalPages,
-                      total: filteredTiers.length,
-                      onPageChange: setCurrentPage,
-                      showingText: `${t("common.showing", {
-                        start: (currentPage - 1) * itemsPerPage + 1,
-                        end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
-                        total: filteredTiers.length
-                      })}`
-                    }}
-                  />
+                      <span className="text-secondary font-mono flex items-center gap-1">
+                        <Award size={16} /> +{tiers.length}
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.memberTier.list.totalTiers")}
+                    </p>
+                    <h3 className="text-xl font-bold mt-1">
+                      {activeTierCount} {t("page.memberTier.list.active")}
+                    </h3>
+                    <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary w-2/3" />
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    variants={item}
+                    data-tour="tier-stat-members"
+                    className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+                        <Users size={24} />
+                      </div>
+                      <span className="text-secondary font-mono flex items-center gap-1">
+                        <TrendingUp size={16} />
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.memberTier.list.totalMembers")}
+                    </p>
+                    <h3 className="text-xl font-bold mt-1">{tiers.length}</h3>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {t("page.memberTier.list.acrossTiers")}
+                    </p>
+                  </motion.div>
+                  <motion.div
+                    variants={item}
+                    data-tour="tier-stat-growth"
+                    className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
+                        <TrendingUp size={24} />
+                      </div>
+                      <span className="text-tertiary font-mono">
+                        {tiers.length > 0 ? tiers[0].name?.toUpperCase() : "-"}
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.memberTier.list.highestGrowth")}
+                    </p>
+                    <h3 className="text-xl font-bold mt-1">{t("page.memberTier.list.members")}</h3>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {t("page.memberTier.list.conversions")}
+                    </p>
+                  </motion.div>
                 </div>
-              )}
+
+                {tiers.length === 0 ? (
+                  <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
+                    <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
+                    <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
+                      <Plus size={16} className="mr-2" />
+                      {t("page.memberTier.list.addTier")}
+                    </Button>
+                  </div>
+                ) : (
+                  <div data-tour="tier-table" className="mt-6">
+                    <DataTable
+                      columns={columns}
+                      data={paginatedTiers}
+                      isLoading={isLoading}
+                      rowClassName={() => "group"}
+                      toolbar={
+                        <div className="flex items-center justify-between w-full">
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.memberTier.list.tableTitle")}
+                          </h4>
+                          <div className="relative">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                              search
+                            </span>
+                            <Input
+                              data-tour="tier-search"
+                              placeholder={t("common.search")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                              className="pl-9 h-9 w-72 text-sm"
+                            />
+                          </div>
+                        </div>
+                      }
+                      pagination={{
+                        page: currentPage,
+                        totalPages,
+                        total: filteredTiers.length,
+                        onPageChange: setCurrentPage,
+                        showingText: `${t("common.showing", {
+                          start: (currentPage - 1) * itemsPerPage + 1,
+                          end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
+                          total: filteredTiers.length
+                        })}`
+                      }}
+                    />
+                  </div>
+                )}
+              </motion.div>
             </motion.div>
-          </motion.div>
+          )}
         </div>
       )}
 

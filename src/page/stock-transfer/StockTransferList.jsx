@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
   pending: {
@@ -52,7 +53,7 @@ const StockTransferList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfers", page, limit, statusFilter],
     () =>
       getTransferHistory({
@@ -78,30 +79,42 @@ const StockTransferList = () => {
 
   const deleteMut = useMutation(() => deleteStockTransfer(deleteTarget, store), {
     onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), { description: t("page.stockTransfer.list.toast.deleteDesc") });
+      toast.success(t("page.stockTransfer.list.toast.success"), {
+        description: t("page.stockTransfer.list.toast.deleteDesc")
+      });
       queryClient.invalidateQueries(["stock-transfers"]);
       setDeleteTarget(null);
     },
     onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.stockTransfer.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const approveMut = useMutation((id) => approveStockTransfer(id), {
     onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), { description: t("page.stockTransfer.list.toast.approveDesc") });
+      toast.success(t("page.stockTransfer.list.toast.success"), {
+        description: t("page.stockTransfer.list.toast.approveDesc")
+      });
       queryClient.invalidateQueries(["stock-transfers"]);
     },
     onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.stockTransfer.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const rejectMut = useMutation((id) => rejectStockTransfer(id), {
     onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), { description: t("page.stockTransfer.list.toast.rejectDesc") });
+      toast.success(t("page.stockTransfer.list.toast.success"), {
+        description: t("page.stockTransfer.list.toast.rejectDesc")
+      });
       queryClient.invalidateQueries(["stock-transfers"]);
     },
     onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), { description: err?.response?.data?.message || err.message })
+      toast.error(t("page.stockTransfer.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      })
   });
 
   const columns = [
@@ -210,10 +223,16 @@ const StockTransferList = () => {
           <span className="text-primary font-semibold">{t("page.stockTransfer.list.title")}</span>
         </nav>
       </motion.div>
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{t("page.stockTransfer.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.stockTransfer.list.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.stockTransfer.list.subtitle")}
+          </p>
         </div>
         {canAccess(user, MENU_KEY, "add") && (
           <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
@@ -222,45 +241,53 @@ const StockTransferList = () => {
         )}
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-      <DataTable
-        columns={columns}
-        data={filteredItems}
-        isLoading={isLoading}
-        emptyMessage={t("page.stockTransfer.list.emptyMessage")}
-        toolbar={
-          <div className="flex items-center gap-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
-              {Object.entries(statusCfg).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-            <div className="relative w-full sm:w-64">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.stockTransfer.list.placeholder.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-          </div>
-        }
-        pagination={{ page, totalPages, total, onPageChange: setPage }}
-      />
-      </motion.div>
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : (
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}>
+          <DataTable
+            columns={columns}
+            data={filteredItems}
+            isLoading={isLoading}
+            emptyMessage={t("page.stockTransfer.list.emptyMessage")}
+            toolbar={
+              <div className="flex items-center gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                  <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
+                  {Object.entries(statusCfg).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.stockTransfer.list.placeholder.search")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+              </div>
+            }
+            pagination={{ page, totalPages, total, onPageChange: setPage }}
+          />
+        </motion.div>
+      )}
 
       <Modal
         type="confirm"

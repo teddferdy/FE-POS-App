@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 import { getBomById } from "@/services/bom";
+import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -29,9 +30,12 @@ const DetailBom = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const { data, isLoading } = useQuery(["bom-detail", id], () => getBomById(id), { enabled: !!id });
+  const { data, isLoading, isError, refetch } = useQuery(["bom-detail", id], () => getBomById(id), {
+    enabled: !!id
+  });
   const bom = data?.data;
 
+  if (isError) return <AbortController refetch={refetch} />;
   if (isLoading)
     return (
       <div className="space-y-4 p-6">
@@ -67,7 +71,11 @@ const DetailBom = () => {
         </nav>
       </motion.div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-center justify-between">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.bom.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -79,7 +87,11 @@ const DetailBom = () => {
         </Button>
       </motion.div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div variants={item} className="lg:col-span-2 space-y-6">
           <div className="bg-card p-6 rounded-xl border border-border">
             <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.bomInfo")}</h2>
@@ -109,37 +121,39 @@ const DetailBom = () => {
           </div>
 
           <motion.div variants={item}>
-          <div className="bg-card p-6 rounded-xl border border-border">
-            <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.ingredientList")}</h2>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2">{t("page.bom.detail.ingredient")}</th>
-                  <th className="pb-2 text-right">{t("page.bom.detail.qty")}</th>
-                  <th className="pb-2 text-center">{t("page.bom.detail.unit")}</th>
-                  <th className="pb-2">{t("page.bom.detail.notes")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bom.lines?.length > 0 ? (
-                  bom.lines.map((line, i) => (
-                    <tr key={i} className="border-b border-muted/20">
-                      <td className="py-2">{line.ingredientData?.nameProduct || "-"}</td>
-                      <td className="py-2 text-right font-mono">{line.qty}</td>
-                      <td className="py-2 text-center">{line.unit || t("page.bom.detail.pcs")}</td>
-                      <td className="py-2">{line.notes || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="py-4 text-center text-muted-foreground">
-                      {t("page.bom.detail.noIngredients")}
-                    </td>
+            <div className="bg-card p-6 rounded-xl border border-border">
+              <h2 className="text-lg font-semibold mb-4">{t("page.bom.detail.ingredientList")}</h2>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2">{t("page.bom.detail.ingredient")}</th>
+                    <th className="pb-2 text-right">{t("page.bom.detail.qty")}</th>
+                    <th className="pb-2 text-center">{t("page.bom.detail.unit")}</th>
+                    <th className="pb-2">{t("page.bom.detail.notes")}</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {bom.lines?.length > 0 ? (
+                    bom.lines.map((line, i) => (
+                      <tr key={i} className="border-b border-muted/20">
+                        <td className="py-2">{line.ingredientData?.nameProduct || "-"}</td>
+                        <td className="py-2 text-right font-mono">{line.qty}</td>
+                        <td className="py-2 text-center">
+                          {line.unit || t("page.bom.detail.pcs")}
+                        </td>
+                        <td className="py-2">{line.notes || "-"}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                        {t("page.bom.detail.noIngredients")}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </motion.div>
         </motion.div>
 

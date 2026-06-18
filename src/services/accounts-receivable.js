@@ -8,7 +8,9 @@ export const getARList = async (payload = {}) => {
   if (payload.customerId) params.append("customerId", payload.customerId);
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
-  const { data, status } = await axiosInstance.get(`/accounts-receivable/list?${params.toString()}`);
+  const { data, status } = await axiosInstance.get(
+    `/accounts-receivable/list?${params.toString()}`
+  );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

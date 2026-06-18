@@ -19,6 +19,7 @@ import UploadCategoryModal from "@/page/category/components/UploadCategoryModal"
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import AbortController from "@/components/organism/abort-controller";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -70,7 +71,7 @@ const CategoryList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ["categories", page, limit, search, statusFilter],
     () =>
       getAllCategoryTable({
@@ -441,64 +442,68 @@ const CategoryList = () => {
             ))}
           </motion.div>
 
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            data-tour="category-table"
-            className="mt-6">
-            <DataTable
-              columns={columns}
-              data={filtered}
-              isLoading={isLoading}
-              emptyMessage={t("page.category.list.empty")}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.category.list.sectionTitle")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                        search
-                      </span>
-                      <Input
-                        placeholder={t("page.category.list.search")}
-                        value={search}
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <motion.div
+              variants={item}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              data-tour="category-table"
+              className="mt-6">
+              <DataTable
+                columns={columns}
+                data={filtered}
+                isLoading={isLoading}
+                emptyMessage={t("page.category.list.empty")}
+                toolbar={
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                    <h4 className="text-base font-semibold text-foreground">
+                      {t("page.category.list.sectionTitle")}
+                    </h4>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="relative flex-1 md:w-64">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                          search
+                        </span>
+                        <Input
+                          placeholder={t("page.category.list.search")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
+                      <select
+                        value={statusFilter}
                         onChange={(e) => {
-                          setSearch(e.target.value);
+                          setStatusFilter(e.target.value);
                           setPage(1);
                         }}
-                        className="pl-9 h-9 text-sm"
-                      />
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">{t("page.category.list.statusAll")}</option>
+                        <option value="active">{t("common.active")}</option>
+                        <option value="inactive">{t("common.inactive")}</option>
+                      </select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 h-9"
+                        onClick={() => setStatusFilter("")}>
+                        <span className="material-symbols-outlined text-base">filter_list</span>
+                        {t("page.category.button.filter")}
+                      </Button>
                     </div>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                      <option value="">{t("page.category.list.statusAll")}</option>
-                      <option value="active">{t("common.active")}</option>
-                      <option value="inactive">{t("common.inactive")}</option>
-                    </select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 h-9"
-                      onClick={() => setStatusFilter("")}>
-                      <span className="material-symbols-outlined text-base">filter_list</span>
-                      {t("page.category.button.filter")}
-                    </Button>
                   </div>
-                </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-              rowClassName={() => ""}
-            />
-          </motion.div>
+                }
+                pagination={{ page, totalPages, total, onPageChange: setPage }}
+                rowClassName={() => ""}
+              />
+            </motion.div>
+          )}
 
           <motion.div
             variants={item}
