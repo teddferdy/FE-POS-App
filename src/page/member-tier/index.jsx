@@ -238,6 +238,14 @@ const MemberTier = () => {
                 ]}
                 title={t("page.memberTier.list.title")}
                 description={t("page.memberTier.list.description")}>
+                {canAccess(user, MENU_KEY, "add") && (
+                  <Button
+                    onClick={() => navigate("/add-member-tier")}
+                    className="gap-2">
+                    <Plus size={18} />
+                    {t("page.memberTier.list.addTier")}
+                  </Button>
+                )}
                 <UserGuide guideKey="add-member-tier" />
               </PageHeader>
             </motion.div>
