@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { createTransaction } from "@/services/transaction";
 import { getAllCustomer } from "@/services/customer";
 import { getDiscount } from "@/services/discount";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const PAYMENT_METHODS = [
   { id: "cash", label: "Tunai", icon: Banknote, color: "from-emerald-500 to-emerald-600" },

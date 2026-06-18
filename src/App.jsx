@@ -8,7 +8,7 @@ import OfflineIndicator from "./components/organism/OfflineIndicator";
 import { setupAutoSync } from "@/services/offline";
 
 // Tour Guide
-import SuperAdminTour from "./components/organism/SuperAdminTour";
+const SuperAdminTour = React.lazy(() => import("./components/organism/SuperAdminTour"));
 
 // Layout
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -258,13 +258,13 @@ function App() {
     <React.Fragment>
       <OfflineIndicator />
       <BrowserRouter>
-        <SuperAdminTour />
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-screen">
               <Loading />
             </div>
           }>
+          <SuperAdminTour />
           <Routes>
             {/* Auth */}
             <Route path="/" element={<LoginPage />} />

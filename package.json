@@ -28,8 +28,6 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.4.5",
-    "formik": "^2.4.6",
     "i18next": "^23.14.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "i18next-http-backend": "^2.6.1",
@@ -43,14 +41,12 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.2",
-    "react-hot-toast": "^2.6.0",
     "react-i18next": "^15.0.1",
     "react-leaflet": "^4.2.1",
     "react-lottie": "^1.2.4",
     "react-query": "^3.39.3",
     "react-resizable-panels": "^2.1.0",
     "react-router-dom": "^6.25.1",
-    "react-scripts": "5.0.1",
     "react-to-print": "^2.15.1",
     "recharts": "^2.12.7",
     "socket.io-client": "^4.8.3",
@@ -60,41 +56,30 @@
     "tailwindcss": "^3.4.6",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1",
-    "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5",
     "zod": "^3.23.8",
     "zustand": "^4.5.4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "GENERATE_SOURCEMAP=false craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject",
+    "dev": "vite --port 3000",
+    "start": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "lint": "eslint .",
     "lint:fix": "eslint --fix",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@craco/craco": "^7.1.0",
     "@eslint/js": "^9.8.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.5.0",
     "eslint": "9.x",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.35.0",
     "globals": "^15.9.0",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "vite": "^5.4.2"
   }
 }
