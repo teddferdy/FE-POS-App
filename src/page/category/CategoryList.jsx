@@ -1,259 +1,549 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate, Link } from "react-router-dom";
-import {
-  Plus,
-  Edit3,
-  Trash2,
-  Search,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  FolderTree
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import {
+  getAllCategoryTable,
+  deleteCategory,
+  downloadTemplate,
+  downloadExcel
+} from "@/services/category";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Modal from "@/components/organism/modal";
+import UploadCategoryModal from "@/page/category/components/UploadCategoryModal";
+import PageHeader from "@/components/ui/PageHeader";
+import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
 
-import PropTypes from "prop-types";
-import { DeleteAlert } from "@/components/organism/alert";
-import { Toast } from "@/components/organism/toast";
-import { getAllCategoryTable, deleteCategory } from "@/services/category";
-import UploadCategoryModal from "./components/UploadCategoryModal";
+const categoryIcon = {
+  "makanan utama": "restaurant",
+  "minuman dingin": "local_bar",
+  "snack & dessert": "cookie",
+  "kopi & teh panas": "coffee"
+};
 
-const CategoryList = ({ onSelect, categoryId: externalCategoryId, onCategoryChange }) => {
+const getCategoryIcon = (name) => {
+  const key = (name || "").toLowerCase();
+  return categoryIcon[key] || "category";
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
+
+const CategoryList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/category-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [showUpload, setShowUpload] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data, isLoading } = useQuery(
-    ["categories", page, limit],
-    () => getAllCategoryTable({ page, limit }),
+    ["categories", page, limit, search, statusFilter],
+    () =>
+      getAllCategoryTable({
+        page,
+        limit,
+        statusCategory: statusFilter || "all"
+      }),
     { keepPreviousData: true }
   );
 
-  const categories = data?.data || data || [];
-  const totalPages = data?.totalPages || 1;
-
-  const isSelectionMode = !!onCategoryChange || !!onSelect;
-
   const deleteMutation = useMutation(deleteCategory, {
     onSuccess: () => {
-      queryClient.invalidateQueries("categories");
-      Toast.fire({ icon: "success", title: t("page.category.deleted") });
+      toast.success(t("common.success"), { description: t("page.category.toast.deleteSuccess") });
+      queryClient.invalidateQueries(["categories"]);
     },
-    onError: () => {
-      Toast.fire({ icon: "error", title: t("page.category.deleteError") });
+    onError: (err) => {
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
     }
   });
 
+  const categories = data?.data || data?.categories || [];
+  const total = data?.total || data?.pagination?.total || 0;
+  const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+
+  const statsFromBE = data?.stats || {};
+  const hasBEStats =
+    statsFromBE.total !== undefined ||
+    statsFromBE.active !== undefined ||
+    statsFromBE.inactive !== undefined;
+
+  const statsTotal = hasBEStats ? statsFromBE.total || total : total;
+  const activeCount = hasBEStats
+    ? statsFromBE.active || 0
+    : categories.filter((cat) => cat.status === "active" || cat.isActive).length;
+  const inactiveCount = hasBEStats
+    ? statsFromBE.inactive || 0
+    : categories.filter((cat) => cat.status === "inactive" || !cat.isActive).length;
+
   const handleDelete = (id) => {
-    DeleteAlert.fire({
-      title: t("page.category.deleteConfirm"),
-      showCancelButton: true,
-      confirmButtonText: t("common.delete"),
-      cancelButtonText: t("common.cancel")
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteMutation.mutate(id);
-      }
-    });
+    setDeleteTarget(id);
   };
 
-  const handleSelectCategory = (cat) => {
-    const id = cat?.id || cat?._id || cat?.ID || "";
-    if (isSelectionMode) {
-      if (onSelect) onSelect(cat);
-      if (onCategoryChange) onCategoryChange(id);
-    } else {
-      setSelectedCategory(selectedCategory?.id === id ? null : cat);
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget });
+      setDeleteTarget(null);
     }
   };
 
-  if (isLoading) {
+  const filtered = categories.filter((cat) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 size={24} className="animate-spin text-primary" />
-      </div>
+      (cat.name || "").toLowerCase().includes(q) ||
+      (cat.code || cat.idCategory || "").toLowerCase().includes(q)
     );
-  }
+  });
 
-  return (
-    <div className="space-y-4">
-      {!isSelectionMode && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FolderTree size={20} className="text-primary" />
-            <h1 className="text-xl font-bold">{t("page.category.title")}</h1>
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
+
+  const stats = [
+    {
+      dataTour: "category-stat-total",
+      icon: "category",
+      label: t("page.category.list.statsTotal"),
+      value: statsTotal,
+      badge: t("page.category.list.statsTotalBadge", { count: categories.length }),
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary"
+    },
+    {
+      dataTour: "category-stat-active",
+      icon: "check_circle",
+      label: t("page.category.list.statsActive"),
+      value: activeCount,
+      badge: `${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`,
+      iconBg: "bg-green-100 dark:bg-green-900/40",
+      iconColor: "text-green-700 dark:text-green-300"
+    },
+    {
+      dataTour: "category-stat-inactive",
+      icon: "cancel",
+      label: t("page.category.list.statsInactive"),
+      value: inactiveCount,
+      badge: `${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`,
+      iconBg: "bg-red-100 dark:bg-red-900/40",
+      iconColor: "text-red-700 dark:text-red-300",
+      danger: true
+    }
+  ];
+
+  const columns = [
+    {
+      header: t("page.category.table.id"),
+      render: (cat) => (
+        <span className="font-mono text-sm text-foreground">
+          {cat.code || cat.idCategory || `#CAT-${String(cat.id || cat._id).padStart(3, "0")}`}
+        </span>
+      )
+    },
+    {
+      header: t("page.category.table.name"),
+      render: (cat) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+            {cat.image ? (
+              cat.image.startsWith("http") ? (
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-primary">{cat.image}</span>
+              )
+            ) : (
+              <span className="material-symbols-outlined text-primary">
+                {getCategoryIcon(cat.name)}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowUpload(true)}>
-              <RefreshCw size={14} />
-              {t("page.category.import")}
-            </Button>
-            <Button size="sm" onClick={() => navigate("/category/add")}>
-              <Plus size={14} />
-              {t("page.category.add")}
-            </Button>
-          </div>
+          <span className="text-sm font-semibold text-foreground">{cat.name}</span>
         </div>
-      )}
-
-      <div className="relative">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("page.category.search")}
-          className="pl-9 h-10"
-        />
-      </div>
-
-      {isSelectionMode ? (
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-          {externalCategoryId && (
+      )
+    },
+    {
+      header: t("page.category.table.productCount"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.productCount || cat.totalProduct || 0} Item
+        </span>
+      )
+    },
+    {
+      header: t("page.category.table.status"),
+      render: (cat) => {
+        const isActive = cat.status || cat.isActive;
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+              isActive
+                ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+            }`}>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isActive ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"
+              }`}
+            />
+            {isActive ? t("common.active") : t("common.inactive")}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.category.table.createdDate"),
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.createdAt)}</span>
+      )
+    },
+    {
+      header: t("page.category.table.updatedDate"),
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.createdByUser?.fullName || cat.createdByUser?.userName || cat.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.category.table.actions"),
+      align: "right",
+      render: (cat) => (
+        <div className="flex items-center justify-end gap-1 transition-opacity">
+          {canAccess(user, MENU_KEY, "view") && (
             <button
-              onClick={() => onCategoryChange("")}
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-                !externalCategoryId
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card border-border/60 hover:border-primary/50 text-muted-foreground hover:text-foreground"
-              }`}>
-              {t("page.category.all")}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/detail-category?id=${cat.id || cat._id}`);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title={t("common.view")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
             </button>
           )}
-          {categories
-            .filter((cat) => {
-              if (!search) return true;
-              const name = (cat.nameCategory || cat.name || "").toLowerCase();
-              return name.includes(search.toLowerCase());
-            })
-            .map((cat, idx) => {
-              const id = cat?.id || cat?._id || cat?.ID || "";
-              const isActive = id === externalCategoryId;
-              return (
-                <button
-                  key={id || idx}
-                  onClick={() => handleSelectCategory(cat)}
-                  className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card border-border/60 hover:border-primary/50 text-muted-foreground hover:text-foreground"
-                  }`}>
-                  {cat.nameCategory || cat.name || "-"}
-                </button>
-              );
-            })}
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-3">
-            {categories
-              .filter((cat) => {
-                if (!search) return true;
-                const name = (cat.nameCategory || cat.name || "").toLowerCase();
-                return name.includes(search.toLowerCase());
-              })
-              .map((cat, idx) => {
-                const id = cat?.id || cat?._id || cat?.ID || "";
-                const isActive = selectedCategory?.id === id;
-                return (
-                  <div
-                    key={id || idx}
-                    onClick={() => handleSelectCategory(cat)}
-                    className={`group bg-card border rounded-xl p-4 transition-all cursor-pointer ${
-                      isActive
-                        ? "border-primary/50 bg-primary/5 shadow-sm"
-                        : "border-border/50 hover:border-border hover:shadow-sm"
-                    }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center">
-                          <FolderTree size={18} className="text-primary/60" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{cat.nameCategory || cat.name || "-"}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {cat.nameCategoryEnglish || cat.nameEnglish || ""}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/category/edit/${id}`);
-                          }}>
-                          <Edit3 size={14} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100 text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(id);
-                          }}>
-                          <Trash2 size={14} />
-                        </Button>
-                        <Link to={`/category/${id}`} onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <ChevronRight size={14} />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                <ChevronLeft size={14} />
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {page} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}>
-                <ChevronRight size={14} />
-              </Button>
-            </div>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit-category?id=${cat.id || cat._id}`);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title={t("common.edit")}>
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
           )}
-        </>
-      )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(cat.id || cat._id);
+              }}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
+        </div>
+      )
+    }
+  ];
 
-      {showUpload && <UploadCategoryModal onClose={() => setShowUpload(false)} />}
+  return (
+    <div data-tour="page-category" className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+        breadcrumbs={[{ label: t("breadcrumb.adminConsole") }, { label: t("breadcrumb.category") }]}
+        title={t("page.category.list.title")}
+        description={t("page.category.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="category-download-template"
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {isDownloadingTemplate
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadTemplate")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            data-tour="category-download-data"
+            variant="outline"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.category.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.category.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {isDownloadingData
+              ? t("page.category.button.downloading")
+              : t("page.category.button.downloadData")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+        {canAccess(user, MENU_KEY, "import") && (
+          <Button
+            data-tour="category-upload"
+            variant="default"
+            onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg">upload</span>
+            {t("page.category.button.upload")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="category-add"
+            onClick={() => navigate("/add-category")}
+            className="shadow-md">
+            <span className="material-symbols-outlined text-lg">add</span>
+            {t("page.category.button.add")}
+          </Button>
+        )}
+      </PageHeader>
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.map((stat) => (
+          <motion.div
+            key={stat.label}
+            variants={item}
+            data-tour={stat.dataTour}
+            className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
+            <div className="flex justify-between items-start w-full mb-4">
+              <div
+                className={`p-3 ${stat.danger ? "bg-red-700 dark:bg-red-950" : stat.iconBg} rounded-lg`}>
+                <span
+                  className={`material-symbols-outlined ${stat.danger ? "text-white" : stat.iconColor}`}>
+                  {stat.icon}
+                </span>
+              </div>
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded ${stat.danger ? "bg-red-500/30 text-red-100" : "bg-muted text-muted-foreground"}`}>
+                {stat.badge}
+              </span>
+            </div>
+            <p
+              className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
+              {stat.label}
+            </p>
+            <h3 className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
+              {stat.value}
+            </h3>
+            </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        data-tour="category-table">
+        <DataTable
+          columns={columns}
+          data={filtered}
+          isLoading={isLoading}
+          emptyMessage={t("page.category.list.empty")}
+          toolbar={
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+              <h4 className="text-base font-semibold text-foreground">
+                {t("page.category.list.sectionTitle")}
+              </h4>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                    search
+                  </span>
+                  <Input
+                    placeholder={t("page.category.list.search")}
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                  <option value="">{t("page.category.list.statusAll")}</option>
+                  <option value="active">{t("common.active")}</option>
+                  <option value="inactive">{t("common.inactive")}</option>
+                </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 h-9"
+                  onClick={() => setStatusFilter("")}>
+                  <span className="material-symbols-outlined text-base">filter_list</span>
+                  {t("page.category.button.filter")}
+                </Button>
+              </div>
+            </div>
+          }
+          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          rowClassName={() => ""}
+        />
+      </motion.div>
+
+      <motion.div
+        variants={item}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="material-symbols-outlined opacity-80">lightbulb</span>
+          <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+            {t("page.category.tips.title")}
+          </h4>
+        </div>
+        <ul className="space-y-2">
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>{t("page.category.tips.1")}</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>{t("page.category.tips.2")}</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>{t("page.category.tips.3")}</span>
+          </li>
+          <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+            <span className="text-primary-foreground/60 mt-0.5">•</span>
+            <span>{t("page.category.tips.4")}</span>
+          </li>
+        </ul>
+      </motion.div>
+        </motion.div>
+      </motion.div>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t("page.category.modal.deleteTitle")}
+        confirmText={t("page.category.modal.confirmDelete")}
+        onConfirm={confirmDelete}
+      />
+      <UploadCategoryModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onUploadSuccess={() => queryClient.invalidateQueries(["categories"])}
+      />
     </div>
   );
-};
-
-CategoryList.propTypes = {
-  onSelect: PropTypes.func,
-  categoryId: PropTypes.string,
-  onCategoryChange: PropTypes.func
 };
 
 export default CategoryList;

@@ -1,168 +1,401 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Edit3, Trash2, Search, Users, ChevronRight, Phone, Mail } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
+import { toast } from "sonner";
+import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DeleteAlert } from "@/components/organism/alert";
-import { Toast } from "@/components/organism/toast";
-import { getAllEmployee, deleteEmployee } from "@/services/employee";
+import Modal from "@/components/organism/modal";
+import PageHeader from "@/components/ui/PageHeader";
+import { motion } from "framer-motion";
+import { User } from "lucide-react";
+import { getAllLocationTable } from "@/services/location";
+import { useTranslation } from "react-i18next";
+import DataTable from "@/components/ui/DataTable";
+import { canAccess } from "@/utils/permission";
+
+const positionColors = {
+  manager: "bg-primary-fixed text-on-primary-fixed",
+  kasir: "bg-surface-variant text-on-surface-variant",
+  admin: "bg-surface-variant text-on-surface-variant",
+  staff: "bg-surface-variant text-on-surface-variant",
+  supervisor: "bg-surface-container-high text-on-surface"
+};
+
+const getPositionClass = (position) => {
+  const pos = typeof position === "string" ? position.toLowerCase() : "";
+  return positionColors[pos] || "bg-surface-variant text-on-surface-variant";
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 const EmployeeList = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const MENU_KEY = "/employee-list";
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [search, setSearch] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [positionFilter, setPositionFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const { t } = useTranslation();
 
-  const { data, isLoading } = useQuery(["employees"], () => getAllEmployee());
+  const { data, isLoading } = useQuery(
+    ["employees", page, limit, search, locationFilter, positionFilter],
+    () =>
+      getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
+    { keepPreviousData: true }
+  );
 
-  const employees = data?.data || data || [];
+  const { data: locationData } = useQuery(
+    ["all-locations"],
+    () => getAllLocationTable({ page: 1, limit: 100, statusLocation: "all" }),
+    { select: (res) => res?.data?.filter((loc) => loc.isActive) || [] }
+  );
 
   const deleteMutation = useMutation(deleteEmployee, {
     onSuccess: () => {
-      queryClient.invalidateQueries("employees");
-      Toast.fire({ icon: "success", title: t("page.employee.deleted") });
+      toast.success(t("page.employee.list.toast.success"), {
+        description: t("page.employee.list.toast.successDescription")
+      });
+      queryClient.invalidateQueries(["employees"]);
     },
-    onError: () => {
-      Toast.fire({ icon: "error", title: t("page.employee.deleteError") });
+    onError: (err) => {
+      toast.error(t("page.employee.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
-  const handleDelete = (id) => {
-    DeleteAlert.fire({
-      title: t("page.employee.deleteConfirm"),
-      showCancelButton: true,
-      confirmButtonText: t("common.delete"),
-      cancelButtonText: t("common.cancel")
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteMutation.mutate(id);
-      }
-    });
+  const employees = data?.data || data?.employees || [];
+  const total = data?.total || data?.pagination?.total || 0;
+  const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const stats = data?.stats || {};
+  const activeCount = stats.active ?? 0;
+  const inactiveCount = stats.inactive ?? 0;
+
+  const handleDelete = (employee) => {
+    setDeleteTarget(employee);
   };
 
-  const filteredEmployees = employees.filter((e) => {
-    if (!search) return true;
-    const name = (e.nameEmployee || e.name || "").toLowerCase();
-    const email = (e.email || "").toLowerCase();
-    const phone = (e.phone || "").toLowerCase();
-    const q = search.toLowerCase();
-    return name.includes(q) || email.includes(q) || phone.includes(q);
-  });
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });
+      setDeleteTarget(null);
+    }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  const columns = [
+    {
+      header: t("page.employee.list.photo"),
+      render: (row) => (
+        <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border">
+          {row.image ? (
+            <img src={row.image} alt={row.fullName} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              <User size={16} />
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.id"),
+      render: (row) => (
+        <span className="text-sm font-mono font-bold text-primary">
+          {row.employeeID || row.code || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.employee.table.name"),
+      render: (row) => (
+        <div>
+          <p className="text-sm font-semibold text-foreground">{row.fullName}</p>
+          <p className="text-xs text-muted-foreground">{row.email}</p>
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.position"),
+      render: (row) => {
+        const position = row.positionData?.name || row.role || "staff";
+        return (
+          <span
+            className={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getPositionClass(position)}`}>
+            {position === "kasir"
+              ? t("page.employee.list.kasir")
+              : position.charAt(0).toUpperCase() + position.slice(1)}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.employee.table.branch"),
+      render: (row) => (
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-muted-foreground text-base">
+            location_on
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {row.storeData?.name || "belum ada penempatan store"}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: t("page.employee.table.status"),
+      align: "center",
+      render: (row) => (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
+            row.statusActive === true
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+          }`}>
+          {row.statusActive === true ? "Active" : "Inactive"}
+        </span>
+      )
+    },
+    {
+      header: t("page.employee.table.actions"),
+      align: "right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+              title={t("page.employee.list.viewDetail")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <button
+              onClick={() => navigate(`/edit-employee?id=${row.id}`)}
+              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+              title={t("page.employee.list.editEmployee")}>
+              <span className="material-symbols-outlined text-lg">edit</span>
+            </button>
+          )}
+          {canAccess(user, MENU_KEY, "delete") && (
+            <button
+              onClick={() => handleDelete(row)}
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+              title={t("page.employee.list.deleteEmployee")}>
+              <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
+          )}
+        </div>
+      )
+    }
+  ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={20} className="text-primary" />
-          <h1 className="text-xl font-bold">{t("page.employee.title")}</h1>
-        </div>
-        <Button size="sm" onClick={() => navigate("/employee/add")}>
-          <Plus size={14} />
-          {t("page.employee.add")}
-        </Button>
-      </div>
+    <div data-tour="page-employees" className="space-y-6">
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <PageHeader
+            breadcrumbs={[
+              { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
+              { label: t("page.employee.list.title"), i18nKey: "page.employee.list.title" }
+            ]}
+            title={t("page.employee.list.title")}
+            description={t("page.employee.list.description")}>
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="employee-add"
+                onClick={() => navigate("/add-employee")}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+                <span className="material-symbols-outlined text-lg">person_add</span>
+                {t("page.employee.add.title")}
+              </Button>
+            )}
+          </PageHeader>
+        </motion.div>
+      </motion.div>
 
-      <div className="relative">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("page.employee.search")}
-          className="pl-9 h-10"
-        />
-      </div>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div
+              variants={item}
+              data-tour="employee-stat-total"
+              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t("page.employee.table.total")}
+                </p>
+                <h3 className="text-3xl font-bold text-foreground">
+                  {total.toLocaleString() || "0"}
+                </h3>
+                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">trending_up</span>
+                  +12% vs bulan lalu
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">groups</span>
+              </div>
+            </motion.div>
+            <motion.div
+              variants={item}
+              data-tour="employee-stat-active"
+              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  {t("page.employee.table.active")}
+                </p>
+                <h3 className="text-3xl font-bold text-foreground">
+                  {activeCount.toLocaleString() || "0"}
+                </h3>
+                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">check_circle</span>
+                  {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
+                  {t("page.employee.table.activeRate")}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">how_to_reg</span>
+              </div>
+            </motion.div>
+            <motion.div
+              variants={item}
+              data-tour="employee-stat-inactive"
+              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
+              <div>
+                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
+                  {t("page.employee.table.inactive")}
+                </p>
+                <h3 className="text-3xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
+                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">cancel</span>
+                  {t("page.employee.table.attentionNeeded")}
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">cancel</span>
+              </div>
+            </motion.div>
+          </div>
 
-      <div className="grid gap-3">
-        {filteredEmployees.map((emp, idx) => {
-          const id = emp?.id || emp?._id || emp?.ID || "";
-          const avatarUrl = emp.imageEmployee || emp.image || emp.photo || null;
-          return (
-            <div
-              key={id || idx}
-              className="group bg-card border border-border/50 rounded-xl p-4 hover:border-border hover:shadow-sm transition-all cursor-pointer"
-              onClick={() => navigate(`/employee/${id}`)}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {avatarUrl ? (
-                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
-                      <img
-                        src={avatarUrl || "/placeholder.svg"}
-                        alt={emp.nameEmployee || emp.name || ""}
-                        className="w-full h-full object-cover"
+          <div data-tour="employee-table" className="mt-6">
+            <DataTable
+              columns={columns}
+              data={employees}
+              isLoading={isLoading}
+              emptyMessage={t("page.employee.list.empty")}
+              toolbar={
+                <div className="flex flex-wrap gap-4 items-center justify-between">
+                  <div className="flex flex-wrap gap-4 items-center flex-grow">
+                    <div className="relative min-w-[260px]">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                        search
+                      </span>
+                      <Input
+                        placeholder={t("page.employee.list.searchPlaceholder")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 w-full text-sm"
                       />
                     </div>
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center">
-                      <Users size={18} className="text-primary/60" />
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium">{emp.nameEmployee || emp.name || "-"}</p>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      {emp.email && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Mail size={10} />
-                          {emp.email}
-                        </span>
-                      )}
-                      {emp.phone && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Phone size={10} />
-                          {emp.phone}
-                        </span>
-                      )}
+                    <div className="flex gap-3">
+                      <select
+                        value={locationFilter}
+                        onChange={(e) => {
+                          setLocationFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="">{t("page.employee.list.allStores")}</option>
+                        {locationData?.map((loc) => (
+                          <option key={loc.id} value={loc.id.replace("loc-", "")}>
+                            {loc.name}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={positionFilter}
+                        onChange={(e) => {
+                          setPositionFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="">{t("page.employee.list.allPositions")}</option>
+                        <option value="manager">{t("page.employee.list.manager")}</option>
+                        <option value="kasir">{t("page.employee.list.kasir")}</option>
+                        <option value="admin">{t("page.employee.list.admin")}</option>
+                        <option value="staff">{t("page.employee.list.staff")}</option>
+                        <option value="supervisor">{t("page.employee.list.supervisor")}</option>
+                      </select>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/employee/edit/${id}`);
-                    }}>
-                    <Edit3 size={14} />
+                  <Button variant="outline" size="sm" className="gap-2 h-9">
+                    <span className="material-symbols-outlined text-base">tune</span>
+                    Advanced Filters
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(id);
-                    }}>
-                    <Trash2 size={14} />
-                  </Button>
-                  <ChevronRight size={14} className="text-muted-foreground/40" />
                 </div>
-              </div>
-            </div>
-          );
-        })}
-        {filteredEmployees.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-              <Users size={20} className="text-muted-foreground/40" />
-            </div>
-            <p className="font-medium text-muted-foreground">{t("page.employee.noEmployees")}</p>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              rowClassName={() => "group"}
+            />
           </div>
-        )}
-      </div>
+
+          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined opacity-80">lightbulb</span>
+              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+            </div>
+            <ul className="space-y-2">
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>
+                  Gunakan filter cabang untuk melihat beban kerja per lokasi secara cepat.
+                </span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Unduh laporan karyawan dalam format Excel melalui menu download data.</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Pastikan data karyawan selalu diperbarui untuk akurasi penggajian.</span>
+              </li>
+              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                <span className="text-primary-foreground/60 mt-0.5">•</span>
+                <span>Gunakan status aktif/nonaktif untuk mengelola akses karyawan.</span>
+              </li>
+            </ul>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <Modal
+        type="confirm"
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t("page.employee.list.deleteTitle", {
+          name: deleteTarget?.name || t("page.employee.list.data")
+        })}
+        confirmText={t("page.employee.list.deleteConfirm")}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };
