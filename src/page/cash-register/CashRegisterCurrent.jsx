@@ -12,16 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -119,7 +109,7 @@ const CashRegisterCurrent = () => {
     );
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -284,7 +274,7 @@ const CashRegisterCurrent = () => {
           onConfirm={() => closeMut.mutate()}
         />
       </div>
-    </motion.div>
+    </>
   );
 };
 

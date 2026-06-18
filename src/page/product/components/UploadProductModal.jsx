@@ -1,277 +1,184 @@
-import React, { useState, useCallback, useRef } from "react";
-import {
-  Upload,
-  FileSpreadsheet,
-  X,
-  Database,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  ArrowUpToLine
-} from "lucide-react";
-import PropTypes from "prop-types";
+import React, { useState, useRef } from "react";
+import { useMutation, useQueryClient } from "react-query";
+import { X, Upload, FileSpreadsheet, Download, AlertCircle, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { uploadProductExcel } from "@/services/product";
-import { motion } from "framer-motion";
+import { Toast } from "@/components/organism/toast";
+import PropTypes from "prop-types";
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const ALLOWED_TYPES = [
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-excel",
-  "text/csv"
-];
-
-const formatFileSize = (bytes) => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const UploadProductModal = ({ open, onOpenChange, onUploadSuccess }) => {
+const UploadProductModal = ({ onClose }) => {
   const { t } = useTranslation();
-  const [file, setFile] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState(null);
-  const [parseError, setParseError] = useState(false);
+  const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
+  const [file, setFile] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  const resetState = useCallback(() => {
-    setFile(null);
-    setUploading(false);
-    setUploadStatus(null);
-    setParseError(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }, []);
-
-  const handleClose = () => {
-    resetState();
-    onOpenChange(false);
-  };
-
-  const processFile = useCallback(async (selectedFile) => {
-    if (!selectedFile) return;
-    if (
-      !ALLOWED_TYPES.includes(selectedFile.type) &&
-      !selectedFile.name.match(/\.(xlsx|xls|csv)$/i)
-    ) {
-      return;
+  const mutation = useMutation((data) => uploadProductExcel(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("products");
+      Toast.fire({ icon: "success", title: t("page.product.importSuccess") });
+      onClose();
+    },
+    onError: (err) => {
+      Toast.fire({
+        icon: "error",
+        title: err?.response?.data?.message || t("page.product.importError")
+      });
     }
-    setFile(selectedFile);
-    setUploadStatus(null);
-    setParseError(false);
-  }, []);
+  });
 
   const handleFileSelect = (e) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) processFile(selectedFile);
-  };
-
-  const handleDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      setDragOver(false);
-      const droppedFile = e.dataTransfer?.files?.[0];
-      if (droppedFile) processFile(droppedFile);
-    },
-    [processFile]
-  );
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
-
-  const handleUpload = async () => {
-    if (!file) return;
-    setUploading(true);
-    setUploadStatus(null);
-    setParseError(false);
-
-    try {
-      await uploadProductExcel(file);
-      setUploadStatus("success");
-      toast.success(t("common.success"), {
-        description: t("page.product.toast.uploadSuccess")
-      });
-      setTimeout(() => {
-        handleClose();
-        if (onUploadSuccess) onUploadSuccess();
-      }, 1500);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message || err?.message || t("page.product.toast.uploadError");
-      if (msg.includes("baris") || msg.includes("Row") || msg.includes("validasi")) {
-        setParseError(true);
-      }
-      setUploadStatus("error");
-      toast.error(t("common.error"), { description: msg });
-    } finally {
-      setUploading(false);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!file) {
+      Toast.fire({ icon: "warning", title: t("page.product.selectFileFirst") });
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    mutation.mutate(formData);
   };
 
   const removeFile = () => {
     setFile(null);
-    setUploadStatus(null);
-    setParseError(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (!open) return null;
-
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
-        <div className="relative bg-background rounded-xl border border-border shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between p-5 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Upload size={18} className="text-primary" />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold">{t("page.product.upload.title")}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {t("page.product.upload.description")}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
-              <X size={16} />
-            </button>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-lg overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet size={20} className="text-primary" />
+            <h2 className="text-lg font-bold">{t("page.product.importTitle")}</h2>
           </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+            <X size={18} />
+          </button>
+        </div>
 
-          <div className="p-5 space-y-5">
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border border-border">
-              <Database size={18} className="text-muted-foreground shrink-0 mt-0.5" />
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>{t("page.product.upload.formatHint")}</p>
-                <p className="text-xs">{t("page.product.upload.columnsHint")}</p>
-              </div>
-            </div>
-
-            {!file ? (
+        <div className="p-6 space-y-5">
+          <div
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+              dragActive
+                ? "border-primary bg-primary/5 scale-[1.02]"
+                : "border-border/60 hover:border-primary/50"
+            }`}>
+            {file ? (
               <div
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onClick={() => fileInputRef.current?.click()}
-                className={`relative cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                  dragOver
-                    ? "border-primary bg-primary/5 scale-[1.02]"
-                    : "border-border hover:border-primary/50 hover:bg-muted/30"
-                }`}>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ArrowUpToLine size={24} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{t("common.dropOrClick")}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t("common.supportedFormats")}
-                    </p>
-                  </div>
+                className="flex items-center gap-3 justify-center"
+                onClick={(e) => e.stopPropagation()}>
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileSpreadsheet size={20} className="text-primary" />
                 </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile();
+                  }}
+                  className="p-1 rounded-md hover:bg-accent transition-colors">
+                  <X size={14} />
+                </button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <FileSpreadsheet size={20} className="text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={removeFile}
-                    disabled={uploading}
-                    className="w-8 h-8 rounded-lg hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0 ml-2">
-                    <X size={16} className="text-destructive" />
-                  </button>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
+                  <Upload size={24} className="text-muted-foreground/50" />
                 </div>
-
-                {uploadStatus === "success" && (
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                    <CheckCircle2 size={20} className="text-green-600 shrink-0" />
-                    <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                      {t("common.uploadSuccess")}
-                    </p>
-                  </div>
-                )}
-
-                {uploadStatus === "error" && (
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                    <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                        {t("common.uploadFailed")}
-                      </p>
-                      {parseError && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                          {t("common.checkFileFormat")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleUpload}
-                  disabled={uploading || uploadStatus === "success"}
-                  className="w-full gap-2"
-                  size="lg">
-                  {uploading ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      {t("common.uploading")}
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={16} />
-                      {t("common.upload")}
-                    </>
-                  )}
-                </Button>
+                <p className="text-sm text-muted-foreground">{t("page.product.dragDrop")}</p>
+                <p className="text-xs text-muted-foreground/60">
+                  {t("page.product.supportedFormats")}
+                </p>
               </div>
             )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+
+          <a
+            href="/templates/product-template.xlsx"
+            download
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors">
+            <Download size={14} />
+            {t("page.product.downloadTemplate")}
+          </a>
+
+          {file && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border/40">
+              <AlertCircle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">{t("page.product.importNote")}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={onClose}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleUpload}
+              disabled={!file || mutation.isLoading}
+              className="relative overflow-hidden group/btn">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-2">
+                {mutation.isLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Upload size={16} />
+                )}
+                {mutation.isLoading ? t("common.uploading") : t("common.upload")}
+              </span>
+            </Button>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 UploadProductModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onOpenChange: PropTypes.func.isRequired,
-  onUploadSuccess: PropTypes.func
+  onClose: PropTypes.func.isRequired
 };
 
 export default UploadProductModal;

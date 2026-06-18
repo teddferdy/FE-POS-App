@@ -1,5 +1,11 @@
 import { axiosInstance } from ".";
 
+export const getDiscount = async () => {
+  const { data, status } = await axiosInstance.get("/discount/get-discount");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const getAllDiscountByLocationAndActive = async ({ limit, page, statusDiscount }) => {
   const { data, status } = await axiosInstance.get(
     `/discount/get-discount-by-location?page=${page}&limit=${limit}&status=${statusDiscount}`
@@ -74,6 +80,12 @@ export const uploadDiscountExcel = async (file) => {
     headers: { "Content-Type": "multipart/form-data" }
   });
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const getDiscountById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/discount/get-discount/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 

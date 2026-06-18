@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getDailyReport } from "@/services/report";
 import { Card } from "@/components/ui/card";
@@ -10,19 +9,6 @@ import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const DailyReport = () => {
   const { t } = useTranslation();
@@ -45,8 +31,8 @@ const DailyReport = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.report.daily.title" }]}
             title={t("page.report.daily.title")}
@@ -56,11 +42,11 @@ const DailyReport = () => {
               <DatePicker date={endDate} setDate={setEndDate} />
             </div>
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           {isLoading ? (
             <Loading fullscreen size="lg" label={t("page.report.daily.loading")} />
           ) : reports.length === 0 ? (
@@ -121,8 +107,8 @@ const DailyReport = () => {
               </div>
             </Card>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

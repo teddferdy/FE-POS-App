@@ -12,21 +12,7 @@ import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditMember = () => {
   const { t } = useTranslation();
@@ -115,8 +101,8 @@ const EditMember = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.home") },
@@ -127,10 +113,10 @@ const EditMember = () => {
             description={t("page.member.edit.description")}>
             <UserGuide guideKey="add-member" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+        </div>
+      </div>
+      <div>
+        <div>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
@@ -325,8 +311,8 @@ const EditMember = () => {
               </div>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

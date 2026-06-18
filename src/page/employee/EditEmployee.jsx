@@ -42,20 +42,6 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditEmployee = () => {
   const { t } = useTranslation();
@@ -471,8 +457,8 @@ const EditEmployee = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.hrm") },
@@ -486,10 +472,10 @@ const EditEmployee = () => {
             title={t("page.employee.edit.title")}
             description={t("page.employee.edit.description")}
           />
-        </motion.div>
-      </motion.div>
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+        </div>
+      </div>
+      <div>
+        <div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-12 gap-6">
@@ -1456,8 +1442,8 @@ const EditEmployee = () => {
               </div>
             </form>
           </Form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

@@ -1,38 +1,14 @@
-/* eslint-disable react/prop-types */
-import React, { useState, useRef, useEffect } from "react";
-import { useQuery } from "react-query";
-import { Search, Barcode, Package } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
-import { getAllCategoryActive } from "@/services/category";
-import { lookupBarcode } from "@/services/product";
-import { orderList } from "@/state/order-list";
+import React, { useState, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
+import { Search, Barcode, Grid3X3, List, Tag, Package, Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import { formatCurrencyRupiah } from "@/utils/formatter-currency";
+import { useCookies } from "react-cookie";
+import { orderList } from "@/state/order-list";
 import VariantModal from "./VariantModal";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 12, scale: 0.96 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", damping: 20, stiffness: 260 }
-  }
-};
+import CategoryList from "@/page/category/CategoryList";
 
 const ProductGrid = ({
-  products,
+  products: propProducts,
   isLoading,
   search,
   onSearchChange,
@@ -43,262 +19,362 @@ const ProductGrid = ({
   store
 }) => {
   const { t } = useTranslation();
+  const [cookie] = useCookies();
+  const [viewMode, setViewMode] = useState("grid");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [inputMode, setInputMode] = useState("search");
   const cart = orderList();
-  const barcodeRef = useRef(null);
-  const [variantProduct, setVariantProduct] = useState(null);
 
-  const { data: categoriesData } = useQuery(
-    ["categories-active", store],
-    () => getAllCategoryActive({ location: store }),
-    { enabled: !!store }
+  const products = propProducts || [];
+
+  const formatPrice = (value) => {
+    if (value == null || isNaN(value)) return "0";
+    return Number(value).toLocaleString("id-ID");
+  };
+
+  const handleProductClick = useCallback(
+    (product) => {
+      const hasVariants =
+        product.variant && Array.isArray(product.variant) && product.variant.length > 0;
+      if (hasVariants) {
+        setSelectedProduct(product);
+        setShowVariantModal(true);
+      } else {
+        cart.addOrder(product, cookie?.activeStore || store);
+      }
+    },
+    [cart, cookie, store]
   );
 
-  const categories = categoriesData?.data || categoriesData || [];
+  const handleAddToCart = useCallback(
+    (product, variant = null) => {
+      if (variant) {
+        const variantProduct = {
+          ...product,
+          variantName: variant.nameVariant || variant.name,
+          price: variant.price,
+          totalPrice: variant.price,
+          image: variant.image || product.image || product.imageProduct,
+          ID: product.ID || product.id,
+          idProduct: product.idProduct || product.id
+        };
+        cart.addOrder(variantProduct, cookie?.activeStore || store);
+      } else {
+        cart.addOrder(product, cookie?.activeStore || store);
+      }
+      setShowVariantModal(false);
+      setSelectedProduct(null);
+    },
+    [cart, cookie, store]
+  );
 
-  useEffect(() => {
-    if (barcodeRef.current) {
-      barcodeRef.current.focus();
-    }
+  const randomColors = useMemo(() => {
+    const colors = [
+      "from-primary/20 to-primary/5",
+      "from-secondary/20 to-secondary/5",
+      "from-emerald-500/20 to-emerald-500/5",
+      "from-violet-500/20 to-violet-500/5",
+      "from-amber-500/20 to-amber-500/5",
+      "from-rose-500/20 to-rose-500/5",
+      "from-cyan-500/20 to-cyan-500/5",
+      "from-orange-500/20 to-orange-500/5"
+    ];
+    return (id) => colors[(id || 0) % colors.length];
   }, []);
 
-  const handleBarcodeLookup = async (value) => {
-    try {
-      const result = await lookupBarcode(value);
-      const product = result?.data || result?.product || result;
-      if (product) {
-        addToCart(product);
-        onBarcodeChange("");
-      }
-    } catch {
-      onBarcodeChange("");
-    }
-  };
+  const getCartCount = useCallback(
+    (productId) => {
+      const item = cart.order.find((item) => item.idProduct === productId || item.id === productId);
+      return item?.count || 0;
+    },
+    [cart.order]
+  );
 
-  const addToCart = (product) => {
-    const hasOptions = product.options && product.options.length > 0;
-    if (hasOptions) {
-      setVariantProduct(product);
-      return;
-    }
-    const price = Number(product.price || product.harga || 0);
-    const productName =
-      product.nameProduct || product.name || t("page.cashier.product.defaultName");
-    const existing = cart.order.find((item) => item.id === (product.id || product._id));
-    if (existing) {
-      cart.incrementOrder(existing);
-    } else {
-      cart.addingProduct({
-        id: product.id || product._id,
-        name: productName,
-        price,
-        count: 1,
-        totalPrice: price,
-        image: product.image || null,
-        unit: product.unit || "",
-        sku: product.sku || "",
-        point: product.point || 0,
-        redeemPoints: product.redeemPoints || 0
-      });
-    }
-    toast.success(t("page.cashier.product.addedToCart", { name: productName }));
-  };
-
-  const handleAddVariants = (product, selectedOptions) => {
-    const basePrice = Number(product.price || product.harga || 0);
-    const optionLabels = selectedOptions.map((o) => o.name).join(", ");
-    const optionPrice = selectedOptions.reduce((sum, o) => sum + Number(o.price || 0), 0);
-    const totalPrice = basePrice + optionPrice;
-    const key = `${product.id || product._id}-${selectedOptions.map((o) => o.name).join("-")}`;
-    const productName = `${product.nameProduct || product.name} (${optionLabels})`;
-    const existing = cart.order.find((item) => item.cartKey === key);
-    if (existing) {
-      cart.incrementOrder(existing);
-    } else {
-      cart.addingProduct({
-        id: product.id || product._id,
-        cartKey: key,
-        name: product.nameProduct || product.name,
-        price: totalPrice,
-        count: 1,
-        totalPrice,
-        image: product.image || null,
-        unit: product.unit || "",
-        options: selectedOptions,
-        point: product.point || 0,
-        redeemPoints: product.redeemPoints || 0
-      });
-    }
-    toast.success(t("page.cashier.product.addedToCart", { name: productName }));
-    setVariantProduct(null);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={40} className="mx-auto text-primary animate-spin mb-3" />
+          <p className="text-muted-foreground font-medium">{t("page.cashier.loadingProducts")}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-3 lg:p-4 border-b border-border/50 space-y-2 shrink-0 bg-background/40 backdrop-blur-sm">
-        <div className="flex gap-2">
-          <div className="relative flex-1 group">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors"
-            />
-            <Input
-              placeholder={t("page.cashier.search")}
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 h-9 text-sm bg-muted/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all duration-300 rounded-xl"
-            />
-          </div>
-          <div className="relative w-40 group">
-            <Barcode
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors"
-            />
-            <Input
-              ref={barcodeRef}
-              placeholder={t("page.cashier.barcode")}
-              value={barcode}
-              onChange={(e) => onBarcodeChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && barcode.trim()) {
-                  handleBarcodeLookup(barcode.trim());
-                }
-              }}
-              className="pl-9 h-9 text-sm bg-muted/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all duration-300 rounded-xl"
-            />
-          </div>
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onCategoryChange("")}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-              !categoryId
-                ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
-                : "border-border/50 text-muted-foreground hover:bg-accent/50 hover:border-foreground/20 bg-muted/30 backdrop-blur-sm"
+    <>
+      <div className="flex items-center gap-3 px-4 lg:px-6 pt-4 pb-3">
+        <div className="flex items-center gap-2 bg-muted/50 rounded-xl p-0.5 border border-border/40">
+          <button
+            onClick={() => setInputMode("search")}
+            className={`p-1.5 rounded-lg transition-all ${
+              inputMode === "search"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}>
-            {t("common.all")}
-          </motion.button>
-          {categories.map((cat) => (
-            <motion.button
-              key={cat.id || cat._id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onCategoryChange(cat.id || cat._id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-                categoryId === (cat.id || cat._id)
-                  ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
-                  : "border-border/50 text-muted-foreground hover:bg-accent/50 hover:border-foreground/20 bg-muted/30 backdrop-blur-sm"
-              }`}>
-              {cat.name}
-            </motion.button>
-          ))}
+            <Search size={16} />
+          </button>
+          <button
+            onClick={() => setInputMode("barcode")}
+            className={`p-1.5 rounded-lg transition-all ${
+              inputMode === "barcode"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <Barcode size={16} />
+          </button>
+        </div>
+
+        <div className="flex-1 relative">
+          {inputMode === "search" ? (
+            <>
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder={t("page.cashier.searchPlaceholder")}
+                className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+              />
+              {search && (
+                <button
+                  onClick={() => onSearchChange("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X size={14} />
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <Barcode
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                type="text"
+                value={barcode}
+                onChange={(e) => onBarcodeChange(e.target.value)}
+                placeholder={t("page.cashier.barcodePlaceholder")}
+                className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors font-mono tracking-wider"
+              />
+              {barcode && (
+                <button
+                  onClick={() => onBarcodeChange("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X size={14} />
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-0.5 border border-border/40">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-1.5 rounded-lg transition-all ${
+              viewMode === "grid"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <Grid3X3 size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-1.5 rounded-lg transition-all ${
+              viewMode === "list"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <List size={16} />
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 lg:p-4">
-        {isLoading ? (
-          <Loading fullscreen={false} />
-        ) : products.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <div className="w-20 h-20 rounded-2xl bg-muted/50 backdrop-blur-sm border border-border/30 flex items-center justify-center mb-3">
-              <Package size={36} className="opacity-30" />
-            </div>
-            <p className="text-sm">{t("page.cashier.product.notFound")}</p>
-          </motion.div>
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-            <AnimatePresence mode="popLayout">
-              {products.map((product) => {
-                const pid = product.id || product._id;
-                const imageUrl = product.image || (product.images && product.images[0]) || null;
-                const productName =
-                  product.nameProduct || product.name || t("page.cashier.product.defaultName");
-                const productPrice = Number(product.price || product.harga || 0);
-                const stock = product.stock ?? product.quantity ?? null;
-                const hasOptions = product.options && product.options.length > 0;
+      <CategoryList categoryId={categoryId} onCategoryChange={onCategoryChange} />
 
-                return (
-                  <motion.button
-                    key={pid}
-                    variants={itemVariants}
-                    layout
-                    whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => addToCart(product)}
-                    className="group text-left bg-card/70 backdrop-blur-sm border border-border/50 rounded-2xl overflow-hidden hover:border-primary/30 hover:bg-card/90 transition-all duration-300 relative">
-                    <div className="aspect-square bg-gradient-to-br from-muted/80 to-muted/40 relative overflow-hidden">
-                      {imageUrl ? (
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 pb-4">
+        {products.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
+                <Package size={32} className="text-muted-foreground/40" />
+              </div>
+              <p className="font-medium text-muted-foreground">{t("page.cashier.noProducts")}</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
+                {t("page.cashier.noProductsDesc")}
+              </p>
+            </div>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+            {products.map((product, idx) => {
+              const img = product.image || product.imageProduct || product.photo || null;
+              const hasVariants =
+                product.variant && Array.isArray(product.variant) && product.variant.length > 0;
+              const productId = product.id || product.ID || product.idProduct || product._id;
+              const cartCount = getCartCount(productId);
+
+              return (
+                <button
+                  key={productId || idx}
+                  onClick={() => handleProductClick(product)}
+                  className="group bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-md hover:bg-card transition-all duration-200 text-left active:scale-[0.98]">
+                  <div className="relative mb-2.5">
+                    {img ? (
+                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
                         <img
-                          src={imageUrl}
-                          alt={productName}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          src={img || "/placeholder.svg"}
+                          alt={product.nameProduct || product.name || ""}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.parentElement.classList.add(
+                              "flex",
+                              "items-center",
+                              "justify-center"
+                            );
+                            const fallback = document.createElement("span");
+                            fallback.className = "text-2xl font-bold text-muted-foreground/30";
+                            fallback.textContent =
+                              (product.nameProduct || product.name || "?")[0]?.toUpperCase() || "?";
+                            e.target.parentElement.appendChild(fallback);
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
-                          <Package size={36} className="text-muted-foreground/20" />
-                        </div>
-                      )}
-                      {stock !== null && stock <= 0 && (
-                        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
-                          <motion.span
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="text-white text-xs font-semibold bg-gradient-to-r from-red-600 to-red-500 px-3 py-1 rounded-full shadow-lg">
-                            {t("page.cashier.product.outOfStock")}
-                          </motion.span>
-                        </div>
-                      )}
-                      {hasOptions && (
-                        <div className="absolute top-2 right-2">
-                          <span className="text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-full shadow-md">
-                            {t("page.cashier.product.variant")}
-                          </span>
-                        </div>
-                      )}
-                      {!hasOptions && stock !== 0 && (
-                        <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/0 group-hover:ring-primary/20 transition-all duration-300" />
+                      </div>
+                    ) : (
+                      <div
+                        className={`w-full aspect-square rounded-lg bg-gradient-to-br ${randomColors(idx)} border border-border/30 flex items-center justify-center`}>
+                        <Package size={28} className="text-muted-foreground/30" />
+                      </div>
+                    )}
+                    {cartCount > 0 && (
+                      <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center">
+                        <span className="text-primary-foreground text-[10px] font-bold">
+                          {cartCount}
+                        </span>
+                      </div>
+                    )}
+                    {hasVariants && (
+                      <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-amber-500/90 backdrop-blur-sm shadow-sm">
+                        <span className="text-[9px] font-bold text-white uppercase tracking-wider">
+                          <Tag size={8} className="inline mr-0.5" />
+                          {t("page.cashier.variant")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-foreground leading-tight line-clamp-2 min-h-[2em]">
+                      {product.nameProduct || product.name || t("page.cashier.unnamedProduct")}
+                    </p>
+                    <p className="text-sm font-bold text-primary mt-1">
+                      Rp {formatPrice(product.price || product.sellPrice || 0)}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {products.map((product, idx) => {
+              const img = product.image || product.imageProduct || product.photo || null;
+              const hasVariants =
+                product.variant && Array.isArray(product.variant) && product.variant.length > 0;
+              const productId = product.id || product.ID || product.idProduct || product._id;
+              const cartCount = getCartCount(productId);
+
+              return (
+                <button
+                  key={productId || idx}
+                  onClick={() => handleProductClick(product)}
+                  className="w-full group flex items-center gap-3 bg-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-3 hover:border-border/80 hover:shadow-sm hover:bg-card transition-all duration-200 text-left active:scale-[0.99]">
+                  {img ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+                      <img
+                        src={img || "/placeholder.svg"}
+                        alt={product.nameProduct || product.name || ""}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.parentElement.classList.add(
+                            "flex",
+                            "items-center",
+                            "justify-center"
+                          );
+                          const fallback = document.createElement("span");
+                          fallback.className = "text-lg font-bold text-muted-foreground/30";
+                          fallback.textContent =
+                            (product.nameProduct || product.name || "?")[0]?.toUpperCase() || "?";
+                          e.target.parentElement.appendChild(fallback);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`w-12 h-12 rounded-lg bg-gradient-to-br ${randomColors(idx)} border border-border/30 flex items-center justify-center shrink-0`}>
+                      <Package size={20} className="text-muted-foreground/30" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {product.nameProduct || product.name || t("page.cashier.unnamedProduct")}
+                      </p>
+                      {hasVariants && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                          <Tag size={8} className="inline mr-0.5" />
+                          {t("page.cashier.variant")}
+                        </span>
                       )}
                     </div>
-                    <div className="p-2.5 space-y-1">
-                      <p className="text-xs font-medium line-clamp-2 leading-tight min-h-[2em] text-foreground/90">
-                        {productName}
-                      </p>
-                      <p className="text-sm font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                        {formatCurrencyRupiah(productPrice)}
-                      </p>
-                      {stock !== null && (
-                        <p className="text-[10px] text-muted-foreground/70">
-                          {t("page.cashier.product.stock")}: {stock}
-                        </p>
-                      )}
+                    <p className="text-xs text-muted-foreground/60 truncate">{product.sku || ""}</p>
+                  </div>
+                  {cartCount > 0 && (
+                    <div className="w-6 h-6 rounded-full bg-primary shadow-sm flex items-center justify-center shrink-0">
+                      <span className="text-primary-foreground text-[10px] font-bold">
+                        {cartCount}
+                      </span>
                     </div>
-                  </motion.button>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                  )}
+                  <p className="text-sm font-bold text-primary shrink-0">
+                    Rp {formatPrice(product.price || product.sellPrice || 0)}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      <AnimatePresence>
-        {variantProduct && (
-          <VariantModal
-            product={variantProduct}
-            onConfirm={handleAddVariants}
-            onClose={() => setVariantProduct(null)}
-          />
-        )}
-      </AnimatePresence>
-    </div>
+      {showVariantModal && selectedProduct && (
+        <VariantModal
+          product={selectedProduct}
+          onSelect={(variant) => handleAddToCart(selectedProduct, variant)}
+          onClose={() => {
+            setShowVariantModal(false);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
+    </>
   );
+};
+
+ProductGrid.propTypes = {
+  products: PropTypes.array,
+  isLoading: PropTypes.bool,
+  search: PropTypes.string,
+  onSearchChange: PropTypes.func,
+  barcode: PropTypes.string,
+  onBarcodeChange: PropTypes.func,
+  categoryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onCategoryChange: PropTypes.func,
+  store: PropTypes.any
 };
 
 export default ProductGrid;

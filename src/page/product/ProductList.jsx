@@ -1,468 +1,200 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import {
-  getAllProductTable,
-  deleteProduct,
-  downloadProductTemplate,
-  downloadProductExcel
-} from "@/services/product";
-import { getAllCategoryActive } from "@/services/category";
-import { getAllLocation } from "@/services/location";
+  Plus,
+  Edit3,
+  Trash2,
+  Search,
+  Package,
+  ChevronRight,
+  Tag,
+  DollarSign,
+  Box
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Modal from "@/components/organism/modal";
-import PageHeader from "@/components/ui/PageHeader";
+import { DeleteAlert } from "@/components/organism/alert";
+import { Toast } from "@/components/organism/toast";
+import { getAllProduct, deleteProduct } from "@/services/product";
 import UploadProductModal from "./components/UploadProductModal";
-import DataTable from "@/components/ui/DataTable";
-import { formatCurrencyRupiah } from "@/utils/formatter-currency";
-import { canAccess } from "@/utils/permission";
-import AbortController from "@/components/organism/abort-controller";
 
 const ProductList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [cookie] = useCookies();
-  const [searchParams] = useSearchParams();
-  const [page, setPage] = useState(1);
-  const [limit] = useState(12);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [sortFilter, setSortFilter] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [noStoreModal, setNoStoreModal] = useState(false);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
-  const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
-  const user = cookie?.user;
-  const MENU_KEY = "/product-list";
-  const role = user?.role || user?.type || "";
-  const locationParam = searchParams.get("location");
+  const { data, isLoading } = useQuery(["products"], () => getAllProduct());
 
-  const { data: locationsData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-all"],
-    getAllLocation,
-    { enabled: role === "super_admin" }
-  );
-
-  const locations = locationsData?.data || [];
-
-  useEffect(() => {
-    if (role !== "super_admin" || isLoadingLocations) return;
-    if (locations.length === 0) {
-      setNoStoreModal(true);
-    } else if (!locationParam) {
-      navigate("/location-list", { replace: true });
-    }
-  }, [role, locations, locationParam, isLoadingLocations, navigate]);
-
-  if (role === "super_admin" && !isLoadingLocations && !locationParam && locations.length > 0) {
-    return null;
-  }
-
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["products", page, limit, locationParam],
-    () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
-    { keepPreviousData: true }
-  );
-
-  const { data: categoriesData } = useQuery(
-    ["categories-active", locationParam],
-    () => getAllCategoryActive({ location: locationParam || "" }),
-    { enabled: !!locationParam || role !== "super_admin" }
-  );
-
-  const categories = categoriesData?.data || [];
+  const products = data?.data || data || [];
 
   const deleteMutation = useMutation(deleteProduct, {
     onSuccess: () => {
-      toast.success(t("common.success"), { description: t("page.product.toast.deleteSuccess") });
-      queryClient.invalidateQueries(["products"]);
+      queryClient.invalidateQueries("products");
+      Toast.fire({ icon: "success", title: t("page.product.deleted") });
     },
-    onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+    onError: () => {
+      Toast.fire({ icon: "error", title: t("page.product.deleteError") });
     }
   });
 
-  const products = data?.data || data?.products || [];
-  const total = data?.total || data?.pagination?.total || 0;
-  const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
-
   const handleDelete = (id) => {
-    setDeleteTarget(id);
-  };
-
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate({ id: deleteTarget });
-      setDeleteTarget(null);
-    }
-  };
-
-  const filteredProducts = products
-    .filter((product) => {
-      if (!search) return true;
-      const q = search.toLowerCase();
-      return product.name?.toLowerCase().includes(q) || product.sku?.toLowerCase().includes(q);
-    })
-    .filter((product) => {
-      if (!categoryFilter) return true;
-      const cat = product.category || product.categoryId?.name || "";
-      return cat === categoryFilter;
-    })
-    .sort((a, b) => {
-      if (sortFilter === "price-asc") return (a.price || 0) - (b.price || 0);
-      if (sortFilter === "price-desc") return (b.price || 0) - (a.price || 0);
-      if (sortFilter === "stock-asc") return (a.stock || 0) - (b.stock || 0);
-      return 0;
+    DeleteAlert.fire({
+      title: t("page.product.deleteConfirm"),
+      showCancelButton: true,
+      confirmButtonText: t("common.delete"),
+      cancelButtonText: t("common.cancel")
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate(id);
+      }
     });
-
-  const getStatusBadge = (product) => {
-    const stock = product.stock || product.quantity || 0;
-    if (stock <= 0) {
-      return {
-        label: t("page.product.status.outOfStock"),
-        className: "bg-destructive/10 text-destructive border border-destructive/20"
-      };
-    }
-    if (stock <= 10) {
-      return {
-        label: t("page.product.status.lowStock"),
-        className:
-          "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
-      };
-    }
-    if (product.isActive || product.status === "active") {
-      return {
-        label: t("common.active"),
-        className:
-          "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-      };
-    }
-    return {
-      label: t("common.inactive"),
-      className: "bg-muted text-muted-foreground border border-border"
-    };
   };
 
-  const columns = [
-    {
-      header: t("page.product.table.image"),
-      render: (product) => {
-        const imageUrl = product.image || product.images?.[0];
-        return (
-          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
-            {imageUrl ? (
-              <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <Package size={16} className="text-muted-foreground" />
-            )}
-          </div>
-        );
-      }
-    },
-    {
-      header: t("page.product.table.name"),
-      render: (product) => (
-        <div>
-          <p className="font-medium text-foreground text-sm">{product.name}</p>
-          <p className="text-xs text-muted-foreground font-mono">{product.sku || "-"}</p>
-        </div>
-      )
-    },
-    {
-      header: t("page.product.table.category"),
-      render: (product) => (
-        <span className="text-sm text-foreground">
-          {product.category || product.categoryId?.name || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("page.product.table.price"),
-      align: "right",
-      render: (product) => (
-        <span className="font-semibold text-foreground text-sm">
-          {formatCurrencyRupiah(product.price || product.harga || 0)}
-        </span>
-      )
-    },
-    {
-      header: t("page.product.table.stock"),
-      render: (product) => {
-        const stock = product.stock || product.quantity || 0;
-        return (
-          <span
-            className={`text-sm font-mono ${stock <= 0 ? "text-destructive font-semibold" : stock <= 10 ? "text-orange-600 font-semibold" : "text-foreground"}`}>
-            {stock} {product.unit || ""}
-          </span>
-        );
-      }
-    },
-    {
-      header: t("page.product.table.status"),
-      render: (product) => {
-        const badge = getStatusBadge(product);
-        return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
-            {badge.label}
-          </span>
-        );
-      }
-    },
-    {
-      header: t("common.createdBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.actions"),
-      align: "right",
-      render: (product) => (
-        <div className="flex items-center justify-end gap-1">
-          {canAccess(user, MENU_KEY, "edit") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary"
-              onClick={() => navigate(`/edit-product?id=${product.id || product._id}`)}>
-              <Edit size={15} />
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => handleDelete(product.id || product._id)}>
-              <Trash2 size={15} />
-            </Button>
-          )}
-        </div>
-      )
-    }
-  ];
-
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
+  const formatPrice = (value) => {
+    if (value == null || isNaN(value)) return "0";
+    return Number(value).toLocaleString("id-ID");
   };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
+  const filteredProducts = products.filter((p) => {
+    if (!search) return true;
+    const name = (p.nameProduct || p.name || "").toLowerCase();
+    const sku = (p.sku || "").toLowerCase();
+    const q = search.toLowerCase();
+    return name.includes(q) || sku.includes(q);
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
-    <div data-tour="page-products" className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <PageHeader
-            breadcrumbs={[
-              {
-                href:
-                  role === "super_admin"
-                    ? "/dashboard-super-admin"
-                    : role === "admin"
-                      ? "/dashboard-admin"
-                      : "/home",
-                i18nKey: "breadcrumb.home"
-              },
-              ...(role === "super_admin" && locationParam
-                ? [{ href: "/location-list", i18nKey: "sidebar.kelolaToko" }]
-                : []),
-              { i18nKey: "breadcrumb.product" }
-            ]}
-            title={t("page.product.list.title")}
-            description={t("page.product.list.description")}>
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadProductTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.product.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.product.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={16} className="mr-1" />
-                )}
-                {t("page.product.button.downloadTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadProductExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.product.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.product.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={16} className="mr-1" />
-                )}
-                {t("page.product.button.export")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button
-                data-tour="product-import"
-                variant="default"
-                onClick={() => setUploadModalOpen(true)}>
-                <Upload size={16} className="mr-1" />
-                {t("page.product.button.import")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="product-add"
-                onClick={() => navigate("/add-product")}
-                className="shadow-md">
-                <Plus size={16} className="mr-1" />
-                {t("page.product.button.add")}
-              </Button>
-            )}
-          </PageHeader>
-        </motion.div>
-      </motion.div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Package size={20} className="text-primary" />
+          <h1 className="text-xl font-bold">{t("page.product.title")}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowUpload(true)}>
+            <Box size={14} />
+            {t("page.product.import")}
+          </Button>
+          <Button size="sm" onClick={() => navigate("/product/add")}>
+            <Plus size={14} />
+            {t("page.product.add")}
+          </Button>
+        </div>
+      </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <motion.div variants={container} initial="hidden" animate="show">
-          <motion.div variants={item}>
+      <div className="relative">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("page.product.search")}
+          className="pl-9 h-10"
+        />
+      </div>
+
+      <div className="grid gap-3">
+        {filteredProducts.map((product, idx) => {
+          const id = product?.id || product?._id || product?.ID || product?.idProduct || "";
+          const img = product.image || product.imageProduct || product.photo || null;
+          const hasVariants =
+            product.variant && Array.isArray(product.variant) && product.variant.length > 0;
+          return (
             <div
-              data-tour="product-search"
-              className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
-              <div className="flex-1 w-full relative">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  placeholder={t("page.product.list.searchSku")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-10"
-                />
-              </div>
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                  <option value="">{t("common.all")} Kategori</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={sortFilter}
-                  onChange={(e) => setSortFilter(e.target.value)}
-                  className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                  <option value="">{t("page.product.list.filter.newest")}</option>
-                  <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
-                  <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
-                  <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
-                </select>
+              key={id || idx}
+              className="group bg-card border border-border/50 rounded-xl p-4 hover:border-border hover:shadow-sm transition-all cursor-pointer"
+              onClick={() => navigate(`/product/${id}`)}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {img ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+                      <img
+                        src={img || "/placeholder.svg"}
+                        alt={product.nameProduct || product.name || ""}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center">
+                      <Package size={18} className="text-primary/60" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{product.nameProduct || product.name || "-"}</p>
+                      {hasVariants && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider">
+                          <Tag size={8} className="inline mr-0.5" />
+                          {t("page.product.variant")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      {product.sku && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Tag size={10} />
+                          {product.sku}
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <DollarSign size={10} />
+                        Rp {formatPrice(product.price || product.sellPrice || 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/product/edit/${id}`);
+                    }}>
+                    <Edit3 size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(id);
+                    }}>
+                    <Trash2 size={14} />
+                  </Button>
+                  <ChevronRight size={14} className="text-muted-foreground/40" />
+                </div>
               </div>
             </div>
-
-            <div data-tour="product-table" className="mt-6">
-              <DataTable
-                columns={columns}
-                data={filteredProducts}
-                isLoading={isLoading}
-                emptyMessage={t("page.product.list.empty")}
-                emptyIcon={Package}
-                pagination={{
-                  page,
-                  totalPages,
-                  total,
-                  onPageChange: setPage
-                }}
-              />
+          );
+        })}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+              <Package size={20} className="text-muted-foreground/40" />
             </div>
-          </motion.div>
-        </motion.div>
-      )}
+            <p className="font-medium text-muted-foreground">{t("page.product.noProducts")}</p>
+          </div>
+        )}
+      </div>
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.deleteTitle")}
-        confirmText={t("modal.deleteConfirm")}
-        onConfirm={confirmDelete}
-      />
-      <Modal
-        type="confirm"
-        open={noStoreModal}
-        onOpenChange={setNoStoreModal}
-        title={t("page.product.noStore.title")}
-        description={t("page.product.noStore.description")}
-        confirmText={t("page.product.noStore.button")}
-        onConfirm={() => navigate("/add-location")}
-      />
-
-      <UploadProductModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["products"])}
-      />
+      {showUpload && <UploadProductModal onClose={() => setShowUpload(false)} />}
     </div>
   );
 };

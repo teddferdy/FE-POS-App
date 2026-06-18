@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye, Loader2 } from "lucide-react";
 import {
@@ -180,16 +179,6 @@ const SupplierList = () => {
     }
   ];
 
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
-
   return (
     <div data-tour="page-supplier" className="space-y-6">
       {/* Breadcrumb */}
@@ -204,11 +193,7 @@ const SupplierList = () => {
       </nav>
 
       {/* Header */}
-      <motion.div
-        variants={item}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -292,42 +277,32 @@ const SupplierList = () => {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Stats Cards */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={item} data-tour="supplier-stat-total">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.supplier.stats.total")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item} data-tour="supplier-stat-active">
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.active")}</p>
             <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item} data-tour="supplier-stat-inactive">
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
             <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Search */}
-      <motion.div
-        variants={item}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        data-tour="supplier-search"
-        className="relative w-full sm:w-72">
+      <div data-tour="supplier-search" className="relative w-full sm:w-72">
         <Search
           size={16}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -341,17 +316,12 @@ const SupplierList = () => {
           }}
           className="pl-9 h-10"
         />
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={item}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          data-tour="supplier-table">
+        <div data-tour="supplier-table">
           <DataTable
             columns={columns}
             data={suppliers}
@@ -360,7 +330,7 @@ const SupplierList = () => {
             emptyIcon={Building2}
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
-        </motion.div>
+        </div>
       )}
 
       <Modal

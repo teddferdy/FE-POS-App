@@ -11,7 +11,6 @@ import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/pe
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
 
 const actionLabels = {
@@ -106,14 +105,6 @@ const buildInitialPermissions = (groups, existingAccessMenu = {}) => {
     });
   });
   return perms;
-};
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
 };
 
 const EditRole = () => {
@@ -239,7 +230,7 @@ const EditRole = () => {
   }
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div>
         <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
           <button
@@ -478,7 +469,7 @@ const EditRole = () => {
           }}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,0 +1,36 @@
+import { axiosInstance } from ".";
+
+export const getAllCustomer = async () => {
+  const { data, status } = await axiosInstance.get("/customer/get-all-customer");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const getCustomerById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/customer/get-customer/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const addCustomer = async (payload) => {
+  const { data, status } = await axiosInstance.post("/customer/add-customer", payload);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
+export const editCustomer = async (payload) => {
+  const { data, status } = await axiosInstance.put(
+    `/customer/edit-customer/${payload.id}`,
+    payload
+  );
+  if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
+  return data;
+};
+
+export const deleteCustomer = async (payload) => {
+  const { data, status } = await axiosInstance.delete(`/customer/delete-customer/${payload.id}`, {
+    data: payload
+  });
+  if (status !== 200 && status !== 201 && status !== 204) throw Error(`${data?.error}`);
+  return data;
+};

@@ -7,7 +7,6 @@ import AbortController from "@/components/organism/abort-controller";
 import { getTypePaymentById } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -23,14 +22,6 @@ const formatDate = (dateStr) => {
     });
   } catch {
     return "-";
-  }
-};
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
   }
 };
 
@@ -91,7 +82,7 @@ const DetailTypePayment = () => {
     item.isActive === true;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -225,7 +216,7 @@ const DetailTypePayment = () => {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -9,15 +9,6 @@ import { getAllRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const AddAdmin = () => {
   const { t } = useTranslation();
@@ -73,7 +64,7 @@ const AddAdmin = () => {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div>
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -331,7 +322,7 @@ const AddAdmin = () => {
           }}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

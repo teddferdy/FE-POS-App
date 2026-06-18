@@ -18,21 +18,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditSupplier = () => {
   const { t } = useTranslation();
@@ -129,8 +115,8 @@ const EditSupplier = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -149,11 +135,11 @@ const EditSupplier = () => {
             description={t("page.supplier.edit.description")}>
             <UserGuide guideKey="add-supplier" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="p-6 lg:col-span-2">
               <Form {...form}>
@@ -308,8 +294,8 @@ const EditSupplier = () => {
               {updateMutation.isLoading ? t("common.saving") : t("common.save")}
             </Button>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

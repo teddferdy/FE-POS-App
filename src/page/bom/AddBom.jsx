@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Save, X, Plus, Trash2 } from "lucide-react";
@@ -13,11 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const AddBom = () => {
   const navigate = useNavigate();
@@ -89,7 +83,7 @@ const AddBom = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -103,15 +97,15 @@ const AddBom = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("breadcrumb.add")}</span>
         </nav>
-      </motion.div>
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      </div>
+      <div>
         <div>
           <h1 className="text-2xl font-bold">{t("page.bom.add.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.bom.add.description")}</p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <form
           onSubmit={handleSubmit}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
@@ -247,7 +241,7 @@ const AddBom = () => {
             </Button>
           </div>
         </form>
-      </motion.div>
+      </div>
       {isSubmitting && <Loading fullscreen size="lg" label={t("page.bom.add.form.saving")} />}
       <Modal
         type="confirm"

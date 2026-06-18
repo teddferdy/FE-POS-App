@@ -24,20 +24,6 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pembayaran wajib diisi"),
@@ -87,8 +73,8 @@ const AddTypePayment = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
@@ -99,11 +85,11 @@ const AddTypePayment = () => {
             description={t("page.typePayment.add.description")}>
             <UserGuide guideKey="add-type-payment" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <Card className="p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -208,8 +194,8 @@ const AddTypePayment = () => {
               </form>
             </Form>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

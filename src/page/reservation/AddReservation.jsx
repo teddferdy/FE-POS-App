@@ -25,20 +25,6 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formSchema = z.object({
   customerName: z.string().min(1, "Nama customer wajib diisi"),
@@ -125,7 +111,7 @@ const AddReservation = () => {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -318,7 +304,7 @@ const AddReservation = () => {
           onConfirm={() => navigate("/reservation")}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

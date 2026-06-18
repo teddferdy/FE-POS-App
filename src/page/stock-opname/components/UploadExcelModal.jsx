@@ -17,7 +17,6 @@ import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { uploadStockOpnameExcel } from "@/services/stock";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 
 const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -70,19 +69,6 @@ const mapRow = (row) => {
     result[field] = match ? String(row[match]).trim() : "";
   }
   return result;
-};
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, auditDate }) => {
@@ -175,7 +161,7 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
   if (!open) return null;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
         <div className="relative z-50 w-full max-w-lg mx-4 animate-in zoom-in-95 fade-in duration-200">
@@ -315,7 +301,7 @@ const UploadExcelModal = ({ open, onOpenChange, onDataParsed, onUploadSuccess, a
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { Plus, Package, Loader2 } from "lucide-react";
 import {
   getAllIngredientCategory,
@@ -103,16 +102,6 @@ const CategoryList = () => {
     }
   ];
 
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
-
   const columns = [
     {
       header: t("page.ingredientCategory.list.tableKode"),
@@ -192,8 +181,8 @@ const CategoryList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
@@ -274,16 +263,15 @@ const CategoryList = () => {
               </Button>
             )}
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {stats.map((stat) => (
-              <motion.div
+              <div
                 key={stat.label}
-                variants={item}
                 className="bg-card p-6 rounded-xl border border-border shadow-sm">
                 <div className="flex items-center gap-4">
                   <div
@@ -295,15 +283,15 @@ const CategoryList = () => {
                     <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {isError ? (
           <AbortController refetch={refetch} />
         ) : (
-          <motion.div variants={item} className="mt-6">
+          <div className="mt-6">
             <DataTable
               columns={columns}
               data={filtered}
@@ -321,10 +309,10 @@ const CategoryList = () => {
                 </div>
               }
             />
-          </motion.div>
+          </div>
         )}
 
-        <motion.div variants={item} className="mt-6">
+        <div className="mt-6">
           <TipsCard
             tips={[
               t("page.ingredientCategory.list.tips.1"),
@@ -333,8 +321,8 @@ const CategoryList = () => {
               t("page.ingredientCategory.list.tips.4")
             ]}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

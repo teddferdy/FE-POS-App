@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { Wallet } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,6 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import AbortController from "@/components/organism/abort-controller";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const PurchasePaymentList = () => {
   const { t } = useTranslation();
@@ -111,7 +105,7 @@ const PurchasePaymentList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -121,13 +115,9 @@ const PurchasePaymentList = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("page.purchasePayment.list.title")}</span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.purchasePayment.list.title")}
@@ -136,9 +126,9 @@ const PurchasePaymentList = () => {
             {t("page.purchasePayment.list.description")}
           </p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <Card className="p-5">
           <div className="flex items-center gap-2 text-sm">
             <Wallet size={16} className="text-muted-foreground" />
@@ -150,17 +140,12 @@ const PurchasePaymentList = () => {
             </span>
           </div>
         </Card>
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="space-y-4">
+        <div className="space-y-4">
           <DataTable
             columns={columns}
             data={payments}
@@ -169,10 +154,10 @@ const PurchasePaymentList = () => {
             emptyIcon={Wallet}
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
-        </motion.div>
+        </div>
       )}
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <TipsCard
           tips={[
             t("page.purchasePayment.list.tips.1"),
@@ -181,7 +166,7 @@ const PurchasePaymentList = () => {
             t("page.purchasePayment.list.tips.4")
           ]}
         />
-      </motion.div>
+      </div>
     </div>
   );
 };

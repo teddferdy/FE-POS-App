@@ -3,7 +3,6 @@ import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { ShoppingCart, X, Package, Menu, Sun, Moon } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
-import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
 import { orderList } from "@/state/order-list";
@@ -129,33 +128,20 @@ const CashierPage = () => {
       </div>
 
       {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {mobileSidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 lg:hidden">
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setMobileSidebarOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-0 top-0 h-screen w-72 shadow-2xl">
-              <Sidebar collapsed={false} onToggle={() => setMobileSidebarOpen(false)} />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="fixed left-0 top-0 h-screen w-72 shadow-2xl">
+            <Sidebar collapsed={false} onToggle={() => setMobileSidebarOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <motion.div
-        layout
+      <div
         className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
         <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-border/50 shrink-0">
           <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
@@ -165,10 +151,7 @@ const CashierPage = () => {
                 className="lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
                 <Menu size={20} />
               </button>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
                   <Package className="text-primary-foreground" size={18} />
                 </div>
@@ -176,14 +159,11 @@ const CashierPage = () => {
                   <h1 className="text-lg font-bold leading-tight text-foreground">{storeName}</h1>
                   <p className="text-xs text-muted-foreground/80">{userName}</p>
                 </div>
-              </motion.div>
+              </div>
               <StoreSelector cookie={cookie} setCookie={setCookie} />
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center bg-muted/60 rounded-full p-0.5 border border-border/60 shadow-sm">
+              <div className="flex items-center bg-muted/60 rounded-full p-0.5 border border-border/60 shadow-sm">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
@@ -196,7 +176,7 @@ const CashierPage = () => {
                     {lang.label}
                   </button>
                 ))}
-              </motion.div>
+              </div>
               <button
                 onClick={toggleTheme}
                 className="p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
@@ -205,7 +185,7 @@ const CashierPage = () => {
               </button>
               <NotificationBell />
               <UserDropdown />
-              <motion.div whileTap={{ scale: 0.9 }}>
+              <div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -213,15 +193,12 @@ const CashierPage = () => {
                   onClick={() => setShowCartMobile(!showCartMobile)}>
                   <ShoppingCart size={18} />
                   {totalItems > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1.5 -right-1.5 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                    <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
                       {totalItems}
-                    </motion.span>
+                    </span>
                   )}
                 </Button>
-              </motion.div>
+              </div>
             </div>
           </div>
         </header>
@@ -232,7 +209,7 @@ const CashierPage = () => {
               <AbortController refetch={refetch} />
             </div>
           ) : (
-            <motion.div layout className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
               <ProductGrid
                 products={filteredProducts}
                 isLoading={isLoading}
@@ -244,58 +221,43 @@ const CashierPage = () => {
                 onCategoryChange={setCategoryId}
                 store={store}
               />
-            </motion.div>
+            </div>
           )}
 
           {/* Mobile cart overlay */}
-          <AnimatePresence>
-            {showCartMobile && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="fixed inset-0 z-50 lg:hidden">
-                <div
-                  className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                  onClick={() => setShowCartMobile(false)}
+          {showCartMobile && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <div
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setShowCartMobile(false)}
+              />
+              <div className="fixed right-0 top-0 h-screen w-[88vw] sm:max-w-md bg-card/95 backdrop-blur-xl border-l border-border/50 shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
+                  <h2 className="font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    {t("page.cashier.orderCount", { count: totalItems })}
+                  </h2>
+                  <button
+                    onClick={() => setShowCartMobile(false)}
+                    className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+                    <X size={18} />
+                  </button>
+                </div>
+                <CartPanel
+                  items={cart.order}
+                  subtotal={subtotal}
+                  onIncrement={cart.incrementOrder}
+                  onDecrement={cart.decrementOrder}
+                  onDelete={cart.handleDeleteOrder}
+                  onCheckout={() => setCheckoutOpen(true)}
+                  totalItems={totalItems}
+                  onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
                 />
-                <motion.div
-                  initial={{ x: "100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "100%" }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="fixed right-0 top-0 h-screen w-[88vw] sm:max-w-md bg-card/95 backdrop-blur-xl border-l border-border/50 shadow-2xl flex flex-col">
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
-                    <h2 className="font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                      {t("page.cashier.orderCount", { count: totalItems })}
-                    </h2>
-                    <motion.button
-                      whileHover={{ rotate: 90 }}
-                      onClick={() => setShowCartMobile(false)}
-                      className="p-1.5 rounded-lg hover:bg-accent transition-colors">
-                      <X size={18} />
-                    </motion.button>
-                  </div>
-                  <CartPanel
-                    items={cart.order}
-                    subtotal={subtotal}
-                    onIncrement={cart.incrementOrder}
-                    onDecrement={cart.decrementOrder}
-                    onDelete={cart.handleDeleteOrder}
-                    onCheckout={() => setCheckoutOpen(true)}
-                    totalItems={totalItems}
-                    onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
-                  />
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
+          )}
 
           {/* Desktop cart sidebar */}
-          <motion.div
-            layout
-            className="hidden lg:relative lg:flex lg:w-[380px] xl:w-[420px] border-l border-border/50 bg-card/50 backdrop-blur-sm">
+          <div className="hidden lg:relative lg:flex lg:w-[380px] xl:w-[420px] border-l border-border/50 bg-card/50 backdrop-blur-sm">
             <div className="w-full flex flex-col h-full">
               <CartPanel
                 items={cart.order}
@@ -308,33 +270,29 @@ const CashierPage = () => {
                 onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
               />
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        <AnimatePresence>
-          {checkoutOpen && (
-            <CheckoutModal
-              onClose={() => setCheckoutOpen(false)}
-              items={cart.order}
-              subtotal={subtotal}
-              store={store}
-              cashierName={userName}
-              cashierId={user?.id || user?.ID}
-              onComplete={handleCheckoutComplete}
-            />
-          )}
-        </AnimatePresence>
+        {checkoutOpen && (
+          <CheckoutModal
+            onClose={() => setCheckoutOpen(false)}
+            items={cart.order}
+            subtotal={subtotal}
+            store={store}
+            cashierName={userName}
+            cashierId={user?.id || user?.ID}
+            onComplete={handleCheckoutComplete}
+          />
+        )}
 
-        <AnimatePresence>
-          {receiptData && (
-            <ReceiptModal
-              data={receiptData}
-              onClose={() => setReceiptData(null)}
-              onNewTransaction={handleNewTransaction}
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
+        {receiptData && (
+          <ReceiptModal
+            data={receiptData}
+            onClose={() => setReceiptData(null)}
+            onNewTransaction={handleNewTransaction}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -5,18 +5,7 @@ import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat("id-ID", {
@@ -86,8 +75,8 @@ const MemberPointHistory = () => {
   }
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <button
             onClick={() => navigate("/member-list")}
@@ -101,9 +90,9 @@ const MemberPointHistory = () => {
             <span className="font-semibold text-foreground">{points.toLocaleString()}</span>
           </p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={item} className="bg-card rounded-xl border border-border shadow-sm">
+      <div className="bg-card rounded-xl border border-border shadow-sm">
         <div className="flex border-b border-border px-4">
           <button
             onClick={() => setActiveTab("transactions")}
@@ -311,8 +300,8 @@ const MemberPointHistory = () => {
             </div>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

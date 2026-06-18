@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -276,8 +275,8 @@ const MemberList = () => {
 
   return (
     <div data-tour="page-member" className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
             title={t("page.member.list.title")}
@@ -292,14 +291,14 @@ const MemberList = () => {
               </Button>
             )}
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div variants={container} initial="hidden" animate="show">
-          <motion.div variants={item}>
+        <div>
+          <div>
             <div
               data-tour="member-search"
               className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
@@ -399,8 +398,8 @@ const MemberList = () => {
                 rowClassName={() => "group"}
               />
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
 
       <Modal

@@ -1,160 +1,146 @@
-/* eslint-disable react/prop-types */
-import React, { useState } from "react";
-import { X, Plus } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState, useMemo } from "react";
+import PropTypes from "prop-types";
+import { X, Package, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { Button } from "@/components/ui/button";
 
-const VariantModal = ({ product, onConfirm, onClose }) => {
+const VariantModal = ({ product, onSelect, onClose }) => {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState({});
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
-  const options = product.options || [];
+  const variants = useMemo(() => {
+    if (product?.variant && Array.isArray(product.variant)) {
+      return product.variant.filter((v) => v != null && (v.nameVariant || v.name));
+    }
+    return [];
+  }, [product]);
 
-  const handleToggle = (groupId, opt) => {
-    const group = options.find((g) => g.id === groupId || g.name === groupId);
-    if (!group) return;
-    const isMultiple = group.isMultiple;
-
-    setSelected((prev) => {
-      const current = prev[groupId] || [];
-      if (isMultiple) {
-        const exists = current.find((o) => o.name === opt.name);
-        return {
-          ...prev,
-          [groupId]: exists ? current.filter((o) => o.name !== opt.name) : [...current, opt]
-        };
-      } else {
-        return { ...prev, [groupId]: [opt] };
-      }
-    });
+  const formatPrice = (value) => {
+    if (value == null || isNaN(value)) return "0";
+    return Number(value).toLocaleString("id-ID");
   };
 
-  const groupedLabels = {};
-  options.forEach((g) => {
-    groupedLabels[g.id || g.name] = g.name || t("page.cashier.variant.groupName");
-  });
+  const productImage = product?.image || product?.imageProduct || product?.photo || null;
 
-  const selectedVariants = Object.values(selected).flat();
-  const basePrice = Number(product.price || product.harga || 0);
-  const extraPrice = selectedVariants.reduce((sum, o) => sum + Number(o.price || 0), 0);
-  const totalPrice = basePrice + extraPrice;
+  if (!product) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.92, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.92, opacity: 0, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-card/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-sm max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
-          <h3 className="font-semibold text-base flex items-center gap-2">
-            <div className="w-1.5 h-5 rounded-full bg-gradient-to-b from-primary to-primary/50" />
-            {product.nameProduct || product.name}
-          </h3>
-          <motion.button
-            whileHover={{ rotate: 90 }}
-            onClick={onClose}
-            className="h-8 w-8 rounded-xl hover:bg-accent/50 transition-colors flex items-center justify-center">
-            <X size={16} />
-          </motion.button>
+    <div className="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
+          <div className="flex items-center gap-2">
+            <Package size={20} className="text-primary" />
+            <h2 className="text-lg font-bold">{t("page.cashier.selectVariant")}</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+            <X size={18} />
+          </button>
         </div>
-        <div className="p-5 space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-3 p-3 rounded-xl bg-muted/30 backdrop-blur-sm border border-border/30">
-            {product.image && (
-              <motion.img
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                src={product.image}
-                alt={product.nameProduct || product.name}
-                className="w-20 h-20 rounded-xl object-cover border border-border/30"
-              />
+
+        <div className="p-6 space-y-5">
+          <div className="flex items-center gap-4 bg-muted/30 rounded-xl p-4 border border-border/40">
+            {productImage ? (
+              <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+                <img
+                  src={productImage || "/placeholder.svg"}
+                  alt={product.nameProduct || product.name || ""}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
+                <Package size={24} className="text-primary/40" />
+              </div>
             )}
-            <div className="flex-1 min-w-0">
-              <p className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {formatCurrencyRupiah(totalPrice)}
+            <div>
+              <p className="font-semibold text-foreground">
+                {product.nameProduct || product.name || t("page.cashier.unnamedProduct")}
               </p>
-              {extraPrice > 0 && (
-                <p className="text-xs text-muted-foreground/70 mt-0.5">
-                  {t("page.cashier.variant.basePrice")} {formatCurrencyRupiah(basePrice)}
-                  {" + "}
-                  {t("page.cashier.variant.variantPrice")} {formatCurrencyRupiah(extraPrice)}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("page.cashier.chooseVariant")}
+              </p>
             </div>
-          </motion.div>
+          </div>
 
-          {options.map((group) => {
-            const gid = group.id || group.name;
-            const groupName = group.name || t("page.cashier.variant.groupName");
-            const isMultiple = group.isMultiple;
-            const groupOptions = group.options || group.option || [];
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              {t("page.cashier.availableVariants")}
+            </p>
+            {variants.map((variant, idx) => {
+              const isSelected =
+                selectedVariant?.nameVariant === variant.nameVariant &&
+                selectedVariant?.price === variant.price;
+              const variantPrice = variant.price || product.price || 0;
+              const variantImage = variant.image || null;
 
-            return (
-              <motion.div key={gid} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}>
-                <p className="text-sm font-medium mb-2 text-foreground/80 flex items-center gap-1.5">
-                  {groupName}
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground/60 border border-border/30">
-                    {isMultiple
-                      ? t("page.cashier.variant.multiple")
-                      : t("page.cashier.variant.single")}
-                  </span>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {groupOptions.map((opt) => {
-                    const optName = opt.name || opt.option || opt.label || "";
-                    const optPrice = Number(opt.price || 0);
-                    const isActive = (selected[gid] || []).some((o) => o.name === optName);
-                    return (
-                      <motion.button
-                        key={optName}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleToggle(gid, { ...opt, name: optName })}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
-                          isActive
-                            ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-primary/50 shadow-md shadow-primary/20"
-                            : "border-border/50 text-muted-foreground hover:bg-accent/50 bg-muted/20 hover:border-foreground/20"
-                        }`}>
-                        {optName}
-                        {optPrice > 0 && (
-                          <span className="ml-1 opacity-80">+{formatCurrencyRupiah(optPrice)}</span>
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
+              return (
+                <button
+                  key={variant.nameVariant || idx}
+                  onClick={() => setSelectedVariant(variant)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left ${
+                    isSelected
+                      ? "border-primary bg-primary/10 shadow-sm shadow-primary/10"
+                      : "border-border/40 bg-card/50 hover:border-border/70 hover:bg-accent/50"
+                  }`}>
+                  {variantImage ? (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-muted/50">
+                      <img
+                        src={variantImage || "/placeholder.svg"}
+                        alt={variant.nameVariant || variant.name || ""}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/30 flex items-center justify-center shrink-0">
+                      <Package size={16} className="text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">
+                      {variant.nameVariant || variant.name || "-"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Rp {formatPrice(variantPrice)}</p>
+                  </div>
+                  {isSelected && (
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                      <Check size={12} className="text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-border/50 flex justify-end gap-2 bg-card/50">
-          <Button variant="outline" onClick={onClose} className="rounded-xl border-border/50">
-            {t("common.cancel")}
+        <div className="border-t border-border/50 p-4 shrink-0">
+          <Button
+            onClick={() => onSelect(selectedVariant)}
+            disabled={!selectedVariant}
+            className="w-full h-12 rounded-xl font-semibold text-sm relative overflow-hidden group/btn">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
+            <span className="relative flex items-center justify-center gap-2">
+              <Package size={16} />
+              {t("page.cashier.addToCart")}
+            </span>
           </Button>
-          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-            <Button
-              onClick={() => onConfirm(product, selectedVariants)}
-              className="rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all">
-              <Plus size={16} className="mr-1.5" />
-              {t("page.cashier.variant.add")} {formatCurrencyRupiah(totalPrice)}
-            </Button>
-          </motion.div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
+};
+
+VariantModal.propTypes = {
+  product: PropTypes.shape({
+    variant: PropTypes.array,
+    image: PropTypes.string,
+    imageProduct: PropTypes.string,
+    photo: PropTypes.string,
+    nameProduct: PropTypes.string,
+    name: PropTypes.string,
+    price: PropTypes.number
+  }),
+  onSelect: PropTypes.func,
+  onClose: PropTypes.func
 };
 
 export default VariantModal;

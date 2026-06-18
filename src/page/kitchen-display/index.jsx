@@ -18,16 +18,7 @@ import {
   ListOrdered,
   Store
 } from "lucide-react";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const statusConfig = {
   pending: {
@@ -175,7 +166,7 @@ const KitchenDisplay = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="h-full">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -303,7 +294,7 @@ const KitchenDisplay = () => {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

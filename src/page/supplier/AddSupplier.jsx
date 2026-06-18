@@ -17,21 +17,6 @@ import { Card } from "@/components/ui/card";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
 const AddSupplier = () => {
   const { t } = useTranslation();
 
@@ -84,8 +69,8 @@ const AddSupplier = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -104,11 +89,11 @@ const AddSupplier = () => {
             description={t("page.supplier.add.description")}>
             <UserGuide guideKey="add-supplier" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="p-6 lg:col-span-2">
               <Form {...form}>
@@ -274,8 +259,8 @@ const AddSupplier = () => {
               </Button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

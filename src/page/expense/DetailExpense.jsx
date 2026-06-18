@@ -6,16 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getExpenseById } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const statusBadge = {
   pending: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
@@ -62,7 +53,7 @@ const DetailExpense = () => {
     );
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -235,7 +226,7 @@ const DetailExpense = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

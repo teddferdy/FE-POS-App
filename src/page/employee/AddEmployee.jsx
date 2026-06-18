@@ -41,20 +41,6 @@ import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const AddEmployee = () => {
   const navigate = useNavigate();
@@ -344,8 +330,8 @@ const AddEmployee = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "sidebar.karyawan" },
@@ -356,10 +342,10 @@ const AddEmployee = () => {
             description={t("page.employee.add.description")}>
             <UserGuide guideKey="add-employee" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+        </div>
+      </div>
+      <div>
+        <div>
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -1271,8 +1257,8 @@ const AddEmployee = () => {
               </form>
             </Form>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
 

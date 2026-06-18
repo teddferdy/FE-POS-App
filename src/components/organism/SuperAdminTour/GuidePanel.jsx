@@ -2,7 +2,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   ChevronDown,
@@ -71,12 +70,6 @@ const actionConfig = {
   }
 };
 
-const panelVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  visible: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: 50, scale: 0.95 }
-};
-
 const GuidePanel = ({ onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -113,13 +106,7 @@ const GuidePanel = ({ onClose }) => {
   };
 
   return (
-    <motion.div
-      variants={panelVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="fixed bottom-6 right-6 z-[70] w-[420px] sm:w-[480px] md:w-[540px]">
+    <div className="fixed bottom-6 right-6 z-[70] w-[420px] sm:w-[480px] md:w-[540px]">
       <Card className="shadow-2xl border border-primary/20 overflow-hidden bg-background">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b">
@@ -173,64 +160,57 @@ const GuidePanel = ({ onClose }) => {
                   </button>
 
                   {/* Pages list */}
-                  <AnimatePresence initial={false}>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden">
-                        <div className="pl-11 pr-3 pb-2 space-y-1">
-                          {category.pages.map((page) => {
-                            const PageIcon = page.icon;
-                            return (
-                              <button
-                                key={page.path}
-                                onClick={() => handleNavigate(page.path)}
-                                className="w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left group">
-                                <div className="p-1.5 rounded-lg bg-muted text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-0.5">
-                                  <PageIcon size={15} />
+                  {isExpanded && (
+                    <div className="overflow-hidden">
+                      <div className="pl-11 pr-3 pb-2 space-y-1">
+                        {category.pages.map((page) => {
+                          const PageIcon = page.icon;
+                          return (
+                            <button
+                              key={page.path}
+                              onClick={() => handleNavigate(page.path)}
+                              className="w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left group">
+                              <div className="p-1.5 rounded-lg bg-muted text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-0.5">
+                                <PageIcon size={15} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm font-medium text-foreground">
+                                    {t(page.titleKey)}
+                                  </span>
+                                  <ExternalLink
+                                    size={12}
+                                    className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                  />
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-sm font-medium text-foreground">
-                                      {t(page.titleKey)}
-                                    </span>
-                                    <ExternalLink
-                                      size={12}
-                                      className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                                    />
+                                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                                  {t(page.descKey)}
+                                </p>
+                                {page.actions && page.actions.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {page.actions.map((action) => {
+                                      const config = actionConfig[action];
+                                      if (!config) return null;
+                                      const ActionIcon = config.icon;
+                                      return (
+                                        <Badge
+                                          key={action}
+                                          variant="secondary"
+                                          className={`text-[10px] px-1.5 py-0 h-4 gap-0.5 font-normal ${config.color}`}>
+                                          <ActionIcon size={10} />
+                                          <span>{t(config.labelKey)}</span>
+                                        </Badge>
+                                      );
+                                    })}
                                   </div>
-                                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                                    {t(page.descKey)}
-                                  </p>
-                                  {page.actions && page.actions.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-1.5">
-                                      {page.actions.map((action) => {
-                                        const config = actionConfig[action];
-                                        if (!config) return null;
-                                        const ActionIcon = config.icon;
-                                        return (
-                                          <Badge
-                                            key={action}
-                                            variant="secondary"
-                                            className={`text-[10px] px-1.5 py-0 h-4 gap-0.5 font-normal ${config.color}`}>
-                                            <ActionIcon size={10} />
-                                            <span>{t(config.labelKey)}</span>
-                                          </Badge>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -261,7 +241,7 @@ const GuidePanel = ({ onClose }) => {
           </span>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 };
 

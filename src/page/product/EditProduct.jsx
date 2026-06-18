@@ -44,21 +44,7 @@ import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import UserGuide from "@/components/organism/UserGuide";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditProduct = () => {
   const { t } = useTranslation();
@@ -581,8 +567,8 @@ const EditProduct = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -596,11 +582,11 @@ const EditProduct = () => {
             description={t("page.product.edit.description")}>
             <UserGuide guideKey="add-product" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               {/* Stepper */}
@@ -1746,8 +1732,8 @@ const EditProduct = () => {
               </div>
             </form>
           </Form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="success"

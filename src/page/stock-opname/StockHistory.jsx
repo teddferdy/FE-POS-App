@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllStockHistory } from "@/services/stock";
 import { getAllProductTable } from "@/services/product";
@@ -48,21 +47,6 @@ const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
   return Number(num).toLocaleString("id-ID");
 };
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-// const fadeInUp = {
-//   hidden: { opacity: 0, y: 20 },
-//   show: { opacity: 1, y: 0 }
-// };
 
 const StockHistory = () => {
   const { t } = useTranslation();
@@ -150,8 +134,8 @@ const StockHistory = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -169,14 +153,14 @@ const StockHistory = () => {
             title={t("page.stockHistory.title")}
             description={t("page.stockHistory.description")}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div variants={container} initial="hidden" animate="show">
-          <motion.div variants={item}>
+        <div>
+          <div>
             <Card className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
@@ -397,8 +381,8 @@ const StockHistory = () => {
                 </div>
               </div>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

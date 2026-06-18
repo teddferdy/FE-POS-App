@@ -13,20 +13,6 @@ import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const AddMember = () => {
   const { t } = useTranslation();
@@ -102,8 +88,8 @@ const AddMember = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.home") },
@@ -114,10 +100,10 @@ const AddMember = () => {
             description={t("page.member.add.description")}>
             <UserGuide guideKey="add-member" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+        </div>
+      </div>
+      <div>
+        <div>
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-12 gap-6">
@@ -337,8 +323,8 @@ const AddMember = () => {
               </div>
             </form>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

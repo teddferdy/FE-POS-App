@@ -6,16 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getPurchaseReturnById } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const statusDetail = {
   pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
@@ -57,7 +48,7 @@ const DetailPurchaseReturn = () => {
   const st = statusDetail[ret.status] || statusDetail.pending;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -165,7 +156,7 @@ const DetailPurchaseReturn = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </>
   );
 };
 

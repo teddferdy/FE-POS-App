@@ -14,15 +14,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -137,7 +128,7 @@ const UploadIngredientCategoryModal = ({ open, onOpenChange, onUploadSuccess }) 
   if (!open) return null;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
         <div className="relative bg-background rounded-xl border border-border shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
@@ -268,7 +259,7 @@ const UploadIngredientCategoryModal = ({ open, onOpenChange, onUploadSuccess }) 
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

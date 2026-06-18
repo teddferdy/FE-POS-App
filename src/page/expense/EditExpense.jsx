@@ -25,16 +25,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
@@ -139,7 +130,7 @@ const EditExpense = () => {
   }
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -332,7 +323,7 @@ const EditExpense = () => {
           }}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

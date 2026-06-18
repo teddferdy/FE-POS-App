@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -26,21 +25,6 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -369,7 +353,7 @@ const StockOpnameList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -379,9 +363,9 @@ const StockOpnameList = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("page.stockOpname.list.title")}</span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
@@ -398,17 +382,12 @@ const StockOpnameList = () => {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, idx) => (
-          <motion.div
+          <div
             key={idx}
-            variants={item}
             className="bg-card p-5 rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div className={`p-2 ${stat.bg} rounded-lg ${stat.color}`}>
@@ -427,18 +406,14 @@ const StockOpnameList = () => {
             ) : stat.sub ? (
               <p className="text-xs text-muted-foreground mt-1 italic">{stat.sub}</p>
             ) : null}
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}>
+        <div>
           <DataTable
             columns={columns}
             data={filteredItems}
@@ -518,7 +493,7 @@ const StockOpnameList = () => {
               onPageChange: setPage
             }}
           />
-        </motion.div>
+        </div>
       )}
 
       <Modal

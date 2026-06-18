@@ -1,523 +1,155 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { toast } from "sonner";
+import { Plus, Edit3, Trash2, Search, Building2, ChevronRight, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  getAllDepartmentTable,
-  deleteDepartment,
-  downloadDepartmentTemplate,
-  downloadDepartmentExcel
-} from "@/services/department";
-import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Modal from "@/components/organism/modal";
-import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
-import PageHeader from "@/components/ui/PageHeader";
-import DataTable from "@/components/ui/DataTable";
-import { canAccess } from "@/utils/permission";
-import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "-";
-    return (
-      d.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      }) +
-      " " +
-      d.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    );
-  } catch {
-    return "-";
-  }
-};
+import { Input } from "@/components/ui/input";
+import { DeleteAlert } from "@/components/organism/alert";
+import { Toast } from "@/components/organism/toast";
+import { getAllDepartment, deleteDepartment } from "@/services/department";
+import UploadDepartmentModal from "./components/UploadDepartmentModal";
 
 const DepartmentList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [cookie] = useCookies();
-  const user = cookie?.user;
-  const MENU_KEY = "/department-list";
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
   const [search, setSearch] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
-  const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["departments", page, limit, search],
-    () => getAllDepartmentTable({ page, limit, statusRole: "all", search }),
-    { keepPreviousData: true }
-  );
+  const { data, isLoading } = useQuery(["departments"], () => getAllDepartment());
+
+  const departments = data?.data || data || [];
 
   const deleteMutation = useMutation(deleteDepartment, {
     onSuccess: () => {
-      toast.success(t("common.success"), { description: t("page.department.toast.deleteSuccess") });
-      queryClient.invalidateQueries(["departments"]);
+      queryClient.invalidateQueries("departments");
+      Toast.fire({ icon: "success", title: t("page.department.deleted") });
     },
-    onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
-      });
+    onError: () => {
+      Toast.fire({ icon: "error", title: t("page.department.deleteError") });
     }
   });
 
-  const departments = data?.data || [];
-  const pagination = data?.pagination || {};
-  const stats = data?.stats || {};
-  const total = pagination?.totalItems || 0;
-  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
-
-  const handleDelete = (department) => {
-    setDeleteTarget(department);
+  const handleDelete = (id) => {
+    DeleteAlert.fire({
+      title: t("page.department.deleteConfirm"),
+      showCancelButton: true,
+      confirmButtonText: t("common.delete"),
+      cancelButtonText: t("common.cancel")
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate(id);
+      }
+    });
   };
 
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate({ id: deleteTarget.id });
-      setDeleteTarget(null);
-    }
-  };
+  const filteredDepartments = departments.filter((d) => {
+    if (!search) return true;
+    const name = (d.nameDepartment || d.name || "").toLowerCase();
+    return name.includes(search.toLowerCase());
+  });
 
-  const columns = [
-    {
-      header: t("page.department.table.no"),
-      render: (_, index) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {String(index + 1 + (page - 1) * limit).padStart(2, "0")}
-        </span>
-      )
-    },
-    {
-      header: t("page.department.table.name"),
-      render: (department) => (
-        <span className="text-sm font-semibold text-primary">{department.name}</span>
-      )
-    },
-    {
-      header: t("page.department.table.description"),
-      render: (department) => (
-        <p className="text-sm text-muted-foreground max-w-xs truncate">
-          {department.description || "-"}
-        </p>
-      )
-    },
-    {
-      header: t("page.department.table.status"),
-      align: "center",
-      render: (department) => (
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
-            department.status === "active"
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-          }`}>
-          {department.status === "active" ? t("common.active") : t("common.inactive")}
-        </span>
-      )
-    },
-    {
-      header: t("page.department.table.createdDate"),
-      render: (department) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(department.createdAt)}
-        </span>
-      )
-    },
-    {
-      header: t("page.department.table.updatedDate"),
-      render: (department) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(department.updatedAt)}
-        </span>
-      )
-    },
-    {
-      header: t("common.createdBy"),
-      render: (department) => (
-        <span className="text-sm text-muted-foreground">
-          {department.createdByUser?.fullName ||
-            department.createdByUser?.userName ||
-            department.createdBy ||
-            "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.modifiedBy"),
-      render: (department) => (
-        <span className="text-sm text-muted-foreground">
-          {department.modifiedByUser?.fullName ||
-            department.modifiedByUser?.userName ||
-            department.modifiedBy ||
-            "-"}
-        </span>
-      )
-    },
-    {
-      header: t("page.department.table.actions"),
-      align: "center",
-      render: (department) => (
-        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {canAccess(user, MENU_KEY, "view") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/detail-department?id=${department.id}`);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-              title={t("common.view")}>
-              <span className="material-symbols-outlined text-lg">visibility</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "edit") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit-department?id=${department.id}`);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-fixed/20 transition-all"
-              title={t("common.edit")}>
-              <span className="material-symbols-outlined text-lg">edit</span>
-            </button>
-          )}
-          {canAccess(user, MENU_KEY, "delete") && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(department);
-              }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-error hover:bg-error-container/20 transition-all"
-              title={t("common.delete")}>
-              <span className="material-symbols-outlined text-lg">delete</span>
-            </button>
-          )}
-        </div>
-      )
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.adminConsole") },
-              { label: t("breadcrumb.department") }
-            ]}
-            title={t("page.department.list.title")}
-            description={t("page.department.list.description")}>
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="department-download-template"
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadDepartmentTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.department.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.department.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-                )}
-                {isDownloadingTemplate
-                  ? t("page.department.button.downloading")
-                  : t("page.department.button.downloadTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                data-tour="department-download-data"
-                variant="outline"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadDepartmentExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.department.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.department.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
-                )}
-                {isDownloadingData
-                  ? t("page.department.button.downloading")
-                  : t("page.department.button.downloadData")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button
-                data-tour="department-upload"
-                variant="default"
-                onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg">upload</span>
-                {t("page.department.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="department-add"
-                variant="default"
-                onClick={() => navigate("/add-department")}
-                className="shadow-md">
-                <span className="material-symbols-outlined text-lg">add</span>
-                {t("page.department.button.add")}
-              </Button>
-            )}
-          </PageHeader>
-        </motion.div>
-      </motion.div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Building2 size={20} className="text-primary" />
+          <h1 className="text-xl font-bold">{t("page.department.title")}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowUpload(true)}>
+            <Users size={14} />
+            {t("page.department.import")}
+          </Button>
+          <Button size="sm" onClick={() => navigate("/department/add")}>
+            <Plus size={14} />
+            {t("page.department.add")}
+          </Button>
+        </div>
+      </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <motion.div
-              variants={item}
-              data-tour="department-stat-total"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsTotal")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {stats?.totalDepartemen ?? total}
-                </h3>
-                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">domain</span>
-                  {t("page.department.list.statsAll")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">domain</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="department-stat-active"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsActive")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {stats?.totalDepartemenAktif ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {stats?.totalDepartemen
-                    ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
-                    : 0}
-                  {t("page.department.list.statsActivePercent")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">check_circle</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="department-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsInactive")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">
-                  {stats?.totalDepartemenNonActive ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.department.list.statsAttention")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">cancel</span>
-              </div>
-            </motion.div>
-            <motion.div
-              variants={item}
-              data-tour="department-stat-nodesc"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsNoDesc")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {stats?.totalTanpaDeskripsi ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">warning</span>
-                  {stats?.totalDepartemen
-                    ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
-                    : 0}
-                  {t("page.department.list.statsNoDescPercent")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">warning</span>
-              </div>
-            </motion.div>
-          </motion.div>
+      <div className="relative">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("page.department.search")}
+          className="pl-9 h-10"
+        />
+      </div>
 
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            data-tour="department-table"
-            className="mt-6">
-            <DataTable
-              columns={columns}
-              data={departments}
-              isLoading={isLoading}
-              emptyMessage={t("page.department.list.empty")}
-              toolbar={
-                <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {t("page.department.list.showLabel")}
-                    </span>
-                    <select
-                      value={limit}
-                      className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                      <option value={10}>{t("page.department.list.show10")}</option>
-                      <option value={25}>{t("page.department.list.show25")}</option>
-                      <option value={50}>{t("page.department.list.show50")}</option>
-                    </select>
+      <div className="grid gap-3">
+        {filteredDepartments.map((dept, idx) => {
+          const id = dept?.id || dept?._id || dept?.ID || "";
+          return (
+            <div
+              key={id || idx}
+              className="group bg-card border border-border/50 rounded-xl p-4 hover:border-border hover:shadow-sm transition-all cursor-pointer"
+              onClick={() => navigate(`/department/${id}`)}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center">
+                    <Building2 size={18} className="text-primary/60" />
                   </div>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                      search
-                    </span>
-                    <input
-                      data-tour="department-search"
-                      placeholder={t("page.department.list.search")}
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                      }}
-                      className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    />
+                  <div>
+                    <p className="font-medium">{dept.nameDepartment || dept.name || "-"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {dept.nameDepartmentEnglish || dept.nameEnglish || ""}
+                    </p>
                   </div>
                 </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-              rowClassName={() => "group"}
-            />
-          </motion.div>
-
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
-              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-                {t("page.department.tips.title")}
-              </h4>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/department/edit/${id}`);
+                    }}>
+                    <Edit3 size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(id);
+                    }}>
+                    <Trash2 size={14} />
+                  </Button>
+                  <ChevronRight size={14} className="text-muted-foreground/40" />
+                </div>
+              </div>
             </div>
-            <ul className="space-y-2">
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.department.tips.1")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.department.tips.2")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.department.tips.3")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.department.tips.4")}</span>
-              </li>
-            </ul>
-          </motion.div>
-        </>
-      )}
+          );
+        })}
+        {filteredDepartments.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
+              <Building2 size={20} className="text-muted-foreground/40" />
+            </div>
+            <p className="font-medium text-muted-foreground">
+              {t("page.department.noDepartments")}
+            </p>
+          </div>
+        )}
+      </div>
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.department.modal.deleteTitle", { name: deleteTarget?.name || "" })}
-        confirmText={t("page.department.modal.confirmDelete")}
-        onConfirm={confirmDelete}
-      />
-      <UploadDepartmentModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["departments"])}
-      />
+      {showUpload && <UploadDepartmentModal onClose={() => setShowUpload(false)} />}
     </div>
   );
 };

@@ -20,22 +20,8 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-import { motion } from "framer-motion";
 import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
@@ -138,8 +124,8 @@ const AddCategory = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("page.ingredientCategory.add.breadcrumbSettings") },
@@ -164,11 +150,11 @@ const AddCategory = () => {
                 : t("page.ingredientCategory.add.subtitleAdd")
             }
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
@@ -378,8 +364,8 @@ const AddCategory = () => {
               </form>
             </Form>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {(isSubmitting || loadingData) && (
         <Loading fullscreen size="lg" label={t("page.ingredientCategory.add.loadingLabel")} />

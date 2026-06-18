@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
-import { motion } from "framer-motion";
 import { ArrowLeft, Eye, Store } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
@@ -21,11 +20,6 @@ import DataTable from "@/components/ui/DataTable";
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
   return "Rp " + Number(num).toLocaleString("id-ID");
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
 const CashRegisterHistory = () => {
@@ -163,7 +157,7 @@ const CashRegisterHistory = () => {
   ];
 
   return (
-    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
+    <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -223,7 +217,7 @@ const CashRegisterHistory = () => {
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <div>
           <DataTable
             columns={columns}
             data={items}
@@ -232,9 +226,9 @@ const CashRegisterHistory = () => {
             onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Route, Map } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { useTourStore } from "@/state/tour";
 import { superAdminSteps } from "./steps";
 import GuidePanel from "./GuidePanel";
 
-const SpotlightOverlay = ({ target, stepIndex }) => {
+const SpotlightOverlay = ({ target }) => {
   const [rect, setRect] = useState(null);
 
   const update = useCallback(() => {
@@ -48,13 +47,7 @@ const SpotlightOverlay = ({ target, stepIndex }) => {
   const P = 12;
 
   return (
-    <motion.div
-      key={stepIndex}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-[60] pointer-events-none">
+    <div className="fixed inset-0 z-[60] pointer-events-none">
       {/* Top strip */}
       <div
         className="absolute left-0 right-0 bg-black/50 pointer-events-auto"
@@ -96,20 +89,8 @@ const SpotlightOverlay = ({ target, stepIndex }) => {
           boxShadow: "0 0 0 2px hsl(var(--primary)), 0 0 20px hsla(var(--primary), 0.4)"
         }}
       />
-    </motion.div>
+    </div>
   );
-};
-
-const panelVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  visible: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: 50, scale: 0.95 }
-};
-
-const fabVariants = {
-  hidden: { scale: 0, opacity: 0 },
-  visible: { scale: 1, opacity: 1 },
-  exit: { scale: 0, opacity: 0 }
 };
 
 const SuperAdminTour = () => {
@@ -201,177 +182,138 @@ const SuperAdminTour = () => {
   return (
     <>
       {/* Spotlight overlay */}
-      <AnimatePresence>
-        {isActive && !isMinimized && hasSpotlight && (
-          <SpotlightOverlay
-            key={`spotlight-${currentStep}`}
-            target={step.target}
-            stepIndex={currentStep}
-          />
-        )}
-      </AnimatePresence>
+      {isActive && !isMinimized && hasSpotlight && (
+        <SpotlightOverlay
+          key={`spotlight-${currentStep}`}
+          target={step.target}
+          stepIndex={currentStep}
+        />
+      )}
 
       {/* Floating help button */}
-      <AnimatePresence>
-        {(!isActive || isMinimized) && (
-          <div className="fixed bottom-6 right-6 z-[70] flex flex-col items-end gap-2">
-            {/* FAB menu popover */}
-            <AnimatePresence>
-              {showMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  transition={{ duration: 0.15 }}
-                  className="mb-2 bg-background border rounded-xl shadow-xl overflow-hidden min-w-[200px]">
-                  <button
-                    onClick={handleStart}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
-                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                      <Route size={16} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{t("guide.menu.tour")}</p>
-                      <p className="text-xs text-muted-foreground">{t("guide.menu.tourDesc")}</p>
-                    </div>
-                  </button>
-                  <div className="border-t" />
-                  <button
-                    onClick={handleOpenGuide}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
-                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                      <BookOpen size={16} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{t("guide.menu.guide")}</p>
-                      <p className="text-xs text-muted-foreground">{t("guide.menu.guideDesc")}</p>
-                    </div>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* FAB button */}
-            <motion.button
-              key="fab"
-              variants={fabVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              onClick={handleFabClick}
-              onBlur={handleFabBlur}
-              className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
-              title={t("translation:guide.dashboard.fabTitle")}>
-              <Map size={22} />
-            </motion.button>
-          </div>
-        )}
-      </AnimatePresence>
+      {(!isActive || isMinimized) && (
+        <div className="fixed bottom-6 right-6 z-[70] flex flex-col items-end gap-2">
+          {/* FAB menu popover */}
+          {showMenu && (
+            <div className="mb-2 bg-background border rounded-xl shadow-xl overflow-hidden min-w-[200px]">
+              <button
+                onClick={handleStart}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <Route size={16} />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{t("guide.menu.tour")}</p>
+                  <p className="text-xs text-muted-foreground">{t("guide.menu.tourDesc")}</p>
+                </div>
+              </button>
+              <div className="border-t" />
+              <button
+                onClick={handleOpenGuide}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent transition-colors text-left">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <BookOpen size={16} />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{t("guide.menu.guide")}</p>
+                  <p className="text-xs text-muted-foreground">{t("guide.menu.guideDesc")}</p>
+                </div>
+              </button>
+            </div>
+          )}
+          {/* FAB button */}
+          <button
+            onClick={handleFabClick}
+            onBlur={handleFabBlur}
+            className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+            title={t("translation:guide.dashboard.fabTitle")}>
+            <Map size={22} />
+          </button>
+        </div>
+      )}
 
       {/* Guide Panel */}
-      <AnimatePresence>{showGuide && <GuidePanel onClose={handleCloseGuide} />}</AnimatePresence>
+      {showGuide && <GuidePanel onClose={handleCloseGuide} />}
 
       {/* Tour panel */}
-      <AnimatePresence>
-        {isActive && !isMinimized && step && (
-          <motion.div
-            key="panel"
-            variants={panelVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="fixed bottom-6 right-6 z-[70] w-[340px] sm:w-[380px]">
-            <Card className="shadow-2xl border border-primary/20 overflow-hidden bg-background">
-              {/* Progress bar */}
-              <div className="h-1 bg-muted">
-                <motion.div
-                  className="h-full bg-primary"
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${((currentStep + 1) / totalSteps) * 100}%`
-                  }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                />
-              </div>
+      {isActive && !isMinimized && step && (
+        <div className="fixed bottom-6 right-6 z-[70] w-[340px] sm:w-[380px]">
+          <Card className="shadow-2xl border border-primary/20 overflow-hidden bg-background">
+            {/* Progress bar */}
+            <div className="h-1 bg-muted">
+              <div
+                className="h-full bg-primary"
+                style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+              />
+            </div>
 
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-4 pb-2">
-                <span className="text-xs font-medium text-muted-foreground tracking-wide">
-                  {t("translation:guide.dashboard.step", {
-                    current: currentStep + 1,
-                    total: totalSteps
-                  })}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={toggleMinimized}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title={t("translation:guide.dashboard.minimize")}>
-                    <ChevronDown size={16} />
-                  </button>
-                  <button
-                    onClick={handleFinish}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    title={t("translation:guide.dashboard.close")}>
-                    <X size={16} />
-                  </button>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <span className="text-xs font-medium text-muted-foreground tracking-wide">
+                {t("translation:guide.dashboard.step", {
+                  current: currentStep + 1,
+                  total: totalSteps
+                })}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={toggleMinimized}
+                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  title={t("translation:guide.dashboard.minimize")}>
+                  <ChevronDown size={16} />
+                </button>
+                <button
+                  onClick={handleFinish}
+                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  title={t("translation:guide.dashboard.close")}>
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-5 pb-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+                  <Icon size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-base leading-tight mb-1.5 text-foreground">
+                    {t(`translation:${step.titleKey}`)}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {t(`translation:${step.descKey}`)}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              {/* Content */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="px-5 pb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
-                      <Icon size={22} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-base leading-tight mb-1.5 text-foreground">
-                        {t(`translation:${step.titleKey}`)}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {t(`translation:${step.descKey}`)}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+            {/* Footer */}
+            <div className="flex items-center justify-between px-5 pb-4 pt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isFirst}
+                onClick={handlePrev}
+                className="gap-1 text-xs">
+                <ChevronLeft size={14} />
+                {t("translation:guide.dashboard.prev")}
+              </Button>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between px-5 pb-4 pt-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={isFirst}
-                  onClick={handlePrev}
-                  className="gap-1 text-xs">
-                  <ChevronLeft size={14} />
-                  {t("translation:guide.dashboard.prev")}
+              {isLast ? (
+                <Button size="sm" onClick={handleFinish} className="gap-1 text-xs">
+                  {t("translation:guide.dashboard.finish")}
                 </Button>
-
-                {isLast ? (
-                  <Button size="sm" onClick={handleFinish} className="gap-1 text-xs">
-                    {t("translation:guide.dashboard.finish")}
-                  </Button>
-                ) : (
-                  <Button size="sm" onClick={handleNext} className="gap-1 text-xs">
-                    {t(`translation:${step.actionKey}`)}
-                    <ChevronRight size={14} />
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              ) : (
+                <Button size="sm" onClick={handleNext} className="gap-1 text-xs">
+                  {t(`translation:${step.actionKey}`)}
+                  <ChevronRight size={14} />
+                </Button>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
     </>
   );
 };

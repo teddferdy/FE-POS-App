@@ -1,7 +1,6 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { AlertTriangle, Package, ShoppingBasket } from "lucide-react";
 import { getLowStockProducts } from "@/services/stock";
 import { Card } from "@/components/ui/card";
@@ -17,21 +16,6 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-// const fadeInUp = {
-//   hidden: { opacity: 0, y: 20 },
-//   show: { opacity: 1, y: 0 }
-// };
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -70,8 +54,8 @@ const LowStock = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -89,14 +73,14 @@ const LowStock = () => {
             title={t("page.lowStock.title")}
             description={t("page.lowStock.description")}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div variants={container} initial="hidden" animate="show">
-          <motion.div variants={item}>
+        <div>
+          <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
@@ -291,8 +275,8 @@ const LowStock = () => {
                 )}
               </>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

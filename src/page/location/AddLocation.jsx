@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion } from "framer-motion";
 import {
   Save,
   MapPin,
@@ -66,16 +65,6 @@ import { useQuery } from "react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import UserGuide from "@/components/organism/UserGuide";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-};
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -416,8 +405,8 @@ const AddLocation = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -436,17 +425,17 @@ const AddLocation = () => {
             description={t("page.location.add.description")}>
             <UserGuide guideKey="add-location" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Form Card */}
-      <motion.div variants={container} initial="hidden" animate="show">
+      <div>
         <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Form Fields */}
-                <motion.div variants={item} className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-8">
                   {/* Section: Informasi Toko */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -1055,10 +1044,10 @@ const AddLocation = () => {
                       </Button>
                     </div>
                   )}
-                </motion.div>
+                </div>
 
                 {/* Right Column - Cards */}
-                <motion.div variants={item} className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-6">
                   {/* Status Toggle */}
                   <div
                     className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
@@ -1184,12 +1173,10 @@ const AddLocation = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
 
-              <motion.div
-                variants={item}
-                className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1212,11 +1199,11 @@ const AddLocation = () => {
                       : t("page.location.form.saveLocation")}
                   </Button>
                 </div>
-              </motion.div>
+              </div>
             </form>
           </Form>
         </div>
-      </motion.div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

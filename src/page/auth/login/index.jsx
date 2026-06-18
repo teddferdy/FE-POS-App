@@ -21,20 +21,6 @@ import { Loading } from "@/components/ui/loading";
 import { login } from "@/services/auth";
 import { translationSelect } from "@/state/translation";
 import AuthGuideModal from "@/components/organism/AuthGuideModal";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -139,7 +125,7 @@ const LoginPage = () => {
   });
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <style>{`
         @keyframes kenBurns {
           0% { transform: scale(1) translateX(0); }
@@ -361,7 +347,7 @@ const LoginPage = () => {
       <AuthGuideModal open={guideOpen} onOpenChange={setGuideOpen} context="login" />
 
       {isLoading && <Loading fullscreen size="lg" label="Memuat data..." />}
-    </motion.div>
+    </div>
   );
 };
 

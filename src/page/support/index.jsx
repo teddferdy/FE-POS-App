@@ -12,20 +12,6 @@ import {
   ExternalLink
 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const faqItems = [
   {
@@ -133,8 +119,8 @@ const Support = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
@@ -143,11 +129,11 @@ const Support = () => {
             title={t("page.support.title")}
             description={t("page.support.description")}
           />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div
               data-tour="support-contact-email"
@@ -262,8 +248,8 @@ const Support = () => {
               ))}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

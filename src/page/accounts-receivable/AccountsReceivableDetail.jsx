@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { motion } from "framer-motion";
 import { ArrowLeft, Receipt, Wallet, Clock, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getARById } from "@/services/accounts-receivable";
@@ -18,21 +17,6 @@ const STATUS_MAP = {
   PARTIAL: { label: "Sebagian Dibayar", color: "bg-blue-100 text-blue-800" },
   PAID: { label: "Lunas", color: "bg-green-100 text-green-800" },
   OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
-};
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const AccountsReceivableDetail = () => {
@@ -89,7 +73,7 @@ const AccountsReceivableDetail = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -107,9 +91,9 @@ const AccountsReceivableDetail = () => {
             {t("page.accountsReceivable.detail.breadcrumb.detail")}
           </span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="icon" onClick={() => navigate("/accounts-receivable")}>
@@ -126,14 +110,10 @@ const AccountsReceivableDetail = () => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <motion.div variants={item}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div>
           <Card className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-50">
               <Receipt size={20} className="text-blue-600" />
@@ -145,8 +125,8 @@ const AccountsReceivableDetail = () => {
               <p className="text-lg font-bold">{formatCurrencyRupiah(ar.totalAmount)}</p>
             </div>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-50">
               <Wallet size={20} className="text-green-600" />
@@ -158,8 +138,8 @@ const AccountsReceivableDetail = () => {
               <p className="text-lg font-bold">{formatCurrencyRupiah(ar.paidAmount)}</p>
             </div>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg ${isOverdue ? "bg-red-50" : "bg-yellow-50"}`}>
               {isOverdue ? (
@@ -175,16 +155,11 @@ const AccountsReceivableDetail = () => {
               <p className="text-lg font-bold">{formatCurrencyRupiah(ar.outstandingAmount)}</p>
             </div>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div variants={item}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
           <Card className="p-4">
             <h3 className="font-semibold mb-3">
               {t("page.accountsReceivable.detail.section.informasiInvoice")}
@@ -221,9 +196,9 @@ const AccountsReceivableDetail = () => {
               </div>
             </div>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div variants={item}>
+        <div>
           <Card className="p-4">
             <h3 className="font-semibold mb-3">
               {t("page.accountsReceivable.detail.section.informasiOrder")}
@@ -258,10 +233,10 @@ const AccountsReceivableDetail = () => {
               </div>
             </div>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <Card className="p-4">
           <h3 className="font-semibold mb-3">
             {t("page.accountsReceivable.detail.paymentHistory")} ({payments.length})
@@ -280,19 +255,15 @@ const AccountsReceivableDetail = () => {
             </p>
           )}
         </Card>
-      </motion.div>
+      </div>
 
       {ar.notes && (
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}>
+        <div>
           <Card className="p-4">
             <h3 className="font-semibold mb-2">{t("page.accountsReceivable.detail.notes")}</h3>
             <p className="text-sm text-muted-foreground">{ar.notes}</p>
           </Card>
-        </motion.div>
+        </div>
       )}
     </div>
   );

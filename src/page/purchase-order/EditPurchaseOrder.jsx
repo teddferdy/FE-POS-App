@@ -21,20 +21,6 @@ import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditPurchaseOrder = () => {
   const { t } = useTranslation();
@@ -307,8 +293,8 @@ const EditPurchaseOrder = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -325,11 +311,11 @@ const EditPurchaseOrder = () => {
             ]}
             title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
             description={t("page.purchaseOrder.edit.description")}></PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <Card className="p-6">
               <h3 className="text-base font-semibold text-foreground mb-4">
@@ -666,8 +652,8 @@ const EditPurchaseOrder = () => {
               </Button>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

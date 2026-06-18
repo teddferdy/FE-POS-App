@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { Receipt, Wallet } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
@@ -23,21 +22,6 @@ const STATUS_LABELS = {
 };
 
 const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OVERDUE: "overdue" };
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const AccountsReceivableList = () => {
   const { t } = useTranslation();
@@ -152,7 +136,7 @@ const AccountsReceivableList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -164,9 +148,9 @@ const AccountsReceivableList = () => {
             {t("page.accountsReceivable.list.breadcrumb")}
           </span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
@@ -177,36 +161,28 @@ const AccountsReceivableList = () => {
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <motion.div variants={item}>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div>
           <Card className="p-4">
             <p className="text-xs text-muted-foreground">
               {t("page.accountsReceivable.list.totalPiutang")}
             </p>
             <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
           </Card>
-        </motion.div>
+        </div>
         {Object.entries(agingBuckets).map(([key, bucket]) => (
-          <motion.div key={key} variants={item}>
+          <div key={key}>
             <Card className="p-4">
               <p className="text-xs text-muted-foreground">{bucket.label}</p>
               <p className="text-lg font-bold">{formatCurrencyRupiah(bucket.total)}</p>
             </Card>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
           <button
             key={s}
@@ -224,16 +200,12 @@ const AccountsReceivableList = () => {
               : t("page.accountsReceivable.list.filterAll")}
           </button>
         ))}
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}>
+        <div>
           <DataTable
             columns={columns}
             data={arList}
@@ -247,7 +219,7 @@ const AccountsReceivableList = () => {
               onPageChange: setPage
             }}
           />
-        </motion.div>
+        </div>
       )}
 
       {payModal && (
@@ -288,7 +260,7 @@ const AccountsReceivableList = () => {
         </Modal>
       )}
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <TipsCard
           tips={[
             t("page.accountsReceivable.list.tips.1"),
@@ -297,7 +269,7 @@ const AccountsReceivableList = () => {
             t("page.accountsReceivable.list.tips.4")
           ]}
         />
-      </motion.div>
+      </div>
     </div>
   );
 };

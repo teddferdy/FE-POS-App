@@ -21,20 +21,6 @@ import { DatePicker } from "@/components/ui/date-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formSchema = z.object({
   nama_shift: z.string().min(1, "Nama shift wajib diisi"),
@@ -144,8 +130,8 @@ const AddShift = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
@@ -156,11 +142,11 @@ const AddShift = () => {
             description={t("page.shift.list.description")}>
             <UserGuide guideKey="add-shift" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <Card className="p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
@@ -536,8 +522,8 @@ const AddShift = () => {
               </form>
             </Form>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

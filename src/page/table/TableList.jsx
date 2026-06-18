@@ -6,7 +6,6 @@ import {
 } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store } from "lucide-react";
 import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
@@ -55,11 +54,6 @@ const TableList = () => {
   const [formName, setFormName] = useState("");
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || [];
@@ -174,7 +168,7 @@ const TableList = () => {
   ];
 
   return (
-    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
+    <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-admin")}
@@ -231,12 +225,7 @@ const TableList = () => {
             </Card>
           ) : (
             <>
-              <motion.div
-                variants={item}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="p-5">
                   <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
                   <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
@@ -259,14 +248,9 @@ const TableList = () => {
                     {data?.stats?.occupied ?? 0}
                   </p>
                 </Card>
-              </motion.div>
+              </div>
 
-              <motion.div
-                variants={item}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                className="relative w-full sm:w-72">
+              <div className="relative w-full sm:w-72">
                 <Search
                   size={16}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -280,13 +264,9 @@ const TableList = () => {
                   }}
                   className="pl-9 h-10"
                 />
-              </motion.div>
+              </div>
 
-              <motion.div
-                variants={item}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}>
+              <div>
                 <DataTable
                   columns={columns}
                   data={tables}
@@ -295,7 +275,7 @@ const TableList = () => {
                   emptyMessage={t("page.table.list.empty")}
                   pagination={{ page, totalPages, total, onPageChange: setPage }}
                 />
-              </motion.div>
+              </div>
             </>
           )}
 
@@ -375,7 +355,7 @@ const TableList = () => {
           />
         </>
       )}
-    </motion.div>
+    </div>
   );
 };
 

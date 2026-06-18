@@ -29,7 +29,6 @@ import {
   UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/ui/PageHeader";
@@ -82,16 +81,6 @@ const categoryOptions = [
   { value: "Warehouse", labelKey: "page.location.category.warehouse" },
   { value: "Office", labelKey: "page.location.category.office" }
 ];
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-};
 
 const EditLocation = () => {
   const { t } = useTranslation();
@@ -502,8 +491,8 @@ const EditLocation = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -526,12 +515,12 @@ const EditLocation = () => {
             </Button>
             <UserGuide guideKey="add-location" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Form Card */}
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
@@ -1301,8 +1290,8 @@ const EditLocation = () => {
               </form>
             </Form>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

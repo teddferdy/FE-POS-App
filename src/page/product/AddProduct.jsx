@@ -46,20 +46,6 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -481,8 +467,8 @@ const AddProduct = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
@@ -493,11 +479,11 @@ const AddProduct = () => {
             description={t("page.product.add.description")}>
             <UserGuide guideKey="add-product" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="bg-card rounded-xl shadow-sm border border-border p-4">
             <div className="flex items-center justify-between max-w-2xl mx-auto">
               {steps.map((s, i) => (
@@ -1766,8 +1752,8 @@ const AddProduct = () => {
               </div>
             </form>
           </Form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="success"

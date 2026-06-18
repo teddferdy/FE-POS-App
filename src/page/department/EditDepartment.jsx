@@ -1,257 +1,244 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { toast } from "sonner";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Save, Building2, Image, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { editDepartment, getDepartmentById } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import Modal from "@/components/organism/modal";
-import { Loading } from "@/components/ui/loading";
-import PageHeader from "@/components/ui/PageHeader";
-import { motion } from "framer-motion";
-import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
+import { getDepartmentById, editDepartment } from "@/services/department";
+import { Toast } from "@/components/organism/toast";
 
 const EditDepartment = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { id } = useParams();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
-  const departmentId = searchParams.get("id");
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [isActive, setIsActive] = useState(true);
-  const [draftModal, setDraftModal] = useState(false);
+  const fileInputRef = useRef(null);
+  const [form, setForm] = useState({
+    nameDepartment: "",
+    nameDepartmentEnglish: "",
+    descDepartment: "",
+    descDepartmentEnglish: ""
+  });
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const {
-    data: departmentData,
-    isLoading: departmentsLoading,
-    isError,
-    refetch
-  } = useQuery(["department-detail", departmentId], () => getDepartmentById({ id: departmentId }), {
-    enabled: !!departmentId
-  });
-  const department = departmentData?.data || null;
-
-  useEffect(() => {
-    if (department) {
-      setName(department.name || "");
-      setDescription(department.description || "");
-      setIsActive(department.status === "active");
+  const { isLoading } = useQuery(["department", id], () => getDepartmentById(id), {
+    enabled: !!id,
+    onSuccess: (res) => {
+      const dept = res?.data || res;
+      setForm({
+        nameDepartment: dept.nameDepartment || dept.name || "",
+        nameDepartmentEnglish: dept.nameDepartmentEnglish || dept.nameEnglish || "",
+        descDepartment: dept.descDepartment || dept.description || "",
+        descDepartmentEnglish: dept.descDepartmentEnglish || dept.descEnglish || ""
+      });
+      setExistingImage(dept.imageDepartment || dept.image || null);
     }
-  }, [department]);
+  });
 
-  const editMutation = useMutation(editDepartment, {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreview(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    setExistingImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const validate = () => {
+    const errs = {};
+    if (!form.nameDepartment.trim()) errs.nameDepartment = t("page.department.nameRequired");
+    return errs;
+  };
+
+  const mutation = useMutation((data) => editDepartment({ ...data, id }), {
     onSuccess: () => {
-      toast.success(t("common.success"), { description: t("page.department.toast.updateSuccess") });
-      queryClient.invalidateQueries(["departments"]);
-      navigate("/department-list");
+      queryClient.invalidateQueries("departments");
+      Toast.fire({ icon: "success", title: t("page.department.updated") });
+      navigate("/department");
     },
     onError: (err) => {
-      toast.error(t("common.error"), {
-        description: err?.response?.data?.message || err.message
+      Toast.fire({
+        icon: "error",
+        title: err?.response?.data?.message || t("page.department.updateError")
       });
     }
   });
 
-  const validate = () => {
-    const errs = {};
-    if (!name.trim()) errs.name = "Nama departemen wajib diisi";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = (e, saveAsDraft = false) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
-    editMutation.mutate({
-      id: departmentId,
-      name: name.trim(),
-      description: description.trim(),
-      status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
-    });
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+    const formData = new FormData();
+    formData.append("nameDepartment", form.nameDepartment);
+    formData.append("nameDepartmentEnglish", form.nameDepartmentEnglish);
+    formData.append("descDepartment", form.descDepartment);
+    formData.append("descDepartmentEnglish", form.descDepartmentEnglish);
+    if (image) formData.append("imageDepartment", image);
+    mutation.mutate(formData);
   };
 
-  if (!departmentId) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>{t("page.department.detail.idNotFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/department-list")}>
-          {t("page.department.button.back")}
-        </Button>
-      </div>
-    );
-  }
-
-  if (departmentsLoading) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
-  }
-
-  if (isError) {
-    return <AbortController refetch={refetch} />;
-  }
-
-  if (!department) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
-        <span className="material-symbols-outlined text-4xl">domain</span>
-        <p>{t("page.department.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/department-list")}>
-          {t("page.department.button.back")}
-        </Button>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.employee") },
-              { label: t("breadcrumb.department"), href: "/department-list" },
-              { label: t("page.department.edit.title") }
-            ]}
-            title={t("page.department.edit.title")}
-            description={t("page.department.edit.description")}
-          />
-        </motion.div>
-      </motion.div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="flex items-center gap-3 mb-8">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/department")}>
+            <ArrowLeft size={20} />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">{t("page.department.editTitle")}</h1>
+            <p className="text-sm text-muted-foreground">{t("page.department.editDesc")}</p>
+          </div>
+        </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
-            <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t("page.department.form.name")} <span className="text-destructive">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                      domain
-                    </span>
-                    <Input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder={t("page.department.form.namePlaceholder")}
-                      className="pl-9"
-                    />
-                  </div>
-                  {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-card border border-border/50 rounded-xl p-6 space-y-5">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Building2 size={16} />
+              {t("page.department.info")}
+            </div>
 
-              <div className="flex flex-col gap-1.5 mb-5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.department.form.description")}
-                </label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t("page.department.form.descPlaceholder")}
-                  rows={4}
-                  className="resize-none"
-                />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("page.department.name")} <span className="text-destructive">*</span>
+              </label>
+              <Input
+                name="nameDepartment"
+                value={form.nameDepartment}
+                onChange={handleChange}
+                placeholder={t("page.department.namePlaceholder")}
+                className={errors.nameDepartment ? "border-destructive" : ""}
+              />
+              {errors.nameDepartment && (
+                <p className="text-xs text-destructive">{errors.nameDepartment}</p>
+              )}
+            </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("page.department.nameEnglish")}</label>
+              <Input
+                name="nameDepartmentEnglish"
+                value={form.nameDepartmentEnglish}
+                onChange={handleChange}
+                placeholder={t("page.department.nameEnglishPlaceholder")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("page.department.description")}</label>
+              <textarea
+                name="descDepartment"
+                value={form.descDepartment}
+                onChange={handleChange}
+                placeholder={t("page.department.descPlaceholder")}
+                rows={3}
+                className="w-full rounded-xl bg-accent/50 border border-border/60 px-4 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {t("page.department.descriptionEnglish")}
+              </label>
+              <textarea
+                name="descDepartmentEnglish"
+                value={form.descDepartmentEnglish}
+                onChange={handleChange}
+                placeholder={t("page.department.descEnglishPlaceholder")}
+                rows={3}
+                className="w-full rounded-xl bg-accent/50 border border-border/60 px-4 py-2.5 text-sm outline-none focus:border-primary/50 transition-colors resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("page.department.image")}</label>
               <div
-                className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all mb-5 ${
-                  isActive
-                    ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                    : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                }`}>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isActive ? "bg-green-600 text-white" : "bg-destructive/10 text-destructive"
-                    }`}>
-                    <span className="material-symbols-outlined text-lg">
-                      {isActive ? "check" : "close"}
-                    </span>
+                onClick={() => fileInputRef.current?.click()}
+                className="relative border-2 border-dashed border-border/60 rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors">
+                {imagePreview || existingImage ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagePreview || existingImage || "/placeholder.svg"}
+                      alt="Preview"
+                      className="max-h-40 rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeImage();
+                      }}
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground shadow-md">
+                      <X size={12} />
+                    </button>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {isActive
-                        ? t("page.department.form.statusActive")
-                        : t("page.department.form.statusInactive")}
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
+                      <Image size={24} className="text-muted-foreground/50" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("page.department.clickToUpload")}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isActive
-                        ? t("page.department.form.activeDesc")
-                        : t("page.department.form.inactiveDesc")}
-                    </p>
+                    <p className="text-xs text-muted-foreground/60">PNG, JPG, WEBP</p>
                   </div>
-                </div>
-                <Switch checked={isActive} onCheckedChange={setIsActive} />
+                )}
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
             </div>
+          </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/department-list")}
-                className="gap-2">
-                <span className="material-symbols-outlined text-lg">close</span>
-                {t("common.cancel")}
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDraftModal(true)}
-                  disabled={editMutation.isLoading}>
-                  Simpan sebagai Draft
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={editMutation.isLoading}
-                  className="gap-2 shadow-lg shadow-primary/20">
-                  <span className="material-symbols-outlined text-lg">save</span>
-                  {t("page.department.button.saveChanges")}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-      <Modal
-        type="confirm"
-        open={draftModal}
-        onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
-        onConfirm={() => {
-          setDraftModal(false);
-          editMutation.mutate({
-            id: departmentId,
-            name: name.trim(),
-            description: description.trim(),
-            status: "draft"
-          });
-        }}
-      />
+          <div className="flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => navigate("/department")}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={mutation.isLoading}
+              className="relative overflow-hidden group/btn">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-2">
+                <Save size={16} />
+                {mutation.isLoading ? t("common.saving") : t("common.save")}
+              </span>
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

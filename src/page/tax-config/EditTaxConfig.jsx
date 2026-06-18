@@ -16,7 +16,6 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
 
 const formSchema = z.object({
@@ -31,14 +30,6 @@ const taxTypes = [
   { value: "PPh", label: "PPh" },
   { value: "Non-Pajak", label: "Non-Pajak" }
 ];
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const EditTaxConfig = () => {
   const { t } = useTranslation();
@@ -119,7 +110,7 @@ const EditTaxConfig = () => {
   }
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -293,7 +284,7 @@ const EditTaxConfig = () => {
           }}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

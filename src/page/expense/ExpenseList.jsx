@@ -8,28 +8,9 @@ import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expens
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -238,7 +219,7 @@ const ExpenseList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -248,13 +229,9 @@ const ExpenseList = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("page.expense.list.title")}</span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.expense.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.expense.list.description")}</p>
@@ -265,36 +242,32 @@ const ExpenseList = () => {
             {t("page.expense.button.add")}
           </Button>
         )}
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="bg-card p-5 rounded-xl border border-border">
               <p className="text-sm text-muted-foreground">{t("page.expense.list.total")}</p>
               <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-            </motion.div>
-            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+            </div>
+            <div className="bg-card p-5 rounded-xl border border-border">
               <p className="text-sm text-muted-foreground">{t("page.expense.list.pending")}</p>
               <p className="text-2xl font-bold text-orange-600 mt-1">{pendingExpenses}</p>
-            </motion.div>
-            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+            </div>
+            <div className="bg-card p-5 rounded-xl border border-border">
               <p className="text-sm text-muted-foreground">{t("page.expense.list.approved")}</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{approvedExpenses}</p>
-            </motion.div>
-            <motion.div variants={item} className="bg-card p-5 rounded-xl border border-border">
+            </div>
+            <div className="bg-card p-5 rounded-xl border border-border">
               <p className="text-sm text-muted-foreground">{t("page.expense.list.rejected")}</p>
               <p className="text-2xl font-bold text-red-600 mt-1">{rejectedExpenses}</p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div variants={fadeInUp} initial="hidden" animate="show">
+          <div>
             <div className="relative w-full sm:w-72">
               <Search
                 size={16}
@@ -310,13 +283,9 @@ const ExpenseList = () => {
                 className="pl-9 h-10"
               />
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}>
+          <div>
             <DataTable
               columns={columns}
               data={filtered}
@@ -325,7 +294,7 @@ const ExpenseList = () => {
               emptyIcon={DollarSign}
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
-          </motion.div>
+          </div>
         </>
       )}
     </div>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
 import { getReservations, deleteReservation } from "@/services/reservation";
@@ -15,11 +14,6 @@ import AbortController from "@/components/organism/abort-controller";
 
 const ReservationList = () => {
   const { t } = useTranslation();
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
 
   const STATUS_MAP = {
     pending: {
@@ -160,7 +154,7 @@ const ReservationList = () => {
   ];
 
   return (
-    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
+    <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
           onClick={() => navigate("/dashboard-super-admin")}
@@ -185,12 +179,7 @@ const ReservationList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="w-full sm:w-60">
               <DatePicker
                 date={dateFilter}
@@ -214,9 +203,9 @@ const ReservationList = () => {
               <option value="completed">{t("page.reservation.status.completed")}</option>
               <option value="no_show">{t("page.reservation.status.noShow")}</option>
             </select>
-          </motion.div>
+          </div>
 
-          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <div>
             <DataTable
               columns={columns}
               data={reservations}
@@ -225,7 +214,7 @@ const ReservationList = () => {
               emptyIcon={Calendar}
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
-          </motion.div>
+          </div>
         </>
       )}
 
@@ -241,7 +230,7 @@ const ReservationList = () => {
           setDeleteTarget(null);
         }}
       />
-    </motion.div>
+    </div>
   );
 };
 

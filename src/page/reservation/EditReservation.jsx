@@ -26,21 +26,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const EditReservation = () => {
   const { t } = useTranslation();
@@ -165,7 +151,7 @@ const EditReservation = () => {
     );
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -409,7 +395,7 @@ const EditReservation = () => {
           onConfirm={() => navigate("/reservation")}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

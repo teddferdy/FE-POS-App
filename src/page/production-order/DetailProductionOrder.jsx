@@ -1,28 +1,12 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ClipboardList, Clock, Play, CheckCircle, XCircle } from "lucide-react";
 import { getProductionOrderById } from "@/services/production-order";
 import { Button } from "@/components/ui/button";
 import AbortController from "@/components/organism/abort-controller";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const DetailProductionOrder = () => {
   const { t } = useTranslation();
@@ -92,7 +76,7 @@ const DetailProductionOrder = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -108,13 +92,9 @@ const DetailProductionOrder = () => {
             {t("page.productionOrder.detail.breadcrumbDetail")}
           </span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.productionOrder.detail.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{order.productionNo}</p>
@@ -122,15 +102,11 @@ const DetailProductionOrder = () => {
         <Button variant="outline" onClick={() => navigate("/production-order")}>
           <ArrowLeft size={16} className="mr-1" /> {t("page.productionOrder.detail.backButton")}
         </Button>
-      </motion.div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="lg:col-span-2 space-y-6">
-          <motion.div variants={item}>
+        <div className="lg:col-span-2 space-y-6">
+          <div>
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-lg font-semibold mb-4">
                 {t("page.productionOrder.detail.informasiProduksi")}
@@ -169,10 +145,10 @@ const DetailProductionOrder = () => {
                 </tbody>
               </table>
             </div>
-          </motion.div>
+          </div>
 
           {order.bomComponents?.length > 0 && (
-            <motion.div variants={item}>
+            <div>
               <div className="bg-card p-6 rounded-xl border border-border">
                 <h2 className="text-lg font-semibold mb-4">
                   {t("page.productionOrder.detail.bomComponents")}
@@ -200,12 +176,12 @@ const DetailProductionOrder = () => {
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
 
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-          <motion.div variants={item}>
+        <div className="space-y-6">
+          <div>
             <div className="bg-card p-6 rounded-xl border border-border">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {t("page.productionOrder.detail.status")}
@@ -215,8 +191,8 @@ const DetailProductionOrder = () => {
                 <StatusIcon size={14} /> {st.label}
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   );

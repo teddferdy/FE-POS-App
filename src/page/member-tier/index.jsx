@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Award, Plus, Users, TrendingUp, ArrowLeft, PackageOpen } from "lucide-react";
-import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, editMemberTier, deleteMemberTier } from "@/services/member-tier";
@@ -28,15 +27,6 @@ const MemberTier = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
   const itemsPerPage = 5;
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
   const {
     data: tiersData,
     isLoading,
@@ -283,8 +273,8 @@ const MemberTier = () => {
         </div>
       ) : (
         <div data-tour="page-member-tier" className="space-y-6">
-          <motion.div variants={container} initial="hidden" animate="show">
-            <motion.div variants={item}>
+          <div>
+            <div>
               <PageHeader
                 breadcrumbs={[
                   { i18nKey: "breadcrumb.home" },
@@ -300,17 +290,16 @@ const MemberTier = () => {
                   </Button>
                 )}
               </PageHeader>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
-            <motion.div variants={container} initial="hidden" animate="show">
-              <motion.div variants={item}>
+            <div>
+              <div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <motion.div
-                    variants={item}
+                  <div
                     data-tour="tier-stat-active"
                     className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
                     <div className="flex justify-between items-start mb-3">
@@ -330,9 +319,8 @@ const MemberTier = () => {
                     <div className="mt-3 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                       <div className="h-full bg-primary w-2/3" />
                     </div>
-                  </motion.div>
-                  <motion.div
-                    variants={item}
+                  </div>
+                  <div
                     data-tour="tier-stat-members"
                     className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
                     <div className="flex justify-between items-start mb-3">
@@ -350,9 +338,8 @@ const MemberTier = () => {
                     <p className="text-xs text-muted-foreground mt-2">
                       {t("page.memberTier.list.acrossTiers")}
                     </p>
-                  </motion.div>
-                  <motion.div
-                    variants={item}
+                  </div>
+                  <div
                     data-tour="tier-stat-growth"
                     className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
                     <div className="flex justify-between items-start mb-3">
@@ -370,7 +357,7 @@ const MemberTier = () => {
                     <p className="text-xs text-muted-foreground mt-2">
                       {t("page.memberTier.list.conversions")}
                     </p>
-                  </motion.div>
+                  </div>
                 </div>
 
                 {tiers.length === 0 ? (
@@ -425,8 +412,8 @@ const MemberTier = () => {
                     />
                   </div>
                 )}
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           )}
         </div>
       )}

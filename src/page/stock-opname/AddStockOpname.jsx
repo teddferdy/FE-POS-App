@@ -56,21 +56,7 @@ import {
 } from "@/components/ui/select";
 import UploadExcelModal from "./components/UploadExcelModal";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const toInt = (val) => {
   if (val === null || val === undefined || val === "") return 0;
@@ -478,8 +464,8 @@ const AddStockOpname = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { i18nKey: "breadcrumb.home" },
@@ -513,11 +499,11 @@ const AddStockOpname = () => {
             </Button>
             <UserGuide guideKey="add-stock-opname" />
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           {/* Meta */}
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             <Card className="p-6 shadow-sm border-muted">
@@ -855,8 +841,8 @@ const AddStockOpname = () => {
               </div>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

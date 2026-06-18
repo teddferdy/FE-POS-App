@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -21,7 +20,6 @@ import { canAccess } from "@/utils/permission";
 import {
   getAllProductionOrder,
   deleteProductionOrder,
-  // changeProductionOrderStatus,
   startProduction,
   completeProduction
 } from "@/services/production-order";
@@ -30,21 +28,6 @@ import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const ProductionOrderList = () => {
   const { t } = useTranslation();
@@ -263,7 +246,7 @@ const ProductionOrderList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -275,13 +258,9 @@ const ProductionOrderList = () => {
             {t("page.productionOrder.list.breadcrumbPO")}
           </span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.productionOrder.list.title")}
@@ -295,13 +274,9 @@ const ProductionOrderList = () => {
             <Plus size={16} /> {t("page.productionOrder.list.addButton")}
           </Button>
         )}
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           {
             label: t("page.productionOrder.list.statTotal"),
@@ -334,24 +309,20 @@ const ProductionOrderList = () => {
             bg: "bg-green-100"
           }
         ].map((s, i) => (
-          <motion.div key={i} variants={item}>
+          <div key={i}>
             <div className="bg-card p-4 rounded-xl border border-border">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
               <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
             </div>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}>
+          <div>
             <DataTable
               columns={columns}
               data={filteredItems}
@@ -390,7 +361,7 @@ const ProductionOrderList = () => {
               }
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
-          </motion.div>
+          </div>
 
           <Modal
             type="confirm"

@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Download, Upload, Database, FileSpreadsheet, RefreshCw, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { downloadMasterDataBackup } from "@/services/backup";
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-};
 
 const BackupPage = () => {
   const { t } = useTranslation();
@@ -28,7 +22,7 @@ const BackupPage = () => {
   };
 
   return (
-    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
+    <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">{t("page.backup.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("page.backup.description")}</p>
@@ -133,7 +127,7 @@ const BackupPage = () => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -6,7 +6,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
   Store,
@@ -58,16 +57,6 @@ const dayLabels = {
   friday: "Jumat",
   saturday: "Sabtu",
   sunday: "Minggu"
-};
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
 const DetailRow = ({ icon: Icon, label, value }) => (
@@ -329,8 +318,8 @@ const LocationDetail = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               {
@@ -352,17 +341,17 @@ const LocationDetail = () => {
               {t("breadcrumb.edit")}
             </Button>
           </PageHeader>
-        </motion.div>
-      </motion.div>
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+        </div>
+      </div>
+      <div>
+        <div>
           {/* Main Card */}
           <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             {/* Content */}
             <div className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* ===== LEFT COLUMN (2/3) ===== */}
-                <motion.div variants={item} className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-8">
                   {/* Informasi Toko */}
                   <div className="space-y-4">
                     <SectionHeader
@@ -541,10 +530,10 @@ const LocationDetail = () => {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
 
                 {/* ===== RIGHT COLUMN (1/3) ===== */}
-                <motion.div variants={item} className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-6">
                   {/* Status */}
                   <div className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-3">
@@ -725,12 +714,12 @@ const LocationDetail = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

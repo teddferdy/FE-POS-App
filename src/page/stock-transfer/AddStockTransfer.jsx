@@ -14,15 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const AddStockTransfer = () => {
   const { t } = useTranslation();
@@ -102,7 +93,7 @@ const AddStockTransfer = () => {
   };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -298,7 +289,7 @@ const AddStockTransfer = () => {
           }}
         />
       </div>
-    </motion.div>
+    </>
   );
 };
 

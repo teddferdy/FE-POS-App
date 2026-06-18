@@ -10,15 +10,6 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { motion } from "framer-motion";
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
 
 const STORE_COLORS = [
   "#3B82F6",
@@ -88,7 +79,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
   }, [salesChart, storeSalesChart, dateStoreMap, hasMultipleStores]);
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show">
+    <div>
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
@@ -318,7 +309,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

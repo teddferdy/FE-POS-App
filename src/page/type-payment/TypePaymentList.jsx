@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Eye, Edit, Trash2, CreditCard, Loader2 } from "lucide-react";
 import {
@@ -56,11 +55,6 @@ const TypePaymentList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
 
   const user = cookie?.user;
   const MENU_KEY = "/type-payment-list";
@@ -196,7 +190,7 @@ const TypePaymentList = () => {
   ];
 
   return (
-    <motion.div variants={item} initial="hidden" animate="show" className="space-y-6">
+    <div className="space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button
@@ -297,12 +291,7 @@ const TypePaymentList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="p-5">
               <p className="text-sm text-muted-foreground">{t("page.typePayment.stats.total")}</p>
               <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
@@ -315,15 +304,10 @@ const TypePaymentList = () => {
               <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
               <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Search */}
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-72">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -337,10 +321,10 @@ const TypePaymentList = () => {
               }}
               className="pl-9 h-10"
             />
-          </motion.div>
+          </div>
 
           {/* Table */}
-          <motion.div variants={item} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <div>
             <DataTable
               columns={columns}
               data={payments}
@@ -349,7 +333,7 @@ const TypePaymentList = () => {
               emptyMessage={t("page.typePayment.list.empty")}
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
-          </motion.div>
+          </div>
         </>
       )}
 
@@ -373,7 +357,7 @@ const TypePaymentList = () => {
           queryClient.invalidateQueries(["type-payments-all"]);
         }}
       />
-    </motion.div>
+    </div>
   );
 };
 

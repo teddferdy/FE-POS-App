@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
@@ -22,11 +21,6 @@ const RoleManagement = () => {
   const MENU_KEY = "/role-management";
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
 
   const PROTECTED_ROLE_NAMES = ["Super Admin", "Admin", "User", "Kasir"];
 
@@ -64,12 +58,7 @@ const RoleManagement = () => {
   };
 
   return (
-    <motion.div
-      variants={item}
-      initial="hidden"
-      animate="show"
-      data-tour="page-roles"
-      className="space-y-8">
+    <div data-tour="page-roles" className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
           <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
@@ -100,11 +89,7 @@ const RoleManagement = () => {
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={item}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
+        <div
           data-tour="role-table"
           className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
@@ -267,7 +252,7 @@ const RoleManagement = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
       <Modal
         type="confirm"
@@ -277,7 +262,7 @@ const RoleManagement = () => {
         confirmText="Ya, Hapus"
         onConfirm={confirmDelete}
       />
-    </motion.div>
+    </div>
   );
 };
 

@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -68,18 +67,6 @@ const PurchaseOrderList = () => {
       label: t("page.purchaseOrder.status.cancelled"),
       class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
     }
-  };
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
   };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -469,7 +456,7 @@ const PurchaseOrderList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -479,13 +466,9 @@ const PurchaseOrderList = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("page.purchaseOrder.list.title")}</span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t("page.purchaseOrder.list.title")}
@@ -514,48 +497,39 @@ const PurchaseOrderList = () => {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <motion.div variants={item}>
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.title")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.status")}</p>
             <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.pending ?? 0}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.active")}</p>
             <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.received ?? 0}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.delete")}</p>
             <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.cancelled ?? 0}</p>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="space-y-4">
+        <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {isSuperAdmin && (
               <select
@@ -598,10 +572,10 @@ const PurchaseOrderList = () => {
             emptyIcon={Package}
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
-        </motion.div>
+        </div>
       )}
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <TipsCard
           tips={[
             t("page.purchaseOrder.list.tips.1"),
@@ -610,7 +584,7 @@ const PurchaseOrderList = () => {
             t("page.purchaseOrder.list.tips.4")
           ]}
         />
-      </motion.div>
+      </div>
 
       {returModal &&
         returPo &&
