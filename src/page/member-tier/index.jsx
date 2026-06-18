@@ -108,9 +108,11 @@ const MemberTier = () => {
 
   const columns = [
     {
-      header: t("page.memberTier.table.id"),
-      render: (tier) => (
-        <span className="font-mono text-sm text-muted-foreground">{tier.id || tier._id}</span>
+      header: "#",
+      render: (tier, idx) => (
+        <span className="font-mono text-sm text-muted-foreground">
+          {(currentPage - 1) * itemsPerPage + idx + 1}
+        </span>
       )
     },
     {
@@ -171,7 +173,15 @@ const MemberTier = () => {
       header: t("page.memberTier.table.createdAt"),
       render: (tier) => (
         <span className="text-sm text-muted-foreground">
-          {tier.createdAt ? new Date(tier.createdAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+          {tier.createdAt
+            ? new Date(tier.createdAt).toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            : "-"}
         </span>
       )
     },
@@ -179,7 +189,15 @@ const MemberTier = () => {
       header: t("page.memberTier.table.updatedAt"),
       render: (tier) => (
         <span className="text-sm text-muted-foreground">
-          {tier.updatedAt ? new Date(tier.updatedAt).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+          {tier.updatedAt
+            ? new Date(tier.updatedAt).toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            : "-"}
         </span>
       )
     },
@@ -356,7 +374,7 @@ const MemberTier = () => {
                   </Button>
                 </div>
               ) : (
-                <div data-tour="tier-table">
+                <div data-tour="tier-table" className="mt-6">
                   <DataTable
                     columns={columns}
                     data={paginatedTiers}
