@@ -62,7 +62,7 @@ const EditMember = () => {
       name: member.name || "",
       email: member.email || "",
       phoneNumber: member.phoneNumber || member.phone || "",
-      birthDate: member.birthDate ? new Date(member.birthDate) : undefined,
+      birthDate: member.dateOfBirth ? new Date(member.dateOfBirth) : undefined,
       gender: member.gender || "male",
       address: member.address || "",
       tier: member.tier || ""
@@ -124,8 +124,9 @@ const EditMember = () => {
           { label: t("breadcrumb.edit") }
         ]}
         title={t("breadcrumb.edit")}
-        description={t("page.member.edit.description")}
-      />
+        description={t("page.member.edit.description")}>
+        <UserGuide guideKey="add-member" />
+      </PageHeader>
     </motion.div>
     </motion.div>
     <motion.div variants={container} initial="hidden" animate="show">
@@ -303,7 +304,6 @@ const EditMember = () => {
             {t("breadcrumb.back")}
           </Button>
           <div className="flex items-center gap-3">
-            <UserGuide guideKey="add-member" />
             <Button
               type="button"
               variant="outline"
@@ -329,6 +329,7 @@ const EditMember = () => {
         open={successModal}
         onOpenChange={setSuccessModal}
         title={t("page.member.edit.successTitle")}
+        description={t("page.member.edit.successDescription")}
         onConfirm={() => navigate("/member-list")}
       />
       <Modal

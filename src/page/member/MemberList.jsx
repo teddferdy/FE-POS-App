@@ -226,6 +226,15 @@ const MemberList = () => {
       align: "right",
       render: (member) => (
         <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/detail-member?id=${member.id || member._id}`);
+            }}
+            className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
+            title={t("page.member.list.detailTitle")}>
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
           {canAccess(user, MENU_KEY, "edit") && (
             <button
               onClick={(e) => {
@@ -239,7 +248,10 @@ const MemberList = () => {
           )}
           {canAccess(user, MENU_KEY, "edit") && (
             <button
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/detail-member?id=${member.id || member._id}`);
+              }}
               className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
               title={t("page.member.list.managePoints")}>
               <span className="material-symbols-outlined text-lg">account_balance_wallet</span>

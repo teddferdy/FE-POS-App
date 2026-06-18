@@ -57,6 +57,7 @@ import AddAdmin from "./page/user/AddAdmin";
 import MemberList from "./page/member/MemberList";
 import AddMember from "./page/member/AddMember";
 import EditMember from "./page/member/EditMember";
+import MemberDetail from "./page/member/MemberDetail";
 
 import MemberTier from "./page/member-tier";
 
@@ -290,6 +291,7 @@ function App() {
           <Route path="/member-list" element={withLayout(<MemberList />)} />
           <Route path="/add-member" element={withLayout(<AddMember />)} />
           <Route path="/edit-member" element={withLayout(<EditMember />)} />
+          <Route path="/detail-member" element={withLayout(<MemberDetail />)} />
 
           <Route path="/member-tier" element={withLayout(<MemberTier />)} />
           <Route
