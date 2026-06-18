@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import { Search, Barcode, Grid3X3, List, Tag, Package, Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
+import { useQuery } from "react-query";
 import { orderList } from "@/state/order-list";
+import { getAllCategoryActive } from "@/services/category";
 import VariantModal from "./VariantModal";
-import CategoryList from "@/page/category/CategoryList";
 
 const ProductGrid = ({
   products: propProducts,
@@ -25,6 +26,13 @@ const ProductGrid = ({
   const [showVariantModal, setShowVariantModal] = useState(false);
   const [inputMode, setInputMode] = useState("search");
   const cart = orderList();
+
+  const { data: categoriesData } = useQuery(
+    ["categories-cashier", cookie?.activeStore || store],
+    () => getAllCategoryActive(),
+    { enabled: !!store }
+  );
+  const categories = categoriesData?.data || categoriesData || [];
 
   const products = propProducts || [];
 
@@ -194,7 +202,31 @@ const ProductGrid = ({
         </div>
       </div>
 
-      <CategoryList categoryId={categoryId} onCategoryChange={onCategoryChange} />
+      {categories.length > 0 && (
+        <div className="flex items-center gap-2 px-4 lg:px-6 pb-2 overflow-x-auto scrollbar-none">
+          <button
+            onClick={() => onCategoryChange("")}
+            className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+              !categoryId
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-card border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+            }`}>
+            {t("page.cashier.allCategories")}
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id || cat._id}
+              onClick={() => onCategoryChange(cat.id || cat._id)}
+              className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                categoryId === (cat.id || cat._id)
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+              }`}>
+              {cat.nameCategory || cat.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-4 lg:px-6 pb-4">
         {products.length === 0 ? (

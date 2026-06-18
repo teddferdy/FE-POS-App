@@ -3,8 +3,41 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 export const orderList = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       order: [],
+      addOrder: (product) => {
+        const id = product.id || product.ID || product.idProduct || product._id;
+        const existing = get().order.find((item) => (item.id || item.ID || item.idProduct || item._id) === id);
+        if (existing) {
+          return set((state) => ({
+            order: state.order.map((item) => {
+              if ((item.id || item.ID || item.idProduct || item._id) === id) {
+                return {
+                  ...item,
+                  count: (item.count || 0) + 1,
+                  totalPrice: Number(item.totalPrice || 0) + Number(product.price || product.sellPrice || 0)
+                };
+              }
+              return item;
+            })
+          }));
+        }
+        const price = Number(product.price || product.sellPrice || 0);
+        return set((state) => ({
+          order: [...state.order, {
+            id,
+            nameProduct: product.nameProduct || product.name,
+            price,
+            count: 1,
+            totalPrice: price,
+            image: product.image || product.imageProduct || product.photo || null,
+            unit: product.unit || "",
+            sku: product.sku || "",
+            point: product.point || 0,
+            redeemPoints: product.redeemPoints || 0
+          }]
+        }));
+      },
       addingProduct: (item) => {
         return set((state) => {
           return {
