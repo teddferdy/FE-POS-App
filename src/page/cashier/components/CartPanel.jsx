@@ -10,9 +10,18 @@ import {
   Percent,
   Edit3,
   Check,
-  X
+  X,
+  Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 
 const CartPanel = ({
   items,
@@ -30,6 +39,7 @@ const CartPanel = ({
   const [priceErrors, setPriceErrors] = useState({});
   const inputRef = useRef(null);
   const [quantities, setQuantities] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     const initial = {};
@@ -46,6 +56,25 @@ const CartPanel = ({
     });
   }, [items]);
 
+  const handleDecrement = useCallback(
+    (item) => {
+      const currentQty = item.count || item.qty || 0;
+      if (currentQty <= 1) {
+        setDeleteConfirm(item);
+      } else {
+        onDecrement(item);
+      }
+    },
+    [onDecrement]
+  );
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm) {
+      onDelete(deleteConfirm);
+      setDeleteConfirm(null);
+    }
+  };
+
   const handleQtyChange = useCallback(
     (item, newQty) => {
       const currentQty = item.count || item.qty || 0;
@@ -53,7 +82,11 @@ const CartPanel = ({
       if (diff > 0) {
         for (let i = 0; i < diff; i++) onIncrement(item);
       } else if (diff < 0) {
-        for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
+        if (currentQty <= 1) {
+          setDeleteConfirm(item);
+        } else {
+          for (let i = 0; i < Math.abs(diff); i++) onDecrement(item);
+        }
       }
     },
     [onIncrement, onDecrement]
@@ -91,19 +124,7 @@ const CartPanel = ({
     return Number(value).toLocaleString("id-ID");
   };
 
-  if (!items || items.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
-        <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center">
-          <ShoppingBag size={36} className="text-muted-foreground/40" />
-        </div>
-        <div className="text-center">
-          <p className="font-medium text-muted-foreground">{t("page.cashier.emptyCart")}</p>
-          <p className="text-sm text-muted-foreground/60 mt-1">{t("page.cashier.emptyCartDesc")}</p>
-        </div>
-      </div>
-    );
-  }
+  const isEmpty = !items || items.length === 0;
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -114,7 +135,17 @@ const CartPanel = ({
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin overscroll-contain px-3 py-3 space-y-2">
-        {items.map((item, idx) => {
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center gap-4 h-full">
+            <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center">
+              <ShoppingBag size={36} className="text-muted-foreground/40" />
+            </div>
+            <div className="text-center">
+              <p className="font-medium text-muted-foreground">{t("page.cashier.emptyCart")}</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">{t("page.cashier.emptyCartDesc")}</p>
+            </div>
+          </div>
+        ) : items.map((item, idx) => {
           const key = item.id || item.ID || item.idProduct || item._id;
           const isEditing = editingPrice === key;
           const err = priceErrors[key];
@@ -178,7 +209,7 @@ const CartPanel = ({
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => onDecrement(item)}
+                        onClick={() => handleDecrement(item)}
                         className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all active:scale-90">
                         <Minus size={14} />
                       </button>
@@ -282,6 +313,23 @@ const CartPanel = ({
           </span>
         </Button>
       </div>
+
+      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("page.cashier.deleteTitle")}</DialogTitle>
+            <DialogDescription>{t("page.cashier.deleteDesc")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+              {t("page.cashier.deleteNo")}
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              {t("page.cashier.deleteYes")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
