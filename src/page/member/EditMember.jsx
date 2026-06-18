@@ -124,20 +124,8 @@ const EditMember = () => {
           { label: t("breadcrumb.edit") }
         ]}
         title={t("breadcrumb.edit")}
-        description={t("page.member.edit.description")}>
-        <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
-          {t("breadcrumb.back")}
-        </Button>
-        <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
-          {t("page.member.edit.saveDraft")}
-        </Button>
-        <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting} className="gap-2">
-          <span className="material-symbols-outlined text-lg">save</span>
-          {t("page.member.button.save")}
-        </Button>
-        <UserGuide guideKey="add-member" />
-      </PageHeader>
+        description={t("page.member.edit.description")}
+      />
     </motion.div>
     </motion.div>
     <motion.div variants={container} initial="hidden" animate="show">
@@ -309,17 +297,23 @@ const EditMember = () => {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end items-center gap-6 bg-card border border-border rounded-xl p-4">
-          <div className="flex gap-3">
+        <div className="mt-8 flex items-center justify-between gap-6 bg-card border border-border rounded-xl p-4">
+          <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            {t("breadcrumb.back")}
+          </Button>
+          <div className="flex items-center gap-3">
+            <UserGuide guideKey="add-member" />
             <Button
               type="button"
               variant="outline"
-              onClick={(e) => handleSubmit(e, true)}
+              onClick={() => setDraftModal(true)}
               disabled={isSubmitting}>
               {t("page.member.edit.saveDraft")}
             </Button>
-            <Button type="submit" disabled={isSubmitting} size="lg" className="px-8">
-              {t("page.member.edit.saveChanges")}
+            <Button type="submit" disabled={isSubmitting} size="lg" className="px-8 gap-2">
+              <span className="material-symbols-outlined text-lg">save</span>
+              {t("page.member.button.save")}
             </Button>
           </div>
         </div>
