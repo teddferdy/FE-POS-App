@@ -250,7 +250,7 @@ const MemberList = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/detail-member?id=${member.id || member._id}`);
+                navigate(`/member-point-history?id=${member.id || member._id}`);
               }}
               className="p-1.5 text-muted-foreground hover:text-tertiary hover:bg-tertiary/10 rounded-lg transition-all"
               title={t("page.member.list.managePoints")}>
