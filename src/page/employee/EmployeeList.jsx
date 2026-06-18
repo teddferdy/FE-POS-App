@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
-import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
 import { useTranslation } from "react-i18next";
@@ -26,16 +25,6 @@ const positionColors = {
 const getPositionClass = (position) => {
   const pos = typeof position === "string" ? position.toLowerCase() : "";
   return positionColors[pos] || "bg-surface-variant text-on-surface-variant";
-};
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const EmployeeList = () => {
@@ -206,8 +195,8 @@ const EmployeeList = () => {
 
   return (
     <div data-tour="page-employees" className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.management"), i18nKey: "breadcrumb.management" },
@@ -225,14 +214,13 @@ const EmployeeList = () => {
               </Button>
             )}
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <motion.div
-              variants={item}
+            <div
               data-tour="employee-stat-total"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
               <div>
@@ -250,9 +238,8 @@ const EmployeeList = () => {
               <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">groups</span>
               </div>
-            </motion.div>
-            <motion.div
-              variants={item}
+            </div>
+            <div
               data-tour="employee-stat-active"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
               <div>
@@ -271,9 +258,8 @@ const EmployeeList = () => {
               <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">how_to_reg</span>
               </div>
-            </motion.div>
-            <motion.div
-              variants={item}
+            </div>
+            <div
               data-tour="employee-stat-inactive"
               className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
               <div>
@@ -289,7 +275,7 @@ const EmployeeList = () => {
               <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">cancel</span>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           <div data-tour="employee-table" className="mt-6">
@@ -383,8 +369,8 @@ const EmployeeList = () => {
               </li>
             </ul>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

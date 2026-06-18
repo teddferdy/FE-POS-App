@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload, Loader2 } from "lucide-react";
 import {
@@ -24,21 +23,6 @@ import ImportIngredientModal from "./components/ImportIngredientModal";
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   inactive: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-};
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const IngredientList = () => {
@@ -213,7 +197,7 @@ const IngredientList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -225,12 +209,9 @@ const IngredientList = () => {
             {t("page.ingredient.list.breadcrumbIngredient")}
           </span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="show"
+      <div
         className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.ingredient.list.title")}</h1>
@@ -303,28 +284,25 @@ const IngredientList = () => {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
+      <div
         className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={item}>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statTotal")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statAktif")}</p>
             <p className="text-2xl font-bold text-green-600 mt-1">
               {ingredients.filter((i) => i.status === "active").length}
             </p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">
               {t("page.ingredient.list.statStokMenipis")}
@@ -333,14 +311,10 @@ const IngredientList = () => {
               {ingredients.filter((i) => i.stock <= i.minStock).length}
             </p>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
+      <div
         className="space-y-4">
         <div className="relative w-full sm:w-72">
           <Search
@@ -362,9 +336,9 @@ const IngredientList = () => {
           emptyMessage={t("page.ingredient.list.emptyMessage")}
           emptyIcon={Package}
         />
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <TipsCard
           tips={[
             t("page.ingredient.list.tips.1"),
@@ -373,7 +347,7 @@ const IngredientList = () => {
             t("page.ingredient.list.tips.4")
           ]}
         />
-      </motion.div>
+      </div>
 
       <Modal
         type="confirm"

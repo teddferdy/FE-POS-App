@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -262,20 +261,10 @@ const ProductList = () => {
     }
   ];
 
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
-
   return (
     <div data-tour="page-products" className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
           breadcrumbs={[
             { href: role === "super_admin" ? "/dashboard-super-admin" : role === "admin" ? "/dashboard-admin" : "/home", i18nKey: "breadcrumb.home" },
@@ -358,11 +347,11 @@ const ProductList = () => {
             </Button>
           )}
         </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div
             data-tour="product-search"
             className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
@@ -417,8 +406,8 @@ const ProductList = () => {
               }}
             />
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

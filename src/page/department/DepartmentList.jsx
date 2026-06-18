@@ -10,7 +10,6 @@ import {
   downloadDepartmentTemplate,
   downloadDepartmentExcel
 } from "@/services/department";
-import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
@@ -18,21 +17,6 @@ import UploadDepartmentModal from "@/page/department/components/UploadDepartment
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -226,8 +210,8 @@ const DepartmentList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.adminConsole") },
@@ -322,18 +306,14 @@ const DepartmentList = () => {
               </Button>
             )}
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
+      <div>
+        <div>
+          <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <motion.div
-              variants={item}
+            <div
               data-tour="department-stat-total"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
               <div>
@@ -351,9 +331,8 @@ const DepartmentList = () => {
               <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">domain</span>
               </div>
-            </motion.div>
-            <motion.div
-              variants={item}
+            </div>
+            <div
               data-tour="department-stat-active"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
               <div>
@@ -374,9 +353,8 @@ const DepartmentList = () => {
               <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">check_circle</span>
               </div>
-            </motion.div>
-            <motion.div
-              variants={item}
+            </div>
+            <div
               data-tour="department-stat-inactive"
               className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
               <div>
@@ -394,9 +372,8 @@ const DepartmentList = () => {
               <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">cancel</span>
               </div>
-            </motion.div>
-            <motion.div
-              variants={item}
+            </div>
+            <div
               data-tour="department-stat-nodesc"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
               <div>
@@ -417,14 +394,10 @@ const DepartmentList = () => {
               <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">warning</span>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
+          <div
             data-tour="department-table"
             className="mt-6">
             <DataTable
@@ -466,13 +439,9 @@ const DepartmentList = () => {
               pagination={{ page, totalPages, total, onPageChange: setPage }}
               rowClassName={() => "group"}
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
+          <div
             className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined opacity-80">lightbulb</span>
@@ -498,9 +467,9 @@ const DepartmentList = () => {
                 <span>{t("page.department.tips.4")}</span>
               </li>
             </ul>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"

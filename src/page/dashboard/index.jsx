@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
 import {
   TrendingUp,
   TrendingDown,
@@ -162,16 +161,6 @@ const Dashboard = () => {
   const bestSelling = d.bestSellers || [];
   const recentOrders = d.recentOrders || [];
 
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
-
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -202,10 +191,7 @@ const Dashboard = () => {
         </>
       ) : (
         <>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
+          <div
             data-tour="dashboard-stats"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {summaryCards.map((card) => {
@@ -214,9 +200,8 @@ const Dashboard = () => {
               const isMember = card.icon === Users;
               const isClickable = isLowStock || isMember;
               return (
-                <motion.div
+                <div
                   key={card.label}
-                  variants={item}
                   onClick={
                     isLowStock
                       ? () => navigate("/low-stock-all")
@@ -241,16 +226,12 @@ const Dashboard = () => {
                     {card.trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                     <span className="text-xs font-medium">{card.trend}</span>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-            </motion.div>
+            </div>
 
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
+          <div
             className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div
               data-tour="dashboard-chart"
@@ -375,13 +356,9 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={item}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
+          <div
             data-tour="dashboard-orders"
             className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="p-5 border-b border-border flex flex-wrap items-center justify-between gap-3">
@@ -470,7 +447,7 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
-          </motion.div>
+          </div>
         </>
       )}
     </div>

@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Tags, Gift } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { Button } from "@/components/ui/button";
@@ -25,21 +24,6 @@ const getPromoLabel = (item) => {
   const promoType = item.conditions?.promoType;
   if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
   return item.type === "Persentase" ? "Persentase" : item.type === "Nominal" ? "Nominal" : item.type || "-";
-};
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
 };
 
 const DiscountList = () => {
@@ -165,7 +149,7 @@ const DiscountList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
@@ -175,9 +159,9 @@ const DiscountList = () => {
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("page.discount.list.title")}</span>
         </nav>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.discount.list.title")}</h1>
@@ -192,30 +176,30 @@ const DiscountList = () => {
             </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={item}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
             <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.discount.list.active")}</p>
             <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
           </Card>
-        </motion.div>
-        <motion.div variants={item}>
+        </div>
+        <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.discount.list.inactive")}</p>
             <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
           </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" animate="show">
+      <div>
         <div className="relative w-full sm:w-72">
           <Search
             size={16}
@@ -231,9 +215,9 @@ const DiscountList = () => {
             className="pl-9 h-10"
           />
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <div>
         <DataTable
           columns={columns}
           data={discounts}
@@ -242,7 +226,7 @@ const DiscountList = () => {
           emptyIcon={Gift}
           pagination={{ page, totalPages, total, onPageChange: setPage }}
         />
-      </motion.div>
+      </div>
 
       <Modal
         type="confirm"

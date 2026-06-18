@@ -11,7 +11,6 @@ import {
   downloadPositionExcel
 } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
-import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
@@ -19,21 +18,6 @@ import UploadPositionModal from "@/page/position/components/UploadPositionModal"
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05 } }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
-
-// const fadeInUp = {
-//   hidden: { opacity: 0, y: 20 },
-//   show: { opacity: 1, y: 0 }
-// };
 
 const PositionList = () => {
   const { t } = useTranslation();
@@ -179,8 +163,8 @@ const PositionList = () => {
 
   return (
     <div className="space-y-6">
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <PageHeader
             breadcrumbs={[
               { label: t("breadcrumb.adminConsole") },
@@ -279,11 +263,11 @@ const PositionList = () => {
               </Button>
             )}
           </PageHeader>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div variants={container} initial="hidden" animate="show">
-        <motion.div variants={item}>
+      <div>
+        <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div
               data-tour="position-stat-total"
@@ -422,8 +406,8 @@ const PositionList = () => {
               </li>
             </ul>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <Modal
         type="confirm"
