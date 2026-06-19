@@ -32,6 +32,7 @@ import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
 import { logOut } from "@/services/auth";
+import Modal from "@/components/organism/modal";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -145,6 +146,7 @@ export const UserDropdown = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const [cookie, , removeCookie] = useCookies();
+  const [logoutModal, setLogoutModal] = useState(false);
 
   const user = cookie?.user;
   const userName = user?.userName || user?.name || "Admin";
@@ -161,7 +163,7 @@ export const UserDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleLogout = async () => {
+  const confirmLogout = async () => {
     try {
       await logOut();
     } catch (_e) {
@@ -178,6 +180,8 @@ export const UserDropdown = () => {
     }
     navigate("/");
   };
+
+  const handleLogout = () => setLogoutModal(true);
 
   return (
     <div data-tour="header-user" className="relative" ref={ref}>
@@ -223,6 +227,17 @@ export const UserDropdown = () => {
           </div>
         </div>
       )}
+
+      <Modal
+        open={logoutModal}
+        onOpenChange={setLogoutModal}
+        type="confirm"
+        title={t("header.logoutConfirmTitle") || "Konfirmasi Logout"}
+        description={t("header.logoutConfirmDesc") || "Apakah Anda yakin ingin keluar?"}
+        confirmText={t("header.logoutYes") || "Ya, Logout"}
+        cancelText={t("common.cancel") || "Batal"}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };

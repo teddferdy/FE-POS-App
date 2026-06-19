@@ -14,6 +14,7 @@ import {
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
 import { logOut } from "@/services/auth";
+import Modal from "@/components/organism/modal";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
@@ -48,6 +49,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     });
     return result;
   });
+  const [logoutModal, setLogoutModal] = useState(false);
 
   const handleSupportClick = () => {
     navigate("/support");
@@ -156,7 +158,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     setExpandedMenus((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
-  const handleLogout = async () => {
+  const confirmLogout = async () => {
     try {
       await logOut();
     } catch (_e) {}
@@ -169,6 +171,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
     } catch (_e) {}
     navigate("/");
   };
+
+  const handleLogout = () => setLogoutModal(true);
 
   const renderIcon = (IconComponent, size = 20) => {
     if (!IconComponent) return <PanelLeft size={size} />;
@@ -323,6 +327,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </span>
         </button>
       </div>
+
+      <Modal
+        open={logoutModal}
+        onOpenChange={setLogoutModal}
+        type="confirm"
+        title={t("header.logoutConfirmTitle") || "Konfirmasi Logout"}
+        description={t("header.logoutConfirmDesc") || "Apakah Anda yakin ingin keluar?"}
+        confirmText={t("header.logoutYes") || "Ya, Logout"}
+        cancelText={t("common.cancel") || "Batal"}
+        onConfirm={confirmLogout}
+      />
     </aside>
   );
 };
