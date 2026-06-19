@@ -67,14 +67,17 @@ const ProductList = () => {
 
   const { data, isLoading } = useQuery(
     ["products", page, limit, locationParam],
-    () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
-    { keepPreviousData: true }
+    () =>
+      getAllProductTable(
+        { location: locationParam || "", page, limit, statusProduct: "all" }
+      ),
+    { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
 
   const { data: categoriesData } = useQuery(
     ["categories-active", locationParam],
     () => getAllCategoryActive({ location: locationParam || "" }),
-    { enabled: !!locationParam || role !== "super_admin" }
+    { enabled: !!locationParam || role !== "super_admin", staleTime: 3 * 60 * 1000 }
   );
 
   const categories = categoriesData?.data || [];
@@ -112,7 +115,7 @@ const ProductList = () => {
     })
     .filter((product) => {
       if (!categoryFilter) return true;
-      const cat = product.category || product.categoryId?.name || "";
+      const cat = product.nameCategory || product.category?.name || "";
       return cat === categoryFilter;
     })
     .sort((a, b) => {
@@ -179,7 +182,7 @@ const ProductList = () => {
       header: t("page.product.table.category"),
       render: (product) => (
         <span className="text-sm text-foreground">
-          {product.category || product.categoryId?.name || "-"}
+          {product.nameCategory || product.category?.name || "-"}
         </span>
       )
     },

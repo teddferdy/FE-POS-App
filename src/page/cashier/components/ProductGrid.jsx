@@ -19,7 +19,6 @@ const ProductGrid = ({
   onCategoryChange,
   store
 }) => {
-  console.log("store =>", store);
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const [viewMode, setViewMode] = useState("grid");

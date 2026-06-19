@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -56,6 +56,8 @@ const formatDate = (dateStr) => {
 const CategoryList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const locationParam = searchParams.get("location");
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -75,7 +77,8 @@ const CategoryList = () => {
       getAllCategoryTable({
         page,
         limit,
-        statusCategory: statusFilter || "all"
+        statusCategory: statusFilter || "all",
+        location: locationParam || ""
       }),
     { keepPreviousData: true }
   );

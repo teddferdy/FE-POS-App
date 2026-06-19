@@ -8,15 +8,17 @@ export const getAllCategory = async () => {
   return data;
 };
 
-export const getAllCategoryActive = async () => {
-  const { data, status } = await axiosInstance.get(`/category/get-category-all?status=active`);
+export const getAllCategoryActive = async ({ location } = {}) => {
+  const params = location ? `?status=active&store=${location}` : '?status=active';
+  const { data, status } = await axiosInstance.get(`/category/get-category-all${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
-export const getAllCategoryTable = async ({ limit, page, statusCategory }) => {
+export const getAllCategoryTable = async ({ limit, page, statusCategory, location } = {}) => {
+  const storeParam = location ? `&store=${location}` : '';
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?page=${page}&limit=${limit}&status=${statusCategory}`
+    `/category/get-category-all?page=${page}&limit=${limit}&status=${statusCategory}${storeParam}`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

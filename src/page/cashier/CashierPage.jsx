@@ -86,7 +86,8 @@ const CashierPage = () => {
     isError,
     refetch
   } = useQuery(["products-outlet", store], () => getProductByOutlet({ location: store }), {
-    enabled: !!store
+    enabled: !!store,
+    staleTime: 3 * 60 * 1000 // 3 minutes
   });
 
   const products = productsData?.data || productsData || [];
