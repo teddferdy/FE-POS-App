@@ -30,7 +30,7 @@ const ProductGrid = ({
 
   const { data: categoriesData } = useQuery(
     ["categories-cashier", cookie?.activeStore || store],
-    () => getAllCategoryActive(),
+    () => getAllCategoryActive({ location: cookie?.activeStore || store }),
     { enabled: !!store, staleTime: 3 * 60 * 1000 }
   );
   const categories = categoriesData?.data || categoriesData || [];
