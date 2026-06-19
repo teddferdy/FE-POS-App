@@ -9,8 +9,7 @@ import {
   getAllProductTable,
   deleteProduct,
   downloadProductTemplate,
-  downloadProductExcel,
-  uploadProductExcel
+  downloadProductExcel
 } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
@@ -266,87 +265,103 @@ const ProductList = () => {
       <div>
         <div>
           <PageHeader
-          breadcrumbs={[
-            { href: role === "super_admin" ? "/dashboard-super-admin" : role === "admin" ? "/dashboard-admin" : "/home", i18nKey: "breadcrumb.home" },
-            ...(role === "super_admin" && locationParam ? [{ href: "/location-list", i18nKey: "sidebar.kelolaToko" }] : []),
-            { i18nKey: "breadcrumb.product" }
-          ]}
-          title={t("page.product.list.title")}
-          description={t("page.product.list.description")}>
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingTemplate}
-              onClick={async () => {
-                setIsDownloadingTemplate(true);
-                try {
-                  await downloadProductTemplate();
-                  toast.success(t("common.success"), {
-                    description: t("page.product.toast.templateSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.product.toast.templateError")
-                  });
-                } finally {
-                  setIsDownloadingTemplate(false);
-                }
-              }}>
-              {isDownloadingTemplate ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <Download size={16} className="mr-1" />
-              )}
-              {t("page.product.button.downloadTemplate")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingData}
-              onClick={async () => {
-                setIsDownloadingData(true);
-                try {
-                  await downloadProductExcel();
-                  toast.success(t("common.success"), {
-                    description: t("page.product.toast.dataSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description: err?.response?.data?.message || err.message || t("page.product.toast.dataError")
-                  });
-                } finally {
-                  setIsDownloadingData(false);
-                }
-              }}>
-              {isDownloadingData ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <Download size={16} className="mr-1" />
-              )}
-              {t("page.product.button.export")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
-          {canAccess(user, MENU_KEY, "import") && (
-            <Button
-              data-tour="product-import"
-              variant="default"
-              onClick={() => setUploadModalOpen(true)}>
-              <Upload size={16} className="mr-1" />
-              {t("page.product.button.import")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              data-tour="product-add"
-              onClick={() => navigate("/add-product")}
-              className="shadow-md">
-              <Plus size={16} className="mr-1" />
-              {t("page.product.button.add")}
-            </Button>
-          )}
-        </PageHeader>
+            breadcrumbs={[
+              {
+                href:
+                  role === "super_admin"
+                    ? "/dashboard-super-admin"
+                    : role === "admin"
+                      ? "/dashboard-admin"
+                      : "/home",
+                i18nKey: "breadcrumb.home"
+              },
+              ...(role === "super_admin" && locationParam
+                ? [{ href: "/location-list", i18nKey: "sidebar.kelolaToko" }]
+                : []),
+              { i18nKey: "breadcrumb.product" }
+            ]}
+            title={t("page.product.list.title")}
+            description={t("page.product.list.description")}>
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingTemplate}
+                onClick={async () => {
+                  setIsDownloadingTemplate(true);
+                  try {
+                    await downloadProductTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.product.toast.templateSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.product.toast.templateError")
+                    });
+                  } finally {
+                    setIsDownloadingTemplate(false);
+                  }
+                }}>
+                {isDownloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <Download size={16} className="mr-1" />
+                )}
+                {t("page.product.button.downloadTemplate")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingData}
+                onClick={async () => {
+                  setIsDownloadingData(true);
+                  try {
+                    await downloadProductExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.product.toast.dataSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.product.toast.dataError")
+                    });
+                  } finally {
+                    setIsDownloadingData(false);
+                  }
+                }}>
+                {isDownloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <Download size={16} className="mr-1" />
+                )}
+                {t("page.product.button.export")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button
+                data-tour="product-import"
+                variant="default"
+                onClick={() => setUploadModalOpen(true)}>
+                <Upload size={16} className="mr-1" />
+                {t("page.product.button.import")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="product-add"
+                onClick={() => navigate("/add-product")}
+                className="shadow-md">
+                <Plus size={16} className="mr-1" />
+                {t("page.product.button.add")}
+              </Button>
+            )}
+          </PageHeader>
         </div>
       </div>
 
@@ -391,7 +406,7 @@ const ProductList = () => {
             </div>
           </div>
 
-          <div data-tour="product-table">
+          <div data-tour="product-table" className="mt-6">
             <DataTable
               columns={columns}
               data={filteredProducts}

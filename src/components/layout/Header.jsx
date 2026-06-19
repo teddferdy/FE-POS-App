@@ -169,15 +169,15 @@ export const UserDropdown = () => {
     } catch (_e) {
       /* ignore */
     }
-    removeCookie("token");
-    removeCookie("user");
-    removeCookie("activeStore");
-    removeCookie("activeStoreName");
     try {
       sessionStorage.removeItem("user");
     } catch (_e) {
       /* ignore */
     }
+    removeCookie("token");
+    removeCookie("user");
+    removeCookie("activeStore");
+    removeCookie("activeStoreName");
     navigate("/");
   };
 

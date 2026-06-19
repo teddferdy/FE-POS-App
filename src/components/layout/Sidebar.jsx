@@ -162,13 +162,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
     try {
       await logOut();
     } catch (_e) {}
+    try {
+      sessionStorage.removeItem("user");
+    } catch (_e) {}
     removeCookie("token");
     removeCookie("user");
     removeCookie("activeStore");
     removeCookie("activeStoreName");
-    try {
-      sessionStorage.removeItem("user");
-    } catch (_e) {}
     navigate("/");
   };
 

@@ -425,7 +425,7 @@ const CategoryList = () => {
             ))}
           </div>
 
-          <div data-tour="category-table">
+          <div data-tour="category-table" className="mt-6">
             <DataTable
               columns={columns}
               data={filtered}
@@ -478,7 +478,7 @@ const CategoryList = () => {
             />
           </div>
 
-          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground">
+          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined opacity-80">lightbulb</span>
               <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
