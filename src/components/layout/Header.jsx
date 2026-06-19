@@ -232,10 +232,9 @@ export const UserDropdown = () => {
         open={logoutModal}
         onOpenChange={setLogoutModal}
         type="confirm"
-        title={t("header.logoutConfirmTitle") || "Konfirmasi Logout"}
-        description={t("header.logoutConfirmDesc") || "Apakah Anda yakin ingin keluar?"}
-        confirmText={t("header.logoutYes") || "Ya, Logout"}
-        cancelText={t("common.cancel") || "Batal"}
+        title={t("header.logoutConfirmTitle")}
+        description={t("header.logoutConfirmDesc")}
+        confirmText={t("header.logoutYes")}
         onConfirm={confirmLogout}
       />
     </div>
