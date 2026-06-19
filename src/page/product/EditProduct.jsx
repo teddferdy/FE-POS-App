@@ -88,6 +88,7 @@ const EditProduct = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [storePrices, setStorePrices] = useState([]);
   const [savingStoreId, setSavingStoreId] = useState(null);
+  const [selectedStores, setSelectedStores] = useState([]);
   const [noStockOpname, setNoStockOpname] = useState(false);
   const [composition, setComposition] = useState([]);
   const [compositionOptions, setCompositionOptions] = useState([]);
@@ -261,6 +262,10 @@ const EditProduct = () => {
       }
       if (product.image) {
         setPreviewImage(product.image);
+      }
+      if (product.store) {
+        const stores = Array.isArray(product.store) ? product.store : [product.store];
+        setSelectedStores(stores);
       }
     }
   }, [product, form]);
@@ -543,6 +548,8 @@ const EditProduct = () => {
     }
 
     if (imageFile) payload.append("image", imageFile);
+
+    payload.append("stores", JSON.stringify(selectedStores));
 
     editMutation.mutate(payload);
   };
@@ -1206,6 +1213,68 @@ const EditProduct = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* Pilih Toko */}
+                      {isSuperAdmin && (
+                        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+                          <div className="flex items-center gap-3 mb-3">
+                            <Store size={20} className="text-primary shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground">{t("page.product.add.storeSection.title")}</p>
+                              <p className="text-xs text-muted-foreground">{t("page.product.add.storeSection.desc")}</p>
+                            </div>
+                            {locations.length > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                {t("page.product.add.storeSection.selected", { count: selectedStores.length })}
+                              </span>
+                            )}
+                          </div>
+                          {locations.length === 0 ? (
+                            <div className="flex items-center gap-3 pl-9">
+                              <p className="text-sm text-muted-foreground">{t("page.product.add.storeSection.noStore")}</p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2 pl-9">
+                              {locations.map((loc) => {
+                                const isChecked = selectedStores.includes(loc.id);
+                                return (
+                                  <button
+                                    key={loc.id}
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedStores((prev) =>
+                                        isChecked ? prev.filter((id) => id !== loc.id) : [...prev, loc.id]
+                                      )
+                                    }
+                                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                      isChecked
+                                        ? "bg-primary/10 border-primary text-primary"
+                                        : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                                    }`}>
+                                    {loc.name}
+                                    {isChecked && (
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {!isSuperAdmin && selectedStores.length > 0 && (
+                        <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Store size={16} className="shrink-0" />
+                          <span>
+                            {t("page.product.add.storeInfo")}{" "}
+                            <strong className="text-foreground">
+                              {user?.storeName || `Toko #${selectedStores[0]}`}
+                            </strong>
+                          </span>
+                        </div>
+                      )}
 
                       {/* Harga per Toko */}
                       {isSuperAdmin && (

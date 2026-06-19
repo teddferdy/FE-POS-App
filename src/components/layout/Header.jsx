@@ -338,7 +338,10 @@ const globalPages = [
   "/low-stock-all",
   "/stock-opname",
   "/detail-member-tier",
-  "/price-list-template"
+  "/price-list-template",
+  "/product-list",
+  "/add-product",
+  "/edit-product"
 ];
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {
