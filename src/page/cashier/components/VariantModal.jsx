@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { X, Package, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { optimizeImage } from "@/utils/image";
 import { Button } from "@/components/ui/button";
 
 const VariantModal = ({ product, onSelect, onClose }) => {
@@ -42,7 +43,7 @@ const VariantModal = ({ product, onSelect, onClose }) => {
             {productImage ? (
               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-muted/50">
                 <img
-                  src={productImage || "/placeholder.svg"}
+                  src={optimizeImage(productImage) || "/placeholder.svg"}
                   alt={product.nameProduct || product.name || ""}
                   className="w-full h-full object-cover"
                 />
@@ -85,7 +86,7 @@ const VariantModal = ({ product, onSelect, onClose }) => {
                   {variantImage ? (
                     <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-muted/50">
                       <img
-                        src={variantImage || "/placeholder.svg"}
+                        src={optimizeImage(variantImage) || "/placeholder.svg"}
                         alt={variant.nameVariant || variant.name || ""}
                         className="w-full h-full object-cover"
                       />

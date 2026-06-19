@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
+import { optimizeImage } from "@/utils/image";
 import {
   Trash2,
   Minus,
@@ -165,7 +166,7 @@ const CartPanel = ({
                   {img ? (
                     <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-muted/50">
                       <img
-                        src={img || "/placeholder.svg"}
+                        src={optimizeImage(img) || "/placeholder.svg"}
                         alt={item.nameProduct || item.name || ""}
                         className="w-full h-full object-cover"
                         onError={(e) => {

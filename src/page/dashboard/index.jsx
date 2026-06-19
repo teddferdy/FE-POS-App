@@ -61,7 +61,7 @@ const Dashboard = () => {
   const { data: dashData, isLoading } = useQuery(
     ["dashboard-summary", store, chartFilter],
     () => getDashboardSummary({ store, filter: chartFilter }),
-    { enabled: true }
+    { enabled: true, staleTime: 30_000 }
   );
 
   const d = dashData?.data || dashData || {};

@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { orderList } from "@/state/order-list";
 import { getAllCategoryActive } from "@/services/category";
+import { optimizeImage } from "@/utils/image";
 import VariantModal from "./VariantModal";
 
 const ProductGrid = ({
@@ -30,7 +31,7 @@ const ProductGrid = ({
   const { data: categoriesData } = useQuery(
     ["categories-cashier", cookie?.activeStore || store],
     () => getAllCategoryActive(),
-    { enabled: !!store }
+    { enabled: !!store, staleTime: 3 * 60 * 1000 }
   );
   const categories = categoriesData?.data || categoriesData || [];
 
@@ -275,7 +276,7 @@ const ProductGrid = ({
                     {img ? (
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/50">
                         <img
-                          src={img || "/placeholder.svg"}
+                          src={optimizeImage(img) || "/placeholder.svg"}
                           alt={product.nameProduct || product.name || ""}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
@@ -344,7 +345,7 @@ const ProductGrid = ({
                   {img ? (
                     <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted/50">
                       <img
-                        src={img || "/placeholder.svg"}
+                        src={optimizeImage(img) || "/placeholder.svg"}
                         alt={product.nameProduct || product.name || ""}
                         className="w-full h-full object-cover"
                         onError={(e) => {
