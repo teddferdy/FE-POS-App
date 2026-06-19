@@ -35,6 +35,7 @@ const AddMemberTier = () => {
   const [formData, setFormData] = useState({
     tierName: "",
     minPoints: "",
+    maxPoints: "",
     discountPercent: "",
     isActive: true,
     selectedIcon: "star",
@@ -89,6 +90,7 @@ const AddMemberTier = () => {
     createMutation.mutate({
       name: formData.tierName,
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
+      maxPoints: formData.maxPoints === "" ? 999999 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
       benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
@@ -127,7 +129,7 @@ const AddMemberTier = () => {
                       {t("page.memberTier.add.basicInfo")}
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {t("page.memberTier.add.tierName")}
@@ -163,6 +165,35 @@ const AddMemberTier = () => {
                           PTS
                         </span>
                       </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t("page.memberTier.add.maxPoints")}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.maxPoints}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "maxPoints",
+                              e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                            )
+                          }
+                          disabled={!formData.isActive}
+                          className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
+                          placeholder="999999"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                          PTS
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.memberTier.add.maxPointsHint", {
+                          min: formData.minPoints || 0,
+                          max: 999999
+                        })}
+                      </p>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -431,6 +462,7 @@ const AddMemberTier = () => {
           createMutation.mutate({
             name: formData.tierName,
             minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
+            maxPoints: formData.maxPoints === "" ? 999999 : Number(formData.maxPoints),
             discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
             benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
             status: "draft",

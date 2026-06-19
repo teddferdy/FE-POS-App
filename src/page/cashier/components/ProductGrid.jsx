@@ -19,6 +19,7 @@ const ProductGrid = ({
   onCategoryChange,
   store
 }) => {
+  console.log("store =>", store);
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const [viewMode, setViewMode] = useState("grid");
@@ -232,13 +233,29 @@ const ProductGrid = ({
         {products.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
-                <Package size={32} className="text-muted-foreground/40" />
-              </div>
-              <p className="font-medium text-muted-foreground">{t("page.cashier.noProducts")}</p>
-              <p className="text-sm text-muted-foreground/60 mt-1">
-                {t("page.cashier.noProductsDesc")}
-              </p>
+              {!store ? (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
+                    <Package size={32} className="text-muted-foreground/40" />
+                  </div>
+                  <p className="font-medium text-muted-foreground">{t("page.cashier.noStore")}</p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
+                    {t("page.cashier.noStoreDesc")}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto mb-3">
+                    <Package size={32} className="text-muted-foreground/40" />
+                  </div>
+                  <p className="font-medium text-muted-foreground">
+                    {t("page.cashier.noProducts")}
+                  </p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
+                    {t("page.cashier.noProductsDesc")}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         ) : viewMode === "grid" ? (

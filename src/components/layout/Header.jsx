@@ -75,7 +75,6 @@ const StoreSelector = ({ cookie, setCookie }) => {
     const name = loc.name || loc.storeName || "";
     setCookie("activeStore", id, { path: "/" });
     setCookie("activeStoreName", name, { path: "/" });
-    setCookie("user", { ...user, store: id, storeName: name }, { path: "/" });
     setOpen(false);
     window.location.reload();
   };

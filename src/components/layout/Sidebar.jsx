@@ -113,7 +113,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
     // Handle exception cases where add/edit/detail paths don't follow standard naming
     const exceptionMap = {
-      "/role-management": ["/add-role", "/edit-role", "/detail-role"]
+      "/role-management": ["/add-role", "/edit-role", "/detail-role"],
+      "/cash-register/current": [
+        "/cash-register/history",
+        "/cash-register/open-close",
+        "/cash-register/current",
+        "/cash-register/history/detail"
+      ]
     };
 
     if (exceptionMap[href]) {

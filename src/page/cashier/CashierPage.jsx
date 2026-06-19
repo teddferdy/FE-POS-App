@@ -19,7 +19,6 @@ import { useThemeStore } from "@/state/theme";
 const CashierPage = () => {
   const { t } = useTranslation();
   const [cookie, setCookie] = useCookies();
-  const store = cookie?.store || cookie?.activeStore || cookie?.user?.store;
   const user = useMemo(() => {
     const fromSession = () => {
       try {
@@ -40,6 +39,13 @@ const CashierPage = () => {
     }
     return cookie?.user;
   }, [cookie?.user]);
+  const role = user?.role || user?.roleType || user?.type || user?.userType;
+  const isSuperAdmin = role === "super_admin";
+  const store = isSuperAdmin
+    ? cookie?.activeStore
+      ? Number(cookie?.activeStore)
+      : null
+    : cookie?.store || cookie?.activeStore || cookie?.user?.store;
   const userName = user?.userName || user?.name || cookie?.name || t("page.cashier.cashierName");
   const storeName =
     cookie?.store_name || cookie?.activeStoreName || user?.storeName || t("page.cashier.storeName");

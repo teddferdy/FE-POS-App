@@ -37,6 +37,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
   const [formData, setFormData] = useState({
     tierName: tier.name || "",
     minPoints: tier.minPoints ? parseInt(tier.minPoints.replace(/[^\d]/g, "")) || 0 : 0,
+    maxPoints: tier.maxPoints || "",
     discountPercent: tier.discount ? parseInt(tier.discount) || 0 : 0,
     isActive: tier.status === "active",
     selectedIcon: "star",
@@ -141,7 +142,7 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
               </p>
             </div>
             <div className="col-span-12 lg:col-span-8 space-y-lg">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-lg">
                 <div className="space-y-xs">
                   <label className="font-label-md text-on-surface-variant">
                     {t("page.memberTier.edit.tierName")}
@@ -177,6 +178,35 @@ const EditMemberTier = ({ tier, onClose, onSave, onDelete }) => {
                       PTS
                     </span>
                   </div>
+                </div>
+                <div className="space-y-xs">
+                  <label className="font-label-md text-on-surface-variant">
+                    {t("page.memberTier.edit.maxPoints")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.maxPoints}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "maxPoints",
+                          e.target.value === "" ? "" : parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={!formData.isActive}
+                      className="w-full border border-outline-variant rounded-lg p-3 pr-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="999999"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-outline">
+                      PTS
+                    </span>
+                  </div>
+                  <p className="font-body-sm text-outline">
+                    {t("page.memberTier.edit.maxPointsHint", {
+                      min: formData.minPoints || 0,
+                      max: 999999
+                    })}
+                  </p>
                 </div>
                 <div className="space-y-xs">
                   <label className="font-label-md text-on-surface-variant">

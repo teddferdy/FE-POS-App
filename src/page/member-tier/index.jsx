@@ -80,6 +80,7 @@ const MemberTier = () => {
       id: editingTier.id,
       name: formData.tierName,
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
+      maxPoints: formData.maxPoints === "" ? 999999 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
       benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
       status: formData.isActive ? "active" : "inactive",
