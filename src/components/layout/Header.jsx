@@ -31,6 +31,7 @@ import { parseAccessMenu } from "@/utils/permission";
 import CommandPalette from "./CommandPalette";
 import { useTourStore } from "@/state/tour";
 import { useThemeStore } from "@/state/theme";
+import { logOut } from "@/services/auth";
 
 const StoreSelector = ({ cookie, setCookie }) => {
   const { t } = useTranslation();
@@ -160,9 +161,16 @@ export const UserDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logOut();
+    } catch (_e) {
+      /* ignore */
+    }
     removeCookie("token");
     removeCookie("user");
+    removeCookie("activeStore");
+    removeCookie("activeStoreName");
     try {
       sessionStorage.removeItem("user");
     } catch (_e) {

@@ -13,6 +13,7 @@ import {
   sidebarMenuUser
 } from "@/utils/sidebar-menu";
 import { filterMenuByPermission } from "@/utils/permission";
+import { logOut } from "@/services/auth";
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
@@ -155,12 +156,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
     setExpandedMenus((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logOut();
+    } catch (_e) {}
     removeCookie("token");
     removeCookie("user");
+    removeCookie("activeStore");
+    removeCookie("activeStoreName");
     try {
       sessionStorage.removeItem("user");
-    } catch (e) {}
+    } catch (_e) {}
     navigate("/");
   };
 
