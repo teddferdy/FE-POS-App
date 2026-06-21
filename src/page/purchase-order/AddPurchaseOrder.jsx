@@ -57,6 +57,7 @@ const AddPurchaseOrder = () => {
     { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }
   ]);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
   const [dueDate, setDueDate] = useState(null);
@@ -188,8 +189,8 @@ const AddPurchaseOrder = () => {
 
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (e, saveAsDraft = false) => {
+    if (e?.preventDefault) e.preventDefault();
     setErrors({});
 
     const result = poSchema.safeParse({
@@ -220,6 +221,7 @@ const AddPurchaseOrder = () => {
       supplier: supplierId,
       notes,
       discount,
+      status: saveAsDraft ? "pending" : undefined,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       pic: picId,
       orderDate: (() => {
@@ -695,15 +697,24 @@ const AddPurchaseOrder = () => {
                     Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
                   </p>
                 </div>
-                <Button
-                  type="submit"
-                  disabled={createMutation.isLoading}
-                  className="gap-2 min-w-[140px] shadow-md">
-                  <Save size={18} />
-                  {createMutation.isLoading
-                    ? t("common.saving")
-                    : t("page.purchaseOrder.add.savePo")}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={createMutation.isLoading}>
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createMutation.isLoading}
+                    className="gap-2 min-w-[140px] shadow-md">
+                    <Save size={18} />
+                    {createMutation.isLoading
+                      ? t("common.saving")
+                      : t("page.purchaseOrder.add.savePo")}
+                  </Button>
+                </div>
               </div>
             </div>
           </form>
@@ -719,6 +730,15 @@ const AddPurchaseOrder = () => {
         confirmText={t("page.purchaseOrder.add.cancelModalConfirm")}
         cancelText={t("page.purchaseOrder.add.cancelModalBack")}
         onConfirm={() => navigate("/purchase-order")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft"
+        description="Data PO akan disimpan sebagai draft"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => { setDraftModal(false); handleSubmit(null, true); }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>

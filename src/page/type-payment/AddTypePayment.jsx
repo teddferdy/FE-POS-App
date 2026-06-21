@@ -38,6 +38,7 @@ const AddTypePayment = () => {
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -63,11 +64,11 @@ const AddTypePayment = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     const { status, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      status
+      status: saveAsDraft ? "draft" : (status ? "active" : "inactive")
     });
   };
 
@@ -183,13 +184,18 @@ const AddTypePayment = () => {
                     <X size={18} />
                     {t("common.cancel")}
                   </Button>
-                  <Button
-                    onClick={() => form.handleSubmit(onSubmit)()}
-                    disabled={createMutation.isLoading}
-                    className="gap-2">
-                    <Save size={18} />
-                    {createMutation.isLoading ? t("common.saving") : t("common.save")}
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button variant="outline" onClick={() => setDraftModal(true)} disabled={createMutation.isLoading}>
+                      {t("page.typePayment.form.saveAsDraft")}
+                    </Button>
+                    <Button
+                      onClick={() => form.handleSubmit((v) => onSubmit(v))()}
+                      disabled={createMutation.isLoading}
+                      className="gap-2">
+                      <Save size={18} />
+                      {createMutation.isLoading ? t("common.saving") : t("common.save")}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Form>
@@ -214,6 +220,15 @@ const AddTypePayment = () => {
         description={t("page.typePayment.toast.addSuccess")}
         confirmText={t("modal.backToList")}
         onConfirm={() => navigate("/type-payment-list")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("page.typePayment.form.draftTitle")}
+        description={t("page.typePayment.form.draftDescription")}
+        confirmText={t("page.typePayment.form.draftConfirm")}
+        onConfirm={() => { setDraftModal(false); const v = form.getValues(); onSubmit(v, true); }}
       />
     </div>
   );

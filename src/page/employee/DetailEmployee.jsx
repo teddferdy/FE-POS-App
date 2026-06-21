@@ -111,7 +111,8 @@ const DetailEmployee = () => {
                   {t("page.employee.department")}
                 </p>
                 <p className="font-medium">
-                  {employee.department?.nameDepartment ||
+                  {employee.departmentData?.name ||
+                    employee.department?.nameDepartment ||
                     employee.department?.name ||
                     employee.departmentName ||
                     "-"}
@@ -123,7 +124,8 @@ const DetailEmployee = () => {
                   {t("page.employee.position")}
                 </p>
                 <p className="font-medium">
-                  {employee.position?.namePosition ||
+                  {employee.positionData?.name ||
+                    employee.position?.namePosition ||
                     employee.position?.name ||
                     employee.positionName ||
                     "-"}
@@ -150,6 +152,12 @@ const DetailEmployee = () => {
                       })
                     : "-"}
                 </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("common.createdBy")}: {employee.createdByUser?.fullName || employee.createdByUser?.userName || employee.createdBy || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("common.modifiedBy")}: {employee.modifiedByUser?.fullName || employee.modifiedByUser?.userName || employee.modifiedBy || "-"}</p>
               </div>
             </div>
           </div>

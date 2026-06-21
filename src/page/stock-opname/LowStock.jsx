@@ -167,7 +167,7 @@ const LowStock = () => {
             ) : (
               <>
                 {products.length > 0 && (
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden mt-6">
                     <div className="p-4 border-b border-border bg-muted/30">
                       <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Package size={16} className="text-destructive" />
@@ -221,7 +221,7 @@ const LowStock = () => {
                 )}
 
                 {ingredients.length > 0 && (
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden mt-6">
                     <div className="p-4 border-b border-border bg-muted/30">
                       <h3 className="font-semibold text-sm flex items-center gap-2">
                         <ShoppingBasket size={16} className="text-orange-500" />

@@ -48,6 +48,17 @@ const ShiftList = () => {
   const pagination = data?.pagination || {};
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const stats = data?.stats || {};
+  const statsTotal = stats.total ?? total;
+  const activeCount = stats.active ?? shifts.filter(
+    (s) => s.status === "Aktif" || s.status === "active" || s.status === 1 || s.status === true
+  ).length;
+  const draftCount = stats.draft ?? shifts.filter(
+    (s) => s.status === "draft"
+  ).length;
+  const inactiveCount = stats.inactive ?? shifts.filter(
+    (s) => s.status === "inactive" || s.status === 0 || s.status === false
+  ).length;
 
   const handleDelete = (shift) => {
     setDeleteTarget(shift);
@@ -79,19 +90,52 @@ const ShiftList = () => {
       render: (row) => (
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            row.status === "Aktif" || row.status === 1 || row.status === true
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
+            row.status === "Aktif" || row.status === "active" || row.status === 1 || row.status === true
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : row.status === "inactive" || row.status === 0 || row.status === false
+                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
           }`}>
-          {row.status === "Aktif" || row.status === 1 || row.status === true
+          {row.status === "Aktif" || row.status === "active" || row.status === 1 || row.status === true
             ? t("common.active")
-            : t("common.inactive")}
+            : row.status === "inactive" || row.status === 0 || row.status === false
+              ? t("common.inactive")
+              : t("common.draft")}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (row) => (
+        <span className="text-sm">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.createdAt"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {row.updatedAt ? new Date(row.updatedAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
         </span>
       )
     },
     {
       header: t("common.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "edit") && (
@@ -150,23 +194,29 @@ const ShiftList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
               <Card className="p-5">
                 <p className="text-sm text-muted-foreground">{t("page.shift.table.name")}</p>
-                <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+                <p className="text-2xl font-bold text-foreground mt-1">{statsTotal}</p>
               </Card>
             </div>
             <div>
               <Card className="p-5">
                 <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+              </Card>
+            </div>
+            <div>
+              <Card className="p-5">
+                <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+                <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
               </Card>
             </div>
             <div>
               <Card className="p-5">
                 <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+                <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
               </Card>
             </div>
           </div>

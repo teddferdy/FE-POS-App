@@ -41,6 +41,7 @@ const EditSupplier = () => {
   const supplierId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const {
     data: supplierData,
@@ -91,11 +92,17 @@ const EditSupplier = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
+    let statusValue;
+    if (saveAsDraft) {
+      statusValue = "draft";
+    } else {
+      statusValue = values.isActive ? "active" : "inactive";
+    }
     updateMutation.mutate({
       id: supplierId,
       ...values,
-      status: !!values.isActive
+      status: statusValue
     });
   };
 
@@ -286,13 +293,23 @@ const EditSupplier = () => {
               <X size={18} />
               {t("common.cancel")}
             </Button>
-            <Button
-              onClick={() => form.handleSubmit(onSubmit)()}
-              disabled={updateMutation.isLoading}
-              className="gap-2">
-              <Save size={18} />
-              {updateMutation.isLoading ? t("common.saving") : t("common.save")}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={updateMutation.isLoading}
+                className="gap-2">
+                <Save size={18} />
+                {t("page.supplier.form.saveAsDraft")}
+              </Button>
+              <Button
+                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                disabled={updateMutation.isLoading}
+                className="gap-2">
+                <Save size={18} />
+                {updateMutation.isLoading ? t("common.saving") : t("common.save")}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -314,6 +331,19 @@ const EditSupplier = () => {
         description={t("page.supplier.modal.updateSuccess")}
         confirmText={t("page.supplier.modal.backToList")}
         onConfirm={() => navigate("/supplier")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("page.supplier.modal.draftTitle")}
+        description={t("page.supplier.modal.draftDescription")}
+        confirmText={t("page.supplier.modal.draftConfirm")}
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

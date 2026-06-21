@@ -73,6 +73,7 @@ const EmployeeList = () => {
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || {};
   const activeCount = stats.active ?? 0;
+  const draftCount = stats.draft ?? 0;
   const inactiveCount = stats.inactive ?? 0;
 
   const handleDelete = (employee) => {
@@ -119,6 +120,12 @@ const EmployeeList = () => {
       )
     },
     {
+      header: t("page.employee.form.department"),
+      render: (row) => (
+        <span className="text-sm">{row.departmentData?.name || row.department || "-"}</span>
+      )
+    },
+    {
       header: t("page.employee.table.position"),
       render: (row) => {
         const position = row.positionData?.name || row.role || "staff";
@@ -131,6 +138,18 @@ const EmployeeList = () => {
           </span>
         );
       }
+    },
+    {
+      header: t("page.employee.form.employmentType"),
+      render: (row) => (
+        <span className="text-sm">{row.employmentType ? t(`page.employee.add.${row.employmentType.replace("-", "")}`) : "-"}</span>
+      )
+    },
+    {
+      header: t("page.employee.form.phoneNumber"),
+      render: (row) => (
+        <span className="text-sm">{row.phoneNumber || "-"}</span>
+      )
     },
     {
       header: t("page.employee.table.branch"),
@@ -150,20 +169,51 @@ const EmployeeList = () => {
       align: "center",
       render: (row) => (
         <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
             row.statusActive === true
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
+              : row.statusActive === null
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {row.statusActive === true ? "Active" : "Inactive"}
+          {row.statusActive === true ? t("common.active") : row.statusActive === null ? t("common.draft") : t("common.inactive")}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (row) => (
+        <span className="text-sm">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.createdAt"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {row.updatedAt ? new Date(row.updatedAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
         </span>
       )
     },
     {
       header: t("page.employee.table.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (row) => (
-        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (
             <button
               onClick={() => navigate(`/detail-employee?employeeID=${row.employeeID}`)}
@@ -219,7 +269,7 @@ const EmployeeList = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div
               data-tour="employee-stat-total"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -257,6 +307,23 @@ const EmployeeList = () => {
               </div>
               <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">how_to_reg</span>
+              </div>
+            </div>
+            <div
+              data-tour="employee-stat-draft"
+              className="bg-amber-500 dark:bg-amber-700 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-600 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
+              <div>
+                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
+                  {t("page.employee.table.draft")}
+                </p>
+                <h3 className="text-3xl font-bold text-white">{draftCount.toLocaleString()}</h3>
+                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">edit_note</span>
+                  {total > 0 ? Math.round((draftCount / total) * 100) : 0}%
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-amber-600 dark:bg-amber-900 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">edit_note</span>
               </div>
             </div>
             <div

@@ -19,6 +19,28 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "-";
+    return (
+      d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }) +
+      " " +
+      d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+  } catch {
+    return "-";
+  }
+};
+
 const PositionList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -68,8 +90,13 @@ const PositionList = () => {
   const positions = data?.data || [];
   const pagination = data?.pagination || {};
   const stats = data?.stats || {};
+
   const total = stats.total ?? pagination?.totalItems ?? data?.total ?? 0;
+
   const activeCount = stats.active ?? 0;
+
+  const draftCount = stats.draft ?? 0;
+
   const inactiveCount = stats.inactive ?? 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
@@ -102,9 +129,9 @@ const PositionList = () => {
     {
       header: t("page.position.table.department"),
       render: (position) =>
-        position.department ? (
+        (position.departmentData?.name || position.department) ? (
           <span className="inline-block px-2 py-0.5 rounded bg-secondary-fixed/30 text-on-secondary-fixed-variant text-xs font-semibold">
-            {position.department}
+            {position.departmentData?.name || position.department}
           </span>
         ) : (
           <span className="text-xs text-muted-foreground">-</span>
@@ -119,10 +146,65 @@ const PositionList = () => {
       )
     },
     {
-      header: t("common.actions"),
+      header: t("common.status"),
       align: "center",
       render: (position) => (
-        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
+            position.status === "active"
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
+              : position.status === "draft"
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+          }`}>
+          {position.status === "active" ? t("common.active") : position.status === "draft" ? t("common.draft") : t("common.inactive")}
+        </span>
+      )
+    },
+    {
+      header: t("page.position.table.createdDate"),
+      render: (position) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(position.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t("page.position.table.updatedDate"),
+      render: (position) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(position.updatedAt)}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (position) => (
+        <span className="text-sm text-muted-foreground">
+          {position.createdByUser?.fullName ||
+            position.createdByUser?.userName ||
+            position.createdBy ||
+            "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (position) => (
+        <span className="text-sm text-muted-foreground">
+          {position.modifiedByUser?.fullName ||
+            position.modifiedByUser?.userName ||
+            position.modifiedBy ||
+            "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.actions"),
+      align: "center",
+      stickyRight: true,
+      render: (position) => (
+        <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (
             <button
               onClick={(e) => {
@@ -268,7 +350,7 @@ const PositionList = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
             <div
               data-tour="position-stat-total"
               className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
@@ -311,6 +393,27 @@ const PositionList = () => {
                   className="material-symbols-outlined text-secondary text-[28px]"
                   style={{ fontVariationSettings: "'FILL' 1" }}>
                   check_circle
+                </span>
+              </div>
+            </div>
+            <div
+              data-tour="position-stat-draft"
+              className="bg-amber-500 dark:bg-amber-700 p-5 rounded-xl shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
+                  {t("page.position.stats.draft")}
+                </p>
+                <h3 className="text-2xl font-bold text-white">{draftCount.toLocaleString()}</h3>
+                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">edit_note</span>
+                  {total > 0 ? Math.round((draftCount / total) * 100) : 0}%
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-amber-600 dark:bg-amber-900 flex items-center justify-center">
+                <span
+                  className="material-symbols-outlined text-white text-[28px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}>
+                  edit_note
                 </span>
               </div>
             </div>

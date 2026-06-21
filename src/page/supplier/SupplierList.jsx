@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import UploadSupplierModal from "./components/UploadSupplierModal";
 import DataTable from "@/components/ui/DataTable";
+import PageHeader from "@/components/ui/PageHeader";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -108,23 +109,31 @@ const SupplierList = () => {
     },
     {
       header: t("common.status"),
-      render: (item) => (
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-            item.status === "active" || item.status === true
-              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-          }`}>
+      render: (item) => {
+        const isActive = item.status === "active" || item.status === true;
+        const isDraft = item.status === "draft";
+        return (
           <span
-            className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-              item.status === "active" || item.status === true ? "bg-green-500" : "bg-red-500"
-            }`}
-          />
-          {item.status === "active" || item.status === true
-            ? t("common.active")
-            : t("common.inactive")}
-        </span>
-      )
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+              isActive
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : isDraft
+                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+            }`}>
+            <span
+              className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                isActive ? "bg-green-500" : isDraft ? "bg-amber-500" : "bg-red-500"
+              }`}
+            />
+            {isActive
+              ? t("common.active")
+              : isDraft
+                ? t("page.supplier.status.draft")
+                : t("common.inactive")}
+          </span>
+        );
+      }
     },
     {
       header: t("common.createdBy"),
@@ -143,8 +152,27 @@ const SupplierList = () => {
       )
     },
     {
+      header: t("common.createdAt"),
+      render: (item) => {
+        if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (item) => {
+        if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
       header: t("common.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
@@ -181,106 +209,93 @@ const SupplierList = () => {
 
   return (
     <div data-tour="page-supplier" className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground transition-colors">
-          {t("breadcrumb.home")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("breadcrumb.supplier")}</span>
-      </nav>
-
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.supplier.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.supplier.list.description")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingTemplate}
-              onClick={async () => {
-                setIsDownloadingTemplate(true);
-                try {
-                  await downloadSupplierTemplate();
-                  toast.success(t("common.success"), {
-                    description: t("page.supplier.toast.templateSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description:
-                      err?.response?.data?.message ||
-                      err.message ||
-                      t("page.supplier.toast.templateError")
-                  });
-                } finally {
-                  setIsDownloadingTemplate(false);
-                }
-              }}>
-              {isDownloadingTemplate ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-              )}
-              {t("page.supplier.button.downloadTemplate")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingData}
-              onClick={async () => {
-                setIsDownloadingData(true);
-                try {
-                  await downloadSupplierExcel();
-                  toast.success(t("common.success"), {
-                    description: t("page.supplier.toast.dataSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description:
-                      err?.response?.data?.message ||
-                      err.message ||
-                      t("page.supplier.toast.dataError")
-                  });
-                } finally {
-                  setIsDownloadingData(false);
-                }
-              }}>
-              {isDownloadingData ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">download</span>
-              )}
-              {t("page.supplier.button.downloadData")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "import") && (
-            <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-              <span className="material-symbols-outlined text-lg mr-1">upload</span>
-              {t("page.supplier.button.upload")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              data-tour="supplier-add"
-              onClick={() => navigate("/add-supplier")}
-              className="gap-2 shadow-md">
-              <Plus size={18} />
-              {t("page.supplier.button.add")}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: t("breadcrumb.home"), href: "/dashboard-super-admin" },
+          { label: t("breadcrumb.supplier") }
+        ]}
+        title={t("page.supplier.list.title")}
+        description={t("page.supplier.list.description")}>
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            variant="outline"
+            disabled={isDownloadingTemplate}
+            onClick={async () => {
+              setIsDownloadingTemplate(true);
+              try {
+                await downloadSupplierTemplate();
+                toast.success(t("common.success"), {
+                  description: t("page.supplier.toast.templateSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.supplier.toast.templateError")
+                });
+              } finally {
+                setIsDownloadingTemplate(false);
+              }
+            }}>
+            {isDownloadingTemplate ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+            )}
+            {t("page.supplier.button.downloadTemplate")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "export") && (
+          <Button
+            variant="outline"
+            disabled={isDownloadingData}
+            onClick={async () => {
+              setIsDownloadingData(true);
+              try {
+                await downloadSupplierExcel();
+                toast.success(t("common.success"), {
+                  description: t("page.supplier.toast.dataSuccess")
+                });
+              } catch (err) {
+                toast.error(t("common.error"), {
+                  description:
+                    err?.response?.data?.message ||
+                    err.message ||
+                    t("page.supplier.toast.dataError")
+                });
+              } finally {
+                setIsDownloadingData(false);
+              }
+            }}>
+            {isDownloadingData ? (
+              <Loader2 size={16} className="mr-1 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg mr-1">download</span>
+            )}
+            {t("page.supplier.button.downloadData")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "import") && (
+          <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+            <span className="material-symbols-outlined text-lg mr-1">upload</span>
+            {t("page.supplier.button.upload")}
+          </Button>
+        )}
+        {canAccess(user, MENU_KEY, "add") && (
+          <Button
+            data-tour="supplier-add"
+            onClick={() => navigate("/add-supplier")}
+            className="shadow-md">
+            <Plus size={18} />
+            {t("page.supplier.button.add")}
+          </Button>
+        )}
+      </PageHeader>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.supplier.stats.total")}</p>
@@ -297,6 +312,12 @@ const SupplierList = () => {
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
             <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+          </Card>
+        </div>
+        <div>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{data?.stats?.draft ?? 0}</p>
           </Card>
         </div>
       </div>

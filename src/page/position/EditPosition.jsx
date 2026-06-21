@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
-import { editPosition, getAllPosition } from "@/services/position";
+import { editPosition, getPositionById } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,13 +37,12 @@ const EditPosition = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const {
-    data: allPositionsData,
+    data: positionData,
     isLoading: positionsLoading,
     isError,
     refetch
-  } = useQuery(["positions-all"], () => getAllPosition(), { enabled: !!positionId });
-  const allPositions = allPositionsData?.data || allPositionsData?.positions || [];
-  const position = allPositions.find((p) => String(p.id) === positionId);
+  } = useQuery(["position", positionId], () => getPositionById({ id: positionId }), { enabled: !!positionId });
+  const position = positionData?.data || positionData;
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
     staleTime: 5 * 60 * 1000
@@ -53,7 +52,7 @@ const EditPosition = () => {
   useEffect(() => {
     if (position) {
       setName(position.name || "");
-      setDepartment(position.department || "");
+      setDepartment(String(position.departmentId || position.departmentData?.id || ""));
       setDescription(position.description || "");
 
       setIsActive(position.status === "active");
@@ -87,7 +86,7 @@ const EditPosition = () => {
     editMutation.mutate({
       id: positionId,
       name: name.trim(),
-      department,
+      departmentId: department ? Number(department) : null,
       description: description.trim(),
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
@@ -200,7 +199,10 @@ const EditPosition = () => {
                       </div>
                     ) : (
                       <div className="flex gap-2">
-                        <div className="flex-1">
+                        <div className="flex-1 relative">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base z-10">
+                            domain
+                          </span>
                           <Select value={department} onValueChange={setDepartment}>
                             <SelectTrigger className="pl-9">
                               <SelectValue
@@ -209,7 +211,7 @@ const EditPosition = () => {
                             </SelectTrigger>
                             <SelectContent>
                               {departments.map((d) => (
-                                <SelectItem key={d.id} value={d.name}>
+                                <SelectItem key={d.id} value={String(d.id)}>
                                   {d.name}
                                 </SelectItem>
                               ))}

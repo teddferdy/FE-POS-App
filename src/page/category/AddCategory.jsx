@@ -324,7 +324,7 @@ const quickIcons = [
   "more_horiz"
 ];
 
-const allIconsFlat = iconSections.flatMap((s) => s.icons);
+const allIconsFlat = [...new Map(iconSections.flatMap((s) => s.icons).map(ic => [ic.icon, ic])).values()];
 
 const AddCategory = () => {
   const { t } = useTranslation();
@@ -341,7 +341,7 @@ const AddCategory = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStore, setSelectedStore] = useState([]);
   const fileInputRef = useRef(null);
   const role = user?.roleType || "";
 
@@ -398,7 +398,7 @@ const AddCategory = () => {
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && !selectedStore) {
+    if (isSuperAdmin && selectedStore.length === 0 && !saveAsDraft) {
       toast.error("Pilih toko terlebih dahulu");
       return;
     }
@@ -407,7 +407,7 @@ const AddCategory = () => {
     payload.append("name", values.name);
     payload.append("description", values.description || "");
     payload.append("status", saveAsDraft ? "draft" : values.isActive ? "active" : "inactive");
-    payload.append("store", selectedStore || "");
+    payload.append("store", JSON.stringify(selectedStore));
     if (selectedIcon) {
       payload.append("image", selectedIcon);
     } else if (selectedImage) {
@@ -479,12 +479,16 @@ const AddCategory = () => {
                       ) : (
                         <div className="flex flex-wrap gap-2 pl-9">
                           {locations.map((loc) => {
-                            const isChecked = selectedStore === loc.id;
+                            const isChecked = selectedStore.includes(loc.id);
                             return (
                               <button
                                 key={loc.id}
                                 type="button"
-                                onClick={() => setSelectedStore(isChecked ? null : loc.id)}
+                                onClick={() =>
+                                  setSelectedStore(prev =>
+                                    isChecked ? prev.filter(id => id !== loc.id) : [...prev, loc.id]
+                                  )
+                                }
                                 className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                                   isChecked
                                     ? "bg-primary/10 border-primary text-primary"
@@ -510,13 +514,13 @@ const AddCategory = () => {
                         </div>
                       )}
                     </div>
-                  ) : selectedStore || user?.store ? (
+                  ) : selectedStore.length > 0 || user?.store ? (
                     <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
                       <Store size={16} className="shrink-0" />
                       <span>
                         {t("page.category.form.storeInfo")}{" "}
                         <strong className="text-foreground">
-                          {user?.storeName || `Toko #${selectedStore || user?.store || ""}`}
+                          {user?.storeName || `Toko #${selectedStore[0] || user?.store || ""}`}
                         </strong>
                       </span>
                     </div>
@@ -728,17 +732,19 @@ const AddCategory = () => {
               </div>
 
               <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button variant="outline" onClick={() => setCancelModal(true)}>
+                <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
                   {t("common.cancel")}
                 </Button>
                 <div className="flex gap-3">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}>
                     Simpan sebagai Draft
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                     disabled={isSubmitting}>
                     {t("page.category.button.save")}

@@ -31,6 +31,7 @@ const AddProductionOrder = () => {
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   // const [productSearch, setProductSearch] = useState("");
 
   const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {
@@ -54,7 +55,7 @@ const AddProductionOrder = () => {
 
   const selectedProduct = products.find((p) => p.id === parseInt(productId));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, saveAsDraft = false) => {
     e.preventDefault();
     if (!productId || !plannedQty || parseInt(plannedQty) < 1) {
       toast.error(t("page.productionOrder.add.toastValidation"), {
@@ -69,7 +70,8 @@ const AddProductionOrder = () => {
         plannedQty: parseInt(plannedQty),
         scheduledDate:
           scheduledDate instanceof Date ? scheduledDate.toISOString().split("T")[0] : scheduledDate,
-        notes
+        notes,
+        ...(saveAsDraft && { status: "draft" })
       };
       if (id) {
         await editProductionOrder(id, payload);
@@ -208,12 +210,17 @@ const AddProductionOrder = () => {
             <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.productionOrder.add.cancelButton")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              <Save size={16} className="mr-1" />{" "}
-              {isSubmitting
-                ? t("page.productionOrder.add.savingButton")
-                : t("page.productionOrder.add.saveButton")}
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+                Save as Draft
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                <Save size={16} className="mr-1" />{" "}
+                {isSubmitting
+                  ? t("page.productionOrder.add.savingButton")
+                  : t("page.productionOrder.add.saveButton")}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
@@ -232,6 +239,18 @@ const AddProductionOrder = () => {
         onConfirm={() => {
           setCancelModal(false);
           navigate("/production-order");
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft"
+        description="Data akan disimpan sebagai draft"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit({ preventDefault: () => {} }, true);
         }}
       />
     </div>

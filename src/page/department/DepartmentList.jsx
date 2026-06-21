@@ -121,9 +121,11 @@ const DepartmentList = () => {
           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
             department.status === "active"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+              : department.status === "draft"
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {department.status === "active" ? t("common.active") : t("common.inactive")}
+          {department.status === "active" ? t("common.active") : department.status === "draft" ? t("common.draft") : t("common.inactive")}
         </span>
       )
     },
@@ -168,8 +170,9 @@ const DepartmentList = () => {
     {
       header: t("page.department.table.actions"),
       align: "center",
+      stickyRight: true,
       render: (department) => (
-        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-center gap-1">
           {canAccess(user, MENU_KEY, "view") && (
             <button
               onClick={(e) => {
@@ -312,7 +315,7 @@ const DepartmentList = () => {
       <div>
         <div>
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             <div
               data-tour="department-stat-total"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -352,6 +355,27 @@ const DepartmentList = () => {
               </div>
               <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-3xl">check_circle</span>
+              </div>
+            </div>
+            <div
+              data-tour="department-stat-draft"
+              className="bg-amber-500 dark:bg-amber-700 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-600 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
+              <div>
+                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
+                  {t("page.department.list.statsDraft")}
+                </p>
+                <h3 className="text-3xl font-bold text-white">
+                  {stats?.totalDepartemenDraft ?? 0}
+                </h3>
+                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
+                  <span className="material-symbols-outlined text-sm">edit_note</span>
+                  {stats?.totalDepartemen
+                    ? Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)
+                    : 0}%
+                </p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-amber-600 dark:bg-amber-900 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-3xl">edit_note</span>
               </div>
             </div>
             <div

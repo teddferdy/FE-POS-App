@@ -38,6 +38,7 @@ const EditPurchaseOrder = () => {
   const [discount, setDiscount] = useState(0);
   const [items, setItems] = useState([]);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState(null);
@@ -198,8 +199,8 @@ const EditPurchaseOrder = () => {
   const totalAmount = items.reduce((sum, item) => sum + item.qty * item.price, 0);
   const finalAmount = totalAmount - discount;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (e, saveAsDraft = false) => {
+    if (e?.preventDefault) e.preventDefault();
     if (!selectedStore) {
       toast.error(t("page.purchaseOrder.edit.validation.store"), {
         description: t("page.purchaseOrder.edit.validation.storeDesc")
@@ -248,6 +249,7 @@ const EditPurchaseOrder = () => {
       notes,
       pic: picId,
       discount,
+      status: saveAsDraft ? "pending" : undefined,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       orderDate: (() => {
         const d = new Date(orderDate);
@@ -644,12 +646,21 @@ const EditPurchaseOrder = () => {
                 className="gap-2">
                 <X size={18} /> {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
-                <Save size={18} />
-                {updateMutation.isLoading
-                  ? t("common.saving")
-                  : t("page.purchaseOrder.edit.saveChanges")}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={updateMutation.isLoading}>
+                  Simpan sebagai Draft
+                </Button>
+                <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
+                  <Save size={18} />
+                  {updateMutation.isLoading
+                    ? t("common.saving")
+                    : t("page.purchaseOrder.edit.saveChanges")}
+                </Button>
+              </div>
             </div>
           </form>
         </div>
@@ -664,6 +675,15 @@ const EditPurchaseOrder = () => {
         confirmText={t("page.purchaseOrder.edit.cancelModalConfirm")}
         cancelText={t("page.purchaseOrder.edit.cancelModalCancel")}
         onConfirm={() => navigate("/purchase-order")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft"
+        description="Data PO akan disimpan sebagai draft"
+        confirmText="Ya, Simpan Draft"
+        onConfirm={() => { setDraftModal(false); handleSubmit(null, true); }}
       />
       {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>

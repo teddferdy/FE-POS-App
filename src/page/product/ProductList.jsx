@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import {
   getAllProductTable,
@@ -67,10 +67,7 @@ const ProductList = () => {
 
   const { data, isLoading } = useQuery(
     ["products", page, limit, locationParam],
-    () =>
-      getAllProductTable(
-        { location: locationParam || "", page, limit, statusProduct: "all" }
-      ),
+    () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
     { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
 
@@ -82,19 +79,10 @@ const ProductList = () => {
 
   const categories = categoriesData?.data || [];
 
-  const deleteMutation = useMutation(deleteProduct, {
-    onSuccess: () => {
-      toast.success(t("common.success"), { description: t("page.product.toast.deleteSuccess") });
-      queryClient.invalidateQueries(["products"]);
-    },
-    onError: (err) => {
-      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
-    }
-  });
-
   const products = data?.data || data?.products || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const stats = data?.stats || { total: 0, active: 0, nonActive: 0, draft: 0 };
 
   const handleDelete = (id) => {
     setDeleteTarget(id);
@@ -125,7 +113,7 @@ const ProductList = () => {
       return 0;
     });
 
-  const getStatusBadge = (product) => {
+  const getAvailableBadge = (product) => {
     const stock = product.stock || product.quantity || 0;
     if (stock <= 0) {
       return {
@@ -133,14 +121,31 @@ const ProductList = () => {
         className: "bg-destructive/10 text-destructive border border-destructive/20"
       };
     }
-    if (stock <= 10) {
+    const minStock = product.minStock || 10;
+    if (stock <= minStock) {
       return {
         label: t("page.product.status.lowStock"),
         className:
           "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800"
       };
     }
-    if (product.isActive || product.status === "active") {
+    return {
+      label: t("page.product.status.available"),
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+    };
+  };
+
+  const getProductStatusBadge = (product) => {
+    const status = product.status || (product.isActive ? "active" : "inactive");
+    if (status === "draft") {
+      return {
+        label: t("common.draft"),
+        className:
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+      };
+    }
+    if (status === "active") {
       return {
         label: t("common.active"),
         className:
@@ -149,7 +154,8 @@ const ProductList = () => {
     }
     return {
       label: t("common.inactive"),
-      className: "bg-muted text-muted-foreground border border-border"
+      className:
+        "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
     };
   };
 
@@ -208,9 +214,21 @@ const ProductList = () => {
       }
     },
     {
+      header: t("page.product.table.available"),
+      render: (product) => {
+        const badge = getAvailableBadge(product);
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
+            {badge.label}
+          </span>
+        );
+      }
+    },
+    {
       header: t("page.product.table.status"),
       render: (product) => {
-        const badge = getStatusBadge(product);
+        const badge = getProductStatusBadge(product);
         return (
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
@@ -236,10 +254,47 @@ const ProductList = () => {
       )
     },
     {
+      header: t("page.product.table.createdAt"),
+      render: (product) => {
+        if (!product.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(product.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("page.product.table.updatedAt"),
+      render: (product) => {
+        if (!product.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(product.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
+    },
+    {
       header: t("common.actions"),
       align: "right",
       render: (product) => (
         <div className="flex items-center justify-end gap-1">
+          {canAccess(user, MENU_KEY, "view") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/detail-product/${product.id || product._id}`)}>
+              <Eye size={15} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
@@ -365,14 +420,58 @@ const ProductList = () => {
               </Button>
             )}
           </PageHeader>
+      </div>
+    </div>
+
+    {/* Stats Cards */}
+    <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="bg-card rounded-xl border border-border p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-muted-foreground">
+            {t("page.product.stats.total")}
+          </div>
+          <div className="text-2xl font-bold text-foreground">
+            {stats.total}
+          </div>
         </div>
       </div>
+      <div className="bg-card rounded-xl border border-border p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-muted-foreground">
+            {t("page.product.stats.active")}
+          </div>
+          <div className="text-2xl font-bold text-success">
+            {stats.active}
+          </div>
+        </div>
+      </div>
+      <div className="bg-card rounded-xl border border-border p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-muted-foreground">
+            {t("page.product.stats.nonActive")}
+          </div>
+          <div className="text-2xl font-bold text-destructive">
+            {stats.nonActive}
+          </div>
+        </div>
+      </div>
+      <div className="bg-card rounded-xl border border-border p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-muted-foreground">
+            {t("page.product.stats.draft")}
+          </div>
+          <div className="text-2xl font-bold text-warning">
+            {stats.draft}
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <div>
       <div>
-        <div>
-          <div
-            data-tour="product-search"
-            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+        <div
+          data-tour="product-search"
+          className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
             <div className="flex-1 w-full relative">
               <Search
                 size={16}

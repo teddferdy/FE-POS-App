@@ -28,6 +28,7 @@ const EditGoodsReceipt = () => {
   const [items, setItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const {
@@ -114,8 +115,7 @@ const EditGoodsReceipt = () => {
     setItems((prev) => prev.map((item, i) => (i !== idx ? item : { ...item, [field]: value })));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const doSubmit = async (saveAsDraft = false) => {
     if (!poId || items.length === 0) {
       toast.error(t("page.goodsReceipt.edit.toast.validation"), {
         description: t("page.goodsReceipt.edit.toast.poRequired")
@@ -137,6 +137,7 @@ const EditGoodsReceipt = () => {
         receivedDate:
           receivedDate instanceof Date ? receivedDate.toISOString().split("T")[0] : receivedDate,
         notes,
+        status: saveAsDraft ? "draft" : "completed",
         items: validItems.map((it) => ({
           ingredient: it.ingredient,
           ingredientName: it.ingredientName,
@@ -199,7 +200,7 @@ const EditGoodsReceipt = () => {
         </div>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => { e.preventDefault(); doSubmit(false); }}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -398,12 +399,17 @@ const EditGoodsReceipt = () => {
             <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.goodsReceipt.edit.form.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting || items.length === 0}>
-              <Save size={16} className="mr-1" />{" "}
-              {isSubmitting
-                ? t("page.goodsReceipt.edit.form.saving")
-                : t("page.goodsReceipt.edit.form.save")}
-            </Button>
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+                Simpan sebagai Draft
+              </Button>
+              <Button type="submit" disabled={isSubmitting || items.length === 0}>
+                <Save size={16} className="mr-1" />{" "}
+                {isSubmitting
+                  ? t("page.goodsReceipt.edit.form.saving")
+                  : t("page.goodsReceipt.edit.form.save")}
+              </Button>
+            </div>
           </div>
         </form>
 
@@ -422,6 +428,15 @@ const EditGoodsReceipt = () => {
             setCancelModal(false);
             navigate("/goods-receipt");
           }}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title="Simpan sebagai Draft"
+          description="Data akan disimpan sebagai draft"
+          confirmText="Ya, Simpan"
+          onConfirm={() => { setDraftModal(false); doSubmit(true); }}
         />
       </div>
     </>

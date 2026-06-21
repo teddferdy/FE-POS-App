@@ -67,8 +67,12 @@ const TaxConfigList = () => {
   });
 
   const items = data?.data || [];
+  const stats = data?.stats || {};
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const activeCount = stats.active ?? 0;
+  const draftCount = stats.draft ?? 0;
+  const inactiveCount = stats.inactive ?? 0;
 
   const handleDelete = (item) => {
     setDeleteTarget(item);
@@ -108,6 +112,25 @@ const TaxConfigList = () => {
       )
     },
     {
+      header: t("common.status"),
+      render: (item) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            item.status === "active"
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : item.status === "draft"
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          }`}>
+          {item.status === "active"
+            ? t("common.active")
+            : item.status === "draft"
+              ? t("common.draft")
+              : t("common.inactive")}
+        </span>
+      )
+    },
+    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
@@ -122,6 +145,24 @@ const TaxConfigList = () => {
           {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
         </span>
       )
+    },
+    {
+      header: t("common.createdAt"),
+      render: (item) => {
+        if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (item) => {
+        if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
     },
     {
       header: t("common.actions"),
@@ -253,18 +294,22 @@ const TaxConfigList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card data-tour="tax-stat-total" className="p-5">
               <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
             </Card>
             <Card data-tour="tax-stat-active" className="p-5">
               <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.active ?? 0}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+            </Card>
+            <Card data-tour="tax-stat-draft" className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
             </Card>
             <Card data-tour="tax-stat-inactive" className="p-5">
               <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.inactive ?? 0}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
             </Card>
           </div>
 

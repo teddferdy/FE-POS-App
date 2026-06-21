@@ -20,10 +20,11 @@ import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import ImportIngredientModal from "./components/ImportIngredientModal";
 
-const statusBadge = {
-  active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  inactive: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-};
+  const statusBadge = {
+    active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    draft: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    inactive: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+  };
 
 const IngredientList = () => {
   const { t } = useTranslation();
@@ -61,7 +62,11 @@ const IngredientList = () => {
   });
 
   const ingredients = data?.data || [];
-  const total = ingredients.length;
+  const stats = data?.stats || {};
+  const total = stats.total ?? ingredients.length;
+  const activeCount = stats.active ?? ingredients.filter((i) => i.status === "active").length;
+  const draftCount = stats.draft ?? ingredients.filter((i) => i.status === "draft").length;
+  const inactiveCount = stats.inactive ?? ingredients.filter((i) => i.status === "inactive").length;
 
   const fmtDate = (date) =>
     date
@@ -138,10 +143,12 @@ const IngredientList = () => {
       header: t("page.ingredient.list.tableStatus"),
       render: (item) => (
         <span
-          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.active}`}>
+          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.draft}`}>
           {item.status === "active"
             ? t("page.ingredient.list.statusActive")
-            : t("page.ingredient.list.statusInactive")}
+            : item.status === "draft"
+              ? t("common.draft")
+              : t("page.ingredient.list.statusInactive")}
         </span>
       )
     },
@@ -157,6 +164,18 @@ const IngredientList = () => {
       className: "min-w-[180px]",
       render: (item) => (
         <span className="text-xs text-muted-foreground">{fmtDate(item.updatedAt)}</span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (item) => (
+        <span className="text-xs text-muted-foreground">{item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-xs text-muted-foreground">{item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}</span>
       )
     },
     {
@@ -287,7 +306,7 @@ const IngredientList = () => {
       </div>
 
       <div
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div>
           <Card className="p-5">
             <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statTotal")}</p>
@@ -296,20 +315,20 @@ const IngredientList = () => {
         </div>
         <div>
           <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statAktif")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">
-              {ingredients.filter((i) => i.status === "active").length}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
           </Card>
         </div>
         <div>
           <Card className="p-5">
-            <p className="text-sm text-muted-foreground">
-              {t("page.ingredient.list.statStokMenipis")}
-            </p>
-            <p className="text-2xl font-bold text-destructive mt-1">
-              {ingredients.filter((i) => i.stock <= i.minStock).length}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
+          </Card>
+        </div>
+        <div>
+          <Card className="p-5">
+            <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
           </Card>
         </div>
       </div>

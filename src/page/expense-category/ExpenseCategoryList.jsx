@@ -8,6 +8,7 @@ import { Plus, Search, Edit, Trash2, Tag } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -44,6 +45,11 @@ const ExpenseCategoryList = () => {
   });
 
   const categories = data?.data || data || [];
+  const stats = data?.stats || {};
+  const totalStats = stats.total ?? categories.length;
+  const activeCount = stats.active ?? categories.filter((c) => c.status === "active").length;
+  const draftCount = stats.draft ?? categories.filter((c) => c.status === "draft").length;
+  const inactiveCount = stats.inactive ?? categories.filter((c) => c.status === "inactive").length;
   const filtered = categories.filter(
     (item) => !search || item.name?.toLowerCase().includes(search.toLowerCase())
   );
@@ -78,6 +84,55 @@ const ExpenseCategoryList = () => {
           {row.description || "-"}
         </span>
       )
+    },
+    {
+      header: t("page.expenseCategory.list.status"),
+      render: (row) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            row.status === "active"
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : row.status === "draft"
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          }`}>
+          {row.status === "active"
+            ? t("common.active")
+            : row.status === "draft"
+              ? t("common.draft")
+              : t("common.inactive")}
+        </span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.createdAt"),
+      render: (row) => {
+        if (!row.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(row.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (row) => {
+        if (!row.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(row.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
     },
     {
       header: t("page.expenseCategory.list.actions"),
@@ -142,13 +197,25 @@ const ExpenseCategoryList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-card p-5 rounded-xl border border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <Card className="p-5">
               <p className="text-sm text-muted-foreground">
                 {t("page.expenseCategory.list.total")}
               </p>
-              <p className="text-2xl font-bold text-foreground mt-1">{categories.length}</p>
-            </div>
+              <p className="text-2xl font-bold text-foreground mt-1">{totalStats}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
+            </Card>
           </div>
 
           <div>

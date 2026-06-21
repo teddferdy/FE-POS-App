@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Award, Coins, Gift, Tag, Calendar, Users } from "lucide-react";
+import { Award, Coins, Gift, Tag, Calendar, Users, User } from "lucide-react";
 import { getDetailMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -309,8 +309,26 @@ const DetailMemberTier = () => {
               </h3>
             </div>
             <div className="space-y-4">
-              <DetailRow icon={Calendar} label="Created At" value={formatDate(tier.createdAt)} />
-              <DetailRow icon={Calendar} label="Updated At" value={formatDate(tier.updatedAt)} />
+              <DetailRow
+                icon={Calendar}
+                label={t("page.memberTier.detail.createdAt")}
+                value={formatDate(tier.createdAt)}
+              />
+              <DetailRow
+                icon={Calendar}
+                label={t("page.memberTier.detail.updatedAt")}
+                value={formatDate(tier.updatedAt)}
+              />
+              <DetailRow
+                icon={User}
+                label={t("page.memberTier.detail.createdBy")}
+                value={tier.createdByName || "-"}
+              />
+              <DetailRow
+                icon={User}
+                label={t("page.memberTier.detail.modifiedBy")}
+                value={tier.modifiedByName || "-"}
+              />
             </div>
           </div>
         </div>
@@ -321,7 +339,7 @@ const DetailMemberTier = () => {
             Kembali
           </Button>
           <Button
-            onClick={() => navigate(`/edit-member-tier?id=${tier.id}`)}
+            onClick={() => navigate(`/edit-member-tier/${tier.id}`)}
             className="gap-2 shadow-md">
             <span className="material-symbols-outlined text-lg">edit</span>
             Edit Tier

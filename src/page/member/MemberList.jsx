@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, PackageOpen } from "lucide-react";
+import { Plus, PackageOpen, Users, UserCheck, UserPen, UserX } from "lucide-react";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,7 @@ const MemberList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -72,7 +73,7 @@ const MemberList = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  const { data: tiersData } = useQuery(["member-tiers-all"], () => getAllMemberTier(), {
+  const { data: tiersData } = useQuery(["member-tiers-active"], () => getAllMemberTier({ status: "active" }), {
     staleTime: 5 * 60 * 1000
   });
   const tiers = tiersData?.data || tiersData?.tiers || [];
@@ -100,9 +101,13 @@ const MemberList = () => {
   const members = data?.data || data?.members || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
+  const stats = data?.stats || { total: 0, active: 0, draft: 0, inactive: 0 };
 
-  const filteredMembers =
-    tierFilter != null ? members.filter((m) => Number(m.tier) === tierFilter) : members;
+  const filteredMembers = members.filter((m) => {
+    if (tierFilter != null && Number(m.tier) !== tierFilter) return false;
+    if (statusFilter != null && m.status !== statusFilter) return false;
+    return true;
+  });
 
   const handleDelete = (member) => {
     setDeleteTarget(member);
@@ -174,6 +179,29 @@ const MemberList = () => {
       }
     },
     {
+      header: t("page.member.table.status"),
+      render: (member) => {
+        const status = member.status || "active";
+        const isActive = status === "active";
+        const isInactive = status === "inactive";
+        const isDraft = status === "draft";
+        const badgeClass = isActive
+          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+          : isInactive
+            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+            : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+        const icon = isActive ? "check_circle" : isInactive ? "cancel" : "drafts";
+        return (
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {icon}
+            </span>
+            {isActive ? t("common.active") : isInactive ? t("common.inactive") : t("common.draft")}
+          </span>
+        );
+      }
+    },
+    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
@@ -223,7 +251,8 @@ const MemberList = () => {
     },
     {
       header: t("page.member.table.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (member) => (
         <div className="flex items-center justify-end gap-1">
           <button
@@ -294,6 +323,63 @@ const MemberList = () => {
         </div>
       </div>
 
+      {!isError && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Users size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("page.member.list.totalMembers")}
+                </p>
+                <h3 className="text-2xl font-bold mt-1">{stats.total}</h3>
+              </div>
+            </div>
+          </div>
+          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                <UserCheck size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("common.active")}
+                </p>
+                <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.active}</h3>
+              </div>
+            </div>
+          </div>
+          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                <UserPen size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("common.draft")}
+                </p>
+                <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</h3>
+              </div>
+            </div>
+          </div>
+          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                <UserX size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {t("common.inactive")}
+                </p>
+                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{stats.inactive}</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
@@ -301,7 +387,7 @@ const MemberList = () => {
           <div>
             <div
               data-tour="member-search"
-              className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+              className="bg-card rounded-xl border border-border p-5">
               {tiers.length === 0 ? (
                 <div className="flex items-center gap-3 w-full">
                   <PackageOpen size={20} className="text-muted-foreground" />
@@ -317,51 +403,84 @@ const MemberList = () => {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 flex-1 flex-wrap">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 whitespace-nowrap">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-primary text-lg">filter_alt</span>
+                    <h3 className="text-sm font-semibold text-foreground">
                       {t("page.member.list.filter")}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setTierFilter(null);
-                        setPage(1);
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                        tierFilter == null
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                      }`}>
-                      {t("common.all")}
-                    </button>
-                    {tiers.map((tier) => (
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { key: null, label: t("common.all"), icon: "group" },
+                      { key: "draft", label: t("common.draft"), icon: "edit_note" },
+                      { key: "inactive", label: t("common.inactive"), icon: "cancel" }
+                    ].map(({ key, label, icon }) => (
                       <button
-                        key={tier.id || tier._id}
+                        key={key ?? "all"}
                         onClick={() => {
-                          setTierFilter(tier.id);
+                          setStatusFilter(key);
                           setPage(1);
                         }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                          tierFilter === tier.id
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                          statusFilter === key
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
                         }`}>
-                        {tier.name}
+                        <span className="material-symbols-outlined text-sm">{icon}</span>
+                        {label}
                       </button>
                     ))}
                   </div>
-                  <div className="flex items-center gap-2 w-full md:w-auto">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="flex-1 md:w-40 h-9 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                      <option value="terbaru">{t("page.member.list.sortNewest")}</option>
-                      <option value="poin">{t("page.member.list.sortPoints")}</option>
-                      <option value="nama">{t("page.member.list.sortName")}</option>
-                    </select>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:block">
-                      {t("page.member.list.totalMembers")}:{" "}
-                      <strong>{total.toLocaleString()}</strong>
-                    </span>
+
+                  {tiers.length > 0 && (
+                    <>
+                      <div className="border-t border-border my-4" />
+                      <div className="flex flex-wrap items-center gap-2">
+                        {tiers.map((tier) => (
+                          <button
+                            key={tier.id || tier._id}
+                            onClick={() => {
+                              setTierFilter(tierFilter === tier.id ? null : tier.id);
+                              setPage(1);
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              tierFilter === tier.id
+                                ? "text-white shadow-sm"
+                                : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                            }`}
+                            style={tierFilter === tier.id ? { backgroundColor: tier.color || "#6366f1" } : undefined}>
+                            <span
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: tier.color || "#6366f1" }}
+                            />
+                            {tier.name}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-muted-foreground text-sm">sort</span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">{t("page.member.list.sort")}</span>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                        <option value="terbaru">{t("page.member.list.sortNewest")}</option>
+                        <option value="poin">{t("page.member.list.sortPoints")}</option>
+                        <option value="nama">{t("page.member.list.sortName")}</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-muted-foreground text-sm">people</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {t("page.member.list.totalMembers")}:{" "}
+                        <strong>{total.toLocaleString()}</strong>
+                      </span>
+                    </div>
                   </div>
                 </>
               )}

@@ -110,6 +110,9 @@ const CategoryList = () => {
   const inactiveCount = hasBEStats
     ? statsFromBE.inactive || 0
     : categories.filter((cat) => cat.status === "inactive" || !cat.isActive).length;
+  const draftCount = hasBEStats
+    ? statsFromBE.draft || 0
+    : categories.filter((cat) => cat.status === "draft").length;
 
   const handleDelete = (id) => {
     setDeleteTarget(id);
@@ -159,6 +162,15 @@ const CategoryList = () => {
       iconBg: "bg-red-100 dark:bg-red-900/40",
       iconColor: "text-red-700 dark:text-red-300",
       danger: true
+    },
+    {
+      dataTour: "category-stat-draft",
+      icon: "edit_note",
+      label: "Draft",
+      value: draftCount,
+      badge: `${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`,
+      iconBg: "bg-amber-100 dark:bg-amber-900/40",
+      iconColor: "text-amber-700 dark:text-amber-300"
     }
   ];
 
@@ -197,6 +209,16 @@ const CategoryList = () => {
       )
     },
     {
+      header: t("page.category.table.store"),
+      render: (cat) => (
+        <span className="text-sm text-muted-foreground">
+          {Array.isArray(cat.store) && cat.store.length > 0
+            ? cat.store.map(s => s.name || `Store #${s.id}`).join(", ")
+            : "All"}
+        </span>
+      )
+    },
+    {
       header: t("page.category.table.productCount"),
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
@@ -207,7 +229,16 @@ const CategoryList = () => {
     {
       header: t("page.category.table.status"),
       render: (cat) => {
-        const isActive = cat.status || cat.isActive;
+        const s = cat.status || "";
+        if (s === "draft") {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
+              Draft
+            </span>
+          );
+        }
+        const isActive = s === "active" || cat.isActive === true;
         return (
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
@@ -255,7 +286,8 @@ const CategoryList = () => {
     },
     {
       header: t("page.category.table.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (cat) => (
         <div className="flex items-center justify-end gap-1 transition-opacity">
           {canAccess(user, MENU_KEY, "view") && (
@@ -397,7 +429,7 @@ const CategoryList = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {stats.map((stat) => (
               <div
                 key={stat.label}

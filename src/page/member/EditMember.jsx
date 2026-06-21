@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { toast } from "sonner";
+import { z } from "zod";
 import { getMemberById, editMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,17 @@ import UserGuide from "@/components/organism/UserGuide";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+
+const editSchema = z.object({
+  name: z.string().min(1),
+  phoneNumber: z.string().min(1),
+  email: z.string().email().optional().or(z.literal("")),
+  birthDate: z.date().optional(),
+  gender: z.enum(["male", "female"]),
+  address: z.string().optional().default(""),
+  tier: z.number().nullable().optional().default(null)
+});
 
 const EditMember = () => {
   const { t } = useTranslation();
@@ -33,9 +45,13 @@ const EditMember = () => {
 
   const member = memberData?.data || memberData?.member || memberData;
 
-  const { data: tiersData } = useQuery(["member-tiers-all"], () => getAllMemberTier(), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: tiersData } = useQuery(
+    ["member-tiers-active"],
+    () => getAllMemberTier({ status: "active" }),
+    {
+      staleTime: 5 * 60 * 1000
+    }
+  );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
   const [form, setForm] = useState(null);
@@ -73,11 +89,14 @@ const EditMember = () => {
 
   const handleSubmit = (e, saveAsDraft = false) => {
     e.preventDefault();
-    if (!form.name || !form.phoneNumber) {
-      toast.error(t("page.member.edit.toastValidation"), {
-        description: t("page.member.edit.validationDesc")
-      });
-      return;
+    if (!saveAsDraft) {
+      const result = editSchema.safeParse(form);
+      if (!result.success) {
+        toast.error(t("page.member.edit.toastValidation"), {
+          description: t("page.member.edit.validationDesc")
+        });
+        return;
+      }
     }
     setIsSubmitting(true);
     editMutation.mutate({
@@ -130,7 +149,7 @@ const EditMember = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.member.edit.fullName")}
+                        {t("page.member.edit.fullName")} <span className="text-destructive">*</span>
                       </label>
                       <input
                         name="name"
@@ -155,7 +174,8 @@ const EditMember = () => {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.member.edit.phoneNumber")}
+                        {t("page.member.edit.phoneNumber")}{" "}
+                        <span className="text-destructive">*</span>
                       </label>
                       <input
                         name="phoneNumber"
@@ -252,30 +272,121 @@ const EditMember = () => {
                         </p>
                       </div>
                     ) : (
-                      tiers.map((tier) => (
-                        <label
-                          key={tier.id}
-                          className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                            form.tier === tier.id
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:bg-accent"
-                          }`}>
-                          <input
-                            type="radio"
-                            name="tier"
-                            value={tier.id}
-                            checked={form.tier === tier.id}
-                            onChange={handleChange}
-                            className="mt-1 text-primary focus:ring-primary"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-foreground">{tier.name}</p>
-                          </div>
-                          <span className="material-symbols-outlined text-outline">
-                            workspace_premium
-                          </span>
-                        </label>
-                      ))
+                      <>
+                        <Select
+                          value={form.tier != null ? String(form.tier) : ""}
+                          onValueChange={(val) =>
+                            setForm((prev) => ({ ...prev, tier: val ? Number(val) : null }))
+                          }>
+                          <SelectTrigger className="w-full h-auto px-4 py-3 rounded-xl border-2 border-border bg-background text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [&>svg]:text-muted-foreground">
+                            {(() => {
+                              const sel = tiers.find((t) => t.id === form.tier);
+                              if (sel) {
+                                return (
+                                  <div className="flex items-center gap-2.5">
+                                    <span
+                                      className="w-3 h-3 rounded-full shrink-0"
+                                      style={{ backgroundColor: sel.color || "#6366f1" }}
+                                    />
+                                    <span>{sel.name}</span>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <span className="text-muted-foreground">
+                                  {t("page.member.edit.selectTier")}
+                                </span>
+                              );
+                            })()}
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl min-w-[var(--radix-select-trigger-width)]">
+                            {tiers.map((tier) => (
+                              <SelectItem key={tier.id} value={String(tier.id)} className="py-2.5">
+                                <div className="flex items-center gap-2.5">
+                                  <span
+                                    className="w-3 h-3 rounded-full shrink-0"
+                                    style={{ backgroundColor: tier.color || "#6366f1" }}
+                                  />
+                                  <span>{tier.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {(() => {
+                          const selected = tiers.find((t) => t.id === form.tier);
+                          if (!selected) return null;
+                          return (
+                            <div
+                              className="rounded-xl border overflow-hidden mt-1"
+                              style={{ borderColor: `${selected.color || "#6366f1"}30` }}>
+                              <div
+                                className="p-4"
+                                style={{ backgroundColor: `${selected.color || "#6366f1"}08` }}>
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg font-bold shrink-0 shadow-sm"
+                                    style={{ backgroundColor: selected.color || "#6366f1" }}>
+                                    <span className="material-symbols-outlined">
+                                      workspace_premium
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-foreground truncate">
+                                      {selected.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      <span className="font-semibold">
+                                        {selected.minPoints?.toLocaleString?.() || 0}
+                                      </span>
+                                      {" — "}
+                                      <span className="font-semibold">
+                                        {selected.maxPoints?.toLocaleString?.() || "∞"}
+                                      </span>{" "}
+                                      PTS
+                                    </p>
+                                  </div>
+                                  {selected.discountPercent > 0 && (
+                                    <div className="text-right shrink-0">
+                                      <p
+                                        className="text-lg font-bold"
+                                        style={{ color: selected.color || "#6366f1" }}>
+                                        {selected.discountPercent}%
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                                        Diskon
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              {selected.benefits?.length > 0 && (
+                                <div
+                                  className="px-4 py-3 border-t"
+                                  style={{ borderColor: `${selected.color || "#6366f1"}15` }}>
+                                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                                    Benefits
+                                  </p>
+                                  <ul className="space-y-1.5">
+                                    {selected.benefits.map((b, i) => (
+                                      <li
+                                        key={i}
+                                        className="flex items-start gap-2 text-xs text-muted-foreground">
+                                        <span
+                                          className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
+                                          style={{ backgroundColor: selected.color || "#6366f1" }}
+                                        />
+                                        {b}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </>
                     )}
                   </div>
                 </div>

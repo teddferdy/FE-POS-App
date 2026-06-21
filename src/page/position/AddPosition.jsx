@@ -62,7 +62,7 @@ const AddPosition = () => {
     if (!validate()) return;
     createMutation.mutate({
       name: name.trim(),
-      department,
+      departmentId: department ? Number(department) : null,
       description: description.trim(),
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
@@ -140,7 +140,10 @@ const AddPosition = () => {
                       </div>
                     ) : (
                       <div className="flex gap-2">
-                        <div className="flex-1">
+                        <div className="flex-1 relative">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base z-10">
+                            domain
+                          </span>
                           <Select value={department} onValueChange={setDepartment}>
                             <SelectTrigger className="pl-9">
                               <SelectValue
@@ -149,7 +152,7 @@ const AddPosition = () => {
                             </SelectTrigger>
                             <SelectContent>
                               {departments.map((d) => (
-                                <SelectItem key={d.id} value={d.name}>
+                                <SelectItem key={d.id} value={String(d.id)}>
                                   {d.name}
                                 </SelectItem>
                               ))}

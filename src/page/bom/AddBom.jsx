@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Save, X, Plus, Trash2 } from "lucide-react";
@@ -17,6 +18,8 @@ const AddBom = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const [cookies] = useCookies();
+  const user = cookies?.user;
 
   const [productId, setProductId] = useState("");
   const [name, setName] = useState("");
@@ -24,6 +27,7 @@ const AddBom = () => {
   const [lines, setLines] = useState([{ ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {
     staleTime: 60000
@@ -38,15 +42,15 @@ const AddBom = () => {
   const updateLine = (idx, field, value) =>
     setLines((prev) => prev.map((it, i) => (i !== idx ? it : { ...it, [field]: value })));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, saveAsDraft = false) => {
+    if (e?.preventDefault) e.preventDefault();
     if (!productId) {
       toast.error(t("page.bom.add.toast.validation"), {
         description: t("page.bom.add.toast.selectProduct")
       });
       return;
     }
-    if (!lines[0].ingredientId) {
+    if (!lines[0].ingredientId && !saveAsDraft) {
       toast.error(t("page.bom.add.toast.validation"), {
         description: t("page.bom.add.toast.minIngredient")
       });
@@ -58,6 +62,8 @@ const AddBom = () => {
         productId: parseInt(productId),
         name: name || undefined,
         notes,
+        status: saveAsDraft ? "draft" : "active",
+        createdBy: user?.id,
         lines: lines
           .filter((l) => l.ingredientId && parseInt(l.qty) > 0)
           .map((l) => ({
@@ -235,10 +241,21 @@ const AddBom = () => {
             <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
               <X size={16} className="mr-1" /> {t("page.bom.add.form.cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              <Save size={16} className="mr-1" />{" "}
-              {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={isSubmitting}
+                className="gap-2">
+                <Save size={16} />
+                {t("page.bom.add.form.saveDraft")}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                <Save size={16} className="mr-1" />{" "}
+                {isSubmitting ? t("page.bom.add.form.saving") : t("page.bom.add.form.save")}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
@@ -253,6 +270,18 @@ const AddBom = () => {
         onConfirm={() => {
           setCancelModal(false);
           navigate("/bom");
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={(o) => !o && setDraftModal(false)}
+        title={t("page.bom.add.modal.draftTitle")}
+        description={t("page.bom.add.modal.draftDesc")}
+        confirmText={t("page.bom.add.modal.draftConfirm")}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(null, true);
         }}
       />
     </div>

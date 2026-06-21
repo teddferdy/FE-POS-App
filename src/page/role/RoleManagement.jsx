@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -37,6 +38,10 @@ const RoleManagement = () => {
   const roles = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
+  const stats = data?.stats || {};
+  const activeCount = stats.active ?? roles.filter((r) => r.status === "active").length;
+  const draftCount = stats.draft ?? roles.filter((r) => r.status === "draft").length;
+  const inactiveCount = stats.inactive ?? roles.filter((r) => r.status === "inactive").length;
 
   const deleteMutation = useMutation(deleteRole, {
     onSuccess: () => {
@@ -89,9 +94,28 @@ const RoleManagement = () => {
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <div
-          data-tour="role-table"
-          className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">Total Role</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">Aktif</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">Draft</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">Non-Aktif</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
+            </Card>
+          </div>
+          <div
+            data-tour="role-table"
+            className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
             <h4 className="text-base font-semibold text-foreground">Daftar Role</h4>
           </div>
@@ -115,6 +139,18 @@ const RoleManagement = () => {
                     <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
                       Status
                     </th>
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      Dibuat Oleh
+                    </th>
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      Diubah Oleh
+                    </th>
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      Dibuat Tanggal
+                    </th>
+                    <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                      Diubah Tanggal
+                    </th>
                     <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
                       Aksi
                     </th>
@@ -123,7 +159,7 @@ const RoleManagement = () => {
                 <tbody className="divide-y divide-border">
                   {roles.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                      <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                         <Shield size={40} className="mx-auto mb-2 opacity-40" />
                         Belum ada role. Buat role baru untuk mengatur akses pengguna.
                       </td>
@@ -159,19 +195,39 @@ const RoleManagement = () => {
                             {role.roleType}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                              role.status === "active"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}>
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`}
-                            />
-                            {role.status === "active" ? "Aktif" : "Nonaktif"}
-                          </span>
-                        </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                          role.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : role.status === "draft"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                        }`}>
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            role.status === "active"
+                              ? "bg-green-700"
+                              : role.status === "draft"
+                                ? "bg-amber-700"
+                                : "bg-red-700"
+                          }`}
+                        />
+                        {role.status === "active" ? "Aktif" : role.status === "draft" ? "Draft" : "Nonaktif"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {role.createdByUser?.fullName || role.createdByUser?.userName || role.createdBy || "-"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {role.modifiedByUser?.fullName || role.modifiedByUser?.userName || role.modifiedBy || "-"}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
+                      {role.createdAt ? new Date(role.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
+                      {role.updatedAt ? new Date(role.updatedAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                    </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {canAccess(user, MENU_KEY, "view") && (
@@ -253,6 +309,7 @@ const RoleManagement = () => {
             </div>
           </div>
         </div>
+      </>
       )}
       <Modal
         type="confirm"

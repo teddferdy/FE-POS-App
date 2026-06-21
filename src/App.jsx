@@ -41,6 +41,7 @@ const InvoicePage = React.lazy(() => import("./page/invoice/InvoicePage"));
 const ProductList = React.lazy(() => import("./page/product/ProductList"));
 const AddProduct = React.lazy(() => import("./page/product/AddProduct"));
 const EditProduct = React.lazy(() => import("./page/product/EditProduct"));
+const DetailProduct = React.lazy(() => import("./page/product/DetailProduct"));
 
 // Category
 const CategoryList = React.lazy(() => import("./page/category/CategoryList"));
@@ -72,6 +73,7 @@ const RoleManagement = React.lazy(() => import("./page/role/RoleManagement"));
 const EditRole = React.lazy(() => import("./page/role/EditRole"));
 const DetailRole = React.lazy(() => import("./page/role/DetailRole"));
 const AddMemberTier = React.lazy(() => import("./page/member-tier/AddMemberTier"));
+const EditMemberTier = React.lazy(() => import("./page/member-tier/EditMemberTier"));
 const DetailMemberTier = React.lazy(() => import("./page/member-tier/DetailMemberTier"));
 
 // Employee
@@ -297,6 +299,7 @@ function App() {
             <Route path="/product-list" element={withLayout(<ProductList />)} />
             <Route path="/add-product" element={withLayout(<AddProduct />)} />
             <Route path="/edit-product" element={withLayout(<EditProduct />)} />
+            <Route path="/detail-product/:id" element={withLayout(<DetailProduct />)} />
 
             <Route path="/category-list" element={withLayout(<CategoryList />)} />
             <Route path="/add-category" element={withLayout(<AddCategory />)} />
@@ -314,6 +317,7 @@ function App() {
               path="/add-member-tier"
               element={withLayout(<AddMemberTier title="Add Member Tier" />)}
             />
+            <Route path="/edit-member-tier/:id" element={withLayout(<EditMemberTier />)} />
             <Route path="/detail-member-tier" element={withLayout(<DetailMemberTier />)} />
 
             <Route path="/discount-list" element={withLayout(<DiscountList />)} />

@@ -40,6 +40,7 @@ const AddCategory = () => {
 
   const [showCancel, setShowCancel] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
 
   const role = user?.roleType || "";
@@ -101,14 +102,14 @@ const AddCategory = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !selectedStore) {
       toast.error(t("page.ingredientCategory.add.storeRequired"));
       return;
     }
     const payload = {
       name: values.name.trim(),
-      status: values.isActive,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
       store: selectedStore
     };
     if (isEdit) {
@@ -352,14 +353,24 @@ const AddCategory = () => {
                     <X size={16} className="mr-1" />
                     {t("page.ingredientCategory.add.cancelButton")}
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    <Save size={16} className="mr-1" />
-                    {isSubmitting
-                      ? t("page.ingredientCategory.add.savingButton")
-                      : isEdit
-                        ? t("page.ingredientCategory.add.saveChangesButton")
-                        : t("page.ingredientCategory.add.saveButton")}
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDraftModal(true)}
+                      disabled={isSubmitting}>
+                      Save as Draft
+                    </Button>
+                    <Button
+                      onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                      disabled={isSubmitting}>
+                      <Save size={16} className="mr-1" />
+                      {isSubmitting
+                        ? t("page.ingredientCategory.add.savingButton")
+                        : isEdit
+                          ? t("page.ingredientCategory.add.saveChangesButton")
+                          : t("page.ingredientCategory.add.saveButton")}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Form>
@@ -393,6 +404,19 @@ const AddCategory = () => {
         description={t("page.ingredientCategory.add.cancelModalDesc")}
         confirmText={t("page.ingredientCategory.add.cancelModalConfirm")}
         onConfirm={() => navigate("/ingredient-category")}
+      />
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title="Simpan sebagai Draft"
+        description="Data akan disimpan sebagai draft"
+        confirmText="Ya, Simpan"
+        onConfirm={() => {
+          setDraftModal(false);
+          const values = form.getValues();
+          onSubmit(values, true);
+        }}
       />
     </div>
   );

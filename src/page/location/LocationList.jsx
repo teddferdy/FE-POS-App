@@ -81,11 +81,8 @@ const LocationList = () => {
     }
 
     if (statusFilter !== "all") {
-      const matchesStatus =
-        statusFilter === "active"
-          ? loc.isActive || loc.status === "active"
-          : !(loc.isActive || loc.status === "active");
-      if (!matchesStatus) return false;
+      const locStatus = loc.status || (loc.isActive ? "active" : "inactive");
+      if (locStatus !== statusFilter) return false;
     }
 
     return true;
@@ -150,15 +147,26 @@ const LocationList = () => {
     {
       header: t("page.location.table.status"),
       render: (loc) => {
-        const isActive = loc.isActive || loc.status === "active";
+        const status = loc.status || (loc.isActive ? "active" : "inactive");
+        const styles = {
+          active:
+            "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+          inactive:
+            "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+          draft:
+            "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+        };
+        const labels = {
+          active: t("common.active"),
+          inactive: t("common.inactive"),
+          draft: t("common.draft")
+        };
         return (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${
-              isActive
-                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+              styles[status] || styles.inactive
             }`}>
-            {isActive ? t("common.active") : t("common.inactive")}
+            {labels[status] || labels.inactive}
           </span>
         );
       }
@@ -197,17 +205,24 @@ const LocationList = () => {
     },
     {
       header: t("page.location.table.createdBy"),
-      render: (loc) => <span className="text-xs text-muted-foreground">{loc.createdBy || "-"}</span>
+      render: (loc) => (
+        <span className="text-xs text-muted-foreground">
+          {loc.createdBy?.fullName || loc.createdBy || "-"}
+        </span>
+      )
     },
     {
       header: t("page.location.table.modifiedBy"),
       render: (loc) => (
-        <span className="text-xs text-muted-foreground">{loc.modifiedBy || "-"}</span>
+        <span className="text-xs text-muted-foreground">
+          {loc.modifiedBy?.fullName || loc.modifiedBy || "-"}
+        </span>
       )
     },
     {
       header: t("common.actions"),
-      align: "right",
+      align: "center",
+      stickyRight: true,
       render: (loc) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
@@ -275,7 +290,7 @@ const LocationList = () => {
       ) : (
         <div>
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               <div
                 data-tour="location-stat-total"
                 className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -325,7 +340,7 @@ const LocationList = () => {
                     {t("page.location.stats.inactive")}
                   </p>
                   <h3 className="text-3xl font-bold text-white">
-                    {((data?.stats?.total ?? 0) - (data?.stats?.active ?? 0)).toLocaleString()}
+                    {(data?.stats?.inactive ?? 0).toLocaleString()}
                   </h3>
                   <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
                     <span className="material-symbols-outlined text-sm">cancel</span>
@@ -334,6 +349,25 @@ const LocationList = () => {
                 </div>
                 <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
                   <span className="material-symbols-outlined text-3xl">cancel</span>
+                </div>
+              </div>
+              <div
+                data-tour="location-stat-draft"
+                className="bg-amber-600 dark:bg-amber-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-700 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
+                <div>
+                  <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
+                    {t("page.location.stats.draft")}
+                  </p>
+                  <h3 className="text-3xl font-bold text-white">
+                    {(data?.stats?.draft ?? 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
+                    <span className="material-symbols-outlined text-sm">edit_note</span>
+                    {t("page.location.stats.draftSub")}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-amber-700 dark:bg-amber-950 flex items-center justify-center text-white group-hover:bg-amber-800 dark:group-hover:bg-amber-950/80 transition-colors group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">edit_note</span>
                 </div>
               </div>
               <div
@@ -394,6 +428,7 @@ const LocationList = () => {
                           <option value="all">{t("common.all")}</option>
                           <option value="active">{t("common.active")}</option>
                           <option value="inactive">{t("common.inactive")}</option>
+                          <option value="draft">{t("common.draft")}</option>
                         </select>
                       </div>
                       <div className="flex items-center gap-2">

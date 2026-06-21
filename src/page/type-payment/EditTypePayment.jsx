@@ -39,6 +39,7 @@ const EditTypePayment = () => {
   const paymentId = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [draftModal, setDraftModal] = useState(false);
 
   const {
     data: detailData,
@@ -97,12 +98,12 @@ const EditTypePayment = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     const { status, ...rest } = values;
     updateMutation.mutate({
       id: paymentId,
       ...rest,
-      status
+      status: saveAsDraft ? "draft" : status
     });
   };
 
@@ -156,7 +157,14 @@ const EditTypePayment = () => {
               {t("common.cancel")}
             </Button>
             <Button
-              onClick={() => form.handleSubmit(onSubmit)()}
+              variant="outline"
+              onClick={() => setDraftModal(true)}
+              disabled={updateMutation.isLoading}
+              className="gap-2">
+              Save as Draft
+            </Button>
+            <Button
+              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
@@ -271,6 +279,19 @@ const EditTypePayment = () => {
           description={t("page.typePayment.toast.updateSuccess")}
           confirmText={t("modal.backToList")}
           onConfirm={() => navigate("/type-payment-list")}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title="Simpan sebagai Draft"
+          description="Data akan disimpan sebagai draft"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setDraftModal(false);
+            const values = form.getValues();
+            onSubmit(values, true);
+          }}
         />
       </div>
     </div>

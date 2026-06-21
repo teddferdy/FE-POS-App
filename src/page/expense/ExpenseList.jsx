@@ -170,6 +170,24 @@ const ExpenseList = () => {
       )
     },
     {
+      header: t("common.createdAt"),
+      render: (item) => {
+        if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (item) => {
+        if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
       header: t("page.expense.table.actions"),
       align: "right",
       render: (item) => (

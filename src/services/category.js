@@ -9,14 +9,14 @@ export const getAllCategory = async () => {
 };
 
 export const getAllCategoryActive = async ({ location } = {}) => {
-  const params = location ? `?status=active&store=${location}` : '?status=active';
+  const params = location ? `?status=active&store=${location}` : "?status=active";
   const { data, status } = await axiosInstance.get(`/category/get-category-all${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };
 
 export const getAllCategoryTable = async ({ limit, page, statusCategory, location } = {}) => {
-  const storeParam = location ? `&store=${location}` : '';
+  const storeParam = location ? `&store=${location}` : "";
   const { data, status } = await axiosInstance.get(
     `/category/get-category-all?page=${page}&limit=${limit}&status=${statusCategory}${storeParam}`
   );
@@ -32,7 +32,7 @@ export const addCategory = async (payload) => {
 
 export const editCategory = async (payload) => {
   const { data, status } = await axiosInstance.put(
-    `/category/edit-category/${payload.id}`,
+    `/category/edit-category/${payload.get("id")}`,
     payload
   );
   if (status !== 200 && status !== 201) throw Error(`${data.message || data?.error}`);

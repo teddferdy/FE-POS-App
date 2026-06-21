@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { z } from "zod";
 import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
@@ -27,6 +28,17 @@ const colors = [
   { name: "rose", value: "#f43f5e", tailwind: "bg-rose-500" }
 ];
 
+const tierSchema = z.object({
+  tierName: z.string().min(1),
+  minPoints: z.string(),
+  maxPoints: z.string(),
+  discountPercent: z.string(),
+  isActive: z.boolean(),
+  selectedIcon: z.string(),
+  selectedColor: z.string(),
+  perks: z.array(z.object({ id: z.number(), text: z.string() }))
+});
+
 const AddMemberTier = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -45,6 +57,17 @@ const AddMemberTier = () => {
 
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+
+  const formatIDR = (value) => {
+    if (!value) return "";
+    const num = Number(value);
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  };
 
   const createMutation = useMutation(addMemberTier, {
     onSuccess: () => {
@@ -87,10 +110,19 @@ const AddMemberTier = () => {
   };
 
   const handleSave = (saveAsDraft = false) => {
+    if (!saveAsDraft) {
+      const result = tierSchema.safeParse(formData);
+      if (!result.success) {
+        toast.error(t("page.memberTier.add.toastError"), {
+          description: t("page.memberTier.add.footerHint")
+        });
+        return;
+      }
+    }
     createMutation.mutate({
       name: formData.tierName,
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
-      maxPoints: formData.maxPoints === "" ? 999999 : Number(formData.maxPoints),
+      maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
       benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
@@ -129,10 +161,11 @@ const AddMemberTier = () => {
                       {t("page.memberTier.add.basicInfo")}
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.memberTier.add.tierName")}
+                        {t("page.memberTier.add.tierName")}{" "}
+                        <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
@@ -149,21 +182,16 @@ const AddMemberTier = () => {
                       </label>
                       <div className="relative">
                         <input
-                          type="number"
-                          value={formData.minPoints}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "minPoints",
-                              e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                            )
-                          }
+                          type="text"
+                          value={formData.minPoints ? formatIDR(formData.minPoints) : ""}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            handleInputChange("minPoints", value);
+                          }}
                           disabled={!formData.isActive}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                          placeholder="0"
+                          placeholder="Rp. 0"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-                          PTS
-                        </span>
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -172,26 +200,21 @@ const AddMemberTier = () => {
                       </label>
                       <div className="relative">
                         <input
-                          type="number"
-                          value={formData.maxPoints}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "maxPoints",
-                              e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                            )
-                          }
+                          type="text"
+                          value={formData.maxPoints ? formatIDR(formData.maxPoints) : ""}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            handleInputChange("maxPoints", value);
+                          }}
                           disabled={!formData.isActive}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                          placeholder="999999"
+                          placeholder="Rp. 0"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-                          PTS
-                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {t("page.memberTier.add.maxPointsHint", {
-                          min: formData.minPoints || 0,
-                          max: 999999
+                          min: formData.minPoints ? Number(formData.minPoints) : 0,
+                          max: 0
                         })}
                       </p>
                     </div>
@@ -201,14 +224,20 @@ const AddMemberTier = () => {
                       </label>
                       <div className="relative">
                         <input
-                          type="number"
+                          type="text"
                           value={formData.discountPercent}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "discountPercent",
-                              e.target.value === "" ? "" : parseInt(e.target.value) || 0
-                            )
-                          }
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value === "") {
+                              handleInputChange("discountPercent", "");
+                            } else {
+                              const num = parseInt(value, 10);
+                              if (num > 100) {
+                                value = "100";
+                              }
+                              handleInputChange("discountPercent", value);
+                            }
+                          }}
                           disabled={!formData.isActive}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
                           placeholder="0"
@@ -462,7 +491,7 @@ const AddMemberTier = () => {
           createMutation.mutate({
             name: formData.tierName,
             minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
-            maxPoints: formData.maxPoints === "" ? 999999 : Number(formData.maxPoints),
+            maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
             discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
             benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
             status: "draft",

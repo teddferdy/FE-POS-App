@@ -370,6 +370,24 @@ const PurchaseOrderList = () => {
       )
     },
     {
+      header: t("common.createdAt"),
+      render: (po) => {
+        if (!po.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(po.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (po) => {
+        if (!po.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(po.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+      }
+    },
+    {
       header: t("page.purchaseOrder.list.columns.actions"),
       align: "right",
       render: (po) => (

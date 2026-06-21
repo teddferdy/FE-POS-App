@@ -550,6 +550,10 @@ const EditProduct = () => {
     if (imageFile) payload.append("image", imageFile);
 
     payload.append("stores", JSON.stringify(selectedStores));
+    if (user?.id) {
+      payload.append("createdBy", user.id);
+      payload.append("modifiedBy", user.id);
+    }
 
     editMutation.mutate(payload);
   };

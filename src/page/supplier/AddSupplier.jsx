@@ -64,7 +64,13 @@ const AddSupplier = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    createMutation.mutate({ ...values, status: saveAsDraft ? false : !!values.isActive });
+    let statusValue;
+    if (saveAsDraft) {
+      statusValue = "draft";
+    } else {
+      statusValue = values.isActive ? "active" : "inactive";
+    }
+    createMutation.mutate({ ...values, status: statusValue });
   };
 
   return (

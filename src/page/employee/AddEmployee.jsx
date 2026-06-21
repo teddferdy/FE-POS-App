@@ -74,7 +74,7 @@ const AddEmployee = () => {
       gender: z.string().min(1, t("page.employee.form.genderRequired")),
       dateOfBirth: z.string().min(1, t("page.employee.form.dateOfBirthRequired")),
       employeeId: z.string().min(1, t("page.employee.form.employeeIdRequired")),
-      department: z.string().optional().or(z.literal("")),
+      departmentId: z.string().optional().or(z.literal("")),
       position: z.string().optional().or(z.literal("")),
       store: z.string().optional().or(z.literal("")),
       employmentType: z.string().optional().or(z.literal("")),
@@ -106,7 +106,7 @@ const AddEmployee = () => {
       gender: "",
       dateOfBirth: "",
       employeeId: "",
-      department: "",
+      departmentId: "",
       position: "",
       store: "",
       employmentType: "",
@@ -297,7 +297,7 @@ const AddEmployee = () => {
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (documents.length === 0) {
+    if (!saveAsDraft && documents.length === 0) {
       toast.error(t("page.employee.add.toast.error"), {
         description: t("page.employee.add.toast.documentRequired")
       });
@@ -400,7 +400,7 @@ const AddEmployee = () => {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground text-center">
-                            JPG, PNG. Maks 2MB.
+                            {t("page.employee.add.photoHint")}
                           </p>
                         </div>
 
@@ -412,7 +412,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Nama Lengkap <span className="text-destructive">*</span>
+                                    {t("page.employee.form.fullName")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -428,7 +428,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Email <span className="text-destructive">*</span>
+                                    {t("page.employee.form.email")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -447,7 +447,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Nomor Telepon <span className="text-destructive">*</span>
+                                    {t("page.employee.form.phoneNumber")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -468,11 +468,11 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Jenis Kelamin <span className="text-destructive">*</span>
+                                    {t("page.employee.form.gender")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Pilih" />
+                                      <SelectValue placeholder={t("page.employee.add.genderPlaceholder")} />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="Laki-laki">
@@ -495,7 +495,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Tempat Lahir <span className="text-destructive">*</span>
+                                    {t("page.employee.form.placeOfBirth")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -511,7 +511,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Tanggal Lahir <span className="text-destructive">*</span>
+                                    {t("page.employee.form.dateOfBirth")} <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <DatePicker
                                     date={field.value ? new Date(field.value) : undefined}
@@ -529,9 +529,9 @@ const AddEmployee = () => {
                             name="address"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                  Alamat <span className="text-destructive">*</span>
-                                </FormLabel>
+                                  <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    {t("page.employee.form.address")} <span className="text-destructive">*</span>
+                                  </FormLabel>
                                 <Textarea
                                   {...field}
                                   rows={3}
@@ -562,7 +562,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                ID Karyawan <span className="text-destructive">*</span>
+                                {t("page.employee.form.employeeId")} <span className="text-destructive">*</span>
                               </FormLabel>
                               <Input
                                 {...field}
@@ -576,11 +576,11 @@ const AddEmployee = () => {
                         />
                         <FormField
                           control={form.control}
-                          name="department"
+                          name="departmentId"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Department
+                                {t("page.employee.form.department")}
                               </FormLabel>
                               {departments.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -589,10 +589,10 @@ const AddEmployee = () => {
                                   </span>
                                   <div className="text-center">
                                     <p className="text-sm font-medium text-foreground">
-                                      Belum ada departemen
+                                      {t("page.employee.add.noDepartment")}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                      Tambah departemen terlebih dahulu
+                                      {t("page.employee.add.addDepartmentFirst")}
                                     </p>
                                   </div>
                                   <Button
@@ -602,26 +602,21 @@ const AddEmployee = () => {
                                     onClick={() => navigate("/add-department")}
                                     className="gap-2">
                                     <span className="material-symbols-outlined text-base">add</span>
-                                    Tambah Departemen
+                                    {t("page.employee.add.addDepartmentButton")}
                                   </Button>
                                 </div>
                               ) : (
                                 <div className="flex gap-2">
                                   <div className="flex-1">
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                      <SelectTrigger>
-                                        <SelectValue
-                                          placeholder={t("page.employee.add.departmentPlaceholder")}
-                                        />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {departments.map((d) => (
-                                          <SelectItem key={d.id} value={d.name}>
-                                            {d.name}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
+                                    <Combobox
+                                      options={(departments || []).map((d) => ({
+                                        value: String(d.id),
+                                        label: d.name
+                                      }))}
+                                      value={field.value || ""}
+                                      onChange={field.onChange}
+                                      placeholder={t("page.employee.add.departmentPlaceholder")}
+                                    />
                                   </div>
                                   <Button
                                     type="button"
@@ -644,7 +639,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Jabatan
+                                {t("page.employee.form.position")}
                               </FormLabel>
                               {positions.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -653,10 +648,10 @@ const AddEmployee = () => {
                                   </span>
                                   <div className="text-center">
                                     <p className="text-sm font-medium text-foreground">
-                                      Belum ada jabatan
+                                      {t("page.employee.add.noPosition")}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                      Tambah jabatan terlebih dahulu
+                                      {t("page.employee.add.addPositionFirst")}
                                     </p>
                                   </div>
                                   <Button
@@ -666,7 +661,7 @@ const AddEmployee = () => {
                                     onClick={() => navigate("/add-position")}
                                     className="gap-2">
                                     <span className="material-symbols-outlined text-base">add</span>
-                                    Tambah Jabatan
+                                    {t("page.employee.add.addPositionButton")}
                                   </Button>
                                 </div>
                               ) : (
@@ -703,7 +698,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Penempatan Toko / Cabang
+                                {t("page.employee.form.storePlacement")}
                               </FormLabel>
                               {locations.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -712,10 +707,10 @@ const AddEmployee = () => {
                                   </span>
                                   <div className="text-center">
                                     <p className="text-sm font-medium text-foreground">
-                                      Belum ada cabang
+                                      {t("page.employee.add.noStore")}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                      Tambah cabang terlebih dahulu
+                                      {t("page.employee.add.addStoreFirst")}
                                     </p>
                                   </div>
                                   <Button
@@ -725,7 +720,7 @@ const AddEmployee = () => {
                                     onClick={() => navigate("/add-location")}
                                     className="gap-2">
                                     <span className="material-symbols-outlined text-base">add</span>
-                                    Tambah Cabang
+                                    {t("page.employee.add.addStoreButton")}
                                   </Button>
                                 </div>
                               ) : (
@@ -739,7 +734,7 @@ const AddEmployee = () => {
                                       value={field.value || ""}
                                       onChange={field.onChange}
                                       placeholder={t("page.employee.add.storePlaceholder")}
-                                      searchPlaceholder="Cari cabang..."
+                                      searchPlaceholder={t("page.employee.add.storeSearchPlaceholder")}
                                     />
                                   </div>
                                   <Button
@@ -763,7 +758,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Tipe Kerja
+                                {t("page.employee.form.employmentType")}
                               </FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger>
@@ -822,7 +817,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Tanggal Mulai Kerja
+                                {t("page.employee.form.startDate")}
                               </FormLabel>
                               <DatePicker
                                 date={field.value ? new Date(field.value) : undefined}
@@ -840,9 +835,7 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {employmentType === "internship"
-                                      ? "Durasi Magang"
-                                      : "Durasi Kontrak"}
+                                    {employmentType === "internship" ? t("page.employee.form.internshipDuration") : t("page.employee.form.contractDurationLabel")}
                                   </FormLabel>
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
@@ -868,14 +861,14 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Tanggal Berakhir
+                                    {t("page.employee.form.endDate")}
                                   </FormLabel>
                                   <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
                                     {field.value
                                       ? format(new Date(field.value), "dd MMM yyyy")
                                       : contractDuration && startDate
-                                        ? "Pilih durasi kontrak terlebih dahulu"
-                                        : "Pilih tanggal mulai & durasi"}
+                                        ? t("page.employee.add.selectDurationFirst")
+                                        : t("page.employee.add.selectStartAndDuration")}
                                   </div>
                                   <FormMessage />
                                 </FormItem>
@@ -907,12 +900,12 @@ const AddEmployee = () => {
                                   </div>
                                   <div>
                                     <p className="text-sm font-semibold text-foreground">
-                                      Status {field.value ? "Aktif" : "Nonaktif"}
+                                      {t("page.employee.form.statusLabel", { status: field.value ? "active" : "inactive" })}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {field.value
-                                        ? "Karyawan ini aktif dan dapat ditugaskan"
-                                        : "Karyawan ini tidak aktif"}
+                                        ? t("page.employee.add.statusActiveDescription")
+                                        : t("page.employee.add.statusInactiveDescription")}
                                     </p>
                                   </div>
                                 </div>
@@ -928,7 +921,7 @@ const AddEmployee = () => {
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                       <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                         <span className="material-symbols-outlined text-primary">payments</span>
-                        <h4 className="text-base font-semibold text-foreground">Penggajian</h4>
+                        <h4 className="text-base font-semibold text-foreground">{t("page.employee.add.salarySection")}</h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <FormField
@@ -937,16 +930,16 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Gaji Bulanan
+                                {t("page.employee.form.monthlySalary")}
                               </FormLabel>
                               <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                                  Rp
+                                  {t("page.employee.add.currencyPrefix")}
                                 </span>
                                 <Input
                                   type="text"
                                   className="pl-10"
-                                  placeholder="0"
+                                  placeholder={t("page.employee.add.salaryPlaceholder")}
                                   value={
                                     field.value ? Number(field.value).toLocaleString("id-ID") : ""
                                   }
@@ -962,11 +955,11 @@ const AddEmployee = () => {
                         />
                         <FormItem>
                           <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Gaji Harian
+                            {t("page.employee.form.dailySalary")}
                           </FormLabel>
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                              Rp
+                              {t("page.employee.add.currencyPrefix")}
                             </span>
                             <Input
                               value={dailySalary ? dailySalary.toLocaleString("id-ID") : ""}
@@ -976,7 +969,7 @@ const AddEmployee = () => {
                             />
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Berdasarkan {daysInMonth} hari (1 - {daysInMonth}) bulan ini
+                            {t("page.employee.add.dailySalaryHint", { days: daysInMonth })}
                           </p>
                         </FormItem>
                       </div>
@@ -987,7 +980,7 @@ const AddEmployee = () => {
                       <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                         <span className="material-symbols-outlined text-primary">lock</span>
                         <h4 className="text-base font-semibold text-foreground">
-                          Akun &amp; Hak Akses
+                          {t("page.employee.add.accountSection")}
                         </h4>
                       </div>
 
@@ -998,7 +991,7 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Username <span className="text-destructive">*</span>
+                                {t("page.employee.form.username")} <span className="text-destructive">*</span>
                               </FormLabel>
                               <Input
                                 {...field}
@@ -1014,14 +1007,14 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Password <span className="text-destructive">*</span>
+                                {t("page.employee.form.password")} <span className="text-destructive">*</span>
                               </FormLabel>
                               <div className="relative">
                                 <Input
                                   {...field}
                                   type={showPassword ? "text" : "password"}
                                   className="pr-10"
-                                  placeholder="••••••••"
+                                  placeholder={t("page.employee.add.passwordPlaceholder")}
                                 />
                                 <button
                                   type="button"
@@ -1194,7 +1187,7 @@ const AddEmployee = () => {
                           {t("page.employee.add.guidance")}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Pastikan data yang dimasukkan sesuai dengan dokumen resmi karyawan.
+                          {t("page.employee.add.guidanceDescription")}
                         </p>
                         <ul className="space-y-3">
                           <li className="flex items-center gap-3 text-sm text-foreground">
@@ -1233,7 +1226,7 @@ const AddEmployee = () => {
                         className="w-full sm:w-auto"
                         onClick={() => setCancelModal(true)}>
                         <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        Batal
+                        {t("page.employee.add.cancelButton")}
                       </Button>
                       <div className="flex gap-3">
                         <Button
@@ -1241,14 +1234,14 @@ const AddEmployee = () => {
                           variant="outline"
                           onClick={() => setDraftModal(true)}
                           disabled={isSubmitting}>
-                          Simpan sebagai Draft
+                          {t("page.employee.add.saveDraftButton")}
                         </Button>
                         <Button
                           type="submit"
                           disabled={isSubmitting}
                           className="w-full sm:w-auto gap-2">
                           <span className="material-symbols-outlined text-lg">save</span>
-                          Simpan Karyawan
+                          {t("page.employee.add.saveButton")}
                         </Button>
                       </div>
                     </div>
@@ -1260,13 +1253,14 @@ const AddEmployee = () => {
         </div>
       </div>
 
-      {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+      {isSubmitting && <Loading fullscreen size="lg" label={t("page.employee.add.saving")} />}
 
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
         title={t("page.employee.add.successTitle")}
+        description={t("page.employee.add.successDescription")}
         onConfirm={() => navigate("/employee-list")}
       />
       <Modal

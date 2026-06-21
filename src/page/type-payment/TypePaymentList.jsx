@@ -82,17 +82,21 @@ const TypePaymentList = () => {
 
   const payments = data?.data || [];
   const allPayments = allData?.data || [];
+  const stats = data?.stats || {};
   const pagination = data?.pagination || {};
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
-  const activeCount = allPayments.filter(
+  const activeCount = stats.active ?? allPayments.filter(
     (item) =>
       item.status === "Aktif" ||
       item.status === true ||
       item.status === "active" ||
       item.isActive === true
   ).length;
-  const inactiveCount = allPayments.length - activeCount;
+  const draftCount = stats.draft ?? allPayments.filter(
+    (item) => item.status === "draft"
+  ).length;
+  const inactiveCount = stats.inactive ?? allPayments.length - activeCount - draftCount;
 
   const handleDelete = (item) => {
     setDeleteTarget(item);
@@ -111,14 +115,17 @@ const TypePaymentList = () => {
       item.status === true ||
       item.status === "active" ||
       item.isActive === true;
+    const isDraft = item.status === "draft";
     return (
       <span
         className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
           isActive
             ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-            : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+            : isDraft
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
+              : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
         }`}>
-        {isActive ? t("common.active") : t("common.inactive")}
+        {isActive ? t("common.active") : isDraft ? t("common.draft") : t("common.inactive")}
       </span>
     );
   };
@@ -150,6 +157,18 @@ const TypePaymentList = () => {
       header: t("page.typePayment.table.updatedDate"),
       render: (row) => (
         <span className="text-sm font-mono text-muted-foreground">{formatDate(row.updatedAt)}</span>
+      )
+    },
+    {
+      header: t("common.createdBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
       )
     },
     {
@@ -291,14 +310,18 @@ const TypePaymentList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="p-5">
               <p className="text-sm text-muted-foreground">{t("page.typePayment.stats.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
             </Card>
             <Card className="p-5">
               <p className="text-sm text-muted-foreground">{t("common.active")}</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+            </Card>
+            <Card className="p-5">
+              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
             </Card>
             <Card className="p-5">
               <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>

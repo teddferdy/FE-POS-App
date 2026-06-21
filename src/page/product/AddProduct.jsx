@@ -374,7 +374,7 @@ const AddProduct = () => {
   };
 
   const onSubmit = async (values, saveAsDraft = false) => {
-    if (selectedStores.length === 0) {
+    if (selectedStores.length === 0 && !saveAsDraft) {
       toast.error(t("page.product.form.selectStoreError"), {
         description: t("page.product.form.selectStoreErrorDesc")
       });

@@ -156,27 +156,20 @@ const EditLocation = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      name: z.string().min(2, t("page.location.form.nameValidation")),
+      name: z.string().min(1, "Required"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
-      phoneNumber: z
-        .string()
-        .regex(/^\d+$/, t("page.location.form.phoneNumericValidation"))
-        .min(8, t("page.location.form.phoneMinValidation"))
-        .max(14, t("page.location.form.phoneMaxValidation")),
-      email: z
-        .string()
-        .email(t("page.location.form.emailValidation"))
-        .min(1, t("page.location.form.emailRequiredValidation")),
-      address: z.string().min(5, t("page.location.form.addressValidation")),
+      phoneNumber: z.string().min(1, "Required").regex(/^\d*$/, "Digits only"),
+      email: z.string().optional(),
+      address: z.string().min(1, "Required"),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
-      city: z.string().min(1, t("page.location.form.cityRequired")),
-      province: z.string().min(1, t("page.location.form.provinceRequired")),
-      district: z.string().min(1, t("page.location.form.districtRequired")),
-      village: z.string().min(1, t("page.location.form.villageRequired")),
-      postalCode: z.string().min(1, t("page.location.form.postalCodeRequired")),
-      isActive: z.boolean().default(true),
+      city: z.string().optional(),
+      province: z.string().optional(),
+      district: z.string().optional(),
+      village: z.string().optional(),
+      postalCode: z.string().optional(),
+      isActive: z.boolean().default(false),
       category: z.string().optional(),
       managerName: z.string().optional(),
       latitude: z.coerce.number().optional(),
@@ -221,6 +214,8 @@ const EditLocation = () => {
       }))
     }
   });
+
+  console.log("form.getValues()", form.getValues());
 
   const { data: locationData, isLoading: locationLoading } = useQuery(
     ["location-edit", editId],
@@ -341,13 +336,6 @@ const EditLocation = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (!imageFile && (!existingImage || imageRemoved)) {
-      toast.error(t("page.location.form.error.gagal"), {
-        description: t("page.location.form.error.fotoWajib")
-      });
-      setIsSubmitting(false);
-      return;
-    }
     setIsSubmitting(true);
     const openingHoursFormatted = (values.openingHours || []).map((h) => ({
       day: h.day,
@@ -360,7 +348,7 @@ const EditLocation = () => {
       storeId: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "draft",
       coordinates: {
         lat: latitude,
         lng: longitude
@@ -542,8 +530,7 @@ const EditLocation = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.location.form.nameLabel")}{" "}
-                                <span className="text-destructive">*</span>
+                                {t("page.location.form.nameLabel")} <span className="text-destructive">*</span>{" "}
                               </FormLabel>
                               <Input
                                 {...field}
@@ -575,106 +562,110 @@ const EditLocation = () => {
                         />
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.phoneLabel")} <span className="text-destructive">*</span>{" "}
+                              </FormLabel>
+                              <div className="relative">
+                                <Phone
+                                  size={16}
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                />
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.location.form.phonePlaceholder")}
+                                  className="pl-9"
+                                  inputMode="numeric"
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+                                    field.onChange(value);
+                                  }}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {t("page.location.form.phoneHint")}
+                              </p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {t("page.location.form.emailLabel")}{" "}
+                              </FormLabel>
+                              <div className="relative">
+                                <Mail
+                                  size={16}
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                />
+                                <Input
+                                  {...field}
+                                  placeholder={t("page.location.form.emailPlaceholder")}
+                                  className="pl-9"
+                                  type="email"
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Address */}
                       <FormField
                         control={form.control}
-                        name="phoneNumber"
+                        name="address"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.phoneLabel")}{" "}
-                              <span className="text-destructive">*</span>
+                              {t("page.location.form.addressLabel")} <span className="text-destructive">*</span>{" "}
                             </FormLabel>
                             <div className="relative">
-                              <Phone
+                              <MapPin
                                 size={16}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                className="absolute left-3 top-3 text-muted-foreground"
                               />
-                              <Input
+                              <Textarea
                                 {...field}
-                                placeholder={t("page.location.form.phonePlaceholder")}
-                                className="pl-9"
-                                inputMode="numeric"
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(/\D/g, "").slice(0, 14);
-                                  field.onChange(value);
-                                }}
+                                placeholder={t("page.location.form.addressPlaceholder")}
+                                className="pl-9 min-h-[80px]"
                               />
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t("page.location.form.phoneHint")}
-                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Detail Location */}
+                      <FormField
+                        control={form.control}
+                        name="detailLocation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {t("page.location.form.detailLocationLabel")}
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder={t("page.location.form.detailPlaceholder")}
+                              className="min-h-[80px]"
+                            />
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-
-                    {/* Address */}
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.addressLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <div className="relative">
-                            <MapPin
-                              size={16}
-                              className="absolute left-3 top-3 text-muted-foreground"
-                            />
-                            <Textarea
-                              {...field}
-                              placeholder={t("page.location.form.addressPlaceholder")}
-                              className="pl-9 min-h-[80px] resize-none"
-                            />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Detail Location */}
-                    <FormField
-                      control={form.control}
-                      name="detailLocation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.detailLocationLabel")}
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder={t("page.location.form.detailPlaceholder")}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Location Map Picker */}
-                    <FormField
-                      control={form.control}
-                      name="location"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.mapLabel")}
-                          </FormLabel>
-                          <LocationMapPicker
-                            lat={form.watch("latitude")}
-                            lng={form.watch("longitude")}
-                            onChange={async (lat, lng) => {
-                              form.setValue("latitude", lat);
-                              form.setValue("longitude", lng);
-                            }}
-                            height="500px"
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
                     {/* Province, City */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -685,7 +676,6 @@ const EditLocation = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.provinceLabel")}{" "}
-                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={provinces.map((p) => ({
@@ -729,7 +719,6 @@ const EditLocation = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.cityLabel")}{" "}
-                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={cities.map((c) => ({
@@ -775,7 +764,6 @@ const EditLocation = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.districtLabel")}{" "}
-                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={districts.map((d) => ({
@@ -799,6 +787,8 @@ const EditLocation = () => {
                                   } finally {
                                     setVillagesLoading(false);
                                   }
+                                } else {
+                                  form.setValue("postalCode", "");
                                 }
                                 handleAreaSelect();
                               }}
@@ -817,7 +807,6 @@ const EditLocation = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.villageLabel")}{" "}
-                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Combobox
                               options={villages.map((v) => ({
@@ -856,7 +845,6 @@ const EditLocation = () => {
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {t("page.location.form.postalCodeLabel")}{" "}
-                              <span className="text-destructive">*</span>
                             </FormLabel>
                             <Input
                               {...field}
@@ -869,6 +857,29 @@ const EditLocation = () => {
                         )}
                       />
                     </div>
+
+                    {/* Location Map Picker */}
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {t("page.location.form.mapLabel")}
+                          </FormLabel>
+                          <LocationMapPicker
+                            lat={form.watch("latitude")}
+                            lng={form.watch("longitude")}
+                            onChange={async (lat, lng) => {
+                              form.setValue("latitude", lat);
+                              form.setValue("longitude", lng);
+                            }}
+                            height="500px"
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     {/* Category */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -931,33 +942,6 @@ const EditLocation = () => {
                                 <X size={16} />
                               </button>
                             )}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Email */}
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.location.form.emailLabel")}{" "}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <div className="relative">
-                            <Mail
-                              size={16}
-                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                              {...field}
-                              placeholder={t("page.location.form.emailPlaceholder")}
-                              className="pl-9"
-                              type="email"
-                            />
                           </div>
                           <FormMessage />
                         </FormItem>
@@ -1179,7 +1163,6 @@ const EditLocation = () => {
                         <Building2 className="text-primary" size={20} />
                         <h3 className="text-base font-semibold text-foreground">
                           {t("page.location.form.storePhoto")}{" "}
-                          <span className="text-destructive">*</span>
                         </h3>
                       </div>
                       <p className="text-sm text-muted-foreground">
@@ -1262,7 +1245,7 @@ const EditLocation = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-border mt-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 bg-card border border-border rounded-xl p-4">
                   <Button
                     type="button"
                     variant="outline"

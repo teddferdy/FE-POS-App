@@ -1,7 +1,7 @@
 import { axiosInstance } from ".";
 
-export const getAllMemberTier = async () => {
-  const { data, status } = await axiosInstance.get("/member-tier/get-all");
+export const getAllMemberTier = async (params = {}) => {
+  const { data, status } = await axiosInstance.get("/member-tier/get-all", { params });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

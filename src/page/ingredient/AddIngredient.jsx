@@ -40,6 +40,7 @@ const AddIngredient = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [cancelModal, setCancelModal] = React.useState(false);
+  const [draftModal, setDraftModal] = React.useState(false);
 
   const unitOptions = [
     { value: "pcs", label: t("page.ingredient.form.unitPcs") },
@@ -138,12 +139,12 @@ const AddIngredient = () => {
     }
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values, saveAsDraft = false) => {
     mutation.mutate({
       ...values,
       supplier: values.supplier ? parseInt(values.supplier) : null,
       category: values.category ? parseInt(values.category) : null,
-      status: values.isActive ? "active" : "inactive",
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
       store: cookie?.user?.store
     });
   };
@@ -589,12 +590,22 @@ const AddIngredient = () => {
                 <Button type="button" variant="outline" onClick={() => setCancelModal(true)}>
                   <X size={16} className="mr-1" /> {t("page.ingredient.form.cancelButton")}
                 </Button>
-                <Button type="submit" disabled={mutation.isLoading}>
-                  <Save size={16} className="mr-1" />{" "}
-                  {mutation.isLoading
-                    ? t("page.ingredient.form.savingButton")
-                    : t("page.ingredient.form.saveButton")}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={mutation.isLoading}>
+                    Save as Draft
+                  </Button>
+                  <Button
+                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    disabled={mutation.isLoading}>
+                    <Save size={16} className="mr-1" />{" "}
+                    {mutation.isLoading
+                      ? t("page.ingredient.form.savingButton")
+                      : t("page.ingredient.form.saveButton")}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
@@ -614,6 +625,19 @@ const AddIngredient = () => {
           onConfirm={() => {
             setCancelModal(false);
             navigate("/ingredient");
+          }}
+        />
+        <Modal
+          type="confirm"
+          open={draftModal}
+          onOpenChange={setDraftModal}
+          title="Simpan sebagai Draft"
+          description="Data akan disimpan sebagai draft"
+          confirmText="Ya, Simpan"
+          onConfirm={() => {
+            setDraftModal(false);
+            const values = form.getValues();
+            onSubmit(values, true);
           }}
         />
       </div>

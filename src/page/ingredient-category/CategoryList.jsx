@@ -70,15 +70,17 @@ const CategoryList = () => {
   });
 
   const categories = data?.data || [];
-  const statsTotal = categories.length;
-  const activeCount = categories.filter((c) => c.status === "active").length;
-  const inactiveCount = categories.filter((c) => c.status === "inactive").length;
+  const stats = data?.stats || {};
+  const draftCount = stats.draft ?? categories.filter((c) => c.status === "draft").length;
+  const activeCount = stats.active ?? categories.filter((c) => c.status === "active").length;
+  const inactiveCount = stats.inactive ?? categories.filter((c) => c.status === "inactive").length;
+  const statsTotal = stats.total ?? categories.length;
 
   const filtered = search
     ? categories.filter((cat) => (cat.name || "").toLowerCase().includes(search.toLowerCase()))
     : categories;
 
-  const stats = [
+  const statCards = [
     {
       icon: Package,
       label: t("page.ingredientCategory.list.statTotal"),
@@ -92,6 +94,13 @@ const CategoryList = () => {
       value: activeCount,
       iconBg: "bg-green-100 dark:bg-green-900/40",
       iconColor: "text-green-700 dark:text-green-300"
+    },
+    {
+      icon: Package,
+      label: t("common.draft"),
+      value: draftCount,
+      iconBg: "bg-amber-100 dark:bg-amber-900/40",
+      iconColor: "text-amber-700 dark:text-amber-300"
     },
     {
       icon: Package,
@@ -119,13 +128,27 @@ const CategoryList = () => {
       header: t("page.ingredientCategory.list.tableStatus"),
       render: (item) => (
         <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${item.status === "active" ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"}`}>
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+            item.status === "active"
+              ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+              : item.status === "draft"
+                ? "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+                : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+          }`}>
           <span
-            className={`w-1.5 h-1.5 rounded-full ${item.status === "active" ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"}`}
+            className={`w-1.5 h-1.5 rounded-full ${
+              item.status === "active"
+                ? "bg-green-500 dark:bg-green-400"
+                : item.status === "draft"
+                  ? "bg-amber-500 dark:bg-amber-400"
+                  : "bg-red-500 dark:bg-red-400"
+            }`}
           />
           {item.status === "active"
             ? t("page.ingredientCategory.list.active")
-            : t("page.ingredientCategory.list.inactive")}
+            : item.status === "draft"
+              ? t("common.draft")
+              : t("page.ingredientCategory.list.inactive")}
         </span>
       )
     },
@@ -268,8 +291,8 @@ const CategoryList = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {stats.map((stat) => (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {statCards.map((stat) => (
               <div
                 key={stat.label}
                 className="bg-card p-6 rounded-xl border border-border shadow-sm">

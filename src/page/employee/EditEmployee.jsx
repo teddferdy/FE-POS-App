@@ -81,7 +81,7 @@ const EditEmployee = () => {
       gender: z.string().min(1, t("page.employee.edit.validation.genderRequired")),
       dateOfBirth: z.string().min(1, t("page.employee.edit.validation.dateOfBirthRequired")),
       employeeId: z.string().min(1, t("page.employee.edit.validation.employeeIdRequired")),
-      department: z.string().optional().or(z.literal("")),
+      departmentId: z.string().optional().or(z.literal("")),
       position: z.string().optional().or(z.literal("")),
       store: z.string().optional().or(z.literal("")),
       employmentType: z.string().optional().or(z.literal("")),
@@ -113,7 +113,7 @@ const EditEmployee = () => {
       gender: "",
       dateOfBirth: "",
       employeeId: "",
-      department: "",
+      departmentId: "",
       position: "",
       store: "",
       employmentType: "",
@@ -193,7 +193,7 @@ const EditEmployee = () => {
       gender: genderMap[employee.gender?.toLowerCase()] || employee.gender || "",
       dateOfBirth: employee.dateOfBirth || "",
       employeeId: String(employee.employeeID || ""),
-      department: employee.department || "",
+      departmentId: String(employee.departmentId || employee.departmentData?.id || ""),
       position: String(employee.position || employee.positionData?.id || ""),
       store: String(employee.store || employee.storeData?.id || ""),
       employmentType:
@@ -713,7 +713,7 @@ const EditEmployee = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="department"
+                        name="departmentId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -745,20 +745,15 @@ const EditEmployee = () => {
                             ) : (
                               <div className="flex gap-2">
                                 <div className="flex-1">
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger>
-                                      <SelectValue
-                                        placeholder={t("page.employee.form.departmentPlaceholder")}
-                                      />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {departments.map((d) => (
-                                        <SelectItem key={d.id} value={d.name}>
-                                          {d.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  <Combobox
+                                    options={(departments || []).map((d) => ({
+                                      value: String(d.id),
+                                      label: d.name
+                                    }))}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder={t("page.employee.form.departmentPlaceholder")}
+                                  />
                                 </div>
                                 <Button
                                   type="button"
