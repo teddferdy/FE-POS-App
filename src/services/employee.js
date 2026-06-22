@@ -13,8 +13,8 @@ export const getAllEmployee = async ({
   if (location) params.location = location;
   if (position) params.position = position;
   if (status) params.status = status;
-  const { data, status } = await axiosInstance.get("/employee/get-employee", { params });
-  if (status !== 200) throw Error(`${data.message}`);
+  const { data } = await axiosInstance.get("/employee/get-employee", { params });
+  if (!data) throw Error('No response');
   return data;
 };
 
