@@ -177,10 +177,26 @@ const CategoryList = () => {
       )
     },
     {
+      header: t("common.updatedAt"),
+      render: (item) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(item.updatedAt)}
+        </span>
+      )
+    },
+    {
       header: t("page.ingredientCategory.list.tableAksi"),
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          {canAccess(user, MENU_KEY, "view") && (
+            <button
+              onClick={() => navigate(`/edit-ingredient-category?id=${item.id}`)}
+              className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
+              title={t("page.ingredientCategory.list.viewTitle")}>
+              <span className="material-symbols-outlined text-lg">visibility</span>
+            </button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <button
               onClick={() => navigate(`/edit-ingredient-category?id=${item.id}`)}
@@ -356,6 +372,7 @@ const CategoryList = () => {
         title={t("page.ingredientCategory.list.modalDeleteTitle")}
         description={t("page.ingredientCategory.list.modalDeleteDesc")}
         confirmText={t("page.ingredientCategory.list.modalDeleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={() => {
           if (deleteTarget) {
             deleteMutation.mutate(deleteTarget);

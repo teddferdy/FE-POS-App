@@ -46,9 +46,6 @@ const EditExpense = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
-  const categories = categoriesData?.data || categoriesData || [];
-
   const {
     data: expenseData,
     isLoading,
@@ -57,6 +54,11 @@ const EditExpense = () => {
   } = useQuery(["expense", id], () => getExpenseById(id), { enabled: !!id });
 
   const expenseItem = expenseData?.data || {};
+
+  const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
+  const categories = (categoriesData?.data || categoriesData || []).filter(
+    (cat) => cat.status === "active" || String(cat.id) === String(expenseItem.category ?? expenseItem.categoryData?.id)
+  );
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -102,7 +104,7 @@ const EditExpense = () => {
       store,
       category: categoryId,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
-      status: saveAsDraft ? "draft" : "active"
+      status: saveAsDraft ? "draft" : "pending"
     };
     updateMutation.mutate(payload);
   };
@@ -136,49 +138,26 @@ const EditExpense = () => {
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
-            {t("page.expense.edit.breadcrumbDashboard")}
+            {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
           <button
             onClick={() => navigate("/expense")}
             className="hover:text-foreground transition-colors">
-            {t("page.expense.edit.breadcrumbList")}
+            {t("breadcrumb.management")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.expense.edit.breadcrumb")}</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
         </nav>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.expense.edit.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.expense.edit.desc")}</p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-              <X size={18} />
-              {t("page.expense.edit.cancel")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={updateMutation.isLoading}>
-              {t("page.expense.edit.saveDraft")}
-            </Button>
-            <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-              disabled={updateMutation.isLoading}
-              className="gap-2">
-              <Save size={18} />
-              {updateMutation.isLoading
-                ? t("page.expense.edit.saving")
-                : t("page.expense.edit.save")}
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.edit.description")}</p>
         </div>
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -186,8 +165,7 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.categoryLabel")}{" "}
-                        <span className="text-destructive">*</span>
+                        {t("page.expense.edit.categoryLabel")} <span className="text-destructive">*</span>
                       </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
@@ -234,8 +212,7 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.amountLabel")}{" "}
-                        <span className="text-destructive">*</span>
+                        {t("page.expense.edit.amountLabel")} <span className="text-destructive">*</span>
                       </FormLabel>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
@@ -263,8 +240,7 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.dateLabel")}{" "}
-                        <span className="text-destructive">*</span>
+                        {t("page.expense.edit.dateLabel")} <span className="text-destructive">*</span>
                       </FormLabel>
                       <DatePicker date={field.value} setDate={field.onChange} />
                       <FormMessage />
@@ -287,6 +263,29 @@ const EditExpense = () => {
                   </FormItem>
                 )}
               />
+              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                  <X size={18} />
+                  {t("page.expense.edit.cancel")}
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={updateMutation.isLoading}>
+                    {t("page.expense.edit.saveDraft")}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    disabled={updateMutation.isLoading}
+                    className="gap-2">
+                    <Save size={18} />
+                    {updateMutation.isLoading ? t("page.expense.edit.saving") : t("page.expense.edit.save")}
+                  </Button>
+                </div>
+              </div>
             </form>
           </Form>
         </Card>

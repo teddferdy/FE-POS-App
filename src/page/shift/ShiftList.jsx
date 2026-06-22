@@ -252,9 +252,10 @@ const ShiftList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.confirmDelete")}
-        description={`${t("common.delete")} ${deleteTarget?.nama_shift || ""}?`}
-        confirmText={t("common.delete")}
+        title={t("page.shift.modal.deleteTitle")}
+        description={t("page.shift.modal.deleteDesc", { name: deleteTarget?.nama_shift || "" })}
+        confirmText={t("page.shift.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

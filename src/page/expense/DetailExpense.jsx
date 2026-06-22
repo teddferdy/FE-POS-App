@@ -9,12 +9,14 @@ import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusBadge = {
+  draft: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
   pending: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   approved: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   rejected: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
 };
 
 const getStatusLabel = (t) => ({
+  draft: t("page.expense.detail.statusDraft"),
   pending: t("page.expense.detail.statusPending"),
   approved: t("page.expense.detail.statusApproved"),
   rejected: t("page.expense.detail.statusRejected")
@@ -61,17 +63,17 @@ const DetailExpense = () => {
               <button
                 onClick={() => navigate("/dashboard-super-admin")}
                 className="hover:text-primary transition-colors">
-                {t("page.expense.detail.breadcrumbDashboard")}
+                {t("breadcrumb.home")}
               </button>
               <span>/</span>
               <button
                 onClick={() => navigate("/expense")}
                 className="hover:text-primary transition-colors">
-                {t("page.expense.detail.breadcrumbList")}
+                {t("breadcrumb.management")}
               </button>
               <span>/</span>
               <span className="text-primary font-semibold">
-                {t("page.expense.detail.breadcrumb")}
+                {t("breadcrumb.detail")}
               </span>
             </nav>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">

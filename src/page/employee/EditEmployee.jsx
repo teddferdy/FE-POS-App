@@ -202,7 +202,7 @@ const EditEmployee = () => {
       endDate: employee.endDate || "",
       shift: String(employee.shift || ""),
       startDate: employee.startDate || "",
-      isActive: employee.statusActive === true,
+      isActive: employee.status === 'active',
       roleId:
         employee.roleId !== null && employee.roleId !== undefined ? String(employee.roleId) : "",
       accessMenu:
@@ -413,6 +413,7 @@ const EditEmployee = () => {
       id: employeeId,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
+    delete payload.isActive;
     if (imageFile) {
       payload.image = imageFile;
     }
@@ -477,7 +478,7 @@ const EditEmployee = () => {
       <div>
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   {/* Section 1: Informasi Pribadi */}

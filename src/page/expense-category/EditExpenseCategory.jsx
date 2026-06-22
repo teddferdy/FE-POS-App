@@ -6,11 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { X, Save } from "lucide-react";
+import { X, Save, CheckCircle2, XCircle } from "lucide-react";
 import { getExpenseCategories, editExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
@@ -19,7 +20,8 @@ import AbortController from "@/components/organism/abort-controller";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
-  description: z.string().optional().or(z.literal(""))
+  description: z.string().optional().or(z.literal("")),
+  isActive: z.boolean()
 });
 
 const EditExpenseCategory = () => {
@@ -43,14 +45,15 @@ const EditExpenseCategory = () => {
   const categoryItem = useMemo(() => {
     if (!data) return {};
     const list = data?.data || data || [];
-    return list.find((item) => item.id === id || item._id === id) || {};
+    return list.find((item) => String(item.id) === id || String(item._id) === id) || {};
   }, [data, id]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      description: ""
+      description: "",
+      isActive: true
     }
   });
 
@@ -58,7 +61,8 @@ const EditExpenseCategory = () => {
     if (categoryItem?.id) {
       form.reset({
         name: categoryItem.name || "",
-        description: categoryItem.description || ""
+        description: categoryItem.description || "",
+        isActive: categoryItem.status === "active"
       });
     }
   }, [categoryItem, form]);
@@ -79,8 +83,9 @@ const EditExpenseCategory = () => {
   const onSubmit = (values, saveAsDraft = false) => {
     updateMutation.mutate({
       id,
-      ...values,
-      status: saveAsDraft ? "draft" : "active"
+      name: values.name,
+      description: values.description,
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     });
   };
 
@@ -113,50 +118,27 @@ const EditExpenseCategory = () => {
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
-            {t("page.expenseCategory.edit.breadcrumbDashboard")}
+            {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
           <button
             onClick={() => navigate("/expense-category")}
             className="hover:text-foreground transition-colors">
-            {t("page.expenseCategory.edit.breadcrumbList")}
+            {t("page.expenseCategory.list.title")}
           </button>
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">
-            {t("page.expenseCategory.edit.breadcrumb")}
+            {t("breadcrumb.edit")}
           </span>
         </nav>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.expenseCategory.edit.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.expenseCategory.edit.desc")}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-              <X size={18} />
-              {t("page.expenseCategory.edit.cancel")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={updateMutation.isLoading}>
-              {t("page.expenseCategory.edit.saveDraft")}
-            </Button>
-            <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-              disabled={updateMutation.isLoading}
-              className="gap-2">
-              <Save size={18} />
-              {updateMutation.isLoading
-                ? t("page.expenseCategory.edit.saving")
-                : t("page.expenseCategory.edit.save")}
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {t("page.expenseCategory.edit.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.expenseCategory.edit.description")}
+          </p>
         </div>
 
         <Card className="p-6">
@@ -195,6 +177,49 @@ const EditExpenseCategory = () => {
                     </FormItem>
                   )}
                 />
+              </div>
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${field.value ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"}`}>
+                      <div className="flex items-center gap-3">
+                        {field.value ? <CheckCircle2 size={20} className="text-green-600" /> : <XCircle size={20} className="text-red-600" />}
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{field.value ? t("common.active") : t("common.inactive")}</p>
+                          <p className="text-xs text-muted-foreground">{field.value ? "Kategori aktif dan dapat digunakan" : "Kategori tidak aktif"}</p>
+                        </div>
+                      </div>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                  <X size={18} />
+                  {t("common.cancel")}
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={updateMutation.isLoading}>
+                    {t("page.expenseCategory.add.saveAsDraft")}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    disabled={updateMutation.isLoading}
+                    className="gap-2">
+                    <Save size={18} />
+                    {updateMutation.isLoading
+                      ? t("button.saving")
+                      : t("button.save")}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>

@@ -39,7 +39,7 @@ const ProfilePage = () => {
     );
   }
 
-  const statusActive = user.statusActive !== false;
+  const statusActive = user.status !== 'inactive';
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString("id-ID", {

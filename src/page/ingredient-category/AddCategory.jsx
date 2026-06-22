@@ -103,7 +103,7 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && !selectedStore) {
+    if (isSuperAdmin && !selectedStore && !saveAsDraft) {
       toast.error(t("page.ingredientCategory.add.storeRequired"));
       return;
     }

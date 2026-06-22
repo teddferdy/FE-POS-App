@@ -528,9 +528,10 @@ const StockOpnameList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.stockOpname.list.deleteTitle")}
-        description={t("page.stockOpname.list.deleteDesc")}
-        confirmText={t("page.stockOpname.list.deleteConfirm")}
+        title={t("page.stockOpname.modal.deleteTitle")}
+        description={t("page.stockOpname.modal.deleteDesc")}
+        confirmText={t("page.stockOpname.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

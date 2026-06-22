@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import { getAllBom, deleteBom } from "@/services/bom";
 import AbortController from "@/components/organism/abort-controller";
@@ -95,6 +95,15 @@ const BomList = () => {
             onClick={() => navigate(`/bom/detail?id=${item.id}`)}>
             <Eye size={15} />
           </Button>
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              onClick={() => navigate(`/bom/add?id=${item.id}`)}>
+              <Edit size={15} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "delete") && (
             <Button
               variant="ghost"

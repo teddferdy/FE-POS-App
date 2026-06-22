@@ -17,13 +17,13 @@ const UploadCategoryModal = ({ onClose }) => {
   const mutation = useMutation((data) => uploadExcel(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("categories");
-      Toast.fire({ icon: "success", title: t("page.category.importSuccess") });
+      Toast.fire({ icon: "success",         title: t("page.category.upload.successMsg") });
       onClose();
     },
     onError: (err) => {
       Toast.fire({
         icon: "error",
-        title: err?.response?.data?.message || t("page.category.importError")
+        title: err?.response?.data?.message || t("page.category.upload.errorMsg")
       });
     }
   });
@@ -71,19 +71,19 @@ const UploadCategoryModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 w-full max-w-lg overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4">
+      <div className="bg-card/95 backdrop-blur-xl sm:rounded-2xl shadow-2xl border border-border/50 w-full sm:max-w-lg h-full sm:h-auto overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2">
             <FileSpreadsheet size={20} className="text-primary" />
-            <h2 className="text-lg font-bold">{t("page.category.importTitle")}</h2>
+            <h2 className="text-lg font-bold">{t("page.category.upload.title")}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
             <X size={18} />
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5 flex-1 overflow-y-auto">
           <div
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -122,9 +122,9 @@ const UploadCategoryModal = ({ onClose }) => {
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
                   <Upload size={24} className="text-muted-foreground/50" />
                 </div>
-                <p className="text-sm text-muted-foreground">{t("page.category.dragDrop")}</p>
+                <p className="text-sm text-muted-foreground">{t("page.category.upload.dragInactive")}</p>
                 <p className="text-xs text-muted-foreground/60">
-                  {t("page.category.supportedFormats")}
+                  {t("page.category.upload.format")}
                 </p>
               </div>
             )}
@@ -142,7 +142,7 @@ const UploadCategoryModal = ({ onClose }) => {
             download
             className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors">
             <Download size={14} />
-            {t("page.category.downloadTemplate")}
+            {t("page.category.button.downloadTemplate")}
           </a>
 
           {file && (

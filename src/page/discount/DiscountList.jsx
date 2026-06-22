@@ -232,9 +232,10 @@ const DiscountList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.discount.list.deleteTitle")}
-        description={t("page.discount.list.deleteDescription", { name: deleteTarget?.name || "" })}
-        confirmText={t("page.discount.list.deleteConfirm")}
+        title={t("page.discount.modal.deleteTitle")}
+        description={t("page.discount.modal.deleteDesc", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.discount.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

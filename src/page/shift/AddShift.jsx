@@ -50,7 +50,7 @@ const AddShift = () => {
       staleTime: 5 * 60 * 1000
     }
   );
-  const employees = employeesData?.data || employeesData?.employees || [];
+  const employees = (employeesData?.data || employeesData?.employees || []).filter(e => e.status === 'active');
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];
@@ -236,7 +236,7 @@ const AddShift = () => {
                               <button
                                 key={loc.id || loc._id}
                                 type="button"
-                                onClick={() => field.onChange(loc.id || loc._id)}
+                                onClick={() => field.onChange(String(loc.id || loc._id))}
                                 className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? "border-primary bg-primary/5 shadow-sm"

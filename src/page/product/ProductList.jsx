@@ -88,6 +88,16 @@ const ProductList = () => {
     setDeleteTarget(id);
   };
 
+  const deleteMutation = useMutation(deleteProduct, {
+    onSuccess: () => {
+      toast.success(t("common.success"), { description: t("page.product.toast.deleteSuccess") });
+      queryClient.invalidateQueries(["products"]);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+    }
+  });
+
   const confirmDelete = () => {
     if (deleteTarget) {
       deleteMutation.mutate({ id: deleteTarget });
@@ -530,8 +540,10 @@ const ProductList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.deleteTitle")}
-        confirmText={t("modal.deleteConfirm")}
+        title={t("page.product.modal.deleteTitle")}
+        description={t("page.product.modal.deleteDesc")}
+        confirmText={t("page.product.modal.deleteConfirm")}
+        loading={deleteMutation?.isLoading}
         onConfirm={confirmDelete}
       />
       <Modal

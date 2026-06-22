@@ -5,12 +5,14 @@ export const getAllEmployee = async ({
   limit = 10,
   search = "",
   location = "",
-  position = ""
+  position = "",
+  status = ""
 } = {}) => {
   const params = { page, limit };
   if (search) params.search = search;
   if (location) params.location = location;
   if (position) params.position = position;
+  if (status) params.status = status;
   const { data, status } = await axiosInstance.get("/employee/get-employee", { params });
   if (status !== 200) throw Error(`${data.message}`);
   return data;

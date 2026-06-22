@@ -315,8 +315,10 @@ const RoleManagement = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Hapus Role?"
-        confirmText="Ya, Hapus"
+        title={t("page.role.modal.deleteTitle")}
+        description={t("page.role.modal.deleteDesc", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.role.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

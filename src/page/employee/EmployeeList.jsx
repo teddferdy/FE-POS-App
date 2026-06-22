@@ -170,13 +170,13 @@ const EmployeeList = () => {
       render: (row) => (
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
-            row.statusActive === true
+            row.status === 'active'
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-              : row.statusActive === null
+              : row.status === 'draft'
                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
                 : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {row.statusActive === true ? t("common.active") : row.statusActive === null ? t("common.draft") : t("common.inactive")}
+          {row.status === 'active' ? t("common.active") : row.status === 'draft' ? t("common.draft") : t("common.inactive")}
         </span>
       )
     },
@@ -443,10 +443,12 @@ const EmployeeList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.employee.list.deleteTitle", {
-          name: deleteTarget?.name || t("page.employee.list.data")
+        title={t("page.employee.modal.deleteTitle")}
+        description={t("page.employee.modal.deleteDesc", {
+          name: deleteTarget?.fullName || deleteTarget?.name || t("page.employee.list.data")
         })}
-        confirmText={t("page.employee.list.deleteConfirm")}
+        confirmText={t("page.employee.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

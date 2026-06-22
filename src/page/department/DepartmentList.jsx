@@ -500,7 +500,9 @@ const DepartmentList = () => {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("page.department.modal.deleteTitle", { name: deleteTarget?.name || "" })}
-        confirmText={t("page.department.modal.confirmDelete")}
+        description={t("page.department.modal.deleteDesc", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.department.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
       {uploadModalOpen && (

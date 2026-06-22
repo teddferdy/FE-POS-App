@@ -620,6 +620,30 @@ const LocationDetail = () => {
                     </div>
                   </div>
 
+                  {/* Social Media */}
+                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                        <Globe size={18} />
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("page.location.detail.socialMedia")}
+                      </h3>
+                    </div>
+                    {location.socialMedia && location.socialMedia.length > 0 ? (
+                      <div className="space-y-2">
+                        {location.socialMedia.map((sm, i) => (
+                          <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                            <span className="text-sm font-medium text-foreground">{sm.platform}</span>
+                            <span className="text-xs font-semibold text-muted-foreground">{sm.account}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">-</p>
+                    )}
+                  </div>
+
                   {/* Informasi Sistem */}
                   <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                     <div className="flex items-center gap-2">

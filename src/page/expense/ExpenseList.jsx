@@ -99,6 +99,13 @@ const ExpenseList = () => {
   };
 
   const getStatusBadge = (status) => {
+    if (status === "draft") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {t("page.expense.list.statusDraft")}
+        </span>
+      );
+    }
     if (status === "pending" || status === "need approve") {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
@@ -175,7 +182,12 @@ const ExpenseList = () => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -184,7 +196,12 @@ const ExpenseList = () => {
         if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {

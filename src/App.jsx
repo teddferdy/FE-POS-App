@@ -225,6 +225,9 @@ const EditShift = React.lazy(() => import("./page/shift/EditShift"));
 const ExpenseCategoryList = React.lazy(() => import("./page/expense-category/ExpenseCategoryList"));
 const AddExpenseCategory = React.lazy(() => import("./page/expense-category/AddExpenseCategory"));
 const EditExpenseCategory = React.lazy(() => import("./page/expense-category/EditExpenseCategory"));
+const ExpenseCategoryDetail = React.lazy(
+  () => import("./page/expense-category/ExpenseCategoryDetail")
+);
 
 // Expense
 const ExpenseList = React.lazy(() => import("./page/expense/ExpenseList"));
@@ -451,6 +454,10 @@ function App() {
             <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
             <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
             <Route path="/edit-expense-category" element={withLayout(<EditExpenseCategory />)} />
+            <Route
+              path="/detail-expense-category"
+              element={withLayout(<ExpenseCategoryDetail />)}
+            />
 
             <Route path="/expense" element={withLayout(<ExpenseList />)} />
             <Route path="/add-expense" element={withLayout(<AddExpense />)} />

@@ -35,7 +35,9 @@ const AddExpense = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
-  const categories = categoriesData?.data || categoriesData || [];
+  const categories = (categoriesData?.data || categoriesData || []).filter(
+    (cat) => cat.status === "active"
+  );
 
   const formSchema = z.object({
     categoryId: z.string().min(1, t("page.expense.add.validation.categoryRequired")),
@@ -79,7 +81,7 @@ const AddExpense = () => {
       store,
       category: categoryId,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
-      status: saveAsDraft ? "draft" : "active"
+      status: saveAsDraft ? "draft" : "pending"
     };
     createMutation.mutate(payload);
   };
@@ -110,7 +112,7 @@ const AddExpense = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -223,12 +225,14 @@ const AddExpense = () => {
                 </Button>
                 <div className="flex gap-3">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={createMutation.isLoading}>
                     {t("page.expense.add.saveAsDraft")}
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                     disabled={createMutation.isLoading}
                     className="gap-2">

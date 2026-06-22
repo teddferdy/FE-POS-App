@@ -20,7 +20,7 @@ import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pajak wajib diisi"),
-  rate: z.coerce.number().min(0, "Tarif tidak boleh negatif"),
+  rate: z.coerce.number().min(0, "Tarif tidak boleh negatif").max(100, "Tarif maksimal 100%"),
   description: z.string().optional().or(z.literal("")),
   isActive: z.boolean().default(true)
 });
@@ -90,7 +90,7 @@ const AddTaxConfig = () => {
         <div>
           <Card className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -211,6 +211,7 @@ const AddTaxConfig = () => {
                   </Button>
                   <div className="flex gap-3">
                     <Button
+                      type="button"
                       variant="outline"
                       onClick={() => setDraftModal(true)}
                       disabled={createMutation.isLoading}
@@ -219,6 +220,7 @@ const AddTaxConfig = () => {
                       Simpan sebagai Draft
                     </Button>
                     <Button
+                      type="button"
                       onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                       disabled={createMutation.isLoading}
                       className="gap-2">

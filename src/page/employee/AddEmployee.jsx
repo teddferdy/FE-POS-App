@@ -309,6 +309,7 @@ const AddEmployee = () => {
       ...values,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
+    delete payload.isActive;
     if (imageFile) {
       payload.image = imageFile;
     }
@@ -348,7 +349,7 @@ const AddEmployee = () => {
         <div>
           <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
+              <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
                 <div className="grid grid-cols-12 gap-6">
                   <div className="col-span-12 lg:col-span-8 space-y-6">
                     {/* Section 1: Informasi Pribadi */}
@@ -412,7 +413,8 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.fullName")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.fullName")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -428,7 +430,8 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.email")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.email")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -447,7 +450,8 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.phoneNumber")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.phoneNumber")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -468,11 +472,14 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.gender")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.gender")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder={t("page.employee.add.genderPlaceholder")} />
+                                      <SelectValue
+                                        placeholder={t("page.employee.add.genderPlaceholder")}
+                                      />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="Laki-laki">
@@ -495,7 +502,8 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.placeOfBirth")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.placeOfBirth")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <Input
                                     {...field}
@@ -511,7 +519,8 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.dateOfBirth")} <span className="text-destructive">*</span>
+                                    {t("page.employee.form.dateOfBirth")}{" "}
+                                    <span className="text-destructive">*</span>
                                   </FormLabel>
                                   <DatePicker
                                     date={field.value ? new Date(field.value) : undefined}
@@ -529,9 +538,10 @@ const AddEmployee = () => {
                             name="address"
                             render={({ field }) => (
                               <FormItem>
-                                  <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {t("page.employee.form.address")} <span className="text-destructive">*</span>
-                                  </FormLabel>
+                                <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {t("page.employee.form.address")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
                                 <Textarea
                                   {...field}
                                   rows={3}
@@ -562,7 +572,8 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.employee.form.employeeId")} <span className="text-destructive">*</span>
+                                {t("page.employee.form.employeeId")}{" "}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
                               <Input
                                 {...field}
@@ -734,7 +745,9 @@ const AddEmployee = () => {
                                       value={field.value || ""}
                                       onChange={field.onChange}
                                       placeholder={t("page.employee.add.storePlaceholder")}
-                                      searchPlaceholder={t("page.employee.add.storeSearchPlaceholder")}
+                                      searchPlaceholder={t(
+                                        "page.employee.add.storeSearchPlaceholder"
+                                      )}
                                     />
                                   </div>
                                   <Button
@@ -835,7 +848,9 @@ const AddEmployee = () => {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    {employmentType === "internship" ? t("page.employee.form.internshipDuration") : t("page.employee.form.contractDurationLabel")}
+                                    {employmentType === "internship"
+                                      ? t("page.employee.form.internshipDuration")
+                                      : t("page.employee.form.contractDurationLabel")}
                                   </FormLabel>
                                   <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
@@ -900,7 +915,9 @@ const AddEmployee = () => {
                                   </div>
                                   <div>
                                     <p className="text-sm font-semibold text-foreground">
-                                      {t("page.employee.form.statusLabel", { status: field.value ? "active" : "inactive" })}
+                                      {t("page.employee.form.statusLabel", {
+                                        status: field.value ? "active" : "inactive"
+                                      })}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {field.value
@@ -921,7 +938,9 @@ const AddEmployee = () => {
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                       <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
                         <span className="material-symbols-outlined text-primary">payments</span>
-                        <h4 className="text-base font-semibold text-foreground">{t("page.employee.add.salarySection")}</h4>
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.employee.add.salarySection")}
+                        </h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <FormField
@@ -991,7 +1010,8 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.employee.form.username")} <span className="text-destructive">*</span>
+                                {t("page.employee.form.username")}{" "}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
                               <Input
                                 {...field}
@@ -1007,7 +1027,8 @@ const AddEmployee = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.employee.form.password")} <span className="text-destructive">*</span>
+                                {t("page.employee.form.password")}{" "}
+                                <span className="text-destructive">*</span>
                               </FormLabel>
                               <div className="relative">
                                 <Input

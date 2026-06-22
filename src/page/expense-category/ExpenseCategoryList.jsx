@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Tag } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Tag, Eye } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,6 +139,13 @@ const ExpenseCategoryList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary"
+            onClick={() => navigate(`/detail-expense-category?id=${row.id || row._id}`)}>
+            <Eye size={15} />
+          </Button>
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
@@ -249,11 +256,12 @@ const ExpenseCategoryList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.expenseCategory.list.deleteTitle")}
-        description={t("page.expenseCategory.list.deleteDescription", {
+        title={t("page.expenseCategory.modal.deleteTitle")}
+        description={t("page.expenseCategory.modal.deleteDesc", {
           name: deleteTarget?.name || ""
         })}
-        confirmText={t("page.expenseCategory.list.deleteConfirm")}
+        confirmText={t("page.expenseCategory.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

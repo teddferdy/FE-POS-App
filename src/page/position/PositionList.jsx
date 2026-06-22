@@ -516,8 +516,10 @@ const PositionList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.confirmDeletePosition", { name: deleteTarget?.name || "" })}
-        confirmText={t("common.confirmDelete")}
+        title={t("page.position.modal.deleteTitle", { name: deleteTarget?.name || "" })}
+        description={t("page.position.modal.deleteDesc", { name: deleteTarget?.name || "" })}
+        confirmText={t("page.position.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
       {uploadModalOpen && (

@@ -2,11 +2,12 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, CreditCard } from "lucide-react";
+import { ArrowLeft, Edit, CreditCard, Lightbulb } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { getTypePaymentById } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TipsCard } from "@/components/ui/tips-card";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -196,6 +197,16 @@ const DetailTypePayment = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="bg-card rounded-xl border border-border p-6">
+          <TipsCard
+            tips={[
+              "Pastikan metode pembayaran aktif sebelum digunakan pada transaksi",
+              "Sistem hanya akan menampilkan metode dengan status Aktif di halaman kasir",
+              "Metode pembayaran sistem tidak dapat dihapus atau dinonaktifkan"
+            ]}
+          />
         </div>
 
         <div className="flex justify-end gap-3">

@@ -105,7 +105,7 @@ const AddLocation = () => {
 
   const { data: managerEmployeesData } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
-    () => getAllEmployee({ search: managerFetchSearch, limit, page: managerPage }),
+    () => getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: 'active' }),
     { enabled: managerModalOpen }
   );
   const managerEmployees = managerEmployeesData?.data || managerEmployeesData?.employees || [];
@@ -304,7 +304,7 @@ const AddLocation = () => {
       storeId: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "draft",
+      status: values.isActive === false ? "inactive" : saveAsDraft ? "draft" : "active",
       coordinates: {
         lat: latitude,
         lng: longitude

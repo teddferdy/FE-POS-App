@@ -525,8 +525,10 @@ const MemberList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.confirmDelete")}
-        confirmText={t("page.member.list.deleteConfirm")}
+        title={t("page.member.modal.deleteTitle")}
+        description={t("page.member.modal.deleteDesc")}
+        confirmText={t("page.member.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

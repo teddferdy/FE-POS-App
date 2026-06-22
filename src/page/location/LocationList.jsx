@@ -172,6 +172,20 @@ const LocationList = () => {
       }
     },
     {
+      header: t("page.location.table.socialMedia"),
+      render: (loc) => {
+        const count = loc.socialMedia?.length || 0;
+        return (
+          <span className="text-xs text-foreground">
+            {count > 0
+              ? `${count} ${t("page.location.table.socialMedia").toLowerCase()}`
+              : "-"
+            }
+          </span>
+        );
+      }
+    },
+    {
       header: t("page.location.table.createdAt"),
       render: (loc) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -500,8 +514,10 @@ const LocationList = () => {
         type="confirm"
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("modal.confirmDelete")}
-        confirmText={t("common.delete")}
+        title={t("page.location.modal.deleteTitle")}
+        description={t("page.location.modal.deleteDesc")}
+        confirmText={t("page.location.modal.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
     </div>

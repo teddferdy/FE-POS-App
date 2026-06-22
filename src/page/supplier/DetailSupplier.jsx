@@ -178,9 +178,11 @@ const DetailSupplier = () => {
           <Button variant="outline" onClick={() => navigate(`/edit-supplier?id=${id}`)}>
             {t("page.supplier.detail.editSupplier")}
           </Button>
-          <Button onClick={() => setPaymentModal(true)} className="gap-1.5">
-            <Plus size={15} /> {t("page.supplier.detail.catatPembayaran")}
-          </Button>
+          {supplier.status !== "inactive" && supplier.status !== "draft" && (
+            <Button onClick={() => setPaymentModal(true)} className="gap-1.5">
+              <Plus size={15} /> {t("page.supplier.detail.catatPembayaran")}
+            </Button>
+          )}
         </div>
       </div>
 
