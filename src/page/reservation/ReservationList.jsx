@@ -225,6 +225,7 @@ const ReservationList = () => {
         title={t("page.reservation.deleteTitle")}
         description={t("page.reservation.deleteDesc", { name: deleteTarget?.customerName || "" })}
         confirmText={t("page.reservation.deleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={() => {
           deleteMutation.mutate(deleteTarget.id);
           setDeleteTarget(null);

@@ -325,6 +325,7 @@ const TableList = () => {
               name: deleteTarget?.name || ""
             })}
             confirmText={t("page.table.modal.confirmDelete")}
+            loading={deleteMutation.isLoading}
             onConfirm={() => {
               deleteMutation.mutate(deleteTarget.id);
               setDeleteTarget(null);

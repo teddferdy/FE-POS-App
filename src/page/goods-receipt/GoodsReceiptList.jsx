@@ -341,6 +341,7 @@ const GoodsReceiptList = () => {
             title={t("page.goodsReceipt.list.modal.deleteTitle")}
             description={t("page.goodsReceipt.list.modal.deleteDescription")}
             confirmText={t("page.goodsReceipt.list.modal.confirmDelete")}
+            loading={deleteMutation.isLoading}
             onConfirm={() => deleteMutation.mutate(deleteTarget)}
           />
         </>

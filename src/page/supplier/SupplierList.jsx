@@ -342,6 +342,7 @@ const SupplierList = () => {
         title={t("modal.confirmDelete")}
         description={`Yakin ingin menghapus supplier ${deleteTarget?.name || ""}?`}
         confirmText={t("common.delete")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
 

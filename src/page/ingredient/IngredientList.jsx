@@ -356,6 +356,7 @@ const IngredientList = () => {
         title={t("page.ingredient.list.modalDeleteTitle")}
         description={t("page.ingredient.list.modalDeleteDesc")}
         confirmText={t("page.ingredient.list.modalDeleteConfirm")}
+        loading={deleteMutation.isLoading}
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
 

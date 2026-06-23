@@ -358,6 +358,7 @@ const TypePaymentList = () => {
           name: deleteTarget?.name || ""
         })}
         confirmText={t("modal.yesDelete")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
 

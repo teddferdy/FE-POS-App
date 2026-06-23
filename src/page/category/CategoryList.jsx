@@ -526,6 +526,7 @@ const CategoryList = () => {
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title={t("page.category.modal.deleteTitle")}
         confirmText={t("page.category.modal.confirmDelete")}
+        loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
       <UploadExcelModal

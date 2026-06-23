@@ -337,6 +337,7 @@ const ProductionOrderList = () => {
             title={t("page.productionOrder.list.modalDeleteTitle")}
             description={t("page.productionOrder.list.modalDeleteDesc")}
             confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
+            loading={deleteMutation.isLoading}
             onConfirm={() => deleteMutation.mutate(deleteTarget)}
           />
 
@@ -347,6 +348,7 @@ const ProductionOrderList = () => {
             title={t("page.productionOrder.list.modalStartTitle")}
             description={t("page.productionOrder.list.modalStartDesc")}
             confirmText={t("page.productionOrder.list.modalStartConfirm")}
+            loading={startMutation.isLoading}
             onConfirm={() => startMutation.mutate(startTarget)}
           />
 

@@ -180,6 +180,7 @@ const BomList = () => {
         title={t("page.bom.list.modal.deleteTitle")}
         description={t("page.bom.list.modal.deleteDescription")}
         confirmText={t("page.bom.list.modal.confirmDelete")}
+        loading={deleteMut.isLoading}
         onConfirm={() => deleteMut.mutate()}
       />
     </div>

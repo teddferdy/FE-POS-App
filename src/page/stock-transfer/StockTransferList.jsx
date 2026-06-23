@@ -282,6 +282,7 @@ const StockTransferList = () => {
         title={t("page.stockTransfer.list.modal.deleteTitle")}
         description={t("page.stockTransfer.list.modal.deleteDesc")}
         confirmText={t("page.stockTransfer.list.modal.deleteConfirm")}
+        loading={deleteMut.isLoading}
         onConfirm={() => deleteMut.mutate()}
       />
     </div>
