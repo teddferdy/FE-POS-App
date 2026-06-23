@@ -14,11 +14,11 @@ import {
 } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import DataTable from "@/components/ui/DataTable";
+import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTypePaymentExcel } from "@/services/type-payment";
+import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -312,22 +312,10 @@ const TypePaymentList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.typePayment.stats.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-            </Card>
+            <StatCard label={t("page.typePayment.stats.total")} value={stats.total ?? total} icon="credit_card" variant="default" />
+            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
+            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
+            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
           </div>
 
           {/* Search */}
@@ -378,7 +366,7 @@ const TypePaymentList = () => {
         onOpenChange={setUploadModalOpen}
         uploadService={uploadTypePaymentExcel}
         title={t("page.typePayment.upload.title")}
-        subtitle=""
+       
         onSuccess={() => {
           queryClient.invalidateQueries(["type-payments"]);
           queryClient.invalidateQueries(["type-payments-all"]);

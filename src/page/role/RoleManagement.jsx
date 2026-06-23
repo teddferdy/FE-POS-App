@@ -175,7 +175,7 @@ const RoleManagement = () => {
                             </span>
                             {isProtected(role) && (
                               <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
-                                Default
+                                {t("common.default")}
                               </span>
                             )}
                           </div>

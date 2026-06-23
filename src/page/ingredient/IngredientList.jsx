@@ -13,7 +13,7 @@ import {
 } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
@@ -308,30 +308,10 @@ const IngredientList = () => {
 
       <div
         className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.ingredient.list.statTotal")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
-            <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-          </Card>
-        </div>
+        <StatCard label={t("page.ingredient.list.statTotal")} value={total} icon="nutrition" variant="default" />
+        <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
+        <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
+        <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
       </div>
 
       <div

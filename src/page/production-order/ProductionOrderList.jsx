@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const ProductionOrderList = () => {
   const { t } = useTranslation();
@@ -277,45 +278,11 @@ const ProductionOrderList = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        {[
-          {
-            label: t("page.productionOrder.list.statTotal"),
-            value: stats.total ?? total,
-            color: "text-primary",
-            bg: "bg-primary/10"
-          },
-          {
-            label: t("page.productionOrder.list.statDraft"),
-            value: stats.draft ?? 0,
-            color: "text-yellow-600",
-            bg: "bg-yellow-100"
-          },
-          {
-            label: t("page.productionOrder.list.statPlanned"),
-            value: stats.planned ?? 0,
-            color: "text-blue-600",
-            bg: "bg-blue-100"
-          },
-          {
-            label: t("page.productionOrder.list.statInProgress"),
-            value: stats.inProgress ?? 0,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100"
-          },
-          {
-            label: t("page.productionOrder.list.statCompleted"),
-            value: stats.completed ?? 0,
-            color: "text-green-600",
-            bg: "bg-green-100"
-          }
-        ].map((s, i) => (
-          <div key={i}>
-            <div className="bg-card p-4 rounded-xl border border-border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
-              <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
-            </div>
-          </div>
-        ))}
+        <StatCard label={t("page.productionOrder.list.statTotal")} value={stats.total ?? total} icon="factory" variant="default" />
+        <StatCard label={t("page.productionOrder.list.statDraft")} value={stats.draft ?? 0} icon="edit_note" variant="draft" />
+        <StatCard label={t("page.productionOrder.list.statPlanned")} value={stats.planned ?? 0} icon="schedule" variant="default" />
+        <StatCard label={t("page.productionOrder.list.statInProgress")} value={stats.inProgress ?? 0} icon="play_circle" variant="active" />
+        <StatCard label={t("page.productionOrder.list.statCompleted")} value={stats.completed ?? 0} icon="check_circle" variant="active" />
       </div>
 
       {isError ? (

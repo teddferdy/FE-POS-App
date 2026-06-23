@@ -27,7 +27,7 @@ const formatDate = (dateStr) => {
 };
 
 const DetailTypePayment = () => {
-  useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get("id");
@@ -89,13 +89,13 @@ const DetailTypePayment = () => {
           <button
             onClick={() => navigate("/dashboard-super-admin")}
             className="hover:text-foreground transition-colors">
-            Dashboard
+            {t("breadcrumb.dashboard")}
           </button>
           <span className="text-xs">/</span>
           <button
             onClick={() => navigate("/type-payment-list")}
             className="hover:text-foreground transition-colors">
-            Metode Pembayaran
+            {t("page.typePayment.list.title")}
           </button>
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{item.name}</span>
@@ -119,7 +119,7 @@ const DetailTypePayment = () => {
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
                     />
-                    {isActive ? "Aktif" : "Non-Aktif"}
+{isActive ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">{item.type || item.tipe || "-"}</p>
@@ -147,10 +147,10 @@ const DetailTypePayment = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("page.typePayment.detail.status")}
                 </p>
                 <p className="text-sm font-semibold text-foreground mt-0.5">
-                  {isActive ? "Aktif" : "Non-Aktif"}
+                  {isActive ? t("common.active") : t("common.inactive")}
                 </p>
               </div>
             </div>
@@ -222,7 +222,7 @@ const DetailTypePayment = () => {
               onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}
               className="gap-2 shadow-md">
               <Edit size={16} />
-              Edit
+{t("common.edit")}
             </Button>
           )}
         </div>

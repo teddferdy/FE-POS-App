@@ -595,7 +595,7 @@ const AddIngredient = () => {
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={mutation.isLoading}>
-                    Save as Draft
+                    {t("common.saveAsDraft")}
                   </Button>
                   <Button
                     onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}

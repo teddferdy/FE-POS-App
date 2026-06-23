@@ -8,7 +8,7 @@ import { Plus, Search, Edit, Trash2, Tag, Eye } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -205,24 +205,10 @@ const ExpenseCategoryList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">
-                {t("page.expenseCategory.list.total")}
-              </p>
-              <p className="text-2xl font-bold text-foreground mt-1">{totalStats}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-            </Card>
+            <StatCard label={t("page.expenseCategory.list.total")} value={totalStats} icon="folder" variant="default" />
+            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
+            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
+            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
           </div>
 
           <div>

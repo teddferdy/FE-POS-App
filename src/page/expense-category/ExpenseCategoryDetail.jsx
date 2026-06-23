@@ -30,19 +30,19 @@ const ExpenseCategoryDetail = () => {
   if (!id) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">ID not found</p>
+        <p className="text-muted-foreground">{t("page.expenseCategory.detail.notFound")}</p>
       </div>
     );
   }
 
   if (isError) return <AbortController refetch={refetch} />;
 
-  if (isLoading) return <Loading fullscreen size="lg" label="Loading..." />;
+  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
 
   if (!category) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Category not found</p>
+        <p className="text-muted-foreground">{t("page.expenseCategory.detail.categoryNotFound")}</p>
       </div>
     );
   }
@@ -94,7 +94,7 @@ const ExpenseCategoryDetail = () => {
           </Button>
           <Button onClick={() => navigate(`/edit-expense-category?id=${id}`)} className="gap-2">
             <Edit size={18} />
-            Edit
+{t("common.edit")}
           </Button>
         </div>
       </div>

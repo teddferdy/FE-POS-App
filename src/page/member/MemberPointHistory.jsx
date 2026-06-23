@@ -177,7 +177,7 @@ const MemberPointHistory = () => {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="px-2.5 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full">
-                          {trx.status || "Completed"}
+                          {trx.status || t("common.completed")}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">

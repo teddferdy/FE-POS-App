@@ -12,9 +12,6 @@ import {
   Trash2,
   FileDown,
   ClipboardList,
-  AlertTriangle,
-  TrendingUp,
-  CheckCircle2,
   X
 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +22,7 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -194,43 +192,6 @@ const StockOpnameList = () => {
     };
   }, [selectedItems, handleExportSelected]);
 
-  const stats = [
-    {
-      label: t("page.stockOpname.stats.totalAudit"),
-      value: data?.stats?.total ?? total ?? 0,
-      icon: ClipboardList,
-      color: "text-primary",
-      bg: "bg-primary/10",
-      trend: t("page.stockOpname.stats.trend"),
-      trendIcon: TrendingUp,
-      trendColor: "text-green-600"
-    },
-    {
-      label: t("page.stockOpname.status.draft"),
-      value: data?.stats?.draft ?? 0,
-      icon: Edit,
-      color: "text-secondary",
-      bg: "bg-secondary/10",
-      sub: t("page.stockOpname.stats.draftSub")
-    },
-    {
-      label: t("page.stockOpname.status.completed"),
-      value: data?.stats?.completed ?? 0,
-      icon: CheckCircle2,
-      color: "text-green-600 dark:text-green-400",
-      bg: "bg-green-100 dark:bg-green-900/30",
-      sub: t("page.stockOpname.stats.completedSub")
-    },
-    {
-      label: t("page.stockOpname.status.cancelled"),
-      value: data?.stats?.cancelled ?? 0,
-      icon: AlertTriangle,
-      color: "text-red-600 dark:text-red-400",
-      bg: "bg-red-100 dark:bg-red-900/30",
-      sub: t("page.stockOpname.stats.cancelledSub")
-    }
-  ];
-
   const columns = [
     {
       header: t("page.stockOpname.list.columns.auditDate"),
@@ -313,7 +274,12 @@ const StockOpnameList = () => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -322,7 +288,12 @@ const StockOpnameList = () => {
         if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -403,29 +374,34 @@ const StockOpnameList = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className="bg-card p-5 rounded-xl border border-border shadow-sm hover:border-primary/50 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <div className={`p-2 ${stat.bg} rounded-lg ${stat.color}`}>
-                <stat.icon size={20} />
-              </div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                {stat.label}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{stat.value.toLocaleString()}</p>
-            {stat.trend ? (
-              <div className="flex items-center gap-1 mt-1 text-xs">
-                <stat.trendIcon size={14} className={stat.trendColor} />
-                <span className={`font-semibold ${stat.trendColor}`}>{stat.trend}</span>
-              </div>
-            ) : stat.sub ? (
-              <p className="text-xs text-muted-foreground mt-1 italic">{stat.sub}</p>
-            ) : null}
-          </div>
-        ))}
+        <StatCard
+          label={t("page.stockOpname.stats.totalAudit")}
+          value={data?.stats?.total ?? total ?? 0}
+          icon="assignment"
+          variant="default"
+          subtitle={t("page.stockOpname.stats.trend")}
+        />
+        <StatCard
+          label={t("page.stockOpname.status.draft")}
+          value={data?.stats?.draft ?? 0}
+          icon="warning"
+          variant="draft"
+          subtitle={t("page.stockOpname.stats.draftSub")}
+        />
+        <StatCard
+          label={t("page.stockOpname.status.completed")}
+          value={data?.stats?.completed ?? 0}
+          icon="check_circle"
+          variant="active"
+          subtitle={t("page.stockOpname.stats.completedSub")}
+        />
+        <StatCard
+          label={t("page.stockOpname.status.cancelled")}
+          value={data?.stats?.cancelled ?? 0}
+          icon="cancel"
+          variant="inactive"
+          subtitle={t("page.stockOpname.stats.cancelledSub")}
+        />
       </div>
 
       {isError ? (

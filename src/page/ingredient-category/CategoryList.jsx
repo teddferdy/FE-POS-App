@@ -21,6 +21,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -80,37 +81,6 @@ const CategoryList = () => {
   const filtered = search
     ? categories.filter((cat) => (cat.name || "").toLowerCase().includes(search.toLowerCase()))
     : categories;
-
-  const statCards = [
-    {
-      icon: Package,
-      label: t("page.ingredientCategory.list.statTotal"),
-      value: statsTotal,
-      iconBg: "bg-primary/10",
-      iconColor: "text-primary"
-    },
-    {
-      icon: Package,
-      label: t("page.ingredientCategory.list.statActive"),
-      value: activeCount,
-      iconBg: "bg-green-100 dark:bg-green-900/40",
-      iconColor: "text-green-700 dark:text-green-300"
-    },
-    {
-      icon: Package,
-      label: t("common.draft"),
-      value: draftCount,
-      iconBg: "bg-amber-100 dark:bg-amber-900/40",
-      iconColor: "text-amber-700 dark:text-amber-300"
-    },
-    {
-      icon: Package,
-      label: t("page.ingredientCategory.list.statInactive"),
-      value: inactiveCount,
-      iconBg: "bg-red-100 dark:bg-red-900/40",
-      iconColor: "text-red-700 dark:text-red-300"
-    }
-  ];
 
   const columns = [
     {
@@ -309,22 +279,10 @@ const CategoryList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {statCards.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-card p-6 rounded-xl border border-border shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center ${stat.iconColor}`}>
-                    <stat.icon size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <StatCard label={t("page.ingredientCategory.list.statTotal")} value={statsTotal} icon="folder" variant="default" />
+            <StatCard label={t("page.ingredientCategory.list.statActive")} value={activeCount} icon="check_circle" variant="active" />
+            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
+            <StatCard label={t("page.ingredientCategory.list.statInactive")} value={inactiveCount} icon="cancel" variant="inactive" />
           </div>
         </div>
 

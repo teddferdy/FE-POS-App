@@ -16,6 +16,7 @@ import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadDepartmentExcel } from "@/services/department";
 import PageHeader from "@/components/ui/PageHeader";
+import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 
@@ -317,87 +318,10 @@ const DepartmentList = () => {
         <div>
           <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div
-              data-tour="department-stat-total"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsTotal")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {stats?.totalDepartemen ?? total}
-                </h3>
-                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">domain</span>
-                  {t("page.department.list.statsAll")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">domain</span>
-              </div>
-            </div>
-            <div
-              data-tour="department-stat-active"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsActive")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {stats?.totalDepartemenAktif ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {stats?.totalDepartemen
-                    ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100)
-                    : 0}
-                  {t("page.department.list.statsActivePercent")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">check_circle</span>
-              </div>
-            </div>
-            <div
-              data-tour="department-stat-draft"
-              className="bg-amber-500 dark:bg-amber-700 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-600 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsDraft")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">
-                  {stats?.totalDepartemenDraft ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">edit_note</span>
-                  {stats?.totalDepartemen
-                    ? Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)
-                    : 0}%
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-amber-600 dark:bg-amber-900 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">edit_note</span>
-              </div>
-            </div>
-            <div
-              data-tour="department-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.department.list.statsInactive")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">
-                  {stats?.totalDepartemenNonActive ?? 0}
-                </h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.department.list.statsAttention")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">cancel</span>
-              </div>
-            </div>
+              <StatCard label={t("page.department.list.statsTotal")} value={stats?.totalDepartemen ?? total} icon="domain" variant="default" subtitle={t("page.department.list.statsAll")} />
+              <StatCard label={t("page.department.list.statsActive")} value={stats?.totalDepartemenAktif ?? 0} icon="check_circle" variant="active" subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`} />
+              <StatCard label={t("page.department.list.statsDraft")} value={stats?.totalDepartemenDraft ?? 0} icon="edit_note" variant="draft" subtitle={stats?.totalDepartemen ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%` : "0%"} />
+              <StatCard label={t("page.department.list.statsInactive")} value={stats?.totalDepartemenNonActive ?? 0} icon="cancel" variant="inactive" subtitle={t("page.department.list.statsAttention")} />
             <div
               data-tour="department-stat-nodesc"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">

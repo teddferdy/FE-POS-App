@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -284,22 +285,10 @@ const ExpenseList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-card p-5 rounded-xl border border-border">
-              <p className="text-sm text-muted-foreground">{t("page.expense.list.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-            </div>
-            <div className="bg-card p-5 rounded-xl border border-border">
-              <p className="text-sm text-muted-foreground">{t("page.expense.list.pending")}</p>
-              <p className="text-2xl font-bold text-orange-600 mt-1">{pendingExpenses}</p>
-            </div>
-            <div className="bg-card p-5 rounded-xl border border-border">
-              <p className="text-sm text-muted-foreground">{t("page.expense.list.approved")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{approvedExpenses}</p>
-            </div>
-            <div className="bg-card p-5 rounded-xl border border-border">
-              <p className="text-sm text-muted-foreground">{t("page.expense.list.rejected")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{rejectedExpenses}</p>
-            </div>
+            <StatCard label={t("page.expense.list.total")} value={total} icon="money_off" variant="default" />
+            <StatCard label={t("page.expense.list.pending")} value={pendingExpenses} icon="edit_note" variant="draft" />
+            <StatCard label={t("page.expense.list.approved")} value={approvedExpenses} icon="check_circle" variant="active" />
+            <StatCard label={t("page.expense.list.rejected")} value={rejectedExpenses} icon="cancel" variant="inactive" />
           </div>
 
           <div>

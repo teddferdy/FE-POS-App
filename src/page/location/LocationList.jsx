@@ -13,6 +13,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -305,85 +306,10 @@ const LocationList = () => {
         <div>
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              <div
-                data-tour="location-stat-total"
-                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.location.stats.total")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-foreground">
-                    {(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
-                  </h3>
-                  <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">store</span>
-                    {t("page.location.stats.totalSub")}
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">store</span>
-                </div>
-              </div>
-              <div
-                data-tour="location-stat-active"
-                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.location.stats.active")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-foreground">
-                    {(data?.stats?.active ?? 0).toLocaleString()}
-                  </h3>
-                  <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">check_circle</span>
-                    {(data?.stats?.total ?? 0) > 0
-                      ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100)
-                      : 0}
-                    % {t("page.location.stats.activeSub")}
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">check_circle</span>
-                </div>
-              </div>
-              <div
-                data-tour="location-stat-inactive"
-                className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-                <div>
-                  <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                    {t("page.location.stats.inactive")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-white">
-                    {(data?.stats?.inactive ?? 0).toLocaleString()}
-                  </h3>
-                  <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">cancel</span>
-                    {t("page.location.stats.inactiveSub")}
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">cancel</span>
-                </div>
-              </div>
-              <div
-                data-tour="location-stat-draft"
-                className="bg-amber-600 dark:bg-amber-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-700 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
-                <div>
-                  <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
-                    {t("page.location.stats.draft")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-white">
-                    {(data?.stats?.draft ?? 0).toLocaleString()}
-                  </h3>
-                  <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">edit_note</span>
-                    {t("page.location.stats.draftSub")}
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-amber-700 dark:bg-amber-950 flex items-center justify-center text-white group-hover:bg-amber-800 dark:group-hover:bg-amber-950/80 transition-colors group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">edit_note</span>
-                </div>
-              </div>
+              <StatCard label={t("page.location.stats.total")} value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()} icon="store" variant="default" subtitle={t("page.location.stats.totalSub")} />
+              <StatCard label={t("page.location.stats.active")} value={(data?.stats?.active ?? 0).toLocaleString()} icon="check_circle" variant="active" subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`} />
+              <StatCard label={t("page.location.stats.inactive")} value={(data?.stats?.inactive ?? 0).toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.location.stats.inactiveSub")} />
+              <StatCard label={t("page.location.stats.draft")} value={(data?.stats?.draft ?? 0).toLocaleString()} icon="edit_note" variant="draft" />
               <div
                 data-tour="location-stat-cities"
                 className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">

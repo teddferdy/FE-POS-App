@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const ProfilePage = () => {
-  useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const user = useMemo(() => {
@@ -31,9 +31,9 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <p className="text-muted-foreground">User data not found</p>
+        <p className="text-muted-foreground">{t("common.notFound")}</p>
         <Button variant="outline" onClick={() => navigate("/home")}>
-          Back
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -53,14 +53,14 @@ const ProfilePage = () => {
     <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
+            <button
             onClick={() => navigate(-1)}
             className="font-medium hover:text-primary transition-colors flex items-center gap-1">
             <ArrowLeft size={16} />
-            Back
+            {t("common.back")}
           </button>
           <span className="text-xs">/</span>
-          <span className="font-semibold text-foreground">Profile</span>
+          <span className="font-semibold text-foreground">{t("page.profile.title")}</span>
         </nav>
 
         <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
@@ -97,7 +97,7 @@ const ProfilePage = () => {
                     ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
                     : "bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                 }`}>
-                {statusActive ? "Active" : "Inactive"}
+                {statusActive ? t("common.active") : t("common.inactive")}
               </span>
             </div>
             <p className="text-muted-foreground">
@@ -115,7 +115,7 @@ const ProfilePage = () => {
               {user.startDate && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar size={14} />
-                  <span>Joined {formatDate(user.startDate)}</span>
+                  <span>{t("page.profile.joined")} {formatDate(user.startDate)}</span>
                 </div>
               )}
             </div>
@@ -126,7 +126,7 @@ const ProfilePage = () => {
               className="gap-2"
               onClick={() => navigate(`/edit-employee?id=${user.id}`)}>
               <User size={16} />
-              Edit Profile
+              {t("page.profile.editProfile")}
             </Button>
           </div>
         </div>
@@ -135,13 +135,13 @@ const ProfilePage = () => {
           <div className="col-span-12 lg:col-span-4 space-y-6">
             <div className="bg-card rounded-xl shadow-sm border border-border p-5">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-base font-semibold">Basic Info</h4>
+                <h4 className="text-base font-semibold">{t("page.profile.basicInfo")}</h4>
                 <User size={16} className="text-muted-foreground" />
               </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Email
+                    {t("page.profile.email")}
                   </p>
                   <p className="text-sm text-foreground flex items-center gap-2">
                     <Mail size={14} className="text-muted-foreground shrink-0" />
@@ -150,7 +150,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Phone
+{t("page.profile.phone")}
                   </p>
                   <p className="text-sm text-foreground flex items-center gap-2">
                     <Phone size={14} className="text-muted-foreground shrink-0" />
@@ -159,7 +159,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Address
+                    {t("page.profile.address")}
                   </p>
                   <p className="text-sm text-foreground flex items-start gap-2">
                     <MapPin size={14} className="text-muted-foreground shrink-0 mt-0.5" />
@@ -168,13 +168,13 @@ const ProfilePage = () => {
                 </div>
                 <div className="pt-3 border-t border-border">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Department
+                    {t("page.profile.department")}
                   </p>
                   <p className="text-sm text-foreground">{user.department || "-"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Gender
+                    {t("page.profile.gender")}
                   </p>
                   <p className="text-sm text-foreground">{user.gender || "-"}</p>
                 </div>
@@ -183,13 +183,13 @@ const ProfilePage = () => {
 
             <div className="bg-card rounded-xl shadow-sm border border-border p-5">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-base font-semibold">Account</h4>
+                <h4 className="text-base font-semibold">{t("page.profile.account")}</h4>
                 <Shield size={16} className="text-muted-foreground" />
               </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Username
+                    {t("page.profile.username")}
                   </p>
                   <p className="text-sm text-foreground flex items-center gap-2">
                     <User size={14} className="text-muted-foreground shrink-0" />
@@ -198,7 +198,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Role
+                    {t("page.profile.role")}
                   </p>
                   <p className="text-sm text-foreground flex items-center gap-2">
                     <Shield size={14} className="text-muted-foreground shrink-0" />
@@ -207,7 +207,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Type
+{t("page.profile.type")}
                   </p>
                   <p className="text-sm text-foreground">{user.userType || "-"}</p>
                 </div>
@@ -217,11 +217,11 @@ const ProfilePage = () => {
 
           <div className="col-span-12 lg:col-span-8 space-y-6">
             <div className="bg-card rounded-xl shadow-sm border border-border p-5">
-              <h4 className="text-base font-semibold mb-4">Job Information</h4>
+              <h4 className="text-base font-semibold mb-4">{t("page.profile.jobInfo")}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Employee ID
+                    {t("page.profile.employeeId")}
                   </p>
                   <p className="text-sm font-mono font-bold text-primary">
                     {user.employeeID || "-"}
@@ -229,7 +229,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Position
+                    {t("page.profile.position")}
                   </p>
                   <p className="text-sm text-foreground">
                     {user.positionName || user.position || "-"}
@@ -237,25 +237,25 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Store
+{t("page.profile.store")}
                   </p>
                   <p className="text-sm text-foreground">{user.storeName || "-"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Employment Type
+                    {t("page.profile.employmentType")}
                   </p>
                   <p className="text-sm text-foreground">{user.employmentType || "-"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Shift
+                    {t("page.profile.shift")}
                   </p>
                   <p className="text-sm text-foreground">{user.shift || "-"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Start Date
+                    {t("page.profile.startDate")}
                   </p>
                   <p className="text-sm text-foreground">{formatDate(user.startDate)}</p>
                 </div>
@@ -265,14 +265,14 @@ const ProfilePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">Place of Birth</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.placeOfBirth")}</p>
                   <p className="text-lg font-bold text-foreground">{user.placeOfBirth || "-"}</p>
                 </div>
                 <MapPin className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
               </div>
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">Date of Birth</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.dateOfBirth")}</p>
                   <p className="text-lg font-bold text-foreground">
                     {formatDate(user.dateOfBirth)}
                   </p>
@@ -281,11 +281,11 @@ const ProfilePage = () => {
               </div>
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">Status</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.status")}</p>
                   <p
                     className={`text-lg font-bold flex items-center gap-1 ${statusActive ? "text-green-600" : "text-red-600"}`}>
                     {statusActive ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                    {statusActive ? "Active" : "Inactive"}
+                {statusActive ? t("common.active") : t("common.inactive")}
                   </p>
                 </div>
                 <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />

@@ -8,25 +8,25 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { getPositionById } from "@/services/position";
 
-const statusBadge = (status) => {
+const statusBadge = (status, t) => {
   if (status === "active")
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
         <span className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400" />
-        Active
+        {t("common.active")}
       </span>
     );
   if (status === "draft")
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
-        Draft
+        {t("common.draft")}
       </span>
     );
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
       <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400" />
-      Nonaktif
+      {t("common.inactive")}
     </span>
   );
 };
@@ -123,7 +123,7 @@ const DetailPosition = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.status")}</p>
-              {statusBadge(position.status)}
+              {statusBadge(position.status, t)}
             </div>
             <div className="md:col-span-2">
               <p className="text-xs text-muted-foreground mb-1">{t("page.position.form.description")}</p>
@@ -182,7 +182,7 @@ const DetailPosition = () => {
             <Card className="p-5">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 <Building2 size={14} />
-                Store
+                {t("page.position.detail.store")}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Building2 size={14} className="shrink-0 text-muted-foreground" />

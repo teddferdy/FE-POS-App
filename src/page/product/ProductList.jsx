@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import StatCard from "@/components/ui/StatCard";
 import { uploadProductExcel } from "@/services/product";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -229,7 +230,7 @@ const ProductList = () => {
       header: t("page.product.table.productType"),
       render: (product) => (
         <span className="text-sm text-foreground capitalize">
-          {product.tipeProduk === "bahan_baku" ? "Bahan Baku" : product.tipeProduk || "Menu"}
+          {product.tipeProduk === "bahan_baku" ? t("page.product.form.tipeProdukBahanBaku") : product.tipeProduk === "menu" ? t("page.product.form.tipeProdukMenu") : product.tipeProduk || t("page.product.form.tipeProdukMenu")}
         </span>
       )
     },
@@ -489,48 +490,11 @@ const ProductList = () => {
       </div>
     </div>
 
-    {/* Stats Cards */}
     <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            {t("page.product.stats.total")}
-          </div>
-          <div className="text-2xl font-bold text-foreground">
-            {stats.total}
-          </div>
-        </div>
-      </div>
-      <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            {t("page.product.stats.active")}
-          </div>
-          <div className="text-2xl font-bold text-success">
-            {stats.active}
-          </div>
-        </div>
-      </div>
-      <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            {t("page.product.stats.nonActive")}
-          </div>
-          <div className="text-2xl font-bold text-destructive">
-            {stats.nonActive}
-          </div>
-        </div>
-      </div>
-      <div className="bg-card rounded-xl border border-border p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            {t("page.product.stats.draft")}
-          </div>
-          <div className="text-2xl font-bold text-warning">
-            {stats.draft}
-          </div>
-        </div>
-      </div>
+      <StatCard label={t("page.product.stats.total")} value={stats.total} icon="inventory_2" variant="default" />
+      <StatCard label={t("page.product.stats.active")} value={stats.active} icon="check_circle" variant="active" />
+      <StatCard label={t("page.product.stats.nonActive")} value={stats.nonActive} icon="cancel" variant="inactive" />
+      <StatCard label={t("page.product.stats.draft")} value={stats.draft} icon="edit_note" variant="draft" />
     </div>
 
     <div>
@@ -555,7 +519,7 @@ const ProductList = () => {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">{t("common.all")} Kategori</option>
+                <option value="">{t("common.all")} {t("page.product.table.category")}</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.name}>
                     {cat.name}
@@ -618,7 +582,7 @@ const ProductList = () => {
         uploadService={uploadProductExcel}
         queryKey={["products"]}
         title={t("page.product.upload.title")}
-        subtitle=""
+       
       />
     </div>
   );

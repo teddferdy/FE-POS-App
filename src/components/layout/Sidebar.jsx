@@ -21,32 +21,66 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
+
+  const matchPath = (href) => {
+    if (!href) return false;
+    if (location.pathname === href) return true;
+
+    // Handle standard case: menu item ending with "-list" matches add/edit/detail pages
+    if (href.endsWith("-list")) {
+      const base = href.replace("/", "").replace("-list", "");
+      return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
+    }
+
+    // Handle exception cases where add/edit/detail paths don't follow standard naming
+    const exceptionMap = {
+      "/role-management": ["/add-role", "/edit-role", "/detail-role"],
+      "/cash-register/current": [
+        "/cash-register/history",
+        "/cash-register/open-close",
+        "/cash-register/current",
+        "/cash-register/history/detail"
+      ]
+    };
+
+    if (exceptionMap[href]) {
+      return exceptionMap[href].some((path) => {
+        if (location.pathname === path) return true;
+        if (location.pathname.startsWith(path + "/")) return true;
+        return false;
+      });
+    }
+
+    // Handle standard case: menu item matches add/edit/detail pages
+    const resource = href.replace("/", "");
+    if (resource) {
+      return ["add", "edit", "detail"].some(
+        (action) => location.pathname === `/${action}-${resource}`
+      );
+    }
+
+    return false;
+  };
+
+  const hasActiveChild = (item) => {
+    if (!item.children) return false;
+    return item.children.some((child) => matchPath(child.href) || hasActiveChild(child));
+  };
+
+  const markActiveParents = (items, result) => {
+    items.forEach((item) => {
+      if (!item.children) return;
+      if (hasActiveChild(item)) {
+        result[item.title] = true;
+        markActiveParents(item.children, result);
+      }
+    });
+  };
+
   const [expandedMenus, setExpandedMenus] = useState(() => {
     const result = {};
     const allMenus = [sidebarMenuSuperAdmin, sidebarMenuAdmin, sidebarMenuCashier, sidebarMenuUser];
-    allMenus.forEach((group) => {
-      group.forEach((item) => {
-        if (!item.children) return;
-        const hasActive = item.children.some((child) => {
-          if (!child.href) return false;
-          if (location.pathname === child.href) return true;
-          if (child.href.endsWith("-list")) {
-            const base = child.href.replace("/", "").replace("-list", "");
-            return ["add", "edit", "detail"].some(
-              (action) => location.pathname === `/${action}-${base}`
-            );
-          }
-          const resource = child.href.replace("/", "");
-          if (resource) {
-            return ["add", "edit", "detail"].some(
-              (action) => location.pathname === `/${action}-${resource}`
-            );
-          }
-          return false;
-        });
-        if (hasActive) result[item.title] = true;
-      });
-    });
+    allMenus.forEach((group) => markActiveParents(group, result));
     return result;
   });
   const [logoutModal, setLogoutModal] = useState(false);
@@ -91,12 +125,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   useEffect(() => {
     if (collapsed) return;
     const toOpen = {};
-    menuItems.forEach((item) => {
-      if (item.children) {
-        const hasActive = item.children.some((child) => matchPath(child.href));
-        if (hasActive) toOpen[item.title] = true;
-      }
-    });
+    markActiveParents(menuItems, toOpen);
     setExpandedMenus((prev) => {
       const hasChanges = Object.keys(toOpen).some((k) => prev[k] !== toOpen[k]);
       if (!hasChanges) return prev;
@@ -104,54 +133,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
     });
   }, [location.pathname, collapsed, menuItems]);
 
-  const matchPath = (href) => {
-    if (!href) return false;
-    if (location.pathname === href) return true;
-
-    // Handle standard case: menu item ending with "-list" matches add/edit/detail pages
-    if (href.endsWith("-list")) {
-      const base = href.replace("/", "").replace("-list", "");
-      return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
-    }
-
-    // Handle exception cases where add/edit/detail paths don't follow standard naming
-    const exceptionMap = {
-      "/role-management": ["/add-role", "/edit-role", "/detail-role"],
-      "/cash-register/current": [
-        "/cash-register/history",
-        "/cash-register/open-close",
-        "/cash-register/current",
-        "/cash-register/history/detail"
-      ]
-    };
-
-    if (exceptionMap[href]) {
-      return exceptionMap[href].some((path) => {
-        if (location.pathname === path) return true;
-        if (location.pathname.startsWith(path + "/")) return true;
-        return false;
-      });
-    }
-
-    // Handle standard case: menu item matches add/edit/detail pages
-    const resource = href.replace("/", "");
-    if (resource) {
-      return ["add", "edit", "detail"].some(
-        (action) => location.pathname === `/${action}-${resource}`
-      );
-    }
-
-    return false;
-  };
-
   const isActive = (href) => {
     if (!href) return false;
     return matchPath(href);
   };
 
   const isParentActive = (item) => {
-    if (!item.children) return false;
-    return item.children.some((child) => matchPath(child.href));
+    return hasActiveChild(item);
   };
 
   const toggleSubmenu = (title) => {

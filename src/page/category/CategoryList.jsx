@@ -19,6 +19,7 @@ import { uploadExcel } from "@/services/category";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
+import StatCard from "@/components/ui/StatCard";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -167,7 +168,7 @@ const CategoryList = () => {
     {
       dataTour: "category-stat-draft",
       icon: "edit_note",
-      label: "Draft",
+      label: t("common.draft"),
       value: draftCount,
       badge: `${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`,
       iconBg: "bg-amber-100 dark:bg-amber-900/40",
@@ -235,7 +236,7 @@ const CategoryList = () => {
           return (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
-              Draft
+              {t("common.draft")}
             </span>
           );
         }
@@ -431,34 +432,10 @@ const CategoryList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                data-tour={stat.dataTour}
-                className={`${stat.danger ? "bg-red-600 dark:bg-red-900" : "bg-card border border-border"} p-6 rounded-xl shadow-sm flex justify-between items-start flex-col transition-colors`}>
-                <div className="flex justify-between items-start w-full mb-4">
-                  <div
-                    className={`p-3 ${stat.danger ? "bg-red-700 dark:bg-red-950" : stat.iconBg} rounded-lg`}>
-                    <span
-                      className={`material-symbols-outlined ${stat.danger ? "text-white" : stat.iconColor}`}>
-                      {stat.icon}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded ${stat.danger ? "bg-red-500/30 text-red-100" : "bg-muted text-muted-foreground"}`}>
-                    {stat.badge}
-                  </span>
-                </div>
-                <p
-                  className={`text-xs font-semibold uppercase tracking-wider mb-1 ${stat.danger ? "text-red-100" : "text-muted-foreground"}`}>
-                  {stat.label}
-                </p>
-                <h3
-                  className={`text-3xl font-bold ${stat.danger ? "text-white" : "text-foreground"}`}>
-                  {stat.value}
-                </h3>
-              </div>
-            ))}
+            <StatCard label={t("page.category.list.statsTotal")} value={statsTotal} icon="category" variant="default" subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })} />
+            <StatCard label={t("page.category.list.statsActive")} value={activeCount} icon="check_circle" variant="active" subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`} />
+            <StatCard label={t("page.category.list.statsInactive")} value={inactiveCount} icon="cancel" variant="inactive" subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`} />
+            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`} />
           </div>
 
           <div data-tour="category-table" className="mt-6">

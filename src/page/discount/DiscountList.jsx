@@ -7,7 +7,7 @@ import { Plus, Search, Edit, Trash2, Tags, Gift } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
@@ -179,24 +179,9 @@ const DiscountList = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.discount.list.total")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.discount.list.active")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.discount.list.inactive")}</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-          </Card>
-        </div>
+        <StatCard label={t("page.discount.list.total")} value={total} icon="local_offer" variant="default" />
+        <StatCard label={t("page.discount.list.active")} value={activeCount} icon="check_circle" variant="active" />
+        <StatCard label={t("page.discount.list.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
       </div>
 
       <div>

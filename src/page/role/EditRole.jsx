@@ -18,14 +18,14 @@ const actionLabels = {
   add: "Tambah",
   edit: "Ubah",
   delete: "Hapus",
-  import: "Import",
+  import: "Impor",
   export: "Ekspor",
   approve: "Setujui",
   print: "Cetak",
-  "edit-points": "Edit Poin",
-  "edit-access": "Edit Akses",
-  "reset-password": "Reset Password",
-  "update-status": "Update Status"
+  "edit-points": "Ubah Poin",
+  "edit-access": "Ubah Akses",
+  "reset-password": "Atur Ulang Sandi",
+  "update-status": "Perbarui Status"
 };
 
 const actionColors = {

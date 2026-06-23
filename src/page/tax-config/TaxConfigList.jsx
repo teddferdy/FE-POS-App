@@ -13,7 +13,7 @@ import {
 } from "@/services/tax-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTaxConfigExcel } from "@/services/tax-config";
@@ -296,22 +296,10 @@ const TaxConfigList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card data-tour="tax-stat-total" className="p-5">
-              <p className="text-sm text-muted-foreground">{t("page.taxConfig.stats.total")}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
-            </Card>
-            <Card data-tour="tax-stat-active" className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-            </Card>
-            <Card data-tour="tax-stat-draft" className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.draft")}</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
-            </Card>
-            <Card data-tour="tax-stat-inactive" className="p-5">
-              <p className="text-sm text-muted-foreground">{t("common.inactive")}</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-            </Card>
+            <StatCard label={t("page.taxConfig.stats.total")} value={stats.total ?? total} icon="receipt" variant="default" />
+            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
+            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
+            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -362,7 +350,7 @@ const TaxConfigList = () => {
         uploadService={uploadTaxConfigExcel}
         queryKey={["tax-configs"]}
         title={t("page.taxConfig.upload.title")}
-        subtitle=""
+       
       />
     </div>
   );

@@ -12,6 +12,7 @@ import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 
 const positionColors = {
@@ -270,79 +271,10 @@ const EmployeeList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div
-              data-tour="employee-stat-total"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.employee.table.total")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {total.toLocaleString() || "0"}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">trending_up</span>
-                  +12% vs bulan lalu
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">groups</span>
-              </div>
-            </div>
-            <div
-              data-tour="employee-stat-active"
-              className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.employee.table.active")}
-                </p>
-                <h3 className="text-3xl font-bold text-foreground">
-                  {activeCount.toLocaleString() || "0"}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
-                  {t("page.employee.table.activeRate")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">how_to_reg</span>
-              </div>
-            </div>
-            <div
-              data-tour="employee-stat-draft"
-              className="bg-amber-500 dark:bg-amber-700 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-amber-600 dark:hover:bg-amber-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
-                  {t("page.employee.table.draft")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">{draftCount.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">edit_note</span>
-                  {total > 0 ? Math.round((draftCount / total) * 100) : 0}%
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-amber-600 dark:bg-amber-900 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">edit_note</span>
-              </div>
-            </div>
-            <div
-              data-tour="employee-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-6 rounded-xl shadow-sm flex justify-between items-center group hover:bg-red-700 dark:hover:bg-red-800 transition-colors hover:shadow-md">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.employee.table.inactive")}
-                </p>
-                <h3 className="text-3xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.employee.table.attentionNeeded")}
-                </p>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-red-700 dark:bg-red-950 flex items-center justify-center text-white group-hover:bg-red-800 dark:group-hover:bg-red-950/80 transition-colors group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-3xl">cancel</span>
-              </div>
-            </div>
+              <StatCard label={t("page.employee.table.total")} value={total.toLocaleString() || "0"} icon="groups" variant="default" subtitle="+12% vs bulan lalu" />
+              <StatCard label={t("page.employee.table.active")} value={activeCount.toLocaleString() || "0"} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`} />
+              <StatCard label={t("page.employee.table.draft")} value={draftCount.toLocaleString()} icon="edit_note" variant="draft" />
+              <StatCard label={t("page.employee.table.inactive")} value={inactiveCount.toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.employee.table.attentionNeeded")} />
           </div>
 
           <div data-tour="employee-table" className="mt-6">

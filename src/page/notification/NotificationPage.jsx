@@ -242,7 +242,7 @@ const NotificationPage = () => {
         <div>
           <div>
             {isLoading ? (
-              <Loading fullscreen size="lg" label="Memuat data..." />
+              <Loading fullscreen size="lg" label={t("common.loading")} />
             ) : (
               <>
                 <div className="space-y-2">
@@ -310,7 +310,7 @@ const NotificationPage = () => {
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => p - 1)}>
-                      Previous
+{t("page.notification.previous")}
                     </Button>
                     <span className="text-sm text-muted-foreground">
                       {page} / {pagination.totalPages}
@@ -320,7 +320,7 @@ const NotificationPage = () => {
                       size="sm"
                       disabled={page >= pagination.totalPages}
                       onClick={() => setPage((p) => p + 1)}>
-                      Next
+                      {t("page.notification.next")}
                     </Button>
                   </div>
                 )}
@@ -358,7 +358,7 @@ const NotificationPage = () => {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1 font-medium">Description</p>
+              <p className="text-sm text-muted-foreground mb-1 font-medium">{t("page.notification.descriptionLabel")}</p>
               <p className="text-sm">{selectedNotif.description}</p>
             </div>
 
@@ -366,27 +366,27 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Hash size={14} />
                 <span>
-                  ID: <strong className="text-foreground">{selectedNotif.id}</strong>
+{t("page.notification.id")}: <strong className="text-foreground">{selectedNotif.id}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User size={14} />
                 <span>
-                  Created By:{" "}
+{t("page.notification.createdBy")}:{" "}
                   <strong className="text-foreground">{selectedNotif.createdBy ?? "-"}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Store size={14} />
                 <span>
-                  Store:{" "}
+{t("page.notification.store")}:{" "}
                   <strong className="text-foreground">{selectedNotif.storeName ?? "-"}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Fingerprint size={14} />
                 <span>
-                  Reference:{" "}
+{t("page.notification.reference")}:{" "}
                   <strong className="text-foreground">
                     {selectedNotif.referenceType} #{selectedNotif.referenceId}
                   </strong>
@@ -395,7 +395,7 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock size={14} />
                 <span>
-                  Created:{" "}
+{t("page.notification.created")}:{" "}
                   <strong className="text-foreground">
                     {formatFullDate(selectedNotif.createdAt)}
                   </strong>
@@ -407,7 +407,7 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
                 <Clock size={14} />
                 <span>
-                  Updated:{" "}
+{t("page.notification.updated")}:{" "}
                   <strong className="text-foreground">
                     {formatFullDate(selectedNotif.updatedAt)}
                   </strong>
@@ -417,7 +417,7 @@ const NotificationPage = () => {
 
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setSelectedNotif(null)}>
-                Close
+                {t("common.close")}
               </Button>
             </div>
           </div>

@@ -26,6 +26,7 @@ import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const statusColors = {
   available: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
@@ -226,28 +227,10 @@ const TableList = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="p-5">
-                  <p className="text-sm text-muted-foreground">{t("page.table.stats.total")}</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-                </Card>
-                <Card className="p-5">
-                  <p className="text-sm text-muted-foreground">{t("page.table.stats.available")}</p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">
-                    {data?.stats?.available ?? 0}
-                  </p>
-                </Card>
-                <Card className="p-5">
-                  <p className="text-sm text-muted-foreground">{t("page.table.stats.reserved")}</p>
-                  <p className="text-2xl font-bold text-yellow-600 mt-1">
-                    {data?.stats?.reserved ?? 0}
-                  </p>
-                </Card>
-                <Card className="p-5">
-                  <p className="text-sm text-muted-foreground">{t("page.table.stats.occupied")}</p>
-                  <p className="text-2xl font-bold text-red-600 mt-1">
-                    {data?.stats?.occupied ?? 0}
-                  </p>
-                </Card>
+                <StatCard label={t("page.table.stats.total")} value={total} icon="table_restaurant" variant="default" />
+                <StatCard label={t("page.table.stats.available")} value={data?.stats?.available ?? 0} icon="check_circle" variant="active" />
+                <StatCard label={t("page.table.stats.reserved")} value={data?.stats?.reserved ?? 0} icon="edit_note" variant="draft" />
+                <StatCard label={t("page.table.stats.occupied")} value={data?.stats?.occupied ?? 0} icon="cancel" variant="inactive" />
               </div>
 
               <div className="relative w-full sm:w-72">

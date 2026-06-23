@@ -366,7 +366,7 @@ const EditMember = () => {
                                   className="px-4 py-3 border-t"
                                   style={{ borderColor: `${selected.color || "#6366f1"}15` }}>
                                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                    Benefits
+                                    {t("page.member.benefits")}
                                   </p>
                                   <ul className="space-y-1.5">
                                     {selected.benefits.map((b, i) => (

@@ -18,6 +18,7 @@ import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const statusMap = {
   draft: {
@@ -257,33 +258,10 @@ const GoodsReceiptList = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          {
-            label: t("page.goodsReceipt.list.stats.total"),
-            value: stats.total ?? total,
-            color: "text-primary"
-          },
-          {
-            label: t("page.goodsReceipt.list.status.draft"),
-            value: stats.draft ?? 0,
-            color: "text-yellow-600"
-          },
-          {
-            label: t("page.goodsReceipt.list.status.completed"),
-            value: stats.completed ?? 0,
-            color: "text-green-600"
-          },
-          {
-            label: t("page.goodsReceipt.list.status.cancelled"),
-            value: stats.cancelled ?? 0,
-            color: "text-red-600"
-          }
-        ].map((s, i) => (
-          <div key={i} className="bg-card p-4 rounded-xl border border-border">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
-            <p className={`text-xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
-          </div>
-        ))}
+        <StatCard label={t("page.goodsReceipt.list.stats.total")} value={stats.total ?? total} icon="inventory" variant="default" />
+        <StatCard label={t("common.draft")} value={stats.draft ?? 0} icon="edit_note" variant="draft" />
+        <StatCard label={t("common.completed")} value={stats.completed ?? 0} icon="check_circle" variant="active" />
+        <StatCard label={t("common.cancelled")} value={stats.cancelled ?? 0} icon="cancel" variant="inactive" />
       </div>
 
       {isError ? (

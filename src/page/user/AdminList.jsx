@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const getStatus = (user, t) => {
   const statusConfig = {
@@ -161,26 +162,9 @@ const AdminList = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-card p-6 rounded-xl shadow-sm border border-border">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-3 ${stat.iconBg} rounded-lg`}>
-                      <span className={`material-symbols-outlined ${stat.iconColor}`}>
-                        {stat.icon}
-                      </span>
-                    </div>
-                    <span className="text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded">
-                      {stat.badge}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {stat.label}
-                  </p>
-                  <h3 className="text-3xl font-bold text-foreground">{stat.value}</h3>
-                </div>
-              ))}
+              <StatCard label={t("page.user.adminList.statsTotal")} value={data?.stats?.total || total || 0} icon="admin_panel_settings" variant="default" subtitle={t("page.user.adminList.statsTotalBadge")} />
+              <StatCard label={t("page.user.adminList.statsActive")} value={data?.stats?.active || 0} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`} />
+              <StatCard label={t("page.user.adminList.statsPending")} value={data?.stats?.pending || 0} icon="edit_note" variant="draft" subtitle={t("page.user.adminList.statsPendingBadge")} />
             </div>
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">

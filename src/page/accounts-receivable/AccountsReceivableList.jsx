@@ -6,13 +6,13 @@ import { Receipt, Wallet } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const STATUS_LABELS = {
   UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
@@ -164,22 +164,13 @@ const AccountsReceivableList = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground">
-              {t("page.accountsReceivable.list.totalPiutang")}
-            </p>
-            <p className="text-lg font-bold">{formatCurrencyRupiah(grandTotal)}</p>
-          </Card>
-        </div>
-        {Object.entries(agingBuckets).map(([key, bucket]) => (
-          <div key={key}>
-            <Card className="p-4">
-              <p className="text-xs text-muted-foreground">{bucket.label}</p>
-              <p className="text-lg font-bold">{formatCurrencyRupiah(bucket.total)}</p>
-            </Card>
-          </div>
-        ))}
+        <StatCard label={t("page.accountsReceivable.list.totalPiutang")} value={formatCurrencyRupiah(grandTotal)} icon="account_balance" variant="default" />
+        {Object.entries(agingBuckets).map(([key, bucket]) => {
+          const lk = key.toLowerCase();
+          const icon = lk.includes("paid") ? "check_circle" : lk.includes("overdue") ? "cancel" : lk.includes("unpaid") ? "edit_note" : lk.includes("partial") ? "schedule" : "account_balance";
+          const variant = lk.includes("paid") ? "active" : lk.includes("overdue") ? "inactive" : lk.includes("unpaid") ? "draft" : "default";
+          return <StatCard key={key} label={bucket.label} value={formatCurrencyRupiah(bucket.total)} icon={icon} variant={variant} />;
+        })}
       </div>
 
       <div className="flex items-center gap-2">

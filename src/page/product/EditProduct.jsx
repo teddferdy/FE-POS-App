@@ -573,7 +573,7 @@ const EditProduct = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (loadingProduct) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
+    return <Loading fullscreen size="lg" label={t("common.loading")} />;
   }
 
   if (!productId || (!loadingProduct && !product.id)) {

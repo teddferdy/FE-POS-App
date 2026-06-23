@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadPositionExcel } from "@/services/position";
+import StatCard from "@/components/ui/StatCard";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -352,93 +353,10 @@ const PositionList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            <div
-              data-tour="position-stat-total"
-              className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.position.stats.total")}
-                </p>
-                <h3 className="text-2xl font-bold text-foreground">{total.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-primary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">work</span>
-                  {t("page.position.stats.totalSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-primary text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  work
-                </span>
-              </div>
-            </div>
-            <div
-              data-tour="position-stat-active"
-              className="bg-card p-5 rounded-xl shadow-sm border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  {t("page.position.stats.active")}
-                </p>
-                <h3 className="text-2xl font-bold text-foreground">
-                  {activeCount.toLocaleString()}
-                </h3>
-                <p className="text-xs font-semibold text-secondary flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">check_circle</span>
-                  {total > 0 ? Math.round((activeCount / total) * 100) : 0}%{" "}
-                  {t("page.position.stats.activeSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-secondary-fixed/20 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-secondary text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              </div>
-            </div>
-            <div
-              data-tour="position-stat-draft"
-              className="bg-amber-500 dark:bg-amber-700 p-5 rounded-xl shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-amber-100 uppercase tracking-wider mb-1">
-                  {t("page.position.stats.draft")}
-                </p>
-                <h3 className="text-2xl font-bold text-white">{draftCount.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-amber-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">edit_note</span>
-                  {total > 0 ? Math.round((draftCount / total) * 100) : 0}%
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-amber-600 dark:bg-amber-900 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-white text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  edit_note
-                </span>
-              </div>
-            </div>
-            <div
-              data-tour="position-stat-inactive"
-              className="bg-red-600 dark:bg-red-900 p-5 rounded-xl shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-red-100 uppercase tracking-wider mb-1">
-                  {t("page.position.stats.inactive")}
-                </p>
-                <h3 className="text-2xl font-bold text-white">{inactiveCount.toLocaleString()}</h3>
-                <p className="text-xs font-semibold text-red-100 flex items-center gap-1 mt-1">
-                  <span className="material-symbols-outlined text-sm">cancel</span>
-                  {t("page.position.stats.inactiveSub")}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-red-700 dark:bg-red-950 flex items-center justify-center">
-                <span
-                  className="material-symbols-outlined text-white text-[28px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}>
-                  cancel
-                </span>
-              </div>
-            </div>
+              <StatCard label={t("page.position.stats.total")} value={total.toLocaleString()} icon="work" variant="default" subtitle={t("page.position.stats.totalSub")} />
+              <StatCard label={t("page.position.stats.active")} value={activeCount.toLocaleString()} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`} />
+              <StatCard label={t("page.position.stats.draft")} value={draftCount.toLocaleString()} icon="edit_note" variant="draft" />
+              <StatCard label={t("page.position.stats.inactive")} value={inactiveCount.toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.position.stats.inactiveSub")} />
           </div>
 
           <div data-tour="position-table" className="mt-6">
@@ -529,7 +447,7 @@ const PositionList = () => {
         uploadService={uploadPositionExcel}
         queryKey={["positions"]}
         title={t("page.position.button.uploadExcel")}
-        subtitle=""
+       
       />
       <Modal
         type="confirm"

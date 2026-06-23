@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseOrder,
@@ -33,7 +34,6 @@ import { recordPayment } from "@/services/purchase-payment";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -488,30 +488,10 @@ const PurchaseOrderList = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("page.purchaseOrder.list.title")}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{total}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.status")}</p>
-            <p className="text-2xl font-bold text-yellow-600 mt-1">{data?.stats?.pending ?? 0}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.active")}</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{data?.stats?.received ?? 0}</p>
-          </Card>
-        </div>
-        <div>
-          <Card className="p-5">
-            <p className="text-sm text-muted-foreground">{t("common.delete")}</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{data?.stats?.cancelled ?? 0}</p>
-          </Card>
-        </div>
+        <StatCard label={t("page.purchaseOrder.list.title")} value={total} icon="shopping_cart" variant="default" />
+        <StatCard label={t("page.purchaseOrder.status.pending")} value={data?.stats?.pending ?? 0} icon="edit_note" variant="draft" />
+        <StatCard label={t("page.purchaseOrder.status.received")} value={data?.stats?.received ?? 0} icon="check_circle" variant="active" />
+        <StatCard label={t("page.purchaseOrder.status.cancelled")} value={data?.stats?.cancelled ?? 0} icon="cancel" variant="inactive" />
       </div>
 
       {isError ? (
@@ -775,7 +755,7 @@ const PurchaseOrderList = () => {
         uploadService={uploadPurchaseOrderExcel}
         queryKey={["purchase-orders"]}
         title={t("page.purchaseOrder.list.importModalTitle")}
-        subtitle=""
+       
       />
 
       {payModal &&
