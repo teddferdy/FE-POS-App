@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
-import UploadTaxConfigModal from "./components/UploadTaxConfigModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadTaxConfigExcel } from "@/services/tax-config";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
@@ -355,10 +356,13 @@ const TaxConfigList = () => {
         onConfirm={confirmDelete}
       />
 
-      <UploadTaxConfigModal
+      <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["tax-configs"])}
+        uploadService={uploadTaxConfigExcel}
+        queryKey={["tax-configs"]}
+        title={t("page.taxConfig.upload.title")}
+        subtitle=""
       />
     </div>
   );

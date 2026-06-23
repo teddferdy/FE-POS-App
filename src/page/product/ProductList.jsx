@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
-import UploadProductModal from "./components/UploadProductModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadProductExcel } from "@/services/product";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import { canAccess } from "@/utils/permission";
@@ -120,7 +121,7 @@ const ProductList = () => {
       if (sortFilter === "price-asc") return (a.price || 0) - (b.price || 0);
       if (sortFilter === "price-desc") return (b.price || 0) - (a.price || 0);
       if (sortFilter === "stock-asc") return (a.stock || 0) - (b.stock || 0);
-      return 0;
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
   const getAvailableBadge = (product) => {
@@ -169,6 +170,16 @@ const ProductList = () => {
     };
   };
 
+  const renderTax = (tax) => {
+    if (!tax) return "-";
+    try {
+      const parsed = typeof tax === "string" ? JSON.parse(tax) : tax;
+      return parsed.name || "-";
+    } catch {
+      return "-";
+    }
+  };
+
   const columns = [
     {
       header: t("page.product.table.image"),
@@ -195,10 +206,30 @@ const ProductList = () => {
       )
     },
     {
+      header: t("page.product.table.barcode"),
+      render: (product) => (
+        <span className="text-sm font-mono text-foreground">{product.barcode || "-"}</span>
+      )
+    },
+    {
+      header: t("page.product.table.brand"),
+      render: (product) => (
+        <span className="text-sm text-foreground">{product.brand || "-"}</span>
+      )
+    },
+    {
       header: t("page.product.table.category"),
       render: (product) => (
         <span className="text-sm text-foreground">
           {product.nameCategory || product.category?.name || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.product.table.productType"),
+      render: (product) => (
+        <span className="text-sm text-foreground capitalize">
+          {product.tipeProduk === "bahan_baku" ? "Bahan Baku" : product.tipeProduk || "Menu"}
         </span>
       )
     },
@@ -248,6 +279,30 @@ const ProductList = () => {
       }
     },
     {
+      header: t("page.product.table.tax"),
+      render: (product) => (
+        <span className="text-sm text-foreground">{renderTax(product.tax)}</span>
+      )
+    },
+    {
+      header: t("page.product.table.point"),
+      align: "right",
+      render: (product) => (
+        <span className="text-sm font-mono text-foreground">
+          {formatCurrencyRupiah(product.point || 0)}
+        </span>
+      )
+    },
+    {
+      header: t("page.product.table.redeemPoints"),
+      align: "right",
+      render: (product) => (
+        <span className="text-sm font-mono text-foreground">
+          {formatCurrencyRupiah(product.redeemPoints || 0)}
+        </span>
+      )
+    },
+    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
@@ -294,6 +349,7 @@ const ProductList = () => {
     {
       header: t("common.actions"),
       align: "right",
+      stickyRight: true,
       render: (product) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
@@ -556,12 +612,14 @@ const ProductList = () => {
         onConfirm={() => navigate("/add-location")}
       />
 
-      {uploadModalOpen && (
-        <UploadProductModal
-          onClose={() => setUploadModalOpen(false)}
-          onUploadSuccess={() => queryClient.invalidateQueries(["products"])}
-        />
-      )}
+      <UploadExcelModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        uploadService={uploadProductExcel}
+        queryKey={["products"]}
+        title={t("page.product.upload.title")}
+        subtitle=""
+      />
     </div>
   );
 };

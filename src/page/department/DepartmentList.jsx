@@ -13,7 +13,8 @@ import {
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
-import UploadDepartmentModal from "@/page/department/components/UploadDepartmentModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadDepartmentExcel } from "@/services/department";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -505,12 +506,14 @@ const DepartmentList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
-      {uploadModalOpen && (
-        <UploadDepartmentModal
-          onClose={() => setUploadModalOpen(false)}
-          onUploadSuccess={() => queryClient.invalidateQueries(["departments"])}
-        />
-      )}
+      <UploadExcelModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        uploadService={uploadDepartmentExcel}
+        queryKey={["departments"]}
+        title={t("page.department.upload.title")}
+        subtitle={t("page.department.upload.subtitle")}
+      />
     </div>
   );
 };

@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
-import UploadSupplierModal from "./components/UploadSupplierModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadSupplierExcel } from "@/services/supplier";
 import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { canAccess } from "@/utils/permission";
@@ -364,10 +365,13 @@ const SupplierList = () => {
         onConfirm={confirmDelete}
       />
 
-      <UploadSupplierModal
+      <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["suppliers"])}
+        uploadService={uploadSupplierExcel}
+        queryKey={["suppliers"]}
+        title={t("page.supplier.upload.title")}
+        subtitle=""
       />
     </div>
   );

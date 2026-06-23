@@ -14,7 +14,8 @@ import { getAllDepartment } from "@/services/department";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
-import UploadPositionModal from "@/page/position/components/UploadPositionModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadPositionExcel } from "@/services/position";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -522,12 +523,14 @@ const PositionList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
-      {uploadModalOpen && (
-        <UploadPositionModal
-          onClose={() => setUploadModalOpen(false)}
-          onUploadSuccess={() => queryClient.invalidateQueries(["positions"])}
-        />
-      )}
+      <UploadExcelModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        uploadService={uploadPositionExcel}
+        queryKey={["positions"]}
+        title={t("page.position.button.uploadExcel")}
+        subtitle=""
+      />
       <Modal
         type="confirm"
         open={noDepartmentModal}

@@ -7,11 +7,10 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { Store, Plus } from "lucide-react";
-
 import { addCategory } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -342,6 +341,7 @@ const AddCategory = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
   const fileInputRef = useRef(null);
   const role = user?.roleType || "";
 
@@ -398,7 +398,7 @@ const AddCategory = () => {
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && selectedStore.length === 0 && !saveAsDraft) {
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
       toast.error("Pilih toko terlebih dahulu");
       return;
     }
@@ -450,81 +450,22 @@ const AddCategory = () => {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
-                  {isSuperAdmin ? (
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Store size={20} className="text-primary shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground">
-                            {t("page.category.form.storeSection.title")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t("page.category.form.storeSection.desc")}
-                          </p>
-                        </div>
-                      </div>
-                      {locations.length === 0 ? (
-                        <div className="flex items-center gap-3 pl-9">
-                          <p className="text-sm text-muted-foreground">
-                            {t("page.category.form.storeSection.noStore")}
-                          </p>
-                          <Button
-                            size="sm"
-                            onClick={() => navigate("/add-location")}
-                            className="gap-1.5 shrink-0">
-                            <Plus size={16} />
-                            {t("page.category.form.storeSection.addStore")}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-2 pl-9">
-                          {locations.map((loc) => {
-                            const isChecked = selectedStore.includes(loc.id);
-                            return (
-                              <button
-                                key={loc.id}
-                                type="button"
-                                onClick={() =>
-                                  setSelectedStore(prev =>
-                                    isChecked ? prev.filter(id => id !== loc.id) : [...prev, loc.id]
-                                  )
-                                }
-                                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                  isChecked
-                                    ? "bg-primary/10 border-primary text-primary"
-                                    : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                                }`}>
-                                {loc.name}
-                                {isChecked && (
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ) : selectedStore.length > 0 || user?.store ? (
-                    <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
-                      <Store size={16} className="shrink-0" />
-                      <span>
-                        {t("page.category.form.storeInfo")}{" "}
-                        <strong className="text-foreground">
-                          {user?.storeName || `Toko #${selectedStore[0] || user?.store || ""}`}
-                        </strong>
-                      </span>
-                    </div>
-                  ) : null}
+                  <StoreSelectCard
+                    locations={locations}
+                    selectedStores={selectedStore}
+                    onChange={setSelectedStore}
+                    isSuperAdmin={isSuperAdmin}
+                    user={user}
+                    t={t}
+                    title={t("page.category.form.storeSection.title")}
+                    description={t("page.category.form.storeSection.desc")}
+                    noStoreLabel={t("page.category.form.storeSection.noStore")}
+                    addStoreLabel={t("page.category.form.storeSection.addStore")}
+                    storeInfoLabel={t("page.category.form.storeInfo")}
+                    allStores={allStores}
+                    onAllStoresChange={setAllStores}
+                    navigate={navigate}
+                  />
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <h3 className="text-base font-semibold text-foreground mb-6">
                       {t("page.category.form.info")}

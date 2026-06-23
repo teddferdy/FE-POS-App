@@ -19,13 +19,13 @@ import {
   Download
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseOrder,
   getPurchaseOrderById,
   returnPurchaseOrder,
   uploadPurchaseOrderExcel,
-  downloadPurchaseOrderTemplate,
   downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
 import { getAllLocation } from "@/services/location";
@@ -80,8 +80,6 @@ const PurchaseOrderList = () => {
   const [returReason, setReturReason] = useState("");
   const [returItems, setReturItems] = useState([]);
   const [importModal, setImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
   const [payModal, setPayModal] = useState(false);
   const [payPo, setPayPo] = useState(null);
   const [payForm, setPayForm] = useState({
@@ -175,17 +173,6 @@ const PurchaseOrderList = () => {
   const orders = data?.data || [];
   const pagination = data?.pagination || {};
 
-  const handleDownloadTemplate = async () => {
-    try {
-      await downloadPurchaseOrderTemplate();
-      toast.success(t("page.purchaseOrder.detail.toast.templateDownloaded"));
-    } catch (err) {
-      toast.error(t("page.purchaseOrder.detail.toast.templateDownloadFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  };
-
   const handleDownloadExcel = async () => {
     try {
       await downloadPurchaseOrderExcel();
@@ -197,23 +184,6 @@ const PurchaseOrderList = () => {
     }
   };
 
-  const handleImport = async () => {
-    if (!importFile) return;
-    setImportLoading(true);
-    try {
-      await uploadPurchaseOrderExcel(importFile);
-      toast.success(t("page.purchaseOrder.detail.toast.importSuccess"));
-      queryClient.invalidateQueries(["purchase-orders"]);
-      setImportModal(false);
-      setImportFile(null);
-    } catch (err) {
-      toast.error(t("page.purchaseOrder.detail.toast.importFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
-    } finally {
-      setImportLoading(false);
-    }
-  };
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
@@ -799,51 +769,14 @@ const PurchaseOrderList = () => {
           document.body
         )}
 
-      {importModal &&
-        createPortal(
-          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-md">
-              <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">
-                  {t("page.purchaseOrder.list.importModalTitle")}
-                </h3>
-              </div>
-              <div className="p-6 space-y-4">
-                <Button variant="outline" className="w-full gap-2" onClick={handleDownloadTemplate}>
-                  <Download size={15} />
-                  {t("page.purchaseOrder.list.downloadTemplate")}
-                </Button>
-                <div className="border-t border-border pt-4">
-                  <label className="text-sm font-medium text-foreground block mb-2">
-                    {t("page.purchaseOrder.list.uploadFile")}
-                  </label>
-                  <Input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => setImportFile(e.target.files[0])}
-                  />
-                  {importFile && (
-                    <p className="text-xs text-muted-foreground mt-1">{importFile.name}</p>
-                  )}
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setImportModal(false);
-                    setImportFile(null);
-                  }}>
-                  {t("common.cancel")}
-                </Button>
-                <Button onClick={handleImport} disabled={!importFile || importLoading}>
-                  {importLoading ? t("common.uploading") : t("page.purchaseOrder.list.import")}
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+      <UploadExcelModal
+        open={importModal}
+        onOpenChange={setImportModal}
+        uploadService={uploadPurchaseOrderExcel}
+        queryKey={["purchase-orders"]}
+        title={t("page.purchaseOrder.list.importModalTitle")}
+        subtitle=""
+      />
 
       {payModal &&
         payPo &&

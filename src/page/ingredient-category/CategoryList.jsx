@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
-import UploadIngredientCategoryModal from "./components/UploadIngredientCategoryModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
 import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
@@ -381,10 +382,13 @@ const CategoryList = () => {
         }}
       />
 
-      <UploadIngredientCategoryModal
+      <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => queryClient.invalidateQueries(["ingredient-categories"])}
+        uploadService={uploadIngredientCategoryExcel}
+        queryKey={["ingredient-categories"]}
+        title={t("page.ingredientCategory.upload.title")}
+        subtitle={t("page.ingredientCategory.upload.subtitle")}
       />
     </div>
   );

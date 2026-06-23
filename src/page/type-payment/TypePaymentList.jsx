@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
-import UploadTypePaymentModal from "./components/UploadTypePaymentModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadTypePaymentExcel } from "@/services/type-payment";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -372,10 +373,13 @@ const TypePaymentList = () => {
         onConfirm={confirmDelete}
       />
 
-      <UploadTypePaymentModal
+      <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
-        onUploadSuccess={() => {
+        uploadService={uploadTypePaymentExcel}
+        title={t("page.typePayment.upload.title")}
+        subtitle=""
+        onSuccess={() => {
           queryClient.invalidateQueries(["type-payments"]);
           queryClient.invalidateQueries(["type-payments-all"]);
         }}

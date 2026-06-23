@@ -194,7 +194,7 @@ const DetailCategory = () => {
                 {t("page.category.store")}:{" "}
                 {Array.isArray(category.store) && category.store.length > 0
                   ? category.store.map((s) => s.name || `Store #${s.id}`).join(", ")
-                  : "All"}
+                  : t("page.category.form.storeSection.allStores")}
               </span>
             </div>
           </Card>

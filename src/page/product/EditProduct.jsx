@@ -44,6 +44,7 @@ import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
 import UserGuide from "@/components/organism/UserGuide";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
 
 const EditProduct = () => {
@@ -89,6 +90,7 @@ const EditProduct = () => {
   const [storePrices, setStorePrices] = useState([]);
   const [savingStoreId, setSavingStoreId] = useState(null);
   const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(false);
   const [noStockOpname, setNoStockOpname] = useState(false);
   const [composition, setComposition] = useState([]);
   const [compositionOptions, setCompositionOptions] = useState([]);
@@ -170,6 +172,7 @@ const EditProduct = () => {
       nameProduct: z.string().min(1, t("page.product.form.requiredName")),
       barcode: z.string().optional().or(z.literal("")),
       brand: z.string().optional().or(z.literal("")),
+      sku: z.string().optional().or(z.literal("")),
       category: z.string().min(1, t("page.product.form.requiredCategory")),
       tipeProduk: z.string().default("menu"),
       supplier: z.string().optional().or(z.literal("")),
@@ -197,6 +200,7 @@ const EditProduct = () => {
       nameProduct: "",
       barcode: "",
       brand: "",
+      sku: "",
       category: "",
       tipeProduk: "menu",
       supplier: "",
@@ -224,6 +228,7 @@ const EditProduct = () => {
         nameProduct: product.nameProduct || "",
         barcode: product.barcode || "",
         brand: product.brand || "",
+        sku: product.sku || "",
         category: String(product.category || ""),
         tipeProduk: product.tipeProduk || "menu",
         supplier: product.supplier ? String(product.supplier) : "",
@@ -264,8 +269,14 @@ const EditProduct = () => {
         setPreviewImage(product.image);
       }
       if (product.store) {
-        const stores = Array.isArray(product.store) ? product.store : [product.store];
-        setSelectedStores(stores);
+        const storeArr = Array.isArray(product.store) ? product.store : [];
+        if (storeArr.length === 0) {
+          setAllStores(true);
+          setSelectedStores([]);
+        } else {
+          setAllStores(false);
+          setSelectedStores(storeArr.map((s) => (typeof s === "object" ? s.id : s)));
+        }
       }
     }
   }, [product, form]);
@@ -514,6 +525,7 @@ const EditProduct = () => {
     payload.append("nameProduct", values.nameProduct);
     if (values.barcode) payload.append("barcode", values.barcode);
     if (values.brand) payload.append("brand", values.brand);
+    if (values.sku) payload.append("sku", values.sku);
     payload.append("category", values.category);
     if (values.supplier) payload.append("supplier", values.supplier);
     if (values.tax) payload.append("tax", values.tax);
@@ -668,13 +680,30 @@ const EditProduct = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
-                    <>
+                    <div className="grid grid-cols-1 gap-6">
+                      <StoreSelectCard
+                        locations={locations}
+                        selectedStores={selectedStores}
+                        onChange={setSelectedStores}
+                        isSuperAdmin={isSuperAdmin}
+                        user={user}
+                        t={t}
+                        title={t("page.product.add.storeSection.title")}
+                        description={t("page.product.add.storeSection.desc")}
+                        noStoreLabel={t("page.product.add.storeSection.noStore")}
+                        addStoreLabel={t("page.product.add.storeSection.addStore")}
+                        storeInfoLabel={t("page.product.add.storeInfo")}
+                        allStores={allStores}
+                        onAllStoresChange={setAllStores}
+                        navigate={navigate}
+                      />
+
                       {/* Informasi Produk */}
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
                           <Info size={18} className="text-primary" />
                           <h3 className="text-base font-semibold text-foreground">
-                            {t("page.product.step.info")}
+                            {t("page.product.add.productInfoSection")}
                           </h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -691,6 +720,82 @@ const EditProduct = () => {
                                   placeholder={t("page.product.form.namePlaceholder")}
                                   {...field}
                                 />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {t("page.product.form.category")}{" "}
+                                  <span className="text-destructive">*</span>
+                                </FormLabel>
+                                <Combobox
+                                  options={categories.map((c) => ({
+                                    value: String(c.id),
+                                    label: c.name
+                                  }))}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.categoryPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.categorySearch")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="tipeProduk"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
+                                <select
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
+                                  <option value="menu">
+                                    {t("page.product.form.tipeProdukMenu")}
+                                  </option>
+                                  <option value="bahan_baku">
+                                    {t("page.product.form.tipeProdukBahanBaku")}
+                                  </option>
+                                </select>
+                                <FormMessage />
+                                {noStockOpname && (
+                                  <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                    <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
+                                      warning
+                                    </span>
+                                    <div>
+                                      <p className="text-xs font-semibold text-amber-800">
+                                        {t("page.product.form.noStockOpname")}
+                                      </p>
+                                      <p className="text-[11px] text-amber-700 mt-0.5">
+                                        {t("page.product.form.noStockOpnameWarning")}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="brand"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.brand")}</FormLabel>
+                                <Input
+                                  placeholder={t("page.product.form.brandPlaceholder")}
+                                  {...field}
+                                />
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {t("page.product.form.brandOptional")}
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -714,16 +819,78 @@ const EditProduct = () => {
                           />
                           <FormField
                             control={form.control}
-                            name="brand"
+                            name="sku"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{t("page.product.form.brand")}</FormLabel>
+                                <FormLabel>{t("page.product.form.sku")}</FormLabel>
                                 <Input
-                                  placeholder={t("page.product.form.brandPlaceholder")}
+                                  placeholder={t("page.product.form.skuPlaceholder2")}
                                   {...field}
                                 />
                                 <p className="text-[11px] text-muted-foreground mt-1">
-                                  {t("page.product.form.brandOptional")}
+                                  {t("page.product.form.skuOptional")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="unit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.unit")}</FormLabel>
+                                <Combobox
+                                  options={unitOptions}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.unitPlaceholder")}
+                                  searchPlaceholder={t("page.product.form.unitSearch")}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="baseUnit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
+                                <Combobox
+                                  options={[
+                                    { value: "pcs", label: t("page.product.form.baseUnitPcs") },
+                                    { value: "gram", label: t("page.product.form.baseUnitGram") },
+                                    { value: "ml", label: t("page.product.form.baseUnitMl") },
+                                    { value: "cm", label: t("page.product.form.baseUnitCm") },
+                                    { value: "buah", label: t("page.product.form.baseUnitBuah") },
+                                    {
+                                      value: "lembar",
+                                      label: t("page.product.form.baseUnitLembar")
+                                    }
+                                  ]}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t("page.product.form.baseUnitPlaceholder")}
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {t("page.product.form.baseUnitHelper")}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="conversionFactor"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
+                                <Input type="number" min="1" {...field} />
+                                <p className="text-xs text-muted-foreground">
+                                  {t("page.product.form.conversionFactorHelper", {
+                                    value: field.value
+                                  })}
                                 </p>
                                 <FormMessage />
                               </FormItem>
@@ -798,128 +965,6 @@ const EditProduct = () => {
                               )}
                             />
                           )}
-                          <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>
-                                  {t("page.product.form.category")}{" "}
-                                  <span className="text-destructive">*</span>
-                                </FormLabel>
-                                <Combobox
-                                  options={categories.map((c) => ({
-                                    value: String(c.id),
-                                    label: c.name
-                                  }))}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.categoryPlaceholder")}
-                                  searchPlaceholder={t("page.product.form.categorySearch")}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="tipeProduk"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.tipeProduk")}</FormLabel>
-                                <select
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  className="w-full h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-ring focus:border-primary outline-none">
-                                  <option value="menu">
-                                    {t("page.product.form.tipeProdukMenu")}
-                                  </option>
-                                  <option value="bahan_baku">
-                                    {t("page.product.form.tipeProdukBahanBaku")}
-                                  </option>
-                                </select>
-                                <FormMessage />
-                                {noStockOpname && (
-                                  <div className="flex items-start gap-2.5 mt-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                                    <span className="material-symbols-outlined text-amber-600 text-base mt-0.5">
-                                      warning
-                                    </span>
-                                    <div>
-                                      <p className="text-xs font-semibold text-amber-800">
-                                        {t("page.product.form.noStockOpname")}
-                                      </p>
-                                      <p className="text-[11px] text-amber-700 mt-0.5">
-                                        {t("page.product.form.noStockOpnameWarning")}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.unit")}</FormLabel>
-                                <Combobox
-                                  options={unitOptions}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.unitPlaceholder")}
-                                  searchPlaceholder={t("page.product.form.unitSearch")}
-                                />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="baseUnit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.baseUnit")}</FormLabel>
-                                <Combobox
-                                  options={[
-                                    { value: "pcs", label: t("page.product.form.baseUnitPcs") },
-                                    { value: "gram", label: t("page.product.form.baseUnitGram") },
-                                    { value: "ml", label: t("page.product.form.baseUnitMl") },
-                                    { value: "cm", label: t("page.product.form.baseUnitCm") },
-                                    { value: "buah", label: t("page.product.form.baseUnitBuah") },
-                                    {
-                                      value: "lembar",
-                                      label: t("page.product.form.baseUnitLembar")
-                                    }
-                                  ]}
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder={t("page.product.form.baseUnitPlaceholder")}
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {t("page.product.form.baseUnitHelper")}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="conversionFactor"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{t("page.product.form.conversionFactor")}</FormLabel>
-                                <Input type="number" min="1" {...field} />
-                                <p className="text-xs text-muted-foreground">
-                                  {t("page.product.form.conversionFactorHelper", {
-                                    value: field.value
-                                  })}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                           <FormField
                             control={form.control}
                             name="description"
@@ -1030,7 +1075,7 @@ const EditProduct = () => {
                           </div>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
 
                   {currentStep === 2 && (
@@ -1217,68 +1262,6 @@ const EditProduct = () => {
                           )}
                         </div>
                       </div>
-
-                      {/* Pilih Toko */}
-                      {isSuperAdmin && (
-                        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <Store size={20} className="text-primary shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground">{t("page.product.add.storeSection.title")}</p>
-                              <p className="text-xs text-muted-foreground">{t("page.product.add.storeSection.desc")}</p>
-                            </div>
-                            {locations.length > 0 && (
-                              <span className="text-xs text-muted-foreground">
-                                {t("page.product.add.storeSection.selected", { count: selectedStores.length })}
-                              </span>
-                            )}
-                          </div>
-                          {locations.length === 0 ? (
-                            <div className="flex items-center gap-3 pl-9">
-                              <p className="text-sm text-muted-foreground">{t("page.product.add.storeSection.noStore")}</p>
-                            </div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2 pl-9">
-                              {locations.map((loc) => {
-                                const isChecked = selectedStores.includes(loc.id);
-                                return (
-                                  <button
-                                    key={loc.id}
-                                    type="button"
-                                    onClick={() =>
-                                      setSelectedStores((prev) =>
-                                        isChecked ? prev.filter((id) => id !== loc.id) : [...prev, loc.id]
-                                      )
-                                    }
-                                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                      isChecked
-                                        ? "bg-primary/10 border-primary text-primary"
-                                        : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                                    }`}>
-                                    {loc.name}
-                                    {isChecked && (
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {!isSuperAdmin && selectedStores.length > 0 && (
-                        <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
-                          <Store size={16} className="shrink-0" />
-                          <span>
-                            {t("page.product.add.storeInfo")}{" "}
-                            <strong className="text-foreground">
-                              {user?.storeName || `Toko #${selectedStores[0]}`}
-                            </strong>
-                          </span>
-                        </div>
-                      )}
 
                       {/* Harga per Toko */}
                       {isSuperAdmin && (

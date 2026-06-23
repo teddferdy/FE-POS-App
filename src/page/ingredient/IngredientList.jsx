@@ -18,7 +18,8 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
-import ImportIngredientModal from "./components/ImportIngredientModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadIngredientExcel } from "@/services/ingredient";
 
   const statusBadge = {
     active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -378,12 +379,18 @@ const IngredientList = () => {
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
 
-      {importModal && (
-        <ImportIngredientModal
-          onClose={() => setImportModal(false)}
-          onUploadSuccess={() => queryClient.invalidateQueries(["ingredients"])}
-        />
-      )}
+      <UploadExcelModal
+        open={importModal}
+        onOpenChange={setImportModal}
+        uploadService={(file) => {
+          const fd = new FormData();
+          fd.append("file", file);
+          return uploadIngredientExcel(fd);
+        }}
+        queryKey={["ingredients"]}
+        title={t("page.ingredient.import.title")}
+        subtitle={t("page.ingredient.import.subtitle")}
+      />
     </div>
   );
 };

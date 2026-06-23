@@ -1,49 +1,77 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { X, Upload, FileSpreadsheet, AlertCircle, Loader2, ArrowUpToLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { uploadExcel } from "@/services/category";
 import { Toast } from "@/components/organism/toast";
 import PropTypes from "prop-types";
 
-const UploadCategoryModal = ({ onClose }) => {
+const UploadExcelModal = ({
+  open,
+  onOpenChange,
+  uploadService,
+  queryKey,
+  title,
+  subtitle,
+  accept = ".xlsx,.xls,.csv",
+  onSuccess,
+  onError
+}) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
-  const mutation = useMutation((data) => uploadExcel(data), {
+  useEffect(() => {
+    if (!open) {
+      setFile(null);
+      setDragActive(false);
+    }
+  }, [open]);
+
+  const mutation = useMutation((data) => uploadService(data), {
     onSuccess: (res) => {
-      queryClient.invalidateQueries("categories");
-      const msg = res?.data?.message || t("page.category.upload.successMsg");
-      Toast.fire({ icon: "success", title: msg });
-      onClose();
+      if (queryKey) queryClient.invalidateQueries(queryKey);
+      if (onSuccess) {
+        onSuccess(res);
+      } else {
+        Toast.fire({
+          icon: "success",
+          title: res?.data?.message || t("page.category.upload.successMsg")
+        });
+      }
+      handleClose();
     },
     onError: (err) => {
-      Toast.fire({
-        icon: "error",
-        title: err?.response?.data?.message || t("page.category.upload.errorMsg")
-      });
+      if (onError) {
+        onError(err);
+      } else {
+        Toast.fire({
+          icon: "error",
+          title: err?.response?.data?.message || t("page.category.upload.errorMsg")
+        });
+      }
     }
   });
 
+  const handleClose = () => {
+    setFile(null);
+    setDragActive(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    onOpenChange?.(false);
+  };
+
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
+    if (selectedFile) setFile(selectedFile);
   };
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
 
   const handleDrop = (e) => {
@@ -51,9 +79,7 @@ const UploadCategoryModal = ({ onClose }) => {
     e.stopPropagation();
     setDragActive(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
+    if (droppedFile) setFile(droppedFile);
   };
 
   const handleUpload = () => {
@@ -61,20 +87,15 @@ const UploadCategoryModal = ({ onClose }) => {
       Toast.fire({ icon: "warning", title: t("page.category.selectFileFirst") });
       return;
     }
-    const formData = new FormData();
-    formData.append("file", file);
-    mutation.mutate(formData);
+    mutation.mutate(file);
   };
 
-  const removeFile = () => {
-    setFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  if (!open) return null;
 
   return (
     <div>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
         <div className="relative w-full max-w-2xl max-h-[90vh] bg-card rounded-2xl shadow-2xl border border-border/50 flex flex-col animate-in zoom-in-95 fade-in duration-200">
           <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
             <div className="flex items-center gap-3">
@@ -82,17 +103,13 @@ const UploadCategoryModal = ({ onClose }) => {
                 <FileSpreadsheet size={22} className="text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {t("page.category.upload.title")}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {t("page.category.upload.subtitle")}
-                </p>
+                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+                <p className="text-sm text-muted-foreground">{subtitle}</p>
               </div>
             </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
               <X size={20} />
             </button>
@@ -113,7 +130,7 @@ const UploadCategoryModal = ({ onClose }) => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls,.csv"
+                accept={accept}
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -133,7 +150,8 @@ const UploadCategoryModal = ({ onClose }) => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeFile();
+                      setFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
                     className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0">
                     <X size={18} />
@@ -141,9 +159,7 @@ const UploadCategoryModal = ({ onClose }) => {
                 </div>
               ) : (
                 <div
-                  className={`flex flex-col items-center gap-4 transition-all ${
-                    dragActive ? "scale-105" : ""
-                  }`}>
+                  className={`flex flex-col items-center gap-4 transition-all ${dragActive ? "scale-105" : ""}`}>
                   <div
                     className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-colors ${
                       dragActive ? "bg-primary/10" : "bg-muted/50"
@@ -183,7 +199,7 @@ const UploadCategoryModal = ({ onClose }) => {
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={onClose} className="gap-2 px-5">
+              <Button variant="outline" onClick={handleClose} className="gap-2 px-5">
                 {t("common.cancel")}
               </Button>
               <Button
@@ -210,8 +226,16 @@ const UploadCategoryModal = ({ onClose }) => {
   );
 };
 
-UploadCategoryModal.propTypes = {
-  onClose: PropTypes.func.isRequired
+UploadExcelModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onOpenChange: PropTypes.func.isRequired,
+  uploadService: PropTypes.func.isRequired,
+  queryKey: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired,
+  accept: PropTypes.string,
+  onSuccess: PropTypes.func,
+  onError: PropTypes.func
 };
 
-export default UploadCategoryModal;
+export default UploadExcelModal;

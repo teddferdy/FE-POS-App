@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
-import UploadCategoryModal from "@/page/category/components/UploadCategoryModal";
+import UploadExcelModal from "@/components/organism/UploadExcelModal";
+import { uploadExcel } from "@/services/category";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -214,7 +215,7 @@ const CategoryList = () => {
         <span className="text-sm text-muted-foreground">
           {Array.isArray(cat.store) && cat.store.length > 0
             ? cat.store.map(s => s.name || `Store #${s.id}`).join(", ")
-            : "All"}
+            : t("page.category.form.storeSection.allStores")}
         </span>
       )
     },
@@ -550,12 +551,18 @@ const CategoryList = () => {
         confirmText={t("page.category.modal.confirmDelete")}
         onConfirm={confirmDelete}
       />
-      {uploadModalOpen && (
-        <UploadCategoryModal
-          onClose={() => setUploadModalOpen(false)}
-          onUploadSuccess={() => queryClient.invalidateQueries(["categories"])}
-        />
-      )}
+      <UploadExcelModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        uploadService={(file) => {
+          const fd = new FormData();
+          fd.append("file", file);
+          return uploadExcel(fd);
+        }}
+        queryKey={["categories"]}
+        title={t("page.category.upload.title")}
+        subtitle={t("page.category.upload.subtitle")}
+      />
     </div>
   );
 };

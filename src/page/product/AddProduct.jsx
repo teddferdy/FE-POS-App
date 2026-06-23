@@ -16,7 +16,6 @@ import {
   Info,
   Trash2,
   GripVertical,
-  Store,
   Package,
   TrendingUp,
   ChevronLeft,
@@ -44,6 +43,7 @@ import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 
 import UserGuide from "@/components/organism/UserGuide";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 
@@ -81,6 +81,7 @@ const AddProduct = () => {
   const [selectedStores, setSelectedStores] = useState(
     searchParams.get("location") ? [searchParams.get("location")] : user?.store ? [user?.store] : []
   );
+  const [allStores, setAllStores] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -374,7 +375,7 @@ const AddProduct = () => {
   };
 
   const onSubmit = async (values, saveAsDraft = false) => {
-    if (selectedStores.length === 0 && !saveAsDraft) {
+    if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
       toast.error(t("page.product.form.selectStoreError"), {
         description: t("page.product.form.selectStoreErrorDesc")
       });
@@ -538,90 +539,22 @@ const AddProduct = () => {
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
                     <div className="grid grid-cols-1 gap-6">
-                      {isSuperAdmin ? (
-                        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <Store size={20} className="text-primary shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground">
-                                {t("page.product.add.storeSection.title")}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {t("page.product.add.storeSection.desc")}
-                              </p>
-                            </div>
-                            {locations.length > 0 && (
-                              <span className="text-xs text-muted-foreground">
-                                {t("page.product.add.storeSection.selected", {
-                                  count: selectedStores.length
-                                })}
-                              </span>
-                            )}
-                          </div>
-                          {locations.length === 0 ? (
-                            <div className="flex items-center gap-3 pl-9">
-                              <p className="text-sm text-muted-foreground">
-                                {t("page.product.add.storeSection.noStore")}
-                              </p>
-                              <Button
-                                size="sm"
-                                onClick={() => navigate("/add-location")}
-                                className="gap-1.5 shrink-0">
-                                <Plus size={16} />
-                                {t("page.product.add.storeSection.addStore")}
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2 pl-9">
-                              {locations.map((loc) => {
-                                const isChecked = selectedStores.includes(loc.id);
-                                return (
-                                  <button
-                                    key={loc.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedStores((prev) =>
-                                        isChecked
-                                          ? prev.filter((id) => id !== loc.id)
-                                          : [...prev, loc.id]
-                                      );
-                                    }}
-                                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                      isChecked
-                                        ? "bg-primary/10 border-primary text-primary"
-                                        : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                                    }`}>
-                                    {loc.name}
-                                    {isChecked && (
-                                      <svg
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      ) : selectedStores.length > 0 ? (
-                        <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
-                          <Store size={16} className="shrink-0" />
-                          <span>
-                            {t("page.product.add.storeInfo")}{" "}
-                            <strong className="text-foreground">
-                              {user?.storeName || `Toko #${selectedStores[0]}`}
-                            </strong>
-                          </span>
-                        </div>
-                      ) : null}
+                      <StoreSelectCard
+                        locations={locations}
+                        selectedStores={selectedStores}
+                        onChange={setSelectedStores}
+                        isSuperAdmin={isSuperAdmin}
+                        user={user}
+                        t={t}
+                        title={t("page.product.add.storeSection.title")}
+                        description={t("page.product.add.storeSection.desc")}
+                        noStoreLabel={t("page.product.add.storeSection.noStore")}
+                        addStoreLabel={t("page.product.add.storeSection.addStore")}
+                        storeInfoLabel={t("page.product.add.storeInfo")}
+                        allStores={allStores}
+                        onAllStoresChange={setAllStores}
+                        navigate={navigate}
+                      />
 
                       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                         <div className="flex items-center gap-2 pb-4 border-b border-border mb-5">
