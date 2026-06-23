@@ -71,7 +71,7 @@ const AddCategory = () => {
         isActive: d.status !== "inactive"
       });
       const storeData = d.store;
-      if (!storeData) {
+      if (!storeData || (Array.isArray(storeData) && storeData.length === 0)) {
         setAllStores(true);
         setSelectedStore([]);
       } else if (Array.isArray(storeData)) {

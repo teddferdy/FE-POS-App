@@ -3741,6 +3741,7 @@
   "page.ingredientCategory.list.tableDibuat": "Created",
   "page.ingredientCategory.list.tableKode": "Code",
   "page.ingredientCategory.list.tableNama": "Name",
+  "page.ingredientCategory.list.tableStore": "Store",
   "page.ingredientCategory.list.tableStatus": "Status",
   "page.ingredientCategory.list.title": "Ingredient Categories",
   "page.ingredientCategory.list.toastError": "Error",

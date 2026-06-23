@@ -96,6 +96,16 @@ const CategoryList = () => {
       )
     },
     {
+      header: t("page.ingredientCategory.list.tableStore"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {Array.isArray(item.store) && item.store.length > 0
+            ? item.store.map((s) => s.name || `Store #${s.id}`).join(", ")
+            : t("page.category.form.storeSection.allStores")}
+        </span>
+      )
+    },
+    {
       header: t("page.ingredientCategory.list.tableStatus"),
       render: (item) => (
         <span
@@ -158,6 +168,7 @@ const CategoryList = () => {
     {
       header: t("page.ingredientCategory.list.tableAksi"),
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
