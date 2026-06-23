@@ -7,7 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { Save, X, Store, Plus } from "lucide-react";
+import { Save, X } from "lucide-react";
 import {
   addIngredientCategory,
   getIngredientCategoryById,
@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import AbortController from "@/components/organism/abort-controller";
@@ -41,7 +42,8 @@ const AddCategory = () => {
   const [showCancel, setShowCancel] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
 
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
@@ -68,7 +70,15 @@ const AddCategory = () => {
         name: d.name || "",
         isActive: d.status !== "inactive"
       });
-      setSelectedStore(d.store || null);
+      const storeData = d.store;
+      if (!storeData) {
+        setAllStores(true);
+        setSelectedStore([]);
+      } else if (Array.isArray(storeData)) {
+        setSelectedStore(storeData.map((s) => (typeof s === "object" ? s.id : s)));
+      } else {
+        setSelectedStore([]);
+      }
     },
     onError: () => {
       toast.error(t("page.ingredientCategory.add.toastError"), {
@@ -103,14 +113,14 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && !selectedStore && !saveAsDraft) {
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
       toast.error(t("page.ingredientCategory.add.storeRequired"));
       return;
     }
     const payload = {
       name: values.name.trim(),
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: selectedStore
+      store: JSON.stringify(selectedStore)
     };
     if (isEdit) {
       editMutation.mutate({ ...payload, id: editId });
@@ -161,78 +171,22 @@ const AddCategory = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
                 <div className="grid grid-cols-12 gap-6">
                   <div className="col-span-12">
-                    {isSuperAdmin && (
-                      <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Store size={20} className="text-primary shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">
-                              {t("page.ingredientCategory.add.storeSection.title")}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {t("page.ingredientCategory.add.storeSection.desc")}
-                            </p>
-                          </div>
-                        </div>
-                        {locations.length === 0 ? (
-                          <div className="flex items-center gap-3 pl-9">
-                            <p className="text-sm text-muted-foreground">
-                              {t("page.ingredientCategory.add.storeSection.noStore")}
-                            </p>
-                            <Button
-                              size="sm"
-                              onClick={() => navigate("/add-location")}
-                              className="gap-1.5 shrink-0">
-                              <Plus size={16} />
-                              {t("page.ingredientCategory.add.storeSection.addStore")}
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2 pl-9">
-                            {locations.map((loc) => {
-                              const isChecked = selectedStore === loc.id;
-                              return (
-                                <button
-                                  key={loc.id}
-                                  type="button"
-                                  onClick={() => setSelectedStore(isChecked ? null : loc.id)}
-                                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                    isChecked
-                                      ? "bg-primary/10 border-primary text-primary"
-                                      : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                                  }`}>
-                                  {loc.name}
-                                  {isChecked && (
-                                    <svg
-                                      width="14"
-                                      height="14"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round">
-                                      <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {!isSuperAdmin && (selectedStore || user?.store) && (
-                      <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                        <Store size={16} className="shrink-0" />
-                        <span>
-                          {t("page.ingredientCategory.add.storeInfo")}{" "}
-                          <strong className="text-foreground">
-                            {user?.storeName || `Toko #${selectedStore || user?.store || ""}`}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
+                    <StoreSelectCard
+                      locations={locations}
+                      selectedStores={selectedStore}
+                      onChange={setSelectedStore}
+                      isSuperAdmin={isSuperAdmin}
+                      user={user}
+                      t={t}
+                      title={t("page.ingredientCategory.add.storeSection.title")}
+                      description={t("page.ingredientCategory.add.storeSection.desc")}
+                      noStoreLabel={t("page.ingredientCategory.add.storeSection.noStore")}
+                      addStoreLabel={t("page.ingredientCategory.add.storeSection.addStore")}
+                      storeInfoLabel={t("page.ingredientCategory.add.storeInfo")}
+                      allStores={allStores}
+                      onAllStoresChange={setAllStores}
+                      navigate={navigate}
+                    />
 
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                       <h3 className="text-base font-semibold text-foreground mb-6">
