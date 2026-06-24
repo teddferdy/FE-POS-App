@@ -221,6 +221,14 @@ const EditProduct = () => {
     }
   });
 
+  const parseJsonOrId = (val) => {
+    if (!val) return ''
+    const t = typeof val === 'string'
+      ? (() => { try { return JSON.parse(val) } catch { return val } })()
+      : val
+    return String(t?.id ?? t)
+  }
+
   useEffect(() => {
     if (product.id) {
       form.reset({
@@ -228,16 +236,10 @@ const EditProduct = () => {
         barcode: product.barcode || "",
         brand: product.brand || "",
         sku: product.sku || "",
-        category: String(product.category || ""),
+        category: parseJsonOrId(product.category),
         tipeProduk: product.tipeProduk || "menu",
-        supplier: product.supplier ? String(product.supplier) : "",
-        tax: (() => {
-          if (!product.tax) return ''
-          const t = typeof product.tax === 'string'
-            ? (() => { try { return JSON.parse(product.tax) } catch { return product.tax } })()
-            : product.tax
-          return String(t?.id ?? t)
-        })(),
+        supplier: parseJsonOrId(product.supplier),
+        tax: parseJsonOrId(product.tax),
         description: product.description || "",
         price: product.price || "",
         costPrice: product.costPrice || "",
@@ -288,7 +290,7 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (product.id && categories.length > 0 && product.category) {
-      form.setValue("category", String(product.category));
+      form.setValue("category", parseJsonOrId(product.category));
     }
   }, [categories, product.id, product.category, form]);
 
