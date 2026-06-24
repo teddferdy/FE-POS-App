@@ -1238,6 +1238,8 @@
   "page.product.table.image": "Gambar",
   "page.product.table.name": "Nama",
   "page.product.table.category": "Kategori",
+  "page.product.table.store": "Toko",
+  "page.product.allStores": "Semua Toko",
   "page.product.table.price": "Harga",
   "page.product.table.stock": "Stok",
   "page.product.table.available": "Ketersediaan",

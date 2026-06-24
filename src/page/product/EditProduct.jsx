@@ -268,7 +268,7 @@ const EditProduct = () => {
       if (product.image) {
         setPreviewImage(product.image);
       }
-      if (product.store) {
+      if (product.store !== undefined) {
         const storeArr = Array.isArray(product.store) ? product.store : [];
         if (storeArr.length === 0) {
           setAllStores(true);

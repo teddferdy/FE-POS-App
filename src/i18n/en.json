@@ -1241,6 +1241,8 @@
   "page.product.table.image": "Image",
   "page.product.table.name": "Name",
   "page.product.table.category": "Category",
+  "page.product.table.store": "Store",
+  "page.product.allStores": "All Stores",
   "page.product.table.price": "Price",
   "page.product.table.stock": "Stock",
   "page.product.table.available": "Available",

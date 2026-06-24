@@ -201,7 +201,7 @@ const ProductList = () => {
       header: t("page.product.table.name"),
       render: (product) => (
         <div>
-          <p className="font-medium text-foreground text-sm">{product.name}</p>
+          <p className="font-medium text-foreground text-sm">{product.nameProduct}</p>
           <p className="text-xs text-muted-foreground font-mono">{product.sku || "-"}</p>
         </div>
       )
@@ -223,6 +223,16 @@ const ProductList = () => {
       render: (product) => (
         <span className="text-sm text-foreground">
           {product.nameCategory || product.category?.name || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.product.table.store"),
+      render: (product) => (
+        <span className="text-sm text-muted-foreground">
+          {Array.isArray(product.storeList) && product.storeList.length > 0
+            ? product.storeList.map(s => s.name || `Store #${s.id}`).join(", ")
+            : t("page.product.allStores")}
         </span>
       )
     },
