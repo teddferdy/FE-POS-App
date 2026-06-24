@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import {
   X,
@@ -17,13 +17,16 @@ import {
   AlertCircle,
   Wallet,
   RotateCcw,
-  Search
+  Search,
+  Plus,
+  UserPlus
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { createTransaction } from "@/services/transaction";
-import { getAllCustomer } from "@/services/customer";
+import { getAllCustomer, addCustomer } from "@/services/customer";
 import { getDiscount } from "@/services/discount";
+import { getAllMemberTier } from "@/services/member-tier";
 import { toast } from "sonner";
 
 const PAYMENT_METHODS = [
@@ -44,6 +47,7 @@ const CheckoutModal = ({
   onComplete
 }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [step] = useState("payment");
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -56,6 +60,10 @@ const CheckoutModal = ({
   const [discountSearch, setDiscountSearch] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [fullPayment, setFullPayment] = useState(false);
+  const [addCustomerOpen, setAddCustomerOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
+  const [newCustomerPhone, setNewCustomerPhone] = useState("");
+  const [selectedTier, setSelectedTier] = useState(null);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -83,6 +91,11 @@ const CheckoutModal = ({
 
   const { data: customersData } = useQuery(["customers"], getAllCustomer, {});
   const { data: discountsData } = useQuery(["discounts"], getDiscount, {});
+  const { data: tiersData } = useQuery(
+    ["member-tiers-active"],
+    () => getAllMemberTier({ status: "active" }),
+    { staleTime: 5 * 60 * 1000 }
+  );
 
   const customers = useMemo(() => {
     const data = customersData?.data || customersData || [];
@@ -93,6 +106,11 @@ const CheckoutModal = ({
     const data = discountsData?.data || discountsData || [];
     return Array.isArray(data) ? data : [];
   }, [discountsData]);
+
+  const memberTiers = useMemo(() => {
+    const data = tiersData?.data || tiersData?.tiers || [];
+    return Array.isArray(data) ? data : [];
+  }, [tiersData]);
 
   const taxRate = 0.11;
   const taxAmount = subtotal * taxRate;
@@ -166,6 +184,36 @@ const CheckoutModal = ({
       );
     }
   });
+
+  const addCustomerMutation = useMutation({
+    mutationFn: (payload) => addCustomer(payload),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["customers"]);
+      const newCust = res?.data || res;
+      if (newCust?.id || newCust?._id) {
+        setSelectedCustomer(newCust);
+        setCustomerSearch(newCust.name || newCust.Name || newCustomerName);
+      }
+      setAddCustomerOpen(false);
+      setNewCustomerName("");
+      setNewCustomerPhone("");
+      setSelectedTier(null);
+      toast.success(t("page.cashier.customerAdded"));
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || err?.message || t("page.cashier.customerAddError"));
+    }
+  });
+
+  const handleAddCustomer = useCallback(() => {
+    if (!newCustomerName.trim()) return;
+    addCustomerMutation.mutate({
+      name: newCustomerName.trim(),
+      phone: newCustomerPhone.trim(),
+      phoneNumber: newCustomerPhone.trim(),
+      tier: selectedTier?.id || null
+    });
+  }, [newCustomerName, newCustomerPhone, selectedTier, addCustomerMutation]);
 
   const handleSubmit = useCallback(() => {
     if (!paymentMethod) {
@@ -330,19 +378,17 @@ const CheckoutModal = ({
                     </button>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm">
-                      Rp
-                    </span>
                     <input
                       ref={cashInputRef}
-                      type="number"
-                      value={cashAmount}
+                      type="text"
+                      value={cashAmount ? `Rp ${Number(cashAmount).toLocaleString("id-ID")}` : ""}
                       onChange={(e) => {
-                        setCashAmount(e.target.value);
+                        setCashAmount(e.target.value.replace(/[^0-9]/g, ""));
                         setFullPayment(false);
                       }}
-                      placeholder="0"
-                      className="w-full h-12 pl-10 pr-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      placeholder="Rp 0"
+                      className="w-full h-12 px-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors text-right"
+                      inputMode="numeric"
                     />
                   </div>
                   {cashAmountNum > 0 && cashAmountNum < total && (
@@ -381,22 +427,30 @@ const CheckoutModal = ({
                 <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
                   {t("page.cashier.customer")}
                 </label>
-                <div className="relative">
-                  <Search
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <input
-                    type="text"
-                    value={customerSearch}
-                    onChange={(e) => {
-                      setCustomerSearch(e.target.value);
-                      setShowCustomerDropdown(true);
-                    }}
-                    onFocus={() => setShowCustomerDropdown(true)}
-                    placeholder={t("page.cashier.searchCustomer")}
-                    className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
-                  />
+                <div className="relative flex gap-2">
+                  <div className="relative flex-1">
+                    <Search
+                      size={15}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <input
+                      type="text"
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        setShowCustomerDropdown(true);
+                      }}
+                      onFocus={() => setShowCustomerDropdown(true)}
+                      placeholder={t("page.cashier.searchCustomer")}
+                      className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setAddCustomerOpen(true)}
+                    className="shrink-0 w-10 h-10 rounded-xl bg-primary/10 border border-border/60 flex items-center justify-center text-primary hover:bg-primary/20 transition-all"
+                    title={t("page.cashier.addCustomer")}>
+                    <Plus size={18} />
+                  </button>
                 </div>
                 {showCustomerDropdown && (
                   <div className="absolute z-10 mt-1 w-full bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
@@ -485,6 +539,7 @@ const CheckoutModal = ({
                   </div>
                 )}
               </div>
+
             </>
           )}
 
@@ -534,6 +589,102 @@ const CheckoutModal = ({
             </div>
           )}
         </div>
+
+        {addCustomerOpen && (
+          <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                  <UserPlus size={18} className="text-primary" />
+                  <h3 className="font-semibold">{t("page.cashier.addCustomerTitle")}</h3>
+                </div>
+                <button onClick={() => setAddCustomerOpen(false)} className="p-1 rounded-lg hover:bg-accent transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-5">
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerName")}</label>
+                  <input
+                    type="text"
+                    value={newCustomerName}
+                    onChange={(e) => setNewCustomerName(e.target.value)}
+                    placeholder={t("page.cashier.addCustomerName")}
+                    className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                    autoFocus
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerPhone")}</label>
+                  <input
+                    type="text"
+                    value={newCustomerPhone}
+                    onChange={(e) => setNewCustomerPhone(e.target.value.replace(/\D/g, ""))}
+                    placeholder={t("page.cashier.addCustomerPhone")}
+                    className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                    inputMode="numeric"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerMemberTier")}</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {memberTiers.length === 0 ? (
+                      <div className="col-span-2 text-sm text-muted-foreground bg-accent/30 rounded-xl px-3 py-2">
+                        {t("page.cashier.addCustomerNoTier")}
+                      </div>
+                    ) : (
+                      memberTiers.map((tier) => {
+                        const isSelected = selectedTier?.id === tier.id;
+                        return (
+                          <button
+                            key={tier.id}
+                            onClick={() => setSelectedTier(isSelected ? null : tier)}
+                            className={`text-left p-3 rounded-xl border transition-all ${
+                              isSelected
+                                ? "border-primary bg-primary/10 shadow-sm"
+                                : "border-border/50 bg-accent/30 hover:border-border hover:bg-accent/50"
+                            }`}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ backgroundColor: tier.color || "#f59e0b" }}
+                              />
+                              <span className="text-sm font-semibold">{tier.name}</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground mt-1 block">
+                              {tier.discountPercent > 0
+                                ? `${tier.discountPercent}% ${t("page.cashier.discount")}`
+                                : "-"}
+                            </span>
+                            {isSelected && tier.benefits?.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-border/40 space-y-1">
+                                {tier.benefits.map((b, i) => (
+                                  <div key={i} className="flex items-start gap-1.5">
+                                    <Check size={10} className="text-emerald-500 mt-0.5 shrink-0" />
+                                    <span className="text-[11px] text-muted-foreground">{b}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 px-5 py-4 border-t border-border/50 bg-muted/20">
+                <Button variant="outline" onClick={() => setAddCustomerOpen(false)} className="flex-1">
+                  {t("page.cashier.addCustomerCancel")}
+                </Button>
+                <Button onClick={handleAddCustomer} disabled={!newCustomerName.trim() || addCustomerMutation.isLoading} className="flex-1">
+                  {addCustomerMutation.isLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                  {t("page.cashier.addCustomerSave")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-border/50 p-4 shrink-0">
           <Button

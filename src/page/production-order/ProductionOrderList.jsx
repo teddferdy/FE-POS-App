@@ -278,11 +278,36 @@ const ProductionOrderList = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatCard label={t("page.productionOrder.list.statTotal")} value={stats.total ?? total} icon="factory" variant="default" />
-        <StatCard label={t("page.productionOrder.list.statDraft")} value={stats.draft ?? 0} icon="edit_note" variant="draft" />
-        <StatCard label={t("page.productionOrder.list.statPlanned")} value={stats.planned ?? 0} icon="schedule" variant="default" />
-        <StatCard label={t("page.productionOrder.list.statInProgress")} value={stats.inProgress ?? 0} icon="play_circle" variant="active" />
-        <StatCard label={t("page.productionOrder.list.statCompleted")} value={stats.completed ?? 0} icon="check_circle" variant="active" />
+        <StatCard
+          label={t("page.productionOrder.list.statTotal")}
+          value={stats.total ?? total}
+          icon="factory"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.productionOrder.list.statDraft")}
+          value={stats.draft ?? 0}
+          icon="edit_note"
+          variant="draft"
+        />
+        <StatCard
+          label={t("page.productionOrder.list.statPlanned")}
+          value={stats.planned ?? 0}
+          icon="schedule"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.productionOrder.list.statInProgress")}
+          value={stats.inProgress ?? 0}
+          icon="play_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("page.productionOrder.list.statCompleted")}
+          value={stats.completed ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
       </div>
 
       {isError ? (

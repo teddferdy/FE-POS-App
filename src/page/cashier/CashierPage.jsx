@@ -93,12 +93,22 @@ const CashierPage = () => {
   const products = productsData?.data || productsData || [];
 
   const catId = (p) => {
-    const raw = p.category?.id ?? p.category?._id ?? p.category ?? p.categoryId?.id ?? p.categoryId?._id ?? ''
-    if (typeof raw === 'string') {
-      try { return JSON.parse(raw).id } catch { return raw }
+    const raw =
+      p.category?.id ??
+      p.category?._id ??
+      p.category ??
+      p.categoryId?.id ??
+      p.categoryId?._id ??
+      "";
+    if (typeof raw === "string") {
+      try {
+        return JSON.parse(raw).id;
+      } catch {
+        return raw;
+      }
     }
-    return raw
-  }
+    return raw;
+  };
 
   const filteredProducts = products.filter((p) => {
     const name = (p.nameProduct || p.name || "").toLowerCase();
@@ -239,7 +249,7 @@ const CashierPage = () => {
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setShowCartMobile(false)}
               />
-              <div className="fixed right-0 top-0 h-screen w-[88vw] sm:max-w-md bg-card/95 backdrop-blur-xl border-l border-border/50 shadow-2xl flex flex-col">
+              <div className="fixed right-0 top-0 bottom-0 w-[88vw] sm:max-w-md bg-card/95 backdrop-blur-xl border-l border-border/50 shadow-2xl flex flex-col">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
                   <h2 className="font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                     {t("page.cashier.orderCount", { count: totalItems })}
@@ -265,19 +275,17 @@ const CashierPage = () => {
           )}
 
           {/* Desktop cart sidebar */}
-          <div className="hidden lg:relative lg:flex lg:w-[380px] xl:w-[420px] border-l border-border/50 bg-card/50 backdrop-blur-sm">
-            <div className="w-full flex flex-col h-full">
-              <CartPanel
-                items={cart.order}
-                subtotal={subtotal}
-                onIncrement={cart.incrementOrder}
-                onDecrement={cart.decrementOrder}
-                onDelete={cart.handleDeleteOrder}
-                onCheckout={() => setCheckoutOpen(true)}
-                totalItems={totalItems}
-                onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
-              />
-            </div>
+          <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+            <CartPanel
+              items={cart.order}
+              subtotal={subtotal}
+              onIncrement={cart.incrementOrder}
+              onDecrement={cart.decrementOrder}
+              onDelete={cart.handleDeleteOrder}
+              onCheckout={() => setCheckoutOpen(true)}
+              totalItems={totalItems}
+              onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+            />
           </div>
         </div>
 

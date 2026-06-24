@@ -214,9 +214,7 @@ const ProductList = () => {
     },
     {
       header: t("page.product.table.brand"),
-      render: (product) => (
-        <span className="text-sm text-foreground">{product.brand || "-"}</span>
-      )
+      render: (product) => <span className="text-sm text-foreground">{product.brand || "-"}</span>
     },
     {
       header: t("page.product.table.category"),
@@ -231,7 +229,7 @@ const ProductList = () => {
       render: (product) => (
         <span className="text-sm text-muted-foreground">
           {Array.isArray(product.storeList) && product.storeList.length > 0
-            ? product.storeList.map(s => s.name || `Store #${s.id}`).join(", ")
+            ? product.storeList.map((s) => s.name || `Store #${s.id}`).join(", ")
             : t("page.product.allStores")}
         </span>
       )
@@ -240,7 +238,11 @@ const ProductList = () => {
       header: t("page.product.table.productType"),
       render: (product) => (
         <span className="text-sm text-foreground capitalize">
-          {product.tipeProduk === "bahan_baku" ? t("page.product.form.tipeProdukBahanBaku") : product.tipeProduk === "menu" ? t("page.product.form.tipeProdukMenu") : product.tipeProduk || t("page.product.form.tipeProdukMenu")}
+          {product.tipeProduk === "bahan_baku"
+            ? t("page.product.form.tipeProdukBahanBaku")
+            : product.tipeProduk === "menu"
+              ? t("page.product.form.tipeProdukMenu")
+              : product.tipeProduk || t("page.product.form.tipeProdukMenu")}
         </span>
       )
     },
@@ -291,9 +293,7 @@ const ProductList = () => {
     },
     {
       header: t("page.product.table.tax"),
-      render: (product) => (
-        <span className="text-sm text-foreground">{renderTax(product.tax)}</span>
-      )
+      render: (product) => <span className="text-sm text-foreground">{renderTax(product.tax)}</span>
     },
     {
       header: t("page.product.table.point"),
@@ -497,21 +497,41 @@ const ProductList = () => {
               </Button>
             )}
           </PageHeader>
+        </div>
       </div>
-    </div>
 
-    <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard label={t("page.product.stats.total")} value={stats.total} icon="inventory_2" variant="default" />
-      <StatCard label={t("page.product.stats.active")} value={stats.active} icon="check_circle" variant="active" />
-      <StatCard label={t("page.product.stats.nonActive")} value={stats.nonActive} icon="cancel" variant="inactive" />
-      <StatCard label={t("page.product.stats.draft")} value={stats.draft} icon="edit_note" variant="draft" />
-    </div>
+      <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label={t("page.product.stats.total")}
+          value={stats.total}
+          icon="inventory_2"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.product.stats.active")}
+          value={stats.active}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("page.product.stats.nonActive")}
+          value={stats.nonActive}
+          icon="cancel"
+          variant="inactive"
+        />
+        <StatCard
+          label={t("page.product.stats.draft")}
+          value={stats.draft}
+          icon="edit_note"
+          variant="draft"
+        />
+      </div>
 
-    <div>
       <div>
-        <div
-          data-tour="product-search"
-          className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
+        <div>
+          <div
+            data-tour="product-search"
+            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
             <div className="flex-1 w-full relative">
               <Search
                 size={16}
@@ -529,7 +549,9 @@ const ProductList = () => {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">{t("common.all")} {t("page.product.table.category")}</option>
+                <option value="">
+                  {t("common.all")} {t("page.product.table.category")}
+                </option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.name}>
                     {cat.name}
@@ -592,7 +614,6 @@ const ProductList = () => {
         uploadService={uploadProductExcel}
         queryKey={["products"]}
         title={t("page.product.upload.title")}
-       
       />
     </div>
   );

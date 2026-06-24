@@ -1,7 +1,24 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Package, Edit3, Calendar, User, Tag, DollarSign, Box, Ruler, ShoppingCart, Coffee, Beef, Star, BadgePercent, Repeat, Scale } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  Edit3,
+  Calendar,
+  User,
+  Tag,
+  DollarSign,
+  Box,
+  Ruler,
+  ShoppingCart,
+  Coffee,
+  Beef,
+  Star,
+  BadgePercent,
+  Repeat,
+  Scale
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,8 +59,8 @@ const availableBadge = (isAvailable, t) => {
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
       <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400" />
-        {t("page.product.detail.unavailable")}
-      </span>
+      {t("page.product.detail.unavailable")}
+    </span>
   );
 };
 
@@ -52,9 +69,13 @@ const DetailProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data, isLoading, isError, refetch } = useQuery(["product", id], () => getProductById(id), {
-    enabled: !!id
-  });
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["product", id],
+    () => getProductById(id),
+    {
+      enabled: !!id
+    }
+  );
 
   const product = data?.data || data;
 
@@ -99,14 +120,19 @@ const DetailProduct = () => {
   const parseComposition = () => {
     if (Array.isArray(product.composition)) return product.composition;
     if (typeof product.composition === "string") {
-      try { return JSON.parse(product.composition); } catch { return []; }
+      try {
+        return JSON.parse(product.composition);
+      } catch {
+        return [];
+      }
     }
     return [];
   };
   const composition = parseComposition();
   const hasComposition = composition.length > 0;
 
-  const typeIcon = product.tipeProduk === "menu" ? Coffee : product.tipeProduk === "bahan" ? Beef : Package;
+  const typeIcon =
+    product.tipeProduk === "menu" ? Coffee : product.tipeProduk === "bahan" ? Beef : Package;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -121,7 +147,9 @@ const DetailProduct = () => {
           {t("breadcrumb.product")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{product.nameProduct || product.name || "Detail"}</span>
+        <span className="text-primary font-semibold">
+          {product.nameProduct || product.name || "Detail"}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -173,27 +201,42 @@ const DetailProduct = () => {
               <p className="font-mono text-sm">{product.sku || "-"}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.category")}</p>
-              <p className="font-medium">{product.nameCategory || product.categoryData?.name || product.category?.name || "-"}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.detail.category")}
+              </p>
+              <p className="font-medium">
+                {product.nameCategory ||
+                  product.categoryData?.name ||
+                  product.category?.name ||
+                  "-"}
+              </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">{t("page.product.table.status")}</p>
               {statusBadge(product.status, t)}
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.sellingPrice")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.detail.sellingPrice")}
+              </p>
               <p className="font-medium">Rp {formatPrice(product.price || 0)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.costPrice")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.detail.costPrice")}
+              </p>
               <p className="font-medium">Rp {formatPrice(product.costPrice || 0)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.stock")}</p>
-              <p className="font-medium">{product.stock ?? 0} {product.unit || ""}</p>
+              <p className="font-medium">
+                {product.stock ?? 0} {product.unit || ""}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.minStock")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.detail.minStock")}
+              </p>
               <p className="font-medium">{product.minStock ?? 0}</p>
             </div>
             <div>
@@ -201,7 +244,9 @@ const DetailProduct = () => {
               <p className="font-medium capitalize">{product.tipeProduk || "menu"}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.detail.availability")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.detail.availability")}
+              </p>
               {availableBadge(product.isAvailableHariIni ?? product.isAvailable ?? true, t)}
             </div>
             {product.brand && (
@@ -212,12 +257,16 @@ const DetailProduct = () => {
             )}
             {product.barcode && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{t("page.product.form.barcode")}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.product.form.barcode")}
+                </p>
                 <p className="font-mono text-sm">{product.barcode}</p>
               </div>
             )}
             <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">{t("page.product.form.description")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.product.form.description")}
+              </p>
               <p className="font-medium">{product.description || product.descProduct || "-"}</p>
             </div>
           </div>
@@ -225,22 +274,32 @@ const DetailProduct = () => {
           {hasOptions && (
             <div className="border-t border-border/50 mt-5 pt-4">
               <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                {product.isOption ? t("page.product.form.option") : t("page.product.detail.variants")}
+                {product.isOption
+                  ? t("page.product.form.option")
+                  : t("page.product.detail.variants")}
               </p>
               <div className="space-y-2">
                 {options.map((opt, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
                     <div className="flex items-center gap-2">
                       {opt.image && (
                         <div className="w-8 h-8 rounded-md overflow-hidden">
-                          <img src={opt.image} alt={opt.nameVariant || opt.name || ""} className="w-full h-full object-cover" />
+                          <img
+                            src={opt.image}
+                            alt={opt.nameVariant || opt.name || ""}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       )}
                       <span className="text-sm font-medium">
                         {opt.nameVariant || opt.name || opt.nameOption || opt.label || "-"}
                       </span>
                     </div>
-                    <span className="text-sm font-bold">Rp {formatPrice(opt.price || opt.priceOption || 0)}</span>
+                    <span className="text-sm font-bold">
+                      Rp {formatPrice(opt.price || opt.priceOption || 0)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -254,16 +313,25 @@ const DetailProduct = () => {
               </p>
               <div className="space-y-2">
                 {composition.map((comp, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
-                    <span className="text-sm font-medium">{comp.name || comp.bahan || comp.ingredient || "-"}</span>
-                    <span className="text-sm text-muted-foreground">{comp.qty || comp.quantity || comp.jumlah || ""} {comp.unit || comp.satuan || ""}</span>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
+                    <span className="text-sm font-medium">
+                      {comp.name || comp.bahan || comp.ingredient || "-"}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {comp.qty || comp.quantity || comp.jumlah || ""}{" "}
+                      {comp.unit || comp.satuan || ""}
+                    </span>
                   </div>
                 ))}
               </div>
               <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-muted-foreground">
                 <div className="p-2 rounded bg-muted/20">
                   <p>{t("page.product.detail.hppPerPortion")}</p>
-                  <p className="font-semibold text-foreground">Rp {formatPrice(product.hppPerPorsi || 0)}</p>
+                  <p className="font-semibold text-foreground">
+                    Rp {formatPrice(product.hppPerPorsi || 0)}
+                  </p>
                 </div>
                 <div className="p-2 rounded bg-muted/20">
                   <p>{t("page.product.detail.foodCost")}</p>
@@ -280,11 +348,23 @@ const DetailProduct = () => {
           <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <User size={13} className="shrink-0" />
-              <span>{t("common.createdBy")}: {product.createdByUser?.fullName || product.createdByUser?.userName || product.createdBy || "-"}</span>
+              <span>
+                {t("common.createdBy")}:{" "}
+                {product.createdByUser?.fullName ||
+                  product.createdByUser?.userName ||
+                  product.createdBy ||
+                  "-"}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <User size={13} className="shrink-0" />
-              <span>{t("common.modifiedBy")}: {product.modifiedByUser?.fullName || product.modifiedByUser?.userName || product.modifiedBy || "-"}</span>
+              <span>
+                {t("common.modifiedBy")}:{" "}
+                {product.modifiedByUser?.fullName ||
+                  product.modifiedByUser?.userName ||
+                  product.modifiedBy ||
+                  "-"}
+              </span>
             </div>
           </div>
         </Card>
@@ -301,7 +381,11 @@ const DetailProduct = () => {
                 <p className="text-sm font-medium">
                   {product.createdAt
                     ? new Date(product.createdAt).toLocaleDateString("id-ID", {
-                        year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
                       })
                     : "-"}
                 </p>
@@ -311,7 +395,11 @@ const DetailProduct = () => {
                 <p className="text-sm font-medium">
                   {product.updatedAt
                     ? new Date(product.updatedAt).toLocaleDateString("id-ID", {
-                        year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
                       })
                     : "-"}
                 </p>
@@ -326,27 +414,37 @@ const DetailProduct = () => {
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("page.product.detail.stock")}</span>
-                    <span className="text-sm font-bold">{product.stock ?? 0}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.product.detail.stock")}
+                </span>
+                <span className="text-sm font-bold">{product.stock ?? 0}</span>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <span className="text-sm text-muted-foreground">{t("page.product.detail.sellingPrice")}</span>
-                    <span className="text-sm font-bold">Rp {formatPrice(product.price || 0)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.product.detail.sellingPrice")}
+                </span>
+                <span className="text-sm font-bold">Rp {formatPrice(product.price || 0)}</span>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <span className="text-sm text-muted-foreground">{t("page.product.detail.costPrice")}</span>
-                    <span className="text-sm font-bold">Rp {formatPrice(product.costPrice || 0)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.product.detail.costPrice")}
+                </span>
+                <span className="text-sm font-bold">Rp {formatPrice(product.costPrice || 0)}</span>
               </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                      <span className="text-sm text-muted-foreground">{t("page.product.detail.margin")}</span>
-                      <span className="text-sm font-bold">{product.marginPersen || "0"}%</span>
-                    </div>
-               {product.point > 0 && (
-                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                   <span className="text-sm text-muted-foreground">{t("page.product.detail.memberPoints")}</span>
-                   <span className="text-sm font-bold">{product.point}</span>
-                 </div>
-               )}
+              <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                <span className="text-sm text-muted-foreground">
+                  {t("page.product.detail.margin")}
+                </span>
+                <span className="text-sm font-bold">{product.marginPersen || "0"}%</span>
+              </div>
+              {product.point > 0 && (
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <span className="text-sm text-muted-foreground">
+                    {t("page.product.detail.memberPoints")}
+                  </span>
+                  <span className="text-sm font-bold">{product.point}</span>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -366,7 +464,9 @@ const DetailProduct = () => {
                   <span className="font-medium">{product.unit}</span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                  <span className="text-muted-foreground">{t("page.product.detail.conversionFactor")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.product.detail.conversionFactor")}
+                  </span>
                   <span className="font-medium">{product.conversionFactor || 1}</span>
                 </div>
               </div>

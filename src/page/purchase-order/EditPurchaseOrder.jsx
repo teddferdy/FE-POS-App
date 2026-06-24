@@ -654,7 +654,10 @@ const EditPurchaseOrder = () => {
                   disabled={updateMutation.isLoading}>
                   Simpan sebagai Draft
                 </Button>
-                <Button type="submit" disabled={updateMutation.isLoading} className="gap-2 shadow-md">
+                <Button
+                  type="submit"
+                  disabled={updateMutation.isLoading}
+                  className="gap-2 shadow-md">
                   <Save size={18} />
                   {updateMutation.isLoading
                     ? t("common.saving")
@@ -683,7 +686,10 @@ const EditPurchaseOrder = () => {
         title="Simpan sebagai Draft"
         description="Data PO akan disimpan sebagai draft"
         confirmText="Ya, Simpan Draft"
-        onConfirm={() => { setDraftModal(false); handleSubmit(null, true); }}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(null, true);
+        }}
       />
       {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>

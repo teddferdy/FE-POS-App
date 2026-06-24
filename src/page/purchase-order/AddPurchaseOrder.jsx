@@ -738,7 +738,10 @@ const AddPurchaseOrder = () => {
         title="Simpan sebagai Draft"
         description="Data PO akan disimpan sebagai draft"
         confirmText="Ya, Simpan Draft"
-        onConfirm={() => { setDraftModal(false); handleSubmit(null, true); }}
+        onConfirm={() => {
+          setDraftModal(false);
+          handleSubmit(null, true);
+        }}
       />
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>

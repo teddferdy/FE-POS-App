@@ -39,7 +39,7 @@ const ProfilePage = () => {
     );
   }
 
-  const statusActive = user.status !== 'inactive';
+  const statusActive = user.status !== "inactive";
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString("id-ID", {
@@ -53,7 +53,7 @@ const ProfilePage = () => {
     <div>
       <div className="space-y-6">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <button
+          <button
             onClick={() => navigate(-1)}
             className="font-medium hover:text-primary transition-colors flex items-center gap-1">
             <ArrowLeft size={16} />
@@ -115,7 +115,9 @@ const ProfilePage = () => {
               {user.startDate && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar size={14} />
-                  <span>{t("page.profile.joined")} {formatDate(user.startDate)}</span>
+                  <span>
+                    {t("page.profile.joined")} {formatDate(user.startDate)}
+                  </span>
                 </div>
               )}
             </div>
@@ -150,7 +152,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-{t("page.profile.phone")}
+                    {t("page.profile.phone")}
                   </p>
                   <p className="text-sm text-foreground flex items-center gap-2">
                     <Phone size={14} className="text-muted-foreground shrink-0" />
@@ -207,7 +209,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-{t("page.profile.type")}
+                    {t("page.profile.type")}
                   </p>
                   <p className="text-sm text-foreground">{user.userType || "-"}</p>
                 </div>
@@ -237,7 +239,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-{t("page.profile.store")}
+                    {t("page.profile.store")}
                   </p>
                   <p className="text-sm text-foreground">{user.storeName || "-"}</p>
                 </div>
@@ -265,14 +267,18 @@ const ProfilePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.placeOfBirth")}</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">
+                    {t("page.profile.placeOfBirth")}
+                  </p>
                   <p className="text-lg font-bold text-foreground">{user.placeOfBirth || "-"}</p>
                 </div>
                 <MapPin className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />
               </div>
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.dateOfBirth")}</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">
+                    {t("page.profile.dateOfBirth")}
+                  </p>
                   <p className="text-lg font-bold text-foreground">
                     {formatDate(user.dateOfBirth)}
                   </p>
@@ -281,11 +287,13 @@ const ProfilePage = () => {
               </div>
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 relative overflow-hidden">
                 <div className="relative z-10">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">{t("page.profile.status")}</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">
+                    {t("page.profile.status")}
+                  </p>
                   <p
                     className={`text-lg font-bold flex items-center gap-1 ${statusActive ? "text-green-600" : "text-red-600"}`}>
                     {statusActive ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                {statusActive ? t("common.active") : t("common.inactive")}
+                    {statusActive ? t("common.active") : t("common.inactive")}
                   </p>
                 </div>
                 <Shield className="absolute -right-4 -bottom-4 text-5xl text-primary/5" />

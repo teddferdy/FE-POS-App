@@ -345,7 +345,12 @@ const PurchaseOrderList = () => {
         if (!po.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(po.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -354,7 +359,12 @@ const PurchaseOrderList = () => {
         if (!po.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(po.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -488,10 +498,30 @@ const PurchaseOrderList = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatCard label={t("page.purchaseOrder.list.title")} value={total} icon="shopping_cart" variant="default" />
-        <StatCard label={t("page.purchaseOrder.status.pending")} value={data?.stats?.pending ?? 0} icon="edit_note" variant="draft" />
-        <StatCard label={t("page.purchaseOrder.status.received")} value={data?.stats?.received ?? 0} icon="check_circle" variant="active" />
-        <StatCard label={t("page.purchaseOrder.status.cancelled")} value={data?.stats?.cancelled ?? 0} icon="cancel" variant="inactive" />
+        <StatCard
+          label={t("page.purchaseOrder.list.title")}
+          value={total}
+          icon="shopping_cart"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.pending")}
+          value={data?.stats?.pending ?? 0}
+          icon="edit_note"
+          variant="draft"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.received")}
+          value={data?.stats?.received ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.cancelled")}
+          value={data?.stats?.cancelled ?? 0}
+          icon="cancel"
+          variant="inactive"
+        />
       </div>
 
       {isError ? (
@@ -755,7 +785,6 @@ const PurchaseOrderList = () => {
         uploadService={uploadPurchaseOrderExcel}
         queryKey={["purchase-orders"]}
         title={t("page.purchaseOrder.list.importModalTitle")}
-       
       />
 
       {payModal &&

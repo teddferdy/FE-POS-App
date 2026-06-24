@@ -127,14 +127,14 @@ const CartPanel = ({
   const isEmpty = !items || items.length === 0;
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 flex flex-col min-h-0">
       <div className="hidden lg:flex items-center justify-between px-5 py-4 border-b border-border/50 shrink-0">
         <h2 className="font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           {t("page.cashier.orderCount", { count: totalItems })}
         </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin overscroll-contain px-3 py-3 space-y-2">
+      <div className="flex-1 overflow-y-auto scrollbar-thin overscroll-contain min-h-0 px-3 py-3 space-y-2">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center gap-4 h-full">
             <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center">

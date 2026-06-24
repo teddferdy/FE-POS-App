@@ -59,5 +59,14 @@
   "sidebar.daftarProduk": "商品一覧",
   "sidebar.pelanggan": "顧客",
   "sidebar.daftarMember": "会員一覧",
-  "sidebar.memberTier": "会員ランク"
+  "sidebar.memberTier": "会員ランク",
+  "page.cashier.selectVariant": "バリアントを選択",
+  "page.cashier.selectOption": "オプションを選択",
+  "page.cashier.selectModifier": "モディファイアを選択",
+  "page.cashier.chooseVariant": "利用可能なオプションから選択してください",
+  "page.cashier.availableVariants": "選択可能なオプション",
+  "page.cashier.noVariants": "選択肢がありません",
+  "page.cashier.variant": "バリアント",
+  "page.cashier.stock": "在庫",
+  "page.cashier.addToCart": "カートに追加"
 }

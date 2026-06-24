@@ -120,14 +120,14 @@ const AddProduct = () => {
     () => getAllSupplier({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const supplierOptions = (suppliersData?.data || []).filter(s => s.status === 'active');
+  const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");
 
   const { data: taxData } = useQuery(
     ["tax-configs-for-product"],
     () => getAllTaxConfig({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const taxOptions = (taxData?.data || []).filter(t => t.status === 'active');
+  const taxOptions = (taxData?.data || []).filter((t) => t.status === "active");
 
   const formSchema = useMemo(() => {
     return z.object({

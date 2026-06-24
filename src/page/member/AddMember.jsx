@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 
 const formSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal("")),
   phoneNumber: z.string().min(1),
   birthDate: z.date(),
   gender: z.enum(["male", "female"]),
@@ -95,7 +95,7 @@ const AddMember = () => {
     createMutation.mutate({
       nameMember: form.name,
       phoneNumber: form.phoneNumber,
-      email: form.email,
+      email: form.email || undefined,
       birthDate: form.birthDate ? format(form.birthDate, "yyyy-MM-dd") : "",
       gender: form.gender,
       address: form.address,
@@ -152,7 +152,7 @@ const AddMember = () => {
                       </div>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t("page.member.add.email")} <span className="text-destructive">*</span>
+                          {t("page.member.add.email")}
                         </label>
                         <input
                           name="email"
@@ -161,7 +161,6 @@ const AddMember = () => {
                           onChange={handleChange}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                           placeholder={t("page.member.add.emailPlaceholder")}
-                          required
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
@@ -474,7 +473,7 @@ const AddMember = () => {
           createMutation.mutate({
             nameMember: form.name,
             phoneNumber: form.phoneNumber,
-            email: form.email,
+            email: form.email || undefined,
             birthDate: form.birthDate ? format(form.birthDate, "yyyy-MM-dd") : null,
             gender: form.gender,
             address: form.address,

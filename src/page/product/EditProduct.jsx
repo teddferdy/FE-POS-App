@@ -125,9 +125,8 @@ const EditProduct = () => {
   });
   const product = productData?.data || {};
 
-  const { data: categoriesData } = useQuery(
-    ["categories-for-edit"],
-    () => getAllCategory({ location: product.store || "" })
+  const { data: categoriesData } = useQuery(["categories-for-edit"], () =>
+    getAllCategory({ location: product.store || "" })
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
@@ -138,14 +137,14 @@ const EditProduct = () => {
     () => getAllSupplier({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const supplierOptions = (suppliersData?.data || []).filter(s => s.status === 'active');
+  const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");
 
   const { data: taxData } = useQuery(
     ["tax-configs-for-edit"],
     () => getAllTaxConfig({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const taxOptions = (taxData?.data || []).filter(t => t.status === 'active');
+  const taxOptions = (taxData?.data || []).filter((t) => t.status === "active");
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: isSuperAdmin
@@ -222,12 +221,19 @@ const EditProduct = () => {
   });
 
   const parseJsonOrId = (val) => {
-    if (!val) return ''
-    const t = typeof val === 'string'
-      ? (() => { try { return JSON.parse(val) } catch { return val } })()
-      : val
-    return String(t?.id ?? t)
-  }
+    if (!val) return "";
+    const t =
+      typeof val === "string"
+        ? (() => {
+            try {
+              return JSON.parse(val);
+            } catch {
+              return val;
+            }
+          })()
+        : val;
+    return String(t?.id ?? t);
+  };
 
   useEffect(() => {
     if (product.id) {
@@ -296,10 +302,17 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (product.id && taxOptions.length > 0 && product.tax) {
-      const t = typeof product.tax === 'string'
-        ? (() => { try { return JSON.parse(product.tax) } catch { return product.tax } })()
-        : product.tax
-      const id = String(t?.id ?? t)
+      const t =
+        typeof product.tax === "string"
+          ? (() => {
+              try {
+                return JSON.parse(product.tax);
+              } catch {
+                return product.tax;
+              }
+            })()
+          : product.tax;
+      const id = String(t?.id ?? t);
       form.setValue("tax", id);
     }
   }, [taxOptions, product.id, product.tax, form]);
