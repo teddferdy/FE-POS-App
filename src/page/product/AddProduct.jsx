@@ -120,7 +120,7 @@ const AddProduct = () => {
     () => getAllSupplier({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const supplierOptions = suppliersData?.data || [];
+  const supplierOptions = (suppliersData?.data || []).filter(s => s.status === 'active');
 
   const { data: taxData } = useQuery(
     ["tax-configs-for-product"],
