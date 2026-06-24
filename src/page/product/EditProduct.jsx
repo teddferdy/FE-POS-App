@@ -625,7 +625,7 @@ const EditProduct = () => {
       <div>
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
               {/* Stepper */}
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
                 <div className="flex items-center justify-between max-w-2xl mx-auto">
