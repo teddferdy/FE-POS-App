@@ -231,7 +231,13 @@ const EditProduct = () => {
         category: String(product.category || ""),
         tipeProduk: product.tipeProduk || "menu",
         supplier: product.supplier ? String(product.supplier) : "",
-        tax: product.tax ? (() => { try { return String(JSON.parse(product.tax).id) } catch { return '' } })() : '',
+        tax: (() => {
+          if (!product.tax) return ''
+          const t = typeof product.tax === 'string'
+            ? (() => { try { return JSON.parse(product.tax) } catch { return product.tax } })()
+            : product.tax
+          return String(t?.id ?? t)
+        })(),
         description: product.description || "",
         price: product.price || "",
         costPrice: product.costPrice || "",
@@ -288,10 +294,11 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (product.id && taxOptions.length > 0 && product.tax) {
-      try {
-        const id = String(JSON.parse(product.tax).id);
-        form.setValue("tax", id);
-      } catch {}
+      const t = typeof product.tax === 'string'
+        ? (() => { try { return JSON.parse(product.tax) } catch { return product.tax } })()
+        : product.tax
+      const id = String(t?.id ?? t)
+      form.setValue("tax", id);
     }
   }, [taxOptions, product.id, product.tax, form]);
 
