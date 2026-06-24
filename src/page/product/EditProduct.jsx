@@ -145,7 +145,7 @@ const EditProduct = () => {
     () => getAllTaxConfig({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const taxOptions = taxData?.data || [];
+  const taxOptions = (taxData?.data || []).filter(t => t.status === 'active');
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: isSuperAdmin

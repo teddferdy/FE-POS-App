@@ -127,7 +127,7 @@ const AddProduct = () => {
     () => getAllTaxConfig({ limit: 100 }),
     { enabled: isSuperAdmin }
   );
-  const taxOptions = taxData?.data || [];
+  const taxOptions = (taxData?.data || []).filter(t => t.status === 'active');
 
   const formSchema = useMemo(() => {
     return z.object({
