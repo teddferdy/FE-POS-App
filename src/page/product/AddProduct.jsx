@@ -534,7 +534,7 @@ const AddProduct = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
