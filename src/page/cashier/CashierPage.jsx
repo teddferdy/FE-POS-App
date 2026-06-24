@@ -92,19 +92,20 @@ const CashierPage = () => {
 
   const products = productsData?.data || productsData || [];
 
+  const catId = (p) => {
+    const raw = p.category?.id ?? p.category?._id ?? p.category ?? p.categoryId?.id ?? p.categoryId?._id ?? ''
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw).id } catch { return raw }
+    }
+    return raw
+  }
+
   const filteredProducts = products.filter((p) => {
     const name = (p.nameProduct || p.name || "").toLowerCase();
     const sku = (p.sku || "").toLowerCase();
     const q = search.toLowerCase();
     const matchesSearch = !search || name.includes(q) || sku.includes(q);
-    const cat =
-      p.category?.id ||
-      p.category?._id ||
-      p.category ||
-      p.categoryId?.id ||
-      p.categoryId?._id ||
-      "";
-    const matchesCategory = !categoryId || cat === categoryId;
+    const matchesCategory = !categoryId || String(catId(p)) === String(categoryId);
     return matchesSearch && matchesCategory;
   });
 
