@@ -127,8 +127,7 @@ const EditProduct = () => {
 
   const { data: categoriesData } = useQuery(
     ["categories-for-edit"],
-    () => getAllCategory({ location: product.store || "" }),
-    { enabled: !!product.store }
+    () => getAllCategory({ location: product.store || "" })
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
@@ -232,7 +231,7 @@ const EditProduct = () => {
         category: String(product.category || ""),
         tipeProduk: product.tipeProduk || "menu",
         supplier: product.supplier ? String(product.supplier) : "",
-        tax: product.tax ? String(product.tax) : "",
+        tax: product.tax ? (() => { try { return String(JSON.parse(product.tax).id) } catch { return '' } })() : '',
         description: product.description || "",
         price: product.price || "",
         costPrice: product.costPrice || "",
@@ -280,6 +279,21 @@ const EditProduct = () => {
       }
     }
   }, [product, form]);
+
+  useEffect(() => {
+    if (product.id && categories.length > 0 && product.category) {
+      form.setValue("category", String(product.category));
+    }
+  }, [categories, product.id, product.category, form]);
+
+  useEffect(() => {
+    if (product.id && taxOptions.length > 0 && product.tax) {
+      try {
+        const id = String(JSON.parse(product.tax).id);
+        form.setValue("tax", id);
+      } catch {}
+    }
+  }, [taxOptions, product.id, product.tax, form]);
 
   const isOption = form.watch("isOption");
   const hasModifiers = form.watch("hasModifiers");
