@@ -26,7 +26,7 @@ const EditSupplier = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.supplier.validation.nameRequired")),
     contactPerson: z.string().optional().or(z.literal("")),
-    phone: z.string().max(14).optional().or(z.literal("")),
+    phone: z.string().min(1, t("page.supplier.validation.phoneRequired")).max(14),
     email: z
       .string()
       .email(t("page.supplier.validation.emailInvalid"))
@@ -185,7 +185,10 @@ const EditSupplier = () => {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("page.supplier.form.phone")}</FormLabel>
+                          <FormLabel>
+                            {t("page.supplier.form.phone")}{" "}
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
                           <Input
                             placeholder={t("page.supplier.form.phonePlaceholder")}
                             inputMode="numeric"

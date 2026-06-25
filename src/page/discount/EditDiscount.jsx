@@ -24,7 +24,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
@@ -70,7 +77,8 @@ const EditDiscount = () => {
     endTime: z.string().optional().or(z.literal("")),
     daysOfWeek: z.string().optional().or(z.literal("")),
     categoryIds: z.string().optional().or(z.literal("")),
-    catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal(""))
+    catDiscountPercent: z.coerce.number().min(1).max(100).optional().or(z.literal("")),
+    store: z.string().optional()
   });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -129,7 +137,8 @@ const EditDiscount = () => {
       endTime: "",
       daysOfWeek: "",
       categoryIds: "",
-      catDiscountPercent: ""
+      catDiscountPercent: "",
+      store: ""
     }
   });
 
@@ -222,6 +231,11 @@ const EditDiscount = () => {
   };
 
   const onSubmit = (values, saveAsDraft = false) => {
+    if (isSuperAdmin && !allStores && selectedStores.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+      return;
+    }
+    form.clearErrors("store");
     const conditions = buildConditions(values);
     const isAdvanced = values.promoType !== "standard";
 
@@ -275,6 +289,11 @@ const EditDiscount = () => {
 
   const handleTypeClick = (e) => {
     e.preventDefault();
+    if (isSuperAdmin && !allStores && selectedStores.length === 0) {
+      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+      return;
+    }
+    form.clearErrors("store");
     form.handleSubmit((v) => onSubmit(v, false))();
   };
 
@@ -305,24 +324,42 @@ const EditDiscount = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
             <div className="grid grid-cols-12">
               <div className="col-span-12">
-                <StoreSelectCard
-                  locations={locations}
-                  selectedStores={selectedStores}
-                  onChange={setSelectedStores}
-                  isSuperAdmin={isSuperAdmin}
-                  user={user}
-                  t={t}
-                  title={t("page.category.form.storeSection.title")}
-                  description={t("page.category.form.storeSection.desc")}
-                  noStoreLabel={t("page.category.form.storeSection.noStore")}
-                  addStoreLabel={t("page.category.form.storeSection.addStore")}
-                  storeInfoLabel={t("page.category.form.storeInfo")}
-                  allStores={allStores}
-                  onAllStoresChange={setAllStores}
-                  navigate={navigate}
+                <FormField
+                  control={form.control}
+                  name="store"
+                  render={() => (
+                    <FormItem>
+                      <FormControl>
+                        <StoreSelectCard
+                          locations={locations}
+                          selectedStores={selectedStores}
+                          onChange={(stores) => {
+                            setSelectedStores(stores);
+                            form.clearErrors("store");
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          user={user}
+                          t={t}
+                          title={t("page.category.form.storeSection.title")}
+                          description={t("page.category.form.storeSection.desc")}
+                          noStoreLabel={t("page.category.form.storeSection.noStore")}
+                          addStoreLabel={t("page.category.form.storeSection.addStore")}
+                          storeInfoLabel={t("page.category.form.storeInfo")}
+                          allStores={allStores}
+                          onAllStoresChange={(val) => {
+                            setAllStores(val);
+                            form.clearErrors("store");
+                          }}
+                          navigate={navigate}
+                          mandatory={true}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
             </div>
@@ -761,18 +798,24 @@ const EditDiscount = () => {
                 )}
               />
               <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
-                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCancelModal(true)}
+                  className="gap-2">
                   <X size={18} />
                   {t("breadcrumb.back")}
                 </Button>
                 <div className="flex gap-3">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={updateMutation.isLoading}>
                     {t("page.discount.add.saveAsDraft")}
                   </Button>
                   <Button
+                    type="button"
                     onClick={handleTypeClick}
                     disabled={updateMutation.isLoading}
                     className="gap-2">

@@ -147,7 +147,8 @@ const EditLocation = () => {
 
   const { data: managerEmployeesData } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
-    () => getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: 'active' }),
+    () =>
+      getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: "active" }),
     { enabled: managerModalOpen }
   );
   const managerEmployees = managerEmployeesData?.data || managerEmployeesData?.employees || [];
@@ -159,7 +160,11 @@ const EditLocation = () => {
       name: z.string().min(1, "Required"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
-      phoneNumber: z.string().min(1, "Required").regex(/^\d*$/, "Digits only").max(14, "Max 14 digits"),
+      phoneNumber: z
+        .string()
+        .min(1, "Required")
+        .regex(/^\d*$/, "Digits only")
+        .max(14, "Max 14 digits"),
       email: z.string().optional(),
       address: z.string().min(1, "Required"),
       detailLocation: z.string().optional(),
@@ -530,7 +535,8 @@ const EditLocation = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.location.form.nameLabel")} <span className="text-destructive">*</span>{" "}
+                                {t("page.location.form.nameLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
                               </FormLabel>
                               <Input
                                 {...field}
@@ -569,7 +575,8 @@ const EditLocation = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                {t("page.location.form.phoneLabel")} <span className="text-destructive">*</span>{" "}
+                                {t("page.location.form.phoneLabel")}{" "}
+                                <span className="text-destructive">*</span>{" "}
                               </FormLabel>
                               <div className="relative">
                                 <Phone
@@ -630,7 +637,8 @@ const EditLocation = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {t("page.location.form.addressLabel")} <span className="text-destructive">*</span>{" "}
+                              {t("page.location.form.addressLabel")}{" "}
+                              <span className="text-destructive">*</span>{" "}
                             </FormLabel>
                             <div className="relative">
                               <MapPin

@@ -50,7 +50,9 @@ const AddShift = () => {
       staleTime: 5 * 60 * 1000
     }
   );
-  const employees = (employeesData?.data || employeesData?.employees || []).filter(e => e.status === 'active');
+  const employees = (employeesData?.data || employeesData?.employees || []).filter(
+    (e) => e.status === "active"
+  );
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
   const locations = locationsData?.data || locationsData?.locations || [];

@@ -28,7 +28,14 @@ import {
 import { useCookies } from "react-cookie";
 import PageHeader from "@/components/ui/PageHeader";
 import { Combobox } from "@/components/ui/combobox";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -188,7 +195,8 @@ const EditProduct = () => {
       status: z.boolean().default(true),
       isAvailable: z.boolean().default(true),
       isOption: z.boolean().default(false),
-      hasModifiers: z.boolean().default(false)
+      hasModifiers: z.boolean().default(false),
+      store: z.string().optional()
     });
   }, []);
 
@@ -216,7 +224,8 @@ const EditProduct = () => {
       status: true,
       isAvailable: true,
       isOption: false,
-      hasModifiers: false
+      hasModifiers: false,
+      store: ""
     }
   });
 
@@ -530,6 +539,11 @@ const EditProduct = () => {
   };
 
   const onSubmit = async (values, saveAsDraft = false) => {
+    if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.product.form.selectStoreError") });
+      return;
+    }
+    form.clearErrors("store");
     if (values.tipeProduk === "bahan_baku" && !saveAsDraft) {
       if (composition.length === 0) {
         toast.error(t("page.product.form.compositionRequired"), {
@@ -717,21 +731,39 @@ const EditProduct = () => {
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
                     <div className="grid grid-cols-1 gap-6">
-                      <StoreSelectCard
-                        locations={locations}
-                        selectedStores={selectedStores}
-                        onChange={setSelectedStores}
-                        isSuperAdmin={isSuperAdmin}
-                        user={user}
-                        t={t}
-                        title={t("page.product.add.storeSection.title")}
-                        description={t("page.product.add.storeSection.desc")}
-                        noStoreLabel={t("page.product.add.storeSection.noStore")}
-                        addStoreLabel={t("page.product.add.storeSection.addStore")}
-                        storeInfoLabel={t("page.product.add.storeInfo")}
-                        allStores={allStores}
-                        onAllStoresChange={setAllStores}
-                        navigate={navigate}
+                      <FormField
+                        control={form.control}
+                        name="store"
+                        render={() => (
+                          <FormItem>
+                            <FormControl>
+                              <StoreSelectCard
+                                locations={locations}
+                                selectedStores={selectedStores}
+                                onChange={(stores) => {
+                                  setSelectedStores(stores);
+                                  form.clearErrors("store");
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                user={user}
+                                t={t}
+                                title={t("page.product.add.storeSection.title")}
+                                description={t("page.product.add.storeSection.desc")}
+                                noStoreLabel={t("page.product.add.storeSection.noStore")}
+                                addStoreLabel={t("page.product.add.storeSection.addStore")}
+                                storeInfoLabel={t("page.product.add.storeInfo")}
+                                allStores={allStores}
+                                onAllStoresChange={(val) => {
+                                  setAllStores(val);
+                                  form.clearErrors("store");
+                                }}
+                                navigate={navigate}
+                                mandatory={true}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
 
                       {/* Informasi Produk */}
@@ -1814,7 +1846,20 @@ const EditProduct = () => {
                         <Save size={18} />
                         {t("page.product.form.saveDraft")}
                       </Button>
-                      <Button type="submit" disabled={isSubmitting} className="gap-2 shadow-md">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (!allStores && selectedStores.length === 0) {
+                            form.setError("store", {
+                              message: t("page.product.form.selectStoreError")
+                            });
+                            return;
+                          }
+                          form.clearErrors("store");
+                          form.handleSubmit((values) => onSubmit(values, false))();
+                        }}
+                        disabled={isSubmitting}
+                        className="gap-2 shadow-md">
                         <Save size={18} />
                         {t("page.product.form.saveEdit")}
                       </Button>

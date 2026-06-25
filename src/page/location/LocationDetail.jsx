@@ -633,9 +633,15 @@ const LocationDetail = () => {
                     {location.socialMedia && location.socialMedia.length > 0 ? (
                       <div className="space-y-2">
                         {location.socialMedia.map((sm, i) => (
-                          <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                            <span className="text-sm font-medium text-foreground">{sm.platform}</span>
-                            <span className="text-xs font-semibold text-muted-foreground">{sm.account}</span>
+                          <div
+                            key={i}
+                            className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                            <span className="text-sm font-medium text-foreground">
+                              {sm.platform}
+                            </span>
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              {sm.account}
+                            </span>
                           </div>
                         ))}
                       </div>

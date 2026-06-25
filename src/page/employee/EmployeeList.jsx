@@ -143,14 +143,14 @@ const EmployeeList = () => {
     {
       header: t("page.employee.form.employmentType"),
       render: (row) => (
-        <span className="text-sm">{row.employmentType ? t(`page.employee.add.${row.employmentType.replace("-", "")}`) : "-"}</span>
+        <span className="text-sm">
+          {row.employmentType ? t(`page.employee.add.${row.employmentType.replace("-", "")}`) : "-"}
+        </span>
       )
     },
     {
       header: t("page.employee.form.phoneNumber"),
-      render: (row) => (
-        <span className="text-sm">{row.phoneNumber || "-"}</span>
-      )
+      render: (row) => <span className="text-sm">{row.phoneNumber || "-"}</span>
     },
     {
       header: t("page.employee.table.branch"),
@@ -171,33 +171,47 @@ const EmployeeList = () => {
       render: (row) => (
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight border ${
-            row.status === 'active'
+            row.status === "active"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-              : row.status === 'draft'
+              : row.status === "draft"
                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
                 : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {row.status === 'active' ? t("common.active") : row.status === 'draft' ? t("common.draft") : t("common.inactive")}
+          {row.status === "active"
+            ? t("common.active")
+            : row.status === "draft"
+              ? t("common.draft")
+              : t("common.inactive")}
         </span>
       )
     },
     {
       header: t("common.createdBy"),
       render: (row) => (
-        <span className="text-sm">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+        <span className="text-sm">
+          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+        </span>
       )
     },
     {
       header: t("common.modifiedBy"),
       render: (row) => (
-        <span className="text-sm">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+        <span className="text-sm">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+        </span>
       )
     },
     {
       header: t("common.createdAt"),
       render: (row) => (
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {row.createdAt ? new Date(row.createdAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
+          {row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })
+            : "-"}
         </span>
       )
     },
@@ -205,7 +219,13 @@ const EmployeeList = () => {
       header: t("common.updatedAt"),
       render: (row) => (
         <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {row.updatedAt ? new Date(row.updatedAt).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-"}
+          {row.updatedAt
+            ? new Date(row.updatedAt).toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+              })
+            : "-"}
         </span>
       )
     },
@@ -271,10 +291,33 @@ const EmployeeList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatCard label={t("page.employee.table.total")} value={total.toLocaleString() || "0"} icon="groups" variant="default" subtitle="+12% vs bulan lalu" />
-              <StatCard label={t("page.employee.table.active")} value={activeCount.toLocaleString() || "0"} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`} />
-              <StatCard label={t("page.employee.table.draft")} value={draftCount.toLocaleString()} icon="edit_note" variant="draft" />
-              <StatCard label={t("page.employee.table.inactive")} value={inactiveCount.toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.employee.table.attentionNeeded")} />
+            <StatCard
+              label={t("page.employee.table.total")}
+              value={total.toLocaleString() || "0"}
+              icon="groups"
+              variant="default"
+              subtitle="+12% vs bulan lalu"
+            />
+            <StatCard
+              label={t("page.employee.table.active")}
+              value={activeCount.toLocaleString() || "0"}
+              icon="check_circle"
+              variant="active"
+              subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`}
+            />
+            <StatCard
+              label={t("page.employee.table.draft")}
+              value={draftCount.toLocaleString()}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.employee.table.inactive")}
+              value={inactiveCount.toLocaleString()}
+              icon="cancel"
+              variant="inactive"
+              subtitle={t("page.employee.table.attentionNeeded")}
+            />
           </div>
 
           <div data-tour="employee-table" className="mt-6">

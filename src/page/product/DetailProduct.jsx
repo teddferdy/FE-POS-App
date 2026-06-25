@@ -7,16 +7,16 @@ import {
   Edit3,
   Calendar,
   User,
-  Tag,
-  DollarSign,
-  Box,
-  Ruler,
+  // Tag,
+  // DollarSign,
+  // Box,
+  // Ruler,
   ShoppingCart,
-  Coffee,
-  Beef,
-  Star,
-  BadgePercent,
-  Repeat,
+  // Coffee,
+  // Beef,
+  // Star,
+  // BadgePercent,
+  // Repeat,
   Scale
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -131,8 +131,8 @@ const DetailProduct = () => {
   const composition = parseComposition();
   const hasComposition = composition.length > 0;
 
-  const typeIcon =
-    product.tipeProduk === "menu" ? Coffee : product.tipeProduk === "bahan" ? Beef : Package;
+  // const typeIcon =
+  //   product.tipeProduk === "menu" ? Coffee : product.tipeProduk === "bahan" ? Beef : Package;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">

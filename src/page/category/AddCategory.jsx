@@ -16,7 +16,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormControl
+} from "@/components/ui/form";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 
@@ -358,7 +365,8 @@ const AddCategory = () => {
     return z.object({
       name: z.string().min(1, "Nama kategori wajib diisi"),
       description: z.string().optional().or(z.literal("")),
-      isActive: z.boolean().default(true)
+      isActive: z.boolean().default(true),
+      store: z.string().optional()
     });
   }, []);
 
@@ -367,7 +375,8 @@ const AddCategory = () => {
     defaultValues: {
       name: "",
       description: "",
-      isActive: true
+      isActive: true,
+      store: ""
     }
   });
 
@@ -401,9 +410,10 @@ const AddCategory = () => {
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
-      toast.error("Pilih toko terlebih dahulu");
+      form.setError("store", { message: "Pilih toko terlebih dahulu" });
       return;
     }
+    form.clearErrors("store");
     setIsSubmitting(true);
     const payload = new FormData();
     payload.append("name", values.name);
@@ -448,24 +458,42 @@ const AddCategory = () => {
       <div>
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
-                  <StoreSelectCard
-                    locations={locations}
-                    selectedStores={selectedStore}
-                    onChange={setSelectedStore}
-                    isSuperAdmin={isSuperAdmin}
-                    user={user}
-                    t={t}
-                    title={t("page.category.form.storeSection.title")}
-                    description={t("page.category.form.storeSection.desc")}
-                    noStoreLabel={t("page.category.form.storeSection.noStore")}
-                    addStoreLabel={t("page.category.form.storeSection.addStore")}
-                    storeInfoLabel={t("page.category.form.storeInfo")}
-                    allStores={allStores}
-                    onAllStoresChange={setAllStores}
-                    navigate={navigate}
+                  <FormField
+                    control={form.control}
+                    name="store"
+                    render={() => (
+                      <FormItem>
+                        <FormControl>
+                          <StoreSelectCard
+                            locations={locations}
+                            selectedStores={selectedStore}
+                            onChange={(stores) => {
+                              setSelectedStore(stores);
+                              form.clearErrors("store");
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            user={user}
+                            t={t}
+                            title={t("page.category.form.storeSection.title")}
+                            description={t("page.category.form.storeSection.desc")}
+                            noStoreLabel={t("page.category.form.storeSection.noStore")}
+                            addStoreLabel={t("page.category.form.storeSection.addStore")}
+                            storeInfoLabel={t("page.category.form.storeInfo")}
+                            allStores={allStores}
+                            onAllStoresChange={(val) => {
+                              setAllStores(val);
+                              form.clearErrors("store");
+                            }}
+                            navigate={navigate}
+                            mandatory={true}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
                     <h3 className="text-base font-semibold text-foreground mb-6">
@@ -687,7 +715,14 @@ const AddCategory = () => {
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    onClick={() => {
+                      if (isSuperAdmin && !allStores && selectedStore.length === 0) {
+                        form.setError("store", { message: "Pilih toko terlebih dahulu" });
+                        return;
+                      }
+                      form.clearErrors("store");
+                      form.handleSubmit((v) => onSubmit(v, false))();
+                    }}
                     disabled={isSubmitting}>
                     {t("page.category.button.save")}
                   </Button>

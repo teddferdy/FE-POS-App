@@ -310,7 +310,7 @@ const NotificationPage = () => {
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => p - 1)}>
-{t("page.notification.previous")}
+                      {t("page.notification.previous")}
                     </Button>
                     <span className="text-sm text-muted-foreground">
                       {page} / {pagination.totalPages}
@@ -358,7 +358,9 @@ const NotificationPage = () => {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1 font-medium">{t("page.notification.descriptionLabel")}</p>
+              <p className="text-sm text-muted-foreground mb-1 font-medium">
+                {t("page.notification.descriptionLabel")}
+              </p>
               <p className="text-sm">{selectedNotif.description}</p>
             </div>
 
@@ -366,27 +368,28 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Hash size={14} />
                 <span>
-{t("page.notification.id")}: <strong className="text-foreground">{selectedNotif.id}</strong>
+                  {t("page.notification.id")}:{" "}
+                  <strong className="text-foreground">{selectedNotif.id}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User size={14} />
                 <span>
-{t("page.notification.createdBy")}:{" "}
+                  {t("page.notification.createdBy")}:{" "}
                   <strong className="text-foreground">{selectedNotif.createdBy ?? "-"}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Store size={14} />
                 <span>
-{t("page.notification.store")}:{" "}
+                  {t("page.notification.store")}:{" "}
                   <strong className="text-foreground">{selectedNotif.storeName ?? "-"}</strong>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Fingerprint size={14} />
                 <span>
-{t("page.notification.reference")}:{" "}
+                  {t("page.notification.reference")}:{" "}
                   <strong className="text-foreground">
                     {selectedNotif.referenceType} #{selectedNotif.referenceId}
                   </strong>
@@ -395,7 +398,7 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock size={14} />
                 <span>
-{t("page.notification.created")}:{" "}
+                  {t("page.notification.created")}:{" "}
                   <strong className="text-foreground">
                     {formatFullDate(selectedNotif.createdAt)}
                   </strong>
@@ -407,7 +410,7 @@ const NotificationPage = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
                 <Clock size={14} />
                 <span>
-{t("page.notification.updated")}:{" "}
+                  {t("page.notification.updated")}:{" "}
                   <strong className="text-foreground">
                     {formatFullDate(selectedNotif.updatedAt)}
                   </strong>

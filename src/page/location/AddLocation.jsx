@@ -105,7 +105,8 @@ const AddLocation = () => {
 
   const { data: managerEmployeesData } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
-    () => getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: 'active' }),
+    () =>
+      getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: "active" }),
     { enabled: managerModalOpen }
   );
   const managerEmployees = managerEmployeesData?.data || managerEmployeesData?.employees || [];
@@ -117,7 +118,11 @@ const AddLocation = () => {
       name: z.string().min(1, "Required"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
-      phoneNumber: z.string().min(1, "Required").regex(/^\d*$/, "Digits only").max(14, "Max 14 digits"),
+      phoneNumber: z
+        .string()
+        .min(1, "Required")
+        .regex(/^\d*$/, "Digits only")
+        .max(14, "Max 14 digits"),
       email: z.string().optional(),
       address: z.string().min(1, "Required"),
       detailLocation: z.string().optional(),

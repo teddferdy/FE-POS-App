@@ -153,7 +153,12 @@ const TaxConfigList = () => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -162,7 +167,12 @@ const TaxConfigList = () => {
         if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -296,10 +306,30 @@ const TaxConfigList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard label={t("page.taxConfig.stats.total")} value={stats.total ?? total} icon="receipt" variant="default" />
-            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
-            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
-            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.taxConfig.stats.total")}
+              value={stats.total ?? total}
+              icon="receipt"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
 
           <div className="relative w-full sm:w-72">
@@ -351,7 +381,6 @@ const TaxConfigList = () => {
         uploadService={uploadTaxConfigExcel}
         queryKey={["tax-configs"]}
         title={t("page.taxConfig.upload.title")}
-       
       />
     </div>
   );

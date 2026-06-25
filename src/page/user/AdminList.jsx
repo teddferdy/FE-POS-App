@@ -95,33 +95,6 @@ const AdminList = () => {
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
 
-  const stats = [
-    {
-      icon: "groups",
-      label: t("page.user.adminList.statsTotal"),
-      value: data?.stats?.total || total || 0,
-      badge: t("page.user.adminList.statsTotalBadge"),
-      iconBg: "bg-blue-100 dark:bg-blue-900/40",
-      iconColor: "text-blue-700 dark:text-blue-300"
-    },
-    {
-      icon: "verified_user",
-      label: t("page.user.adminList.statsActive"),
-      value: data?.stats?.active || 0,
-      badge: `${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`,
-      iconBg: "bg-green-100 dark:bg-green-900/40",
-      iconColor: "text-green-700 dark:text-green-300"
-    },
-    {
-      icon: "pending_actions",
-      label: t("page.user.adminList.statsPending"),
-      value: data?.stats?.pending || 0,
-      badge: t("page.user.adminList.statsPendingBadge"),
-      iconBg: "bg-red-100",
-      iconColor: "text-red-700"
-    }
-  ];
-
   return (
     <div>
       <div className="space-y-8">
@@ -162,9 +135,27 @@ const AdminList = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard label={t("page.user.adminList.statsTotal")} value={data?.stats?.total || total || 0} icon="admin_panel_settings" variant="default" subtitle={t("page.user.adminList.statsTotalBadge")} />
-              <StatCard label={t("page.user.adminList.statsActive")} value={data?.stats?.active || 0} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`} />
-              <StatCard label={t("page.user.adminList.statsPending")} value={data?.stats?.pending || 0} icon="edit_note" variant="draft" subtitle={t("page.user.adminList.statsPendingBadge")} />
+              <StatCard
+                label={t("page.user.adminList.statsTotal")}
+                value={data?.stats?.total || total || 0}
+                icon="admin_panel_settings"
+                variant="default"
+                subtitle={t("page.user.adminList.statsTotalBadge")}
+              />
+              <StatCard
+                label={t("page.user.adminList.statsActive")}
+                value={data?.stats?.active || 0}
+                icon="check_circle"
+                variant="active"
+                subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`}
+              />
+              <StatCard
+                label={t("page.user.adminList.statsPending")}
+                value={data?.stats?.pending || 0}
+                icon="edit_note"
+                variant="draft"
+                subtitle={t("page.user.adminList.statsPendingBadge")}
+              />
             </div>
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">

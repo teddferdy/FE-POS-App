@@ -17,7 +17,8 @@ const StoreSelectCard = ({
   storeInfoLabel,
   allStores,
   onAllStoresChange,
-  navigate
+  navigate,
+  mandatory
 }) => {
   if (!isSuperAdmin) {
     if (selectedStores.length > 0 || user?.store) {
@@ -47,7 +48,10 @@ const StoreSelectCard = ({
       <div className="flex items-center gap-3 mb-3">
         <Store size={20} className="text-primary shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="text-sm font-medium text-foreground">
+            {title}
+            {mandatory && <span className="text-destructive ml-0.5">*</span>}
+          </p>
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
         {locations.length > 0 && !allStores && (
@@ -189,7 +193,8 @@ StoreSelectCard.propTypes = {
   storeInfoLabel: PropTypes.string,
   allStores: PropTypes.bool,
   onAllStoresChange: PropTypes.func,
-  navigate: PropTypes.func.isRequired
+  navigate: PropTypes.func.isRequired,
+  mandatory: PropTypes.bool
 };
 
 export default StoreSelectCard;

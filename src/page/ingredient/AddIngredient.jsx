@@ -11,6 +11,7 @@ import { Save, X } from "lucide-react";
 import { addIngredient } from "@/services/ingredient";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllIngredientCategory } from "@/services/ingredientCategory";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -39,6 +40,9 @@ const AddIngredient = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  const user = cookie?.user;
+  const role = user?.roleType || "";
+  const isSuperAdmin = role === "super_admin";
   const [cancelModal, setCancelModal] = React.useState(false);
   const [draftModal, setDraftModal] = React.useState(false);
 
@@ -76,7 +80,8 @@ const AddIngredient = () => {
     stock: z.number(),
     minStock: z.number(),
     costPrice: z.number(),
-    isActive: z.boolean()
+    isActive: z.boolean(),
+    store: z.string().nullable()
   });
 
   const { data: suppliersData } = useQuery(
@@ -93,6 +98,13 @@ const AddIngredient = () => {
   );
   const categories = categoriesData?.data || [];
 
+  const { data: locationsData } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || locationsData?.locations || [];
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -105,7 +117,8 @@ const AddIngredient = () => {
       costPrice: 0,
       supplier: null,
       category: null,
-      isActive: true
+      isActive: true,
+      store: null
     }
   });
 
@@ -145,7 +158,7 @@ const AddIngredient = () => {
       supplier: values.supplier ? parseInt(values.supplier) : null,
       category: values.category ? parseInt(values.category) : null,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: cookie?.user?.store
+      store: values.store ? parseInt(values.store) : (cookie?.user?.store || null)
     });
   };
 
@@ -201,6 +214,28 @@ const AddIngredient = () => {
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
+              {isSuperAdmin && (
+                <FormField
+                  control={form.control}
+                  name="store"
+                  render={({ field }) => (
+                    <FormItem className="mb-6 bg-card rounded-xl p-4 border border-border shadow-sm">
+                      <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Toko{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Combobox
+                        options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
+                        value={field.value || ""}
+                        onChange={(v) => field.onChange(v || null)}
+                        placeholder="Pilih toko"
+                        searchPlaceholder="Cari toko..."
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -598,7 +633,14 @@ const AddIngredient = () => {
                     {t("common.saveAsDraft")}
                   </Button>
                   <Button
-                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    onClick={() => {
+                      if (isSuperAdmin && !form.getValues("store")) {
+                        form.setError("store", { message: "Pilih toko terlebih dahulu" });
+                        return;
+                      }
+                      form.clearErrors("store");
+                      form.handleSubmit((v) => onSubmit(v, false))();
+                    }}
                     disabled={mutation.isLoading}>
                     <Save size={16} className="mr-1" />{" "}
                     {mutation.isLoading

@@ -464,7 +464,9 @@ const AddEmployee = () => {
                                     }}
                                   />
                                   <FormMessage />
-                                  <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {t("common.phoneHint")}
+                                  </p>
                                 </FormItem>
                               )}
                             />

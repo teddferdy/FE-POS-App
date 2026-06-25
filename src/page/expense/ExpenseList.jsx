@@ -285,10 +285,30 @@ const ExpenseList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard label={t("page.expense.list.total")} value={total} icon="money_off" variant="default" />
-            <StatCard label={t("page.expense.list.pending")} value={pendingExpenses} icon="edit_note" variant="draft" />
-            <StatCard label={t("page.expense.list.approved")} value={approvedExpenses} icon="check_circle" variant="active" />
-            <StatCard label={t("page.expense.list.rejected")} value={rejectedExpenses} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.expense.list.total")}
+              value={total}
+              icon="money_off"
+              variant="default"
+            />
+            <StatCard
+              label={t("page.expense.list.pending")}
+              value={pendingExpenses}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.expense.list.approved")}
+              value={approvedExpenses}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("page.expense.list.rejected")}
+              value={rejectedExpenses}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
 
           <div>

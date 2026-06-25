@@ -233,7 +233,9 @@ const CheckoutModal = ({
       toast.success(t("page.cashier.customerAdded"));
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || t("page.cashier.customerAddError"));
+      toast.error(
+        err?.response?.data?.message || err?.message || t("page.cashier.customerAddError")
+      );
     }
   });
 
@@ -553,9 +555,7 @@ const CheckoutModal = ({
                               {d.nameDiscount || d.name || d.discountName || "-"}
                             </span>
                             <span className="text-muted-foreground text-xs ml-auto">
-                              {d.type === "percent"
-                                ? `${d.value}%`
-                                : `Rp ${formatPrice(d.value)}`}
+                              {d.type === "percent" ? `${d.value}%` : `Rp ${formatPrice(d.value)}`}
                             </span>
                           </button>
                         ))}
@@ -587,7 +587,11 @@ const CheckoutModal = ({
                     onClick={handleApplyPromoCode}
                     disabled={!promoCode.trim() || promoLoading || !!selectedDiscount}
                     className="h-10 px-4 rounded-xl shrink-0">
-                    {promoLoading ? <Loader2 size={14} className="animate-spin" /> : t("page.cashier.apply")}
+                    {promoLoading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      t("page.cashier.apply")
+                    )}
                   </Button>
                 </div>
                 {selectedDiscount && promoCode && (
@@ -597,7 +601,6 @@ const CheckoutModal = ({
                   </p>
                 )}
               </div>
-
             </>
           )}
 
@@ -650,19 +653,25 @@ const CheckoutModal = ({
 
         {addCustomerOpen && (
           <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="bg-card rounded-2xl shadow-2xl border border-border/50 w-full max-w-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
                 <div className="flex items-center gap-2">
                   <UserPlus size={18} className="text-primary" />
                   <h3 className="font-semibold">{t("page.cashier.addCustomerTitle")}</h3>
                 </div>
-                <button onClick={() => setAddCustomerOpen(false)} className="p-1 rounded-lg hover:bg-accent transition-colors">
+                <button
+                  onClick={() => setAddCustomerOpen(false)}
+                  className="p-1 rounded-lg hover:bg-accent transition-colors">
                   <X size={16} />
                 </button>
               </div>
               <div className="p-5">
                 <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerName")}</label>
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
+                    {t("page.cashier.addCustomerName")}
+                  </label>
                   <input
                     type="text"
                     value={newCustomerName}
@@ -673,11 +682,15 @@ const CheckoutModal = ({
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerPhone")}</label>
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
+                    {t("page.cashier.addCustomerPhone")}
+                  </label>
                   <input
                     type="text"
                     value={newCustomerPhone}
-                    onChange={(e) => setNewCustomerPhone(e.target.value.replace(/\D/g, "").slice(0, 14))}
+                    onChange={(e) =>
+                      setNewCustomerPhone(e.target.value.replace(/\D/g, "").slice(0, 14))
+                    }
                     placeholder={t("page.cashier.addCustomerPhone")}
                     className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     inputMode="numeric"
@@ -686,7 +699,9 @@ const CheckoutModal = ({
                   <p className="text-xs text-muted-foreground mt-1">{t("common.phoneHint")}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerMemberTier")}</label>
+                  <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
+                    {t("page.cashier.addCustomerMemberTier")}
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     {memberTiers.length === 0 ? (
                       <div className="col-span-2 text-sm text-muted-foreground bg-accent/30 rounded-xl px-3 py-2">
@@ -734,11 +749,21 @@ const CheckoutModal = ({
                 </div>
               </div>
               <div className="flex gap-2 px-5 py-4 border-t border-border/50 bg-muted/20">
-                <Button variant="outline" onClick={() => setAddCustomerOpen(false)} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setAddCustomerOpen(false)}
+                  className="flex-1">
                   {t("page.cashier.addCustomerCancel")}
                 </Button>
-                <Button onClick={handleAddCustomer} disabled={!newCustomerName.trim() || addCustomerMutation.isLoading} className="flex-1">
-                  {addCustomerMutation.isLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                <Button
+                  onClick={handleAddCustomer}
+                  disabled={!newCustomerName.trim() || addCustomerMutation.isLoading}
+                  className="flex-1">
+                  {addCustomerMutation.isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <UserPlus size={16} />
+                  )}
                   {t("page.cashier.addCustomerSave")}
                 </Button>
               </div>

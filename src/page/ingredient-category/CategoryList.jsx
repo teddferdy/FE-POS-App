@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Plus, Package, Loader2 } from "lucide-react";
 import {
-  getAllIngredientCategory,
+  getAllIngredientCategoryTable,
   deleteIngredientCategory,
   downloadIngredientCategoryTemplate,
   downloadIngredientCategoryExcel
@@ -46,15 +46,17 @@ const CategoryList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/ingredient-category";
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["ingredient-categories"],
-    () => getAllIngredientCategory(),
-    {}
+    ["ingredient-categories", page, search],
+    () => getAllIngredientCategoryTable({ page, limit, search }),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {
@@ -72,15 +74,13 @@ const CategoryList = () => {
   });
 
   const categories = data?.data || [];
+  const pagination = data?.pagination || {};
+  const totalPages = pagination.totalPages || 1;
   const stats = data?.stats || {};
-  const draftCount = stats.draft ?? categories.filter((c) => c.status === "draft").length;
-  const activeCount = stats.active ?? categories.filter((c) => c.status === "active").length;
-  const inactiveCount = stats.inactive ?? categories.filter((c) => c.status === "inactive").length;
-  const statsTotal = stats.total ?? categories.length;
-
-  const filtered = search
-    ? categories.filter((cat) => (cat.name || "").toLowerCase().includes(search.toLowerCase()))
-    : categories;
+  const draftCount = stats.draft ?? 0;
+  const activeCount = stats.active ?? 0;
+  const inactiveCount = stats.inactive ?? 0;
+  const statsTotal = stats.total ?? 0;
 
   const columns = [
     {
@@ -95,16 +95,7 @@ const CategoryList = () => {
         <span className="text-sm font-semibold text-foreground">{item.name || "-"}</span>
       )
     },
-    {
-      header: t("page.ingredientCategory.list.tableStore"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {Array.isArray(item.store) && item.store.length > 0
-            ? item.store.map((s) => s.name || `Store #${s.id}`).join(", ")
-            : t("page.category.form.storeSection.allStores")}
-        </span>
-      )
-    },
+
     {
       header: t("page.ingredientCategory.list.tableStatus"),
       render: (item) => (
@@ -323,7 +314,7 @@ const CategoryList = () => {
           <div className="mt-6">
             <DataTable
               columns={columns}
-              data={filtered}
+              data={categories}
               isLoading={isLoading}
               emptyMessage={t("page.ingredientCategory.list.emptyText")}
               emptyIcon={Package}
@@ -331,12 +322,21 @@ const CategoryList = () => {
                 <div className="p-4 pb-0">
                   <Input
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
                     placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
                     className="max-w-xs h-10"
                   />
                 </div>
               }
+              pagination={{
+                page,
+                totalPages,
+                total: statsTotal,
+                onPageChange: setPage
+              }}
             />
           </div>
         )}

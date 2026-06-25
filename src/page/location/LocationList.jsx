@@ -178,10 +178,7 @@ const LocationList = () => {
         const count = loc.socialMedia?.length || 0;
         return (
           <span className="text-xs text-foreground">
-            {count > 0
-              ? `${count} ${t("page.location.table.socialMedia").toLowerCase()}`
-              : "-"
-            }
+            {count > 0 ? `${count} ${t("page.location.table.socialMedia").toLowerCase()}` : "-"}
           </span>
         );
       }
@@ -306,10 +303,33 @@ const LocationList = () => {
         <div>
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              <StatCard label={t("page.location.stats.total")} value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()} icon="store" variant="default" subtitle={t("page.location.stats.totalSub")} />
-              <StatCard label={t("page.location.stats.active")} value={(data?.stats?.active ?? 0).toLocaleString()} icon="check_circle" variant="active" subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`} />
-              <StatCard label={t("page.location.stats.inactive")} value={(data?.stats?.inactive ?? 0).toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.location.stats.inactiveSub")} />
-              <StatCard label={t("page.location.stats.draft")} value={(data?.stats?.draft ?? 0).toLocaleString()} icon="edit_note" variant="draft" />
+              <StatCard
+                label={t("page.location.stats.total")}
+                value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
+                icon="store"
+                variant="default"
+                subtitle={t("page.location.stats.totalSub")}
+              />
+              <StatCard
+                label={t("page.location.stats.active")}
+                value={(data?.stats?.active ?? 0).toLocaleString()}
+                icon="check_circle"
+                variant="active"
+                subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`}
+              />
+              <StatCard
+                label={t("page.location.stats.inactive")}
+                value={(data?.stats?.inactive ?? 0).toLocaleString()}
+                icon="cancel"
+                variant="inactive"
+                subtitle={t("page.location.stats.inactiveSub")}
+              />
+              <StatCard
+                label={t("page.location.stats.draft")}
+                value={(data?.stats?.draft ?? 0).toLocaleString()}
+                icon="edit_note"
+                variant="draft"
+              />
               <div
                 data-tour="location-stat-cities"
                 className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">

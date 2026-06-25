@@ -316,7 +316,7 @@ const MemberDetail = () => {
               <h3 className="text-lg font-semibold text-foreground text-center">{name}</h3>
               <p className="text-sm font-mono text-muted-foreground mb-3">{memberId}</p>
               <span className="px-3 py-1 bg-primary-fixed text-primary-fixed-foreground rounded-full text-xs font-bold mb-4">
-                                {t("page.member.detail.memberActive")}
+                {t("page.member.detail.memberActive")}
               </span>
               <div className="w-full space-y-4 border-t border-border pt-4">
                 <div className="flex items-center gap-3">
@@ -405,7 +405,10 @@ const MemberDetail = () => {
                     />
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {t("page.member.detail.nextTier", { tier: nextTier, points: pointsRemaining.toLocaleString() })}
+                    {t("page.member.detail.nextTier", {
+                      tier: nextTier,
+                      points: pointsRemaining.toLocaleString()
+                    })}
                   </p>
                 </div>
                 <div className="bg-error/10 border border-error/20 p-3 rounded-lg flex items-center gap-3">
@@ -417,7 +420,10 @@ const MemberDetail = () => {
                       {t("page.member.detail.pointsExpiringSoon")}
                     </p>
                     <p className="text-xs text-error">
-                      {t("page.member.detail.pointsExpireOn", { count: expiringPoints.toLocaleString(), date: expiringDate })}
+                      {t("page.member.detail.pointsExpireOn", {
+                        count: expiringPoints.toLocaleString(),
+                        date: expiringDate
+                      })}
                     </p>
                   </div>
                 </div>
@@ -477,23 +483,23 @@ const MemberDetail = () => {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-muted/30 border-b border-border">
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.member.detail.tableTransactionId")}
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.member.detail.tableDate")}
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            {t("page.member.detail.tableStore")}
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
-                            {t("page.member.detail.tableTotalAmount")}
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                            {t("page.member.detail.tableStatus")}
-                          </th>
-                          <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                            {t("page.member.detail.tableAction")}
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t("page.member.detail.tableTransactionId")}
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t("page.member.detail.tableDate")}
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t("page.member.detail.tableStore")}
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                          {t("page.member.detail.tableTotalAmount")}
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                          {t("page.member.detail.tableStatus")}
+                        </th>
+                        <th className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+                          {t("page.member.detail.tableAction")}
                         </th>
                       </tr>
                     </thead>
@@ -674,10 +680,13 @@ const MemberDetail = () => {
               )}
 
               {activeTab === "transactions" && (
-                  <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
-                    <p className="text-xs text-muted-foreground">
-                      {t("page.member.detail.showingTransactions", { shown: transactions.length, total: totalTransactions })}
-                    </p>
+                <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.member.detail.showingTransactions", {
+                      shown: transactions.length,
+                      total: totalTransactions
+                    })}
+                  </p>
                   <div className="flex gap-1">
                     <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <span className="material-symbols-outlined text-lg">chevron_left</span>

@@ -154,10 +154,22 @@ const DetailEmployee = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("common.createdBy")}: {employee.createdByUser?.fullName || employee.createdByUser?.userName || employee.createdBy || "-"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("common.createdBy")}:{" "}
+                  {employee.createdByUser?.fullName ||
+                    employee.createdByUser?.userName ||
+                    employee.createdBy ||
+                    "-"}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t("common.modifiedBy")}: {employee.modifiedByUser?.fullName || employee.modifiedByUser?.userName || employee.modifiedBy || "-"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("common.modifiedBy")}:{" "}
+                  {employee.modifiedByUser?.fullName ||
+                    employee.modifiedByUser?.userName ||
+                    employee.modifiedBy ||
+                    "-"}
+                </p>
               </div>
             </div>
           </div>

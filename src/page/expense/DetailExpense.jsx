@@ -72,9 +72,7 @@ const DetailExpense = () => {
                 {t("breadcrumb.management")}
               </button>
               <span>/</span>
-              <span className="text-primary font-semibold">
-                {t("breadcrumb.detail")}
-              </span>
+              <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
             </nav>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">
               {item.description || t("page.expense.detail.fallbackTitle")}

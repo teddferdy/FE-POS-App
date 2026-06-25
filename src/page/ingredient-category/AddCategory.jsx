@@ -6,20 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useCookies } from "react-cookie";
 import { Save, X } from "lucide-react";
 import {
   addIngredientCategory,
   getIngredientCategoryById,
   editIngredientCategory
 } from "@/services/ingredientCategory";
-import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
-import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
@@ -35,24 +32,12 @@ const AddCategory = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const [cookie] = useCookies();
-  const user = cookie?.user;
   const editId = searchParams.get("id");
   const isEdit = !!editId;
 
   const [showCancel, setShowCancel] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
-  const [selectedStore, setSelectedStore] = useState([]);
-  const [allStores, setAllStores] = useState(false);
-
-  const role = user?.roleType || "";
-  const isSuperAdmin = role === "super_admin";
-
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
-  const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -71,15 +56,6 @@ const AddCategory = () => {
         name: d.name || "",
         isActive: d.status !== "inactive"
       });
-      const storeData = d.store;
-      if (!storeData || (Array.isArray(storeData) && storeData.length === 0)) {
-        setAllStores(true);
-        setSelectedStore([]);
-      } else if (Array.isArray(storeData)) {
-        setSelectedStore(storeData.map((s) => (typeof s === "object" ? s.id : s)));
-      } else {
-        setSelectedStore([]);
-      }
     },
     onError: () => {
       toast.error(t("page.ingredientCategory.add.toastError"), {
@@ -114,14 +90,9 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
-      toast.error(t("page.ingredientCategory.add.storeRequired"));
-      return;
-    }
     const payload = {
       name: values.name.trim(),
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: JSON.stringify(selectedStore)
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
     if (isEdit) {
       editMutation.mutate({ ...payload, id: editId });
@@ -163,24 +134,7 @@ const AddCategory = () => {
       </PageHeader>
 
       <Form {...form} className="p-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <StoreSelectCard
-            locations={locations}
-            selectedStores={selectedStore}
-            onChange={setSelectedStore}
-            isSuperAdmin={isSuperAdmin}
-            user={user}
-            t={t}
-            title={t("page.ingredientCategory.add.storeSection.title")}
-            description={t("page.ingredientCategory.add.storeSection.desc")}
-            noStoreLabel={t("page.ingredientCategory.add.storeSection.noStore")}
-            addStoreLabel={t("page.ingredientCategory.add.storeSection.addStore")}
-            storeInfoLabel={t("page.ingredientCategory.add.storeInfo")}
-            allStores={allStores}
-            onAllStoresChange={setAllStores}
-            navigate={navigate}
-          />
-
+        <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12">
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -261,12 +215,14 @@ const AddCategory = () => {
               {t("page.ingredientCategory.add.cancelButton")}
             </Button>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button
-                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />
                 {isSubmitting
                   ? t("page.ingredientCategory.add.savingButton")

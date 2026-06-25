@@ -136,46 +136,6 @@ const CategoryList = () => {
     );
   });
 
-  const stats = [
-    {
-      dataTour: "category-stat-total",
-      icon: "category",
-      label: t("page.category.list.statsTotal"),
-      value: statsTotal,
-      badge: t("page.category.list.statsTotalBadge", { count: categories.length }),
-      iconBg: "bg-primary/10",
-      iconColor: "text-primary"
-    },
-    {
-      dataTour: "category-stat-active",
-      icon: "check_circle",
-      label: t("page.category.list.statsActive"),
-      value: activeCount,
-      badge: `${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`,
-      iconBg: "bg-green-100 dark:bg-green-900/40",
-      iconColor: "text-green-700 dark:text-green-300"
-    },
-    {
-      dataTour: "category-stat-inactive",
-      icon: "cancel",
-      label: t("page.category.list.statsInactive"),
-      value: inactiveCount,
-      badge: `${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`,
-      iconBg: "bg-red-100 dark:bg-red-900/40",
-      iconColor: "text-red-700 dark:text-red-300",
-      danger: true
-    },
-    {
-      dataTour: "category-stat-draft",
-      icon: "edit_note",
-      label: t("common.draft"),
-      value: draftCount,
-      badge: `${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`,
-      iconBg: "bg-amber-100 dark:bg-amber-900/40",
-      iconColor: "text-amber-700 dark:text-amber-300"
-    }
-  ];
-
   const columns = [
     {
       header: t("page.category.table.id"),
@@ -215,7 +175,7 @@ const CategoryList = () => {
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {Array.isArray(cat.store) && cat.store.length > 0
-            ? cat.store.map(s => s.name || `Store #${s.id}`).join(", ")
+            ? cat.store.map((s) => s.name || `Store #${s.id}`).join(", ")
             : t("page.category.form.storeSection.allStores")}
         </span>
       )
@@ -432,10 +392,34 @@ const CategoryList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard label={t("page.category.list.statsTotal")} value={statsTotal} icon="category" variant="default" subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })} />
-            <StatCard label={t("page.category.list.statsActive")} value={activeCount} icon="check_circle" variant="active" subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`} />
-            <StatCard label={t("page.category.list.statsInactive")} value={inactiveCount} icon="cancel" variant="inactive" subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`} />
-            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`} />
+            <StatCard
+              label={t("page.category.list.statsTotal")}
+              value={statsTotal}
+              icon="category"
+              variant="default"
+              subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })}
+            />
+            <StatCard
+              label={t("page.category.list.statsActive")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+              subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+            />
+            <StatCard
+              label={t("page.category.list.statsInactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+              subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+              subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+            />
           </div>
 
           <div data-tour="category-table" className="mt-6">

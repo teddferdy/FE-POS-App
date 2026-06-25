@@ -127,7 +127,11 @@ const DepartmentList = () => {
                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
                 : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {department.status === "active" ? t("common.active") : department.status === "draft" ? t("common.draft") : t("common.inactive")}
+          {department.status === "active"
+            ? t("common.active")
+            : department.status === "draft"
+              ? t("common.draft")
+              : t("common.inactive")}
         </span>
       )
     },
@@ -316,12 +320,39 @@ const DepartmentList = () => {
 
       <div>
         <div>
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              <StatCard label={t("page.department.list.statsTotal")} value={stats?.totalDepartemen ?? total} icon="domain" variant="default" subtitle={t("page.department.list.statsAll")} />
-              <StatCard label={t("page.department.list.statsActive")} value={stats?.totalDepartemenAktif ?? 0} icon="check_circle" variant="active" subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`} />
-              <StatCard label={t("page.department.list.statsDraft")} value={stats?.totalDepartemenDraft ?? 0} icon="edit_note" variant="draft" subtitle={stats?.totalDepartemen ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%` : "0%"} />
-              <StatCard label={t("page.department.list.statsInactive")} value={stats?.totalDepartemenNonActive ?? 0} icon="cancel" variant="inactive" subtitle={t("page.department.list.statsAttention")} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <StatCard
+              label={t("page.department.list.statsTotal")}
+              value={stats?.totalDepartemen ?? total}
+              icon="domain"
+              variant="default"
+              subtitle={t("page.department.list.statsAll")}
+            />
+            <StatCard
+              label={t("page.department.list.statsActive")}
+              value={stats?.totalDepartemenAktif ?? 0}
+              icon="check_circle"
+              variant="active"
+              subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
+            />
+            <StatCard
+              label={t("page.department.list.statsDraft")}
+              value={stats?.totalDepartemenDraft ?? 0}
+              icon="edit_note"
+              variant="draft"
+              subtitle={
+                stats?.totalDepartemen
+                  ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%`
+                  : "0%"
+              }
+            />
+            <StatCard
+              label={t("page.department.list.statsInactive")}
+              value={stats?.totalDepartemenNonActive ?? 0}
+              icon="cancel"
+              variant="inactive"
+              subtitle={t("page.department.list.statsAttention")}
+            />
             <div
               data-tour="department-stat-nodesc"
               className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
@@ -346,9 +377,7 @@ const DepartmentList = () => {
             </div>
           </div>
 
-          <div
-            data-tour="department-table"
-            className="mt-6">
+          <div data-tour="department-table" className="mt-6">
             <DataTable
               columns={columns}
               data={departments}
@@ -390,8 +419,7 @@ const DepartmentList = () => {
             />
           </div>
 
-          <div
-            className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined opacity-80">lightbulb</span>
               <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">

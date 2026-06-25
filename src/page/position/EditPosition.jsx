@@ -41,7 +41,9 @@ const EditPosition = () => {
     isLoading: positionsLoading,
     isError,
     refetch
-  } = useQuery(["position", positionId], () => getPositionById({ id: positionId }), { enabled: !!positionId });
+  } = useQuery(["position", positionId], () => getPositionById({ id: positionId }), {
+    enabled: !!positionId
+  });
   const position = positionData?.data || positionData;
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {

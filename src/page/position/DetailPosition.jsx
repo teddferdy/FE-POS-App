@@ -110,23 +110,35 @@ const DetailPosition = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.positionName")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.detail.positionName")}
+              </p>
               <p className="font-medium">{position.name || "-"}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.positionId")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.detail.positionId")}
+              </p>
               <p className="font-mono text-sm">#{position.id}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.department")}</p>
-              <p className="font-medium">{position.departmentData?.name || position.department || "-"}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.detail.department")}
+              </p>
+              <p className="font-medium">
+                {position.departmentData?.name || position.department || "-"}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.status")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.detail.status")}
+              </p>
               {statusBadge(position.status, t)}
             </div>
             <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.form.description")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.form.description")}
+              </p>
               <p className="font-medium">{position.description || "-"}</p>
             </div>
           </div>
@@ -164,7 +176,9 @@ const DetailPosition = () => {
                 : "-"}
             </p>
             <div className="mt-3 pt-3 border-t border-border/50">
-              <p className="text-xs text-muted-foreground mb-1">{t("page.position.detail.updatedAt")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.position.detail.updatedAt")}
+              </p>
               <p className="text-sm font-medium">
                 {position.updatedAt
                   ? new Date(position.updatedAt).toLocaleDateString("id-ID", {

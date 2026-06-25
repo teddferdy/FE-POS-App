@@ -87,16 +87,16 @@ const TypePaymentList = () => {
   const pagination = data?.pagination || {};
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
-  const activeCount = stats.active ?? allPayments.filter(
-    (item) =>
-      item.status === "Aktif" ||
-      item.status === true ||
-      item.status === "active" ||
-      item.isActive === true
-  ).length;
-  const draftCount = stats.draft ?? allPayments.filter(
-    (item) => item.status === "draft"
-  ).length;
+  const activeCount =
+    stats.active ??
+    allPayments.filter(
+      (item) =>
+        item.status === "Aktif" ||
+        item.status === true ||
+        item.status === "active" ||
+        item.isActive === true
+    ).length;
+  const draftCount = stats.draft ?? allPayments.filter((item) => item.status === "draft").length;
   const inactiveCount = stats.inactive ?? allPayments.length - activeCount - draftCount;
 
   const handleDelete = (item) => {
@@ -163,13 +163,17 @@ const TypePaymentList = () => {
     {
       header: t("common.createdBy"),
       render: (row) => (
-        <span className="text-sm text-muted-foreground">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+        <span className="text-sm text-muted-foreground">
+          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+        </span>
       )
     },
     {
       header: t("common.modifiedBy"),
       render: (row) => (
-        <span className="text-sm text-muted-foreground">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+        <span className="text-sm text-muted-foreground">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+        </span>
       )
     },
     {
@@ -312,10 +316,30 @@ const TypePaymentList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard label={t("page.typePayment.stats.total")} value={stats.total ?? total} icon="credit_card" variant="default" />
-            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
-            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
-            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.typePayment.stats.total")}
+              value={stats.total ?? total}
+              icon="credit_card"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
 
           {/* Search */}
@@ -367,7 +391,6 @@ const TypePaymentList = () => {
         onOpenChange={setUploadModalOpen}
         uploadService={uploadTypePaymentExcel}
         title={t("page.typePayment.upload.title")}
-       
         onSuccess={() => {
           queryClient.invalidateQueries(["type-payments"]);
           queryClient.invalidateQueries(["type-payments-all"]);

@@ -202,7 +202,7 @@ const EditEmployee = () => {
       endDate: employee.endDate || "",
       shift: String(employee.shift || ""),
       startDate: employee.startDate || "",
-      isActive: employee.status === 'active',
+      isActive: employee.status === "active",
       roleId:
         employee.roleId !== null && employee.roleId !== undefined ? String(employee.roleId) : "",
       accessMenu:
@@ -593,7 +593,9 @@ const EditEmployee = () => {
                                   }}
                                 />
                                 <FormMessage />
-                                <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {t("common.phoneHint")}
+                                </p>
                               </FormItem>
                             )}
                           />

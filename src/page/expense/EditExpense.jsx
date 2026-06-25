@@ -57,7 +57,9 @@ const EditExpense = () => {
 
   const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
   const categories = (categoriesData?.data || categoriesData || []).filter(
-    (cat) => cat.status === "active" || String(cat.id) === String(expenseItem.category ?? expenseItem.categoryData?.id)
+    (cat) =>
+      cat.status === "active" ||
+      String(cat.id) === String(expenseItem.category ?? expenseItem.categoryData?.id)
   );
 
   const form = useForm({
@@ -157,7 +159,9 @@ const EditExpense = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit((values) => onSubmit(values, false))}
+              className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -165,7 +169,8 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.categoryLabel")} <span className="text-destructive">*</span>
+                        {t("page.expense.edit.categoryLabel")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
@@ -212,7 +217,8 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.amountLabel")} <span className="text-destructive">*</span>
+                        {t("page.expense.edit.amountLabel")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
@@ -240,7 +246,8 @@ const EditExpense = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {t("page.expense.edit.dateLabel")} <span className="text-destructive">*</span>
+                        {t("page.expense.edit.dateLabel")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <DatePicker date={field.value} setDate={field.onChange} />
                       <FormMessage />
@@ -282,7 +289,9 @@ const EditExpense = () => {
                     disabled={updateMutation.isLoading}
                     className="gap-2">
                     <Save size={18} />
-                    {updateMutation.isLoading ? t("page.expense.edit.saving") : t("page.expense.edit.save")}
+                    {updateMutation.isLoading
+                      ? t("page.expense.edit.saving")
+                      : t("page.expense.edit.save")}
                   </Button>
                 </div>
               </div>

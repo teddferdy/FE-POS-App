@@ -24,7 +24,11 @@ const PROMO_TYPE_LABELS = {
 const getPromoLabel = (item) => {
   const promoType = item.conditions?.promoType;
   if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
-  return item.type === "percent" ? "Persentase" : item.type === "nominal" ? "Nominal" : item.type || "-";
+  return item.type === "percent"
+    ? "Persentase"
+    : item.type === "nominal"
+      ? "Nominal"
+      : item.type || "-";
 };
 
 const DiscountList = () => {
@@ -41,10 +45,15 @@ const DiscountList = () => {
   const MENU_KEY = "/discount";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000
+  });
   const locationMap = React.useMemo(() => {
     const map = {};
-    if (locData?.data) locData.data.forEach((l) => { map[l.id] = l; });
+    if (locData?.data)
+      locData.data.forEach((l) => {
+        map[l.id] = l;
+      });
     return map;
   }, [locData]);
 
@@ -56,11 +65,15 @@ const DiscountList = () => {
 
   const deleteMutation = useMutation(deleteDiscount, {
     onSuccess: () => {
-      toast.success(t("page.discount.list.toast.success"), { description: t("page.discount.list.toast.successDescription") });
+      toast.success(t("page.discount.list.toast.success"), {
+        description: t("page.discount.list.toast.successDescription")
+      });
       queryClient.invalidateQueries(["discounts"]);
     },
     onError: (err) => {
-      toast.error(t("page.discount.list.toast.error"), { description: err?.response?.data?.message || err.message });
+      toast.error(t("page.discount.list.toast.error"), {
+        description: err?.response?.data?.message || err.message
+      });
     }
   });
 
@@ -74,7 +87,8 @@ const DiscountList = () => {
   const activeCount = statsFromBE.active ?? discounts.filter((d) => d.status === "active").length;
   const draftCount = statsFromBE.draft ?? discounts.filter((d) => d.status === "draft").length;
   const inactiveCount =
-    statsFromBE.inactive ?? discounts.filter((d) => d.status !== "active" && d.status !== "draft").length;
+    statsFromBE.inactive ??
+    discounts.filter((d) => d.status !== "active" && d.status !== "draft").length;
 
   const handleDelete = (discount) => {
     setDeleteTarget(discount);
@@ -109,19 +123,16 @@ const DiscountList = () => {
     {
       header: t("page.discount.table.value"),
       render: (item) => {
-        const cond = item.conditions || {}
+        const cond = item.conditions || {};
         if (cond.promoType === "category" || cond.promoType === "happyHour")
-          return `${cond.discountPercent || item.value}%`
-        if (item.type === "percent")
-          return `${item.value}%`
-        return `Rp${item.value?.toLocaleString("id-ID") || item.value}`
+          return `${cond.discountPercent || item.value}%`;
+        if (item.type === "percent") return `${item.value}%`;
+        return `Rp${item.value?.toLocaleString("id-ID") || item.value}`;
       }
     },
     {
       header: "Code",
-      render: (item) => (
-        <span className="font-mono text-xs">{item.code || "-"}</span>
-      )
+      render: (item) => <span className="font-mono text-xs">{item.code || "-"}</span>
     },
     {
       header: t("page.discount.table.store"),
@@ -139,14 +150,14 @@ const DiscountList = () => {
             item.status === "active"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : item.status === "draft"
-              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
           }`}>
           {item.status === "active"
             ? t("page.discount.list.active")
             : item.status === "draft"
-            ? t("page.discount.list.draft")
-            : t("page.discount.list.inactive")}
+              ? t("page.discount.list.draft")
+              : t("page.discount.list.inactive")}
         </span>
       )
     },
@@ -238,10 +249,34 @@ const DiscountList = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard label={t("page.discount.list.total")} value={statsTotal} icon="local_offer" variant="default" subtitle={t("page.discount.list.totalBadge", { count: discounts.length })} />
-        <StatCard label={t("page.discount.list.active")} value={activeCount} icon="check_circle" variant="active" subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`} />
-        <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`} />
-        <StatCard label={t("page.discount.list.inactive")} value={inactiveCount} icon="cancel" variant="inactive" subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`} />
+        <StatCard
+          label={t("page.discount.list.total")}
+          value={statsTotal}
+          icon="local_offer"
+          variant="default"
+          subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
+        />
+        <StatCard
+          label={t("page.discount.list.active")}
+          value={activeCount}
+          icon="check_circle"
+          variant="active"
+          subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+        />
+        <StatCard
+          label={t("common.draft")}
+          value={draftCount}
+          icon="edit_note"
+          variant="draft"
+          subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+        />
+        <StatCard
+          label={t("page.discount.list.inactive")}
+          value={inactiveCount}
+          icon="cancel"
+          variant="inactive"
+          subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+        />
       </div>
 
       <div>

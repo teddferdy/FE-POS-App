@@ -158,7 +158,12 @@ const SupplierList = () => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -167,7 +172,12 @@ const SupplierList = () => {
         if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -297,10 +307,30 @@ const SupplierList = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatCard label={t("page.supplier.stats.total")} value={total} icon="business" variant="default" />
-        <StatCard label={t("common.active")} value={data?.stats?.active ?? 0} icon="check_circle" variant="active" />
-        <StatCard label={t("common.inactive")} value={data?.stats?.inactive ?? 0} icon="cancel" variant="inactive" />
-        <StatCard label={t("common.draft")} value={data?.stats?.draft ?? 0} icon="edit_note" variant="draft" />
+        <StatCard
+          label={t("page.supplier.stats.total")}
+          value={total}
+          icon="business"
+          variant="default"
+        />
+        <StatCard
+          label={t("common.active")}
+          value={data?.stats?.active ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("common.inactive")}
+          value={data?.stats?.inactive ?? 0}
+          icon="cancel"
+          variant="inactive"
+        />
+        <StatCard
+          label={t("common.draft")}
+          value={data?.stats?.draft ?? 0}
+          icon="edit_note"
+          variant="draft"
+        />
       </div>
 
       {/* Search */}
@@ -352,7 +382,6 @@ const SupplierList = () => {
         uploadService={uploadSupplierExcel}
         queryKey={["suppliers"]}
         title={t("page.supplier.upload.title")}
-       
       />
     </div>
   );

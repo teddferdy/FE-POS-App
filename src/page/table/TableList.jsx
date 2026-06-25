@@ -227,10 +227,30 @@ const TableList = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard label={t("page.table.stats.total")} value={total} icon="table_restaurant" variant="default" />
-                <StatCard label={t("page.table.stats.available")} value={data?.stats?.available ?? 0} icon="check_circle" variant="active" />
-                <StatCard label={t("page.table.stats.reserved")} value={data?.stats?.reserved ?? 0} icon="edit_note" variant="draft" />
-                <StatCard label={t("page.table.stats.occupied")} value={data?.stats?.occupied ?? 0} icon="cancel" variant="inactive" />
+                <StatCard
+                  label={t("page.table.stats.total")}
+                  value={total}
+                  icon="table_restaurant"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.table.stats.available")}
+                  value={data?.stats?.available ?? 0}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.table.stats.reserved")}
+                  value={data?.stats?.reserved ?? 0}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("page.table.stats.occupied")}
+                  value={data?.stats?.occupied ?? 0}
+                  icon="cancel"
+                  variant="inactive"
+                />
               </div>
 
               <div className="relative w-full sm:w-72">

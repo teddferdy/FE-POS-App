@@ -229,7 +229,7 @@ const DetailDepartment = () => {
             <Card className="p-5">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 <Store size={14} />
-{t("page.department.detail.store")}
+                {t("page.department.detail.store")}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Store size={14} className="shrink-0 text-muted-foreground" />

@@ -73,9 +73,13 @@ const MemberList = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  const { data: tiersData } = useQuery(["member-tiers-active"], () => getAllMemberTier({ status: "active" }), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: tiersData } = useQuery(
+    ["member-tiers-active"],
+    () => getAllMemberTier({ status: "active" }),
+    {
+      staleTime: 5 * 60 * 1000
+    }
+  );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -192,8 +196,11 @@ const MemberList = () => {
             : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
         const icon = isActive ? "check_circle" : isInactive ? "cancel" : "drafts";
         return (
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
+            <span
+              className="material-symbols-outlined text-sm"
+              style={{ fontVariationSettings: "'FILL' 1" }}>
               {icon}
             </span>
             {isActive ? t("common.active") : isInactive ? t("common.inactive") : t("common.draft")}
@@ -347,7 +354,9 @@ const MemberList = () => {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("common.active")}
                 </p>
-                <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.active}</h3>
+                <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                  {stats.active}
+                </h3>
               </div>
             </div>
           </div>
@@ -360,7 +369,9 @@ const MemberList = () => {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("common.draft")}
                 </p>
-                <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.draft}</h3>
+                <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+                  {stats.draft}
+                </h3>
               </div>
             </div>
           </div>
@@ -373,7 +384,9 @@ const MemberList = () => {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t("common.inactive")}
                 </p>
-                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{stats.inactive}</h3>
+                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+                  {stats.inactive}
+                </h3>
               </div>
             </div>
           </div>
@@ -385,9 +398,7 @@ const MemberList = () => {
       ) : (
         <div>
           <div>
-            <div
-              data-tour="member-search"
-              className="bg-card rounded-xl border border-border p-5">
+            <div data-tour="member-search" className="bg-card rounded-xl border border-border p-5">
               {tiers.length === 0 ? (
                 <div className="flex items-center gap-3 w-full">
                   <PackageOpen size={20} className="text-muted-foreground" />
@@ -404,7 +415,9 @@ const MemberList = () => {
               ) : (
                 <>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-primary text-lg">filter_alt</span>
+                    <span className="material-symbols-outlined text-primary text-lg">
+                      filter_alt
+                    </span>
                     <h3 className="text-sm font-semibold text-foreground">
                       {t("page.member.list.filter")}
                     </h3>
@@ -449,7 +462,11 @@ const MemberList = () => {
                                 ? "text-white shadow-sm"
                                 : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
                             }`}
-                            style={tierFilter === tier.id ? { backgroundColor: tier.color || "#6366f1" } : undefined}>
+                            style={
+                              tierFilter === tier.id
+                                ? { backgroundColor: tier.color || "#6366f1" }
+                                : undefined
+                            }>
                             <span
                               className="w-2 h-2 rounded-full"
                               style={{ backgroundColor: tier.color || "#6366f1" }}
@@ -463,8 +480,12 @@ const MemberList = () => {
 
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-muted-foreground text-sm">sort</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">{t("page.member.list.sort")}</span>
+                      <span className="material-symbols-outlined text-muted-foreground text-sm">
+                        sort
+                      </span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {t("page.member.list.sort")}
+                      </span>
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
@@ -475,7 +496,9 @@ const MemberList = () => {
                       </select>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-muted-foreground text-sm">people</span>
+                      <span className="material-symbols-outlined text-muted-foreground text-sm">
+                        people
+                      </span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {t("page.member.list.totalMembers")}:{" "}
                         <strong>{total.toLocaleString()}</strong>

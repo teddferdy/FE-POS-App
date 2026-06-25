@@ -68,7 +68,7 @@ const AddTypePayment = () => {
     const { status, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      status: saveAsDraft ? "draft" : (status ? "active" : "inactive")
+      status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
   };
 
@@ -185,7 +185,10 @@ const AddTypePayment = () => {
                     {t("common.cancel")}
                   </Button>
                   <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setDraftModal(true)} disabled={createMutation.isLoading}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDraftModal(true)}
+                      disabled={createMutation.isLoading}>
                       {t("page.typePayment.form.saveAsDraft")}
                     </Button>
                     <Button
@@ -228,7 +231,11 @@ const AddTypePayment = () => {
         title={t("page.typePayment.form.draftTitle")}
         description={t("page.typePayment.form.draftDescription")}
         confirmText={t("page.typePayment.form.draftConfirm")}
-        onConfirm={() => { setDraftModal(false); const v = form.getValues(); onSubmit(v, true); }}
+        onConfirm={() => {
+          setDraftModal(false);
+          const v = form.getValues();
+          onSubmit(v, true);
+        }}
       />
     </div>
   );

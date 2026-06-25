@@ -229,10 +229,9 @@ const Dashboard = () => {
                 </div>
               );
             })}
-            </div>
+          </div>
 
-          <div
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div
               data-tour="dashboard-chart"
               className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden shadow-sm">

@@ -123,7 +123,7 @@ const MemberTier = () => {
       header: t("page.memberTier.table.discount"),
       render: (tier) => (
         <span className="font-mono text-sm text-primary font-semibold">
-                      {tier.discountPercent ? `${tier.discountPercent}%` : "-"}
+          {tier.discountPercent ? `${tier.discountPercent}%` : "-"}
         </span>
       )
     },

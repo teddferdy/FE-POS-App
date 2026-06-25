@@ -131,7 +131,7 @@ const PositionList = () => {
     {
       header: t("page.position.table.department"),
       render: (position) =>
-        (position.departmentData?.name || position.department) ? (
+        position.departmentData?.name || position.department ? (
           <span className="inline-block px-2 py-0.5 rounded bg-secondary-fixed/30 text-on-secondary-fixed-variant text-xs font-semibold">
             {position.departmentData?.name || position.department}
           </span>
@@ -159,7 +159,11 @@ const PositionList = () => {
                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800"
                 : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
           }`}>
-          {position.status === "active" ? t("common.active") : position.status === "draft" ? t("common.draft") : t("common.inactive")}
+          {position.status === "active"
+            ? t("common.active")
+            : position.status === "draft"
+              ? t("common.draft")
+              : t("common.inactive")}
         </span>
       )
     },
@@ -353,10 +357,33 @@ const PositionList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              <StatCard label={t("page.position.stats.total")} value={total.toLocaleString()} icon="work" variant="default" subtitle={t("page.position.stats.totalSub")} />
-              <StatCard label={t("page.position.stats.active")} value={activeCount.toLocaleString()} icon="check_circle" variant="active" subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`} />
-              <StatCard label={t("page.position.stats.draft")} value={draftCount.toLocaleString()} icon="edit_note" variant="draft" />
-              <StatCard label={t("page.position.stats.inactive")} value={inactiveCount.toLocaleString()} icon="cancel" variant="inactive" subtitle={t("page.position.stats.inactiveSub")} />
+            <StatCard
+              label={t("page.position.stats.total")}
+              value={total.toLocaleString()}
+              icon="work"
+              variant="default"
+              subtitle={t("page.position.stats.totalSub")}
+            />
+            <StatCard
+              label={t("page.position.stats.active")}
+              value={activeCount.toLocaleString()}
+              icon="check_circle"
+              variant="active"
+              subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`}
+            />
+            <StatCard
+              label={t("page.position.stats.draft")}
+              value={draftCount.toLocaleString()}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.position.stats.inactive")}
+              value={inactiveCount.toLocaleString()}
+              icon="cancel"
+              variant="inactive"
+              subtitle={t("page.position.stats.inactiveSub")}
+            />
           </div>
 
           <div data-tour="position-table" className="mt-6">
@@ -447,7 +474,6 @@ const PositionList = () => {
         uploadService={uploadPositionExcel}
         queryKey={["positions"]}
         title={t("page.position.button.uploadExcel")}
-       
       />
       <Modal
         type="confirm"

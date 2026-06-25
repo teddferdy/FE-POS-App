@@ -12,7 +12,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     const token = getToken();
-    if (!token || ENDPOINT.BASE_URL.includes('vercel')) return;
+    if (!token || ENDPOINT.BASE_URL.includes("vercel")) return;
 
     const s = io(ENDPOINT.BASE_URL, {
       auth: { token },

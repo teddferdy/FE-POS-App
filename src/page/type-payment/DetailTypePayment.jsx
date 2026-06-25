@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, CreditCard, Lightbulb } from "lucide-react";
+import { ArrowLeft, Edit, CreditCard } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { getTypePaymentById } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
@@ -119,7 +119,7 @@ const DetailTypePayment = () => {
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
                     />
-{isActive ? t("common.active") : t("common.inactive")}
+                    {isActive ? t("common.active") : t("common.inactive")}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">{item.type || item.tipe || "-"}</p>
@@ -222,7 +222,7 @@ const DetailTypePayment = () => {
               onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}
               className="gap-2 shadow-md">
               <Edit size={16} />
-{t("common.edit")}
+              {t("common.edit")}
             </Button>
           )}
         </div>
