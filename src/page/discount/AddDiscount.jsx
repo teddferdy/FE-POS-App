@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { addDiscount } from "@/services/discount";
+import { getAllLocation } from "@/services/location";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -36,14 +39,29 @@ const PROMO_TYPES = {
 const AddDiscount = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const role = user?.roleType || "";
+  const isSuperAdmin = role === "super_admin";
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(true);
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
 
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
+  const locations = locationsData?.data || locationsData?.locations || [];
+
   const formSchema = z.object({
     name: z.string().min(1, t("page.discount.form.validation.nameRequired")),
     promoType: z.string().default("standard"),
-    type: z.string().min(1, t("page.discount.form.validation.typeRequired")),
+    type: z
+      .string()
+      .min(1, t("page.discount.form.validation.typeRequired"))
+      .optional()
+      .or(z.literal("")),
     value: z.coerce
       .number()
       .min(1, t("page.discount.form.validation.valueRequired"))
@@ -168,6 +186,7 @@ const AddDiscount = () => {
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
       conditions,
+      store: allStores ? null : selectedStores[0] || null,
       description: values.description || null,
       status: saveAsDraft ? false : !!values.isActive
     };
@@ -203,9 +222,30 @@ const AddDiscount = () => {
           <p className="text-sm text-muted-foreground mt-1">{t("page.discount.add.description")}</p>
         </div>
 
-        <Card className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-12">
+              <div className="col-span-12">
+                <StoreSelectCard
+                  locations={locations}
+                  selectedStores={selectedStores}
+                  onChange={setSelectedStores}
+                  isSuperAdmin={isSuperAdmin}
+                  user={user}
+                  t={t}
+                  title={t("page.category.form.storeSection.title")}
+                  description={t("page.category.form.storeSection.desc")}
+                  noStoreLabel={t("page.category.form.storeSection.noStore")}
+                  addStoreLabel={t("page.category.form.storeSection.addStore")}
+                  storeInfoLabel={t("page.category.form.storeInfo")}
+                  allStores={allStores}
+                  onAllStoresChange={setAllStores}
+                  navigate={navigate}
+                />
+              </div>
+            </div>
+
+            <Card className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -659,9 +699,9 @@ const AddDiscount = () => {
                   </Button>
                 </div>
               </div>
-            </form>
-          </Form>
-        </Card>
+            </Card>
+          </form>
+        </Form>
 
         <Modal
           type="confirm"
@@ -670,7 +710,7 @@ const AddDiscount = () => {
           title={t("page.discount.add.cancelTitle")}
           description={t("page.discount.add.cancelDescription")}
           confirmText={t("page.discount.add.cancelConfirm")}
-          onConfirm={() => navigate("/discount")}
+          onConfirm={() => navigate("/discount-list")}
         />
         <Modal
           type="success"
@@ -679,7 +719,7 @@ const AddDiscount = () => {
           title={t("page.discount.add.successTitle")}
           description={t("page.discount.add.successDescription")}
           confirmText={t("page.discount.add.successConfirm")}
-          onConfirm={() => navigate("/discount")}
+          onConfirm={() => navigate("/discount-list")}
         />
         <Modal
           type="confirm"

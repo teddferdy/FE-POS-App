@@ -23,9 +23,9 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { createTransaction } from "@/services/transaction";
+import { createOrder } from "@/services/order";
 import { getAllCustomer, addCustomer } from "@/services/customer";
-import { getDiscount } from "@/services/discount";
+import { getDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
 import { toast } from "sonner";
 
@@ -64,6 +64,8 @@ const CheckoutModal = ({
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
   const [selectedTier, setSelectedTier] = useState(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -115,7 +117,7 @@ const CheckoutModal = ({
   const taxRate = 0.11;
   const taxAmount = subtotal * taxRate;
   const discountValue = selectedDiscount
-    ? selectedDiscount.type === "percentage"
+    ? selectedDiscount.type === "percent"
       ? subtotal * (selectedDiscount.value / 100)
       : selectedDiscount.value
     : discountAmount;
@@ -137,7 +139,25 @@ const CheckoutModal = ({
   const clearDiscount = useCallback(() => {
     setSelectedDiscount(null);
     setDiscountAmount(0);
+    setPromoCode("");
   }, []);
+
+  const handleApplyPromoCode = useCallback(async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const res = await lookupDiscountByCode(promoCode.trim().toUpperCase(), store);
+      const disc = res?.data || res;
+      if (disc?.id || disc?._id) {
+        setSelectedDiscount(disc);
+        toast.success(t("page.cashier.promoApplied"));
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t("page.cashier.promoInvalid"));
+    } finally {
+      setPromoLoading(false);
+    }
+  }, [promoCode, store, t]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch) return customers;
@@ -172,11 +192,23 @@ const CheckoutModal = ({
   }, []);
 
   const mutation = useMutation({
-    mutationFn: (payload) => createTransaction(payload),
-    onSuccess: (res) => {
+    mutationFn: (payload) => createOrder(payload),
+    onSuccess: (res, variables) => {
       toast.success(t("page.cashier.transactionSuccess"));
-      const result = res?.data || res;
-      onComplete(result);
+      const order = res?.data || res;
+      onComplete({
+        ...order,
+        subtotal: order.subTotal,
+        total: order.totalPrice,
+        grandTotal: order.totalPrice,
+        cashAmount: variables.paymentMethod === "cash" ? variables.cashAmount : order.totalPrice,
+        changeAmount: variables.paymentMethod === "cash" ? variables.changeAmount : 0,
+        items: (order.items || []).map((item) => ({
+          ...item,
+          nameProduct: item.productName,
+          count: item.quantity
+        }))
+      });
     },
     onError: (err) => {
       toast.error(
@@ -225,29 +257,27 @@ const CheckoutModal = ({
       return;
     }
 
-    const mappedItems = items.map((item) => ({
-      idProduct: item.idProduct,
-      nameProduct: item.nameProduct,
-      price: item.price,
-      count: item.count,
-      variantName: item.variantName || null,
-      totalPrice: item.totalPrice,
-      discount: item.discount || 0
-    }));
-
     const payload = {
+      store: store,
       cashierId: cashierId || cookie?.user?.id || cookie?.user?.ID,
       cashierName: cashierName || cookie?.user?.userName || cookie?.user?.name,
-      storeId: store,
       customerId: selectedCustomer?.id || selectedCustomer?._id || null,
+      customerName: selectedCustomer?.name || selectedCustomer?.Name || null,
       discountId: selectedDiscount?.id || selectedDiscount?._id || null,
-      discountValue: discountValue,
-      tax: taxAmount,
-      total: total,
+      promoCode: promoCode.trim() || undefined,
       paymentMethod: paymentMethod,
       cashAmount: paymentMethod === "cash" ? cashAmountNum : total,
       changeAmount: paymentMethod === "cash" ? change : 0,
-      items: mappedItems
+      items: items.map((item) => ({
+        product: item.idProduct,
+        productName: item.nameProduct,
+        quantity: item.count,
+        price: item.price,
+        basePrice: item.price,
+        subtotal: item.totalPrice,
+        options: item.variantName ? [{ name: item.variantName }] : [],
+        modifiers: []
+      }))
     };
 
     mutation.mutate(payload);
@@ -261,8 +291,7 @@ const CheckoutModal = ({
     store,
     selectedCustomer,
     selectedDiscount,
-    discountValue,
-    taxAmount,
+    promoCode,
     change,
     mutation,
     cookie,
@@ -524,7 +553,7 @@ const CheckoutModal = ({
                               {d.nameDiscount || d.name || d.discountName || "-"}
                             </span>
                             <span className="text-muted-foreground text-xs ml-auto">
-                              {d.type === "percentage"
+                              {d.type === "percent"
                                 ? `${d.value}%`
                                 : `Rp ${formatPrice(d.value)}`}
                             </span>
@@ -537,6 +566,35 @@ const CheckoutModal = ({
                       </div>
                     )}
                   </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  {t("page.cashier.promoCode")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    placeholder={t("page.cashier.promoCodePlaceholder")}
+                    className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors uppercase"
+                    disabled={promoLoading || !!selectedDiscount}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleApplyPromoCode}
+                    disabled={!promoCode.trim() || promoLoading || !!selectedDiscount}
+                    className="h-10 px-4 rounded-xl shrink-0">
+                    {promoLoading ? <Loader2 size={14} className="animate-spin" /> : t("page.cashier.apply")}
+                  </Button>
+                </div>
+                {selectedDiscount && promoCode && (
+                  <p className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
+                    <Check size={10} />
+                    {t("page.cashier.promoApplied")}
+                  </p>
                 )}
               </div>
 
@@ -619,11 +677,13 @@ const CheckoutModal = ({
                   <input
                     type="text"
                     value={newCustomerPhone}
-                    onChange={(e) => setNewCustomerPhone(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) => setNewCustomerPhone(e.target.value.replace(/\D/g, "").slice(0, 14))}
                     placeholder={t("page.cashier.addCustomerPhone")}
                     className="w-full h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     inputMode="numeric"
+                    maxLength={14}
                   />
+                  <p className="text-xs text-muted-foreground mt-1">{t("common.phoneHint")}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5 text-muted-foreground">{t("page.cashier.addCustomerMemberTier")}</label>

@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Tags, Gift } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Tags, Gift, Eye } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
@@ -23,7 +24,7 @@ const PROMO_TYPE_LABELS = {
 const getPromoLabel = (item) => {
   const promoType = item.conditions?.promoType;
   if (promoType && PROMO_TYPE_LABELS[promoType]) return PROMO_TYPE_LABELS[promoType];
-  return item.type === "Persentase" ? "Persentase" : item.type === "Nominal" ? "Nominal" : item.type || "-";
+  return item.type === "percent" ? "Persentase" : item.type === "nominal" ? "Nominal" : item.type || "-";
 };
 
 const DiscountList = () => {
@@ -39,6 +40,13 @@ const DiscountList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/discount";
   const locationParam = user?.store || "";
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const locationMap = React.useMemo(() => {
+    const map = {};
+    if (locData?.data) locData.data.forEach((l) => { map[l.id] = l; });
+    return map;
+  }, [locData]);
 
   const { data, isLoading } = useQuery(
     ["discounts", page, limit, search],
@@ -61,9 +69,12 @@ const DiscountList = () => {
   const total = pagination?.total || pagination?.totalItems || data?.total || 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
-  const activeCount = data?.stats?.active ?? discounts.filter((d) => d.status === "active").length;
+  const statsFromBE = data?.stats || {};
+  const statsTotal = statsFromBE.total || total;
+  const activeCount = statsFromBE.active ?? discounts.filter((d) => d.status === "active").length;
+  const draftCount = statsFromBE.draft ?? discounts.filter((d) => d.status === "draft").length;
   const inactiveCount =
-    data?.stats?.inactive ?? discounts.filter((d) => d.status !== "active").length;
+    statsFromBE.inactive ?? discounts.filter((d) => d.status !== "active" && d.status !== "draft").length;
 
   const handleDelete = (discount) => {
     setDeleteTarget(discount);
@@ -97,10 +108,28 @@ const DiscountList = () => {
     { header: t("page.discount.table.type"), render: (item) => getPromoLabel(item) },
     {
       header: t("page.discount.table.value"),
-      render: (item) =>
-        item.type === "Persentase"
-          ? `${item.value}%`
-          : `Rp${item.value?.toLocaleString("id-ID") || item.value}`
+      render: (item) => {
+        const cond = item.conditions || {}
+        if (cond.promoType === "category" || cond.promoType === "happyHour")
+          return `${cond.discountPercent || item.value}%`
+        if (item.type === "percent")
+          return `${item.value}%`
+        return `Rp${item.value?.toLocaleString("id-ID") || item.value}`
+      }
+    },
+    {
+      header: "Code",
+      render: (item) => (
+        <span className="font-mono text-xs">{item.code || "-"}</span>
+      )
+    },
+    {
+      header: t("page.discount.table.store"),
+      render: (item) => {
+        if (!item.store) return <span className="text-xs text-muted-foreground">Semua Toko</span>;
+        const loc = locationMap[item.store];
+        return <span className="text-xs">{loc?.name || `Store #${item.store}`}</span>;
+      }
     },
     {
       header: t("page.discount.table.status"),
@@ -109,9 +138,15 @@ const DiscountList = () => {
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             item.status === "active"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+              : item.status === "draft"
+              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
           }`}>
-          {item.status === "active" ? t("page.discount.list.active") : t("page.discount.list.inactive")}
+          {item.status === "active"
+            ? t("page.discount.list.active")
+            : item.status === "draft"
+            ? t("page.discount.list.draft")
+            : t("page.discount.list.inactive")}
         </span>
       )
     },
@@ -120,10 +155,34 @@ const DiscountList = () => {
       render: (item) => `${formatDate(item.startDate)} - ${formatDate(item.endDate)}`
     },
     {
+      header: t("page.discount.table.createdDate"),
+      render: (item) => formatDate(item.createdAt)
+    },
+    {
+      header: t("page.discount.table.createdBy"),
+      render: (item) => item.createdByUser?.fullName || item.createdBy || "-"
+    },
+    {
+      header: t("page.discount.table.modifiedDate"),
+      render: (item) => formatDate(item.updatedAt)
+    },
+    {
+      header: t("page.discount.table.modifiedBy"),
+      render: (item) => item.modifiedByUser?.fullName || item.modifiedBy || "-"
+    },
+    {
       header: t("page.discount.table.actions"),
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            onClick={() => navigate(`/detail-discount?id=${item.id || item._id}`)}>
+            <Eye size={15} />
+          </Button>
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
@@ -178,10 +237,11 @@ const DiscountList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label={t("page.discount.list.total")} value={total} icon="local_offer" variant="default" />
-        <StatCard label={t("page.discount.list.active")} value={activeCount} icon="check_circle" variant="active" />
-        <StatCard label={t("page.discount.list.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard label={t("page.discount.list.total")} value={statsTotal} icon="local_offer" variant="default" subtitle={t("page.discount.list.totalBadge", { count: discounts.length })} />
+        <StatCard label={t("page.discount.list.active")} value={activeCount} icon="check_circle" variant="active" subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`} />
+        <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`} />
+        <StatCard label={t("page.discount.list.inactive")} value={inactiveCount} icon="cancel" variant="inactive" subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`} />
       </div>
 
       <div>

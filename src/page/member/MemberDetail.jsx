@@ -8,26 +8,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
 
-const levelConfig = {
-  platinum: {
-    bg: "bg-primary/10 text-primary border border-primary/20",
-    icon: "stars",
-    label: t("page.member.detail.levelPlatinum")
-  },
-  gold: {
-    bg: "bg-tertiary/10 text-tertiary border border-tertiary/20",
-    icon: "stars",
-    label: t("page.member.detail.levelGold")
-  },
-  silver: {
-    bg: "bg-secondary/10 text-secondary border border-secondary/20",
-    icon: "stars",
-    label: t("page.member.detail.levelSilver")
-  }
-};
-
-const getLevel = (level) => {
-  return levelConfig[level?.toLowerCase()] || levelConfig.silver;
+const getLevel = (level, t) => {
+  const config = {
+    platinum: {
+      bg: "bg-primary/10 text-primary border border-primary/20",
+      icon: "stars",
+      label: t("page.member.detail.levelPlatinum")
+    },
+    gold: {
+      bg: "bg-tertiary/10 text-tertiary border border-tertiary/20",
+      icon: "stars",
+      label: t("page.member.detail.levelGold")
+    },
+    silver: {
+      bg: "bg-secondary/10 text-secondary border border-secondary/20",
+      icon: "stars",
+      label: t("page.member.detail.levelSilver")
+    }
+  };
+  return config[level?.toLowerCase()] || config.silver;
 };
 
 const getInitials = (name) => {
@@ -211,7 +210,7 @@ const MemberDetail = () => {
     );
   }
 
-  const level = getLevel(member.level);
+  const level = getLevel(member.level, t);
   const name = member.name || "-";
   const transactions = member.transactions || [];
   const totalTransactions = member.totalTransactions || transactions.length || 0;
@@ -292,7 +291,7 @@ const MemberDetail = () => {
           </div>
           <Button
             onClick={() => navigate(`/edit-member?id=${id}`)}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm w-full sm:w-auto">
             <span className="material-symbols-outlined text-lg">edit</span>
             {t("page.member.detail.editMember")}
           </Button>
@@ -300,7 +299,7 @@ const MemberDetail = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col items-center">
+            <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6 flex flex-col items-center">
               <div className="relative mb-4">
                 <div
                   className={`w-24 h-24 rounded-full border-4 border-background shadow-md ${avatarBg(name)} flex items-center justify-center text-2xl font-bold`}>
@@ -368,7 +367,7 @@ const MemberDetail = () => {
             </div>
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="bg-foreground text-background p-4 flex justify-between items-center">
+              <div className="bg-foreground text-background p-4 flex flex-wrap gap-2 items-center">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-tertiary-fixed-dim">
                     workspace_premium
@@ -387,7 +386,7 @@ const MemberDetail = () => {
                   {level.label}
                 </span>
               </div>
-              <div className="p-4 space-y-4">
+              <div className="p-3 sm:p-4 space-y-4">
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -452,7 +451,7 @@ const MemberDetail = () => {
             </div>
 
             <div className="bg-card rounded-xl border border-border shadow-sm">
-              <div className="flex border-b border-border px-4">
+              <div className="flex border-b border-border overflow-x-auto">
                 <button
                   onClick={() => setActiveTab("transactions")}
                   className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 ${
@@ -648,7 +647,7 @@ const MemberDetail = () => {
                       </table>
                     )}
                   </div>
-                  <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+                  <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
                     <p className="text-xs text-muted-foreground">
                       Menampilkan {(pointData?.data || []).length} dari{" "}
                       {pointData?.pagination?.total || pointData?.total || 0} aktivitas poin
@@ -675,10 +674,10 @@ const MemberDetail = () => {
               )}
 
               {activeTab === "transactions" && (
-                <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
-                  <p className="text-xs text-muted-foreground">
-                    {t("page.member.detail.showingTransactions", { shown: transactions.length, total: totalTransactions })}
-                  </p>
+                  <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.member.detail.showingTransactions", { shown: transactions.length, total: totalTransactions })}
+                    </p>
                   <div className="flex gap-1">
                     <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <span className="material-symbols-outlined text-lg">chevron_left</span>

@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
 import { Save, X } from "lucide-react";
 import {
-  addIngredientCategory,
   getIngredientCategoryById,
   editIngredientCategory
 } from "@/services/ingredientCategory";
@@ -30,15 +29,14 @@ const formSchema = z.object({
   isActive: z.boolean()
 });
 
-const AddCategory = () => {
+const EditCategory = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const editId = searchParams.get("id");
-  const isEdit = !!editId;
+  const id = searchParams.get("id");
 
   const [showCancel, setShowCancel] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -63,8 +61,8 @@ const AddCategory = () => {
     isLoading: loadingData,
     isError,
     refetch
-  } = useQuery(["ingredient-category", editId], () => getIngredientCategoryById(editId), {
-    enabled: isEdit,
+  } = useQuery(["ingredient-category", id], () => getIngredientCategoryById(id), {
+    enabled: !!id,
     onSuccess: (res) => {
       const d = res.data;
       form.reset({
@@ -89,18 +87,6 @@ const AddCategory = () => {
     }
   });
 
-  const createMutation = useMutation(addIngredientCategory, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["ingredient-categories"]);
-      setShowSuccess(true);
-    },
-    onError: (err) => {
-      toast.error(t("page.ingredientCategory.add.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  });
-
   const editMutation = useMutation(editIngredientCategory, {
     onSuccess: () => {
       queryClient.invalidateQueries(["ingredient-categories"]);
@@ -114,23 +100,18 @@ const AddCategory = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
+    if (!saveAsDraft && isSuperAdmin && !allStores && selectedStore.length === 0) {
       toast.error(t("page.ingredientCategory.add.storeRequired"));
       return;
     }
     const payload = {
       name: values.name.trim(),
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: JSON.stringify(selectedStore)
+      store: JSON.stringify(selectedStore),
+      id
     };
-    if (isEdit) {
-      editMutation.mutate({ ...payload, id: editId });
-    } else {
-      createMutation.mutate(payload);
-    }
+    editMutation.mutate(payload);
   };
-
-  const isSubmitting = createMutation.isLoading || editMutation.isLoading;
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -143,23 +124,11 @@ const AddCategory = () => {
             label: t("page.ingredientCategory.add.breadcrumbCategory"),
             href: "/ingredient-category"
           },
-          {
-            label: isEdit
-              ? t("page.ingredientCategory.add.breadcrumbEdit")
-              : t("page.ingredientCategory.add.breadcrumbAdd")
-          }
+          { label: t("page.ingredientCategory.add.breadcrumbEdit") }
         ]}
-        title={
-          isEdit
-            ? t("page.ingredientCategory.add.titleEdit")
-            : t("page.ingredientCategory.add.titleAdd")
-        }
-        description={
-          isEdit
-            ? t("page.ingredientCategory.add.subtitleEdit")
-            : t("page.ingredientCategory.add.subtitleAdd")
-        }>
-        <UserGuide guideKey={isEdit ? "edit-ingredient-category" : "add-ingredient-category"} />
+        title={t("page.ingredientCategory.add.titleEdit")}
+        description={t("page.ingredientCategory.add.subtitleEdit")}>
+        <UserGuide guideKey="edit-ingredient-category" />
       </PageHeader>
 
       <Form {...form} className="p-6">
@@ -261,18 +230,14 @@ const AddCategory = () => {
               {t("page.ingredientCategory.add.cancelButton")}
             </Button>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={editMutation.isLoading}>
                 Save as Draft
               </Button>
-              <Button
-                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-                disabled={isSubmitting}>
+              <Button type="submit" disabled={editMutation.isLoading}>
                 <Save size={16} className="mr-1" />
-                {isSubmitting
+                {editMutation.isLoading
                   ? t("page.ingredientCategory.add.savingButton")
-                  : isEdit
-                    ? t("page.ingredientCategory.add.saveChangesButton")
-                    : t("page.ingredientCategory.add.saveButton")}
+                  : t("page.ingredientCategory.add.saveChangesButton")}
               </Button>
             </div>
           </div>
@@ -319,7 +284,7 @@ const AddCategory = () => {
         </form>
       </Form>
 
-      {(isSubmitting || loadingData) && (
+      {loadingData && (
         <Loading fullscreen size="lg" label={t("page.ingredientCategory.add.loadingLabel")} />
       )}
 
@@ -327,11 +292,7 @@ const AddCategory = () => {
         type="success"
         open={showSuccess}
         onOpenChange={setShowSuccess}
-        title={
-          isEdit
-            ? t("page.ingredientCategory.add.modalSuccessTitleEdit")
-            : t("page.ingredientCategory.add.modalSuccessTitleAdd")
-        }
+        title={t("page.ingredientCategory.add.modalSuccessTitleEdit")}
         onConfirm={() => {
           queryClient.invalidateQueries(["ingredient-categories"]);
           navigate("/ingredient-category");
@@ -363,4 +324,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default EditCategory;

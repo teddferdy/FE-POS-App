@@ -151,7 +151,9 @@ const AddAdmin = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm"
                     placeholder={t("page.user.form.phonePlaceholder")}
+                    maxLength={14}
                   />
+                  <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

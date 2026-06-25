@@ -323,7 +323,9 @@ const quickIcons = [
   "more_horiz"
 ];
 
-const allIconsFlat = [...new Map(iconSections.flatMap((s) => s.icons).map(ic => [ic.icon, ic])).values()];
+const allIconsFlat = [
+  ...new Map(iconSections.flatMap((s) => s.icons).map((ic) => [ic.icon, ic])).values()
+];
 
 const AddCategory = () => {
   const { t } = useTranslation();
@@ -444,8 +446,7 @@ const AddCategory = () => {
       </div>
 
       <div>
-        <div
-          className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-12 gap-6">

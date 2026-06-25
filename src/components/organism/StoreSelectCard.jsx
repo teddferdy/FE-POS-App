@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Store, Plus, Check, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -170,6 +171,25 @@ const StoreSelectCard = ({
       )}
     </div>
   );
+};
+
+StoreSelectCard.propTypes = {
+  locations: PropTypes.arrayOf(
+    PropTypes.shape({ id: PropTypes.number.isRequired, name: PropTypes.string })
+  ),
+  selectedStores: PropTypes.arrayOf(PropTypes.number),
+  onChange: PropTypes.func.isRequired,
+  isSuperAdmin: PropTypes.bool,
+  user: PropTypes.shape({ store: PropTypes.number, storeName: PropTypes.string }),
+  t: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  noStoreLabel: PropTypes.string,
+  addStoreLabel: PropTypes.string,
+  storeInfoLabel: PropTypes.string,
+  allStores: PropTypes.bool,
+  onAllStoresChange: PropTypes.func,
+  navigate: PropTypes.func.isRequired
 };
 
 export default StoreSelectCard;

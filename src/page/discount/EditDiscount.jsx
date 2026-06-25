@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { getAllDiscount, editDiscount } from "@/services/discount";
+import { getAllLocation } from "@/services/location";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -42,7 +44,11 @@ const EditDiscount = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.discount.form.validation.nameRequired")),
     promoType: z.string().default("standard"),
-    type: z.string().min(1, t("page.discount.form.validation.typeRequired")),
+    type: z
+      .string()
+      .min(1, t("page.discount.form.validation.typeRequired"))
+      .optional()
+      .or(z.literal("")),
     value: z.coerce
       .number()
       .min(1, t("page.discount.form.validation.valueRequired"))
@@ -75,6 +81,15 @@ const EditDiscount = () => {
   const [successModal, setSuccessModal] = useState(false);
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.role === "super_admin";
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000
+  });
+  const locations = locData?.data || [];
+
+  const [selectedStores, setSelectedStores] = useState([]);
+  const [allStores, setAllStores] = useState(true);
   const locationParam = user?.store || "";
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -85,7 +100,7 @@ const EditDiscount = () => {
 
   const discountItem = useMemo(() => {
     if (!data?.data) return {};
-    return data.data.find((item) => item.id === id || item._id === id) || {};
+    return data.data.find((item) => Number(item.id) === Number(id) || item._id === id) || {};
   }, [data, id]);
 
   // const cond = useMemo(() => discountItem?.conditions || {}, [discountItem]);
@@ -121,6 +136,13 @@ const EditDiscount = () => {
   useEffect(() => {
     if (discountItem?.id) {
       const c = discountItem.conditions || {};
+      if (discountItem.store) {
+        setSelectedStores([discountItem.store]);
+        setAllStores(false);
+      } else {
+        setSelectedStores([]);
+        setAllStores(true);
+      }
       form.reset({
         name: discountItem.name || "",
         promoType: c.promoType || "standard",
@@ -220,6 +242,7 @@ const EditDiscount = () => {
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
       conditions,
+      store: allStores ? null : selectedStores[0] || null,
       description: values.description || null,
       status: saveAsDraft ? false : !!values.isActive
     };
@@ -250,6 +273,11 @@ const EditDiscount = () => {
 
   const currentPromoType = form.watch("promoType");
 
+  const handleTypeClick = (e) => {
+    e.preventDefault();
+    form.handleSubmit((v) => onSubmit(v, false))();
+  };
+
   return (
     <div>
       <div className="space-y-6">
@@ -269,37 +297,37 @@ const EditDiscount = () => {
           <span className="text-primary font-semibold">{t("page.discount.edit.title")}</span>
         </nav>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.discount.edit.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.discount.edit.description")}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
-              <X size={18} />
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setDraftModal(true)}
-              disabled={updateMutation.isLoading}>
-              {t("page.discount.edit.saveAsDraft")}
-            </Button>
-            <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
-              disabled={updateMutation.isLoading}
-              className="gap-2">
-              <Save size={18} />
-              {updateMutation.isLoading ? t("button.saving") : t("button.save")}
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t("page.discount.edit.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.discount.edit.description")}
+          </p>
         </div>
 
-        <Card className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-12">
+              <div className="col-span-12">
+                <StoreSelectCard
+                  locations={locations}
+                  selectedStores={selectedStores}
+                  onChange={setSelectedStores}
+                  isSuperAdmin={isSuperAdmin}
+                  user={user}
+                  t={t}
+                  title={t("page.category.form.storeSection.title")}
+                  description={t("page.category.form.storeSection.desc")}
+                  noStoreLabel={t("page.category.form.storeSection.noStore")}
+                  addStoreLabel={t("page.category.form.storeSection.addStore")}
+                  storeInfoLabel={t("page.category.form.storeInfo")}
+                  allStores={allStores}
+                  onAllStoresChange={setAllStores}
+                  navigate={navigate}
+                />
+              </div>
+            </div>
+
+            <Card className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -341,6 +369,7 @@ const EditDiscount = () => {
                 />
               </div>
 
+              {/* Standard discount fields */}
               {currentPromoType === "standard" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -393,6 +422,7 @@ const EditDiscount = () => {
                 </div>
               )}
 
+              {/* BOGO fields */}
               {currentPromoType === "bogo" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -437,9 +467,13 @@ const EditDiscount = () => {
                       </FormItem>
                     )}
                   />
+                  <p className="text-xs text-muted-foreground md:col-span-2">
+                    Contoh: Beli 2 gratis 1. Produk termurah akan diberikan gratis secara otomatis.
+                  </p>
                 </div>
               )}
 
+              {/* Bundling fields */}
               {currentPromoType === "bundling" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -471,14 +505,18 @@ const EditDiscount = () => {
                         <FormLabel>
                           ID Produk <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input placeholder="cth: 1,2,3" {...field} />
+                        <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <p className="text-xs text-muted-foreground md:col-span-2">
+                    Masukkan ID produk yang termasuk dalam paket, pisahkan dengan koma.
+                  </p>
                 </div>
               )}
 
+              {/* Happy Hour fields */}
               {currentPromoType === "happyHour" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -534,8 +572,8 @@ const EditDiscount = () => {
                     name="daysOfWeek"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hari (0=Minggu, 6=Sabtu)</FormLabel>
-                        <Input placeholder="cth: 1,2,3,4,5" {...field} />
+                        <FormLabel>Hari (0=Minggu, 1=Senin, ..., 6=Sabtu)</FormLabel>
+                        <Input placeholder="cth: 1,2,3,4,5 (senin-jumat)" {...field} />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -543,6 +581,7 @@ const EditDiscount = () => {
                 </div>
               )}
 
+              {/* Category discount fields */}
               {currentPromoType === "category" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -575,7 +614,7 @@ const EditDiscount = () => {
                         <FormLabel>
                           ID Kategori <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input placeholder="cth: 1,2,3" {...field} />
+                        <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -583,6 +622,7 @@ const EditDiscount = () => {
                 </div>
               )}
 
+              {/* Common fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -620,9 +660,9 @@ const EditDiscount = () => {
                             type="number"
                             placeholder="0"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                            }
+                            onChange={(e) => {
+                              field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                            }}
                           />
                           <FormMessage />
                         </FormItem>
@@ -638,9 +678,9 @@ const EditDiscount = () => {
                             type="number"
                             placeholder="0 (0 = unlimited)"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                            }
+                            onChange={(e) => {
+                              field.onChange(e.target.value === "" ? "" : Number(e.target.value));
+                            }}
                           />
                           <FormMessage />
                         </FormItem>
@@ -684,17 +724,66 @@ const EditDiscount = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>{t("page.discount.form.status")}</FormLabel>
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            field.value
+                              ? "bg-green-600 text-white"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
+                          <span className="material-symbols-outlined text-lg">
+                            {field.value ? "check" : "close"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {field.value
+                              ? t("page.discount.form.active")
+                              : t("page.discount.form.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {field.value
+                              ? t("page.discount.form.activeDescription")
+                              : t("page.discount.form.inactiveDescription")}
+                          </p>
+                        </div>
+                      </div>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </form>
-          </Form>
-        </Card>
+              <div className="flex justify-between items-center gap-4 mt-6 bg-card border border-border rounded-xl p-4">
+                <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
+                  <X size={18} />
+                  {t("breadcrumb.back")}
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={updateMutation.isLoading}>
+                    {t("page.discount.add.saveAsDraft")}
+                  </Button>
+                  <Button
+                    onClick={handleTypeClick}
+                    disabled={updateMutation.isLoading}
+                    className="gap-2">
+                    <Save size={18} />
+                    {updateMutation.isLoading ? t("button.saving") : t("button.save")}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </form>
+        </Form>
 
         <Modal
           type="confirm"
@@ -703,7 +792,7 @@ const EditDiscount = () => {
           title={t("page.discount.edit.cancelTitle")}
           description={t("page.discount.edit.cancelDescription")}
           confirmText={t("page.discount.edit.cancelConfirm")}
-          onConfirm={() => navigate("/discount")}
+          onConfirm={() => navigate("/discount-list")}
         />
         <Modal
           type="success"
@@ -712,7 +801,7 @@ const EditDiscount = () => {
           title={t("page.discount.edit.successTitle")}
           description={t("page.discount.edit.successDescription")}
           confirmText={t("page.discount.edit.successConfirm")}
-          onConfirm={() => navigate("/discount")}
+          onConfirm={() => navigate("/discount-list")}
         />
         <Modal
           type="confirm"

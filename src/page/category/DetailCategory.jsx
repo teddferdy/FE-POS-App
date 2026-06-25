@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, FolderTree, Edit3, Calendar, Store, User, Package } from "lucide-react";
@@ -6,7 +6,9 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import Modal from "@/components/organism/modal";
 import { getCategoryById } from "@/services/category";
+import { getAllProduct } from "@/services/product";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -36,6 +38,7 @@ const DetailCategory = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const [productModalOpen, setProductModalOpen] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["category", id],
@@ -43,7 +46,14 @@ const DetailCategory = () => {
     { enabled: !!id }
   );
 
+  const { data: productData, isLoading: productLoading } = useQuery(
+    ["category-products", id],
+    () => getAllProduct({ category: id, status: "all" }),
+    { enabled: productModalOpen }
+  );
+
   const category = data?.data || data;
+  const products = productData?.data || [];
 
   if (!id)
     return (
@@ -70,7 +80,7 @@ const DetailCategory = () => {
   const hasImage = category.image && !category.image.startsWith("http") === false;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">
           {t("breadcrumb.dashboard")}
@@ -165,7 +175,9 @@ const DetailCategory = () => {
         </Card>
 
         <div className="space-y-4">
-          <Card className="p-5 flex flex-col items-center justify-center text-center">
+          <Card
+            className="p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setProductModalOpen(true)}>
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
               <Package size={20} />
             </div>
@@ -200,6 +212,98 @@ const DetailCategory = () => {
           </Card>
         </div>
       </div>
+
+      <Modal
+        type="custom"
+        open={productModalOpen}
+        onOpenChange={setProductModalOpen}
+        title={`Produk dalam kategori "${category?.name || ""}" (${products.length})`}>
+        <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
+          {productLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Loading...</p>
+          ) : products.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Tidak ada produk</p>
+          ) : (
+            products.map((p) => {
+              const tax = typeof p.tax === "string" ? JSON.parse(p.tax) : p.tax;
+              return (
+                <div
+                  key={p.id}
+                  className="group p-4 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {p.nameProduct || p.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {p.barcode || p.sku || `#${p.id}`}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0 ml-3">
+                      <p className="text-sm font-bold text-primary">
+                        Rp{p.price?.toLocaleString("id-ID") || "0"}
+                      </p>
+                      {p.costPrice > 0 && (
+                        <p className="text-[11px] text-muted-foreground/70 line-through">
+                          Rp{(p.costPrice ?? 0).toLocaleString("id-ID")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                    {p.brand && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground/60 w-16 shrink-0">Brand</span>
+                        <span className="font-medium text-foreground/80 truncate">{p.brand}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60 w-16 shrink-0">Stok</span>
+                      <span className="font-medium text-foreground/80">
+                        {p.stock ?? 0} {p.unit || "pcs"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60 w-16 shrink-0">Min</span>
+                      <span className="font-medium text-foreground/80">{p.minStock ?? 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60 w-16 shrink-0">Tipe</span>
+                      <span className="font-medium text-foreground/80 capitalize">
+                        {p.tipeProduk || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground/60 w-16 shrink-0">Status</span>
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                          p.status === "active"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        }`}>
+                        <span
+                          className={`w-1 h-1 rounded-full ${
+                            p.status === "active" ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        />
+                        {p.status === "active" ? "Aktif" : "Tidak Aktif"}
+                      </span>
+                    </div>
+                    {tax?.rate && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground/60 w-16 shrink-0">Pajak</span>
+                        <span className="font-medium text-foreground/80">
+                          {tax.name} ({tax.rate}%)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

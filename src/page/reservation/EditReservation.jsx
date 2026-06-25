@@ -32,7 +32,7 @@ const EditReservation = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     customerName: z.string().min(1, t("page.reservation.edit.validation.customerName")),
-    customerPhone: z.string().optional().or(z.literal("")),
+    customerPhone: z.string().max(14).optional().or(z.literal("")),
     customerEmail: z.string().optional().or(z.literal("")),
     guestCount: z.coerce.number().min(1),
     reservationDate: z.date({
@@ -200,8 +200,9 @@ const EditReservation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("page.reservation.edit.form.customerPhone")}</FormLabel>
-                      <Input {...field} />
+                      <Input maxLength={14} {...field} />
                       <FormMessage />
+                      <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
                     </FormItem>
                   )}
                 />

@@ -111,6 +111,7 @@ const DetailIngredient = React.lazy(() => import("./page/ingredient/DetailIngred
 // Ingredient Category
 const IngredientCategoryList = React.lazy(() => import("./page/ingredient-category/CategoryList"));
 const AddIngredientCategory = React.lazy(() => import("./page/ingredient-category/AddCategory"));
+const EditIngredientCategory = React.lazy(() => import("./page/ingredient-category/EditCategory"));
 
 // Tax Config
 const TaxConfigList = React.lazy(() => import("./page/tax-config/TaxConfigList"));
@@ -209,6 +210,7 @@ const BackupPage = React.lazy(() => import("./page/backup/BackupPage"));
 const DiscountList = React.lazy(() => import("./page/discount/DiscountList"));
 const AddDiscount = React.lazy(() => import("./page/discount/AddDiscount"));
 const EditDiscount = React.lazy(() => import("./page/discount/EditDiscount"));
+const DetailDiscount = React.lazy(() => import("./page/discount/DetailDiscount"));
 
 // Type Payment
 const TypePaymentList = React.lazy(() => import("./page/type-payment/TypePaymentList"));
@@ -326,6 +328,7 @@ function App() {
             <Route path="/discount-list" element={withLayout(<DiscountList />)} />
             <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
             <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
+            <Route path="/detail-discount" element={withLayout(<DetailDiscount />)} />
 
             <Route path="/accounts-receivable" element={withLayout(<AccountsReceivableList />)} />
             <Route
@@ -390,7 +393,7 @@ function App() {
             />
             <Route
               path="/edit-ingredient-category"
-              element={withLayout(<AddIngredientCategory />)}
+              element={withLayout(<EditIngredientCategory />)}
             />
 
             <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />

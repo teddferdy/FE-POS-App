@@ -457,12 +457,14 @@ const AddEmployee = () => {
                                     {...field}
                                     type="tel"
                                     placeholder={t("page.employee.form.phonePlaceholder")}
+                                    maxLength={14}
                                     onChange={(e) => {
                                       const value = e.target.value.replace(/\D/g, "").slice(0, 14);
                                       field.onChange(value);
                                     }}
                                   />
                                   <FormMessage />
+                                  <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
                                 </FormItem>
                               )}
                             />

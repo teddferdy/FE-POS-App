@@ -117,7 +117,7 @@ const AddLocation = () => {
       name: z.string().min(1, "Required"),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
-      phoneNumber: z.string().min(1, "Required").regex(/^\d*$/, "Digits only"),
+      phoneNumber: z.string().min(1, "Required").regex(/^\d*$/, "Digits only").max(14, "Max 14 digits"),
       email: z.string().optional(),
       address: z.string().min(1, "Required"),
       detailLocation: z.string().optional(),
@@ -490,6 +490,7 @@ const AddLocation = () => {
                                 placeholder={t("page.location.form.phonePlaceholder")}
                                 className="pl-9"
                                 inputMode="numeric"
+                                maxLength={14}
                                 onChange={(e) => {
                                   const value = e.target.value.replace(/\D/g, "").slice(0, 14);
                                   field.onChange(value);

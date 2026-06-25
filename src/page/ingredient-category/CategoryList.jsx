@@ -290,10 +290,30 @@ const CategoryList = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard label={t("page.ingredientCategory.list.statTotal")} value={statsTotal} icon="folder" variant="default" />
-            <StatCard label={t("page.ingredientCategory.list.statActive")} value={activeCount} icon="check_circle" variant="active" />
-            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
-            <StatCard label={t("page.ingredientCategory.list.statInactive")} value={inactiveCount} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.ingredientCategory.list.statTotal")}
+              value={statsTotal}
+              icon="folder"
+              variant="default"
+            />
+            <StatCard
+              label={t("page.ingredientCategory.list.statActive")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.ingredientCategory.list.statInactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
         </div>
 

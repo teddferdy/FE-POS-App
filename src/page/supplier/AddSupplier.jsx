@@ -23,7 +23,7 @@ const AddSupplier = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.supplier.validation.nameRequired")),
     contactPerson: z.string().optional().or(z.literal("")),
-    phone: z.string().optional().or(z.literal("")),
+    phone: z.string().max(14).optional().or(z.literal("")),
     email: z
       .string()
       .email(t("page.supplier.validation.emailInvalid"))
@@ -142,13 +142,15 @@ const AddSupplier = () => {
                           <Input
                             placeholder={t("page.supplier.form.phonePlaceholder")}
                             inputMode="numeric"
+                            maxLength={14}
                             {...field}
                             onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, "");
+                              const v = e.target.value.replace(/\D/g, "").slice(0, 14);
                               field.onChange(v);
                             }}
                           />
                           <FormMessage />
+                          <p className="text-xs text-muted-foreground">{t("common.phoneHint")}</p>
                         </FormItem>
                       )}
                     />
