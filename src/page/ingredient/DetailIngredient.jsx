@@ -16,8 +16,6 @@ import {
   Hash,
   CheckCircle2,
   XCircle,
-  Calendar,
-  User,
   Clock,
   Edit3,
   Info,
@@ -28,6 +26,7 @@ import { getIngredientById } from "@/services/ingredient";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PropTypes from "prop-types";
 
 const DetailRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 py-3 border-b border-border last:border-b-0">
@@ -36,10 +35,16 @@ const DetailRow = ({ icon: Icon, label, value }) => (
     </div>
     <div className="min-w-0 flex-1">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-      <p className="text-sm font-medium text-foreground mt-0.5 break-words">{value || "-"}</p>
+      <p className="text-sm font-medium text-foreground mt-0.5 break-words">{value ?? "-"}</p>
     </div>
   </div>
 );
+
+DetailRow.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.any
+};
 
 const SectionHeader = ({ icon: Icon, title }) => (
   <div className="flex items-center gap-2 pb-3 border-b border-border">
@@ -49,6 +54,11 @@ const SectionHeader = ({ icon: Icon, title }) => (
     <h3 className="text-base font-semibold text-foreground">{title}</h3>
   </div>
 );
+
+SectionHeader.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  title: PropTypes.string.isRequired
+};
 
 const DetailIngredient = () => {
   const { t } = useTranslation();
@@ -61,7 +71,35 @@ const DetailIngredient = () => {
   });
 
   const ingredient = data?.data || data;
-  const isActive = ingredient?.status === "active";
+
+  const statusConfig = {
+    active: {
+      label: t("page.ingredient.detail.active"),
+      icon: CheckCircle2,
+      bg: "bg-green-600 dark:bg-green-700 text-white",
+      badge:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+    },
+    draft: {
+      label: t("common.draft"),
+      icon: Clock,
+      bg: "bg-yellow-500 dark:bg-yellow-600 text-white",
+      badge:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+    },
+    inactive: {
+      label: t("page.ingredient.detail.inactive"),
+      icon: XCircle,
+      bg: "bg-red-600 dark:bg-red-900 text-white",
+      badge:
+        "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+    }
+  }[ingredient?.status] || {
+    label: ingredient?.status || "-",
+    icon: XCircle,
+    bg: "bg-gray-500 text-white",
+    badge: "bg-gray-100 text-gray-800 border border-gray-200"
+  };
 
   if (isLoading) {
     return (
@@ -105,7 +143,9 @@ const DetailIngredient = () => {
                   </div>
                   <div className="space-y-3">
                     {[...Array(4)].map((_, r) => (
-                      <div key={r} className="flex items-center justify-between py-2 border-b border-border">
+                      <div
+                        key={r}
+                        className="flex items-center justify-between py-2 border-b border-border">
                         <Skeleton className="h-3 w-20" />
                         <Skeleton className="h-3 w-16" />
                       </div>
@@ -113,7 +153,9 @@ const DetailIngredient = () => {
                   </div>
                 </div>
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
+                  <div
+                    key={i}
+                    className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
                     <Skeleton className="h-5 w-5 shrink-0 mt-0.5 rounded" />
                     <div className="flex-1 space-y-1">
                       <Skeleton className="h-3 w-24" />
@@ -149,9 +191,20 @@ const DetailIngredient = () => {
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
-          { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
-          { label: t("page.ingredient.list.title"), href: "/ingredient", i18nKey: "page.ingredient.list.title" },
-          { label: t("page.ingredient.detail.breadcrumbDetail"), i18nKey: "page.ingredient.detail.breadcrumbDetail" }
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          {
+            label: t("page.ingredient.list.title"),
+            href: "/ingredient",
+            i18nKey: "page.ingredient.list.title"
+          },
+          {
+            label: t("page.ingredient.detail.breadcrumbDetail"),
+            i18nKey: "page.ingredient.detail.breadcrumbDetail"
+          }
         ]}
         title={ingredient.name}
         description={t("page.ingredient.detail.subtitle")}>
@@ -168,11 +221,26 @@ const DetailIngredient = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* General Information */}
               <div className="space-y-4">
-                <SectionHeader icon={ClipboardList} title={t("page.ingredient.detail.informasiUmum")} />
+                <SectionHeader
+                  icon={ClipboardList}
+                  title={t("page.ingredient.detail.informasiUmum")}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Tag} label={t("page.ingredient.detail.nama")} value={ingredient.name} />
-                  <DetailRow icon={FolderTree} label={t("page.ingredient.detail.kategori")} value={categoryName} />
-                  <DetailRow icon={Building2} label={t("page.ingredient.detail.supplier")} value={supplierName} />
+                  <DetailRow
+                    icon={Tag}
+                    label={t("page.ingredient.detail.nama")}
+                    value={ingredient.name}
+                  />
+                  <DetailRow
+                    icon={FolderTree}
+                    label={t("page.ingredient.detail.kategori")}
+                    value={categoryName}
+                  />
+                  <DetailRow
+                    icon={Building2}
+                    label={t("page.ingredient.detail.supplier")}
+                    value={supplierName}
+                  />
                 </div>
               </div>
 
@@ -180,19 +248,50 @@ const DetailIngredient = () => {
               <div className="space-y-4">
                 <SectionHeader icon={Package} title={t("page.ingredient.detail.stokHarga")} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Package} label={t("page.ingredient.detail.stokSaatIni")} value={ingredient.stock} />
-                  <DetailRow icon={AlertTriangle} label={t("page.ingredient.detail.minimalStok")} value={ingredient.minStock} />
-                  <DetailRow icon={DollarSign} label={t("page.ingredient.detail.hargaBeli")} value={ingredient.costPrice ? `Rp ${ingredient.costPrice.toLocaleString("id-ID")}` : "-"} />
+                  <DetailRow
+                    icon={Package}
+                    label={t("page.ingredient.detail.stokSaatIni")}
+                    value={ingredient.stock}
+                  />
+                  <DetailRow
+                    icon={AlertTriangle}
+                    label={t("page.ingredient.detail.minimalStok")}
+                    value={ingredient.minStock}
+                  />
+                  <DetailRow
+                    icon={DollarSign}
+                    label={t("page.ingredient.detail.hargaBeli")}
+                    value={
+                      ingredient.costPrice != null
+                        ? `Rp ${Number(ingredient.costPrice).toLocaleString("id-ID")}`
+                        : "-"
+                    }
+                  />
                 </div>
               </div>
 
               {/* Unit Conversion */}
               <div className="space-y-4">
-                <SectionHeader icon={ArrowLeftRight} title={t("page.ingredient.detail.konversiSatuan")} />
+                <SectionHeader
+                  icon={ArrowLeftRight}
+                  title={t("page.ingredient.detail.konversiSatuan")}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                  <DetailRow icon={Ruler} label={t("page.ingredient.detail.baseUnit")} value={ingredient.baseUnit} />
-                  <DetailRow icon={ShoppingCart} label={t("page.ingredient.detail.unitPembelian")} value={ingredient.unit} />
-                  <DetailRow icon={Hash} label={t("page.ingredient.detail.faktorKonversi")} value={ingredient.conversionFactor} />
+                  <DetailRow
+                    icon={Ruler}
+                    label={t("page.ingredient.detail.baseUnit")}
+                    value={ingredient.baseUnit}
+                  />
+                  <DetailRow
+                    icon={ShoppingCart}
+                    label={t("page.ingredient.detail.unitPembelian")}
+                    value={ingredient.unit}
+                  />
+                  <DetailRow
+                    icon={Hash}
+                    label={t("page.ingredient.detail.faktorKonversi")}
+                    value={ingredient.conversionFactor}
+                  />
                 </div>
               </div>
             </div>
@@ -202,19 +301,21 @@ const DetailIngredient = () => {
               {/* Status */}
               <div className="flex items-center justify-between bg-muted/30 p-4 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isActive ? "bg-green-600 dark:bg-green-700 text-white" : "bg-red-600 dark:bg-red-900 text-white"}`}>
-                    {isActive ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
+                    <statusConfig.icon size={20} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {isActive ? t("page.ingredient.detail.active") : t("page.ingredient.detail.inactive")}
+                    <p className="text-sm font-semibold text-foreground">{statusConfig.label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("page.ingredient.detail.status")}
                     </p>
-                    <p className="text-xs text-muted-foreground">{t("page.ingredient.detail.status")}</p>
                   </div>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight ${isActive ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"}`}>
-                  {isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                  {isActive ? t("page.ingredient.detail.active") : t("page.ingredient.detail.inactive")}
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight ${statusConfig.badge}`}>
+                  <statusConfig.icon size={12} />
+                  {statusConfig.label}
                 </span>
               </div>
 
@@ -225,17 +326,23 @@ const DetailIngredient = () => {
                     <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                       <Building2 size={18} />
                     </div>
-                    <h3 className="text-base font-semibold text-foreground">{t("page.ingredient.detail.supplier")}</h3>
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("page.ingredient.detail.supplier")}
+                    </h3>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                      <span className="text-xs font-medium text-muted-foreground">{t("page.ingredient.detail.nama")}</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t("page.ingredient.detail.nama")}
+                      </span>
                       <span className="text-xs font-semibold text-foreground">{supplierName}</span>
                     </div>
                     {supplierPhone && (
                       <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                         <span className="text-xs font-medium text-muted-foreground">Phone</span>
-                        <span className="text-xs font-semibold text-foreground">{supplierPhone}</span>
+                        <span className="text-xs font-semibold text-foreground">
+                          {supplierPhone}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -248,11 +355,15 @@ const DetailIngredient = () => {
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                     <Clock size={18} />
                   </div>
-                  <h3 className="text-base font-semibold text-foreground">{t("page.ingredient.detail.infoWaktu")}</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.ingredient.detail.infoWaktu")}
+                  </h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">{t("common.createdAt")}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("common.createdAt")}
+                    </span>
                     <span className="text-xs font-semibold text-foreground">
                       {ingredient.createdAt
                         ? new Date(ingredient.createdAt).toLocaleDateString("id-ID", {
@@ -264,7 +375,9 @@ const DetailIngredient = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">{t("common.updatedAt")}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("common.updatedAt")}
+                    </span>
                     <span className="text-xs font-semibold text-foreground">
                       {ingredient.updatedAt
                         ? new Date(ingredient.updatedAt).toLocaleDateString("id-ID", {
@@ -276,12 +389,20 @@ const DetailIngredient = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">{t("common.createdBy")}</span>
-                    <span className="text-xs font-semibold text-foreground">{ingredient.createdBy || "-"}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("common.createdBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {ingredient.createdByUser?.fullName || ingredient.createdBy || "-"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                    <span className="text-xs font-medium text-muted-foreground">{t("common.modifiedBy")}</span>
-                    <span className="text-xs font-semibold text-foreground">{ingredient.modifiedBy || "-"}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("common.modifiedBy")}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground">
+                      {ingredient.modifiedBy || "-"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -291,22 +412,34 @@ const DetailIngredient = () => {
                 <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
                   <Info size={18} className="text-primary shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">{t("page.ingredient.detail.tips")}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">{t("page.ingredient.detail.tipsDesc")}</p>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      {t("page.ingredient.detail.tips")}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.ingredient.detail.tipsDesc")}
+                    </p>
                   </div>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
                   <ShieldCheck size={18} className="text-green-600 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">{t("page.ingredient.detail.tips")}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">{t("page.ingredient.detail.tipsDesc")}</p>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      {t("page.ingredient.detail.tips")}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.ingredient.detail.tipsDesc")}
+                    </p>
                   </div>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-xl flex items-start gap-3 border border-border">
                   <History size={18} className="text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">{t("page.ingredient.detail.tips")}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">{t("page.ingredient.detail.tipsDesc")}</p>
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      {t("page.ingredient.detail.tips")}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.ingredient.detail.tipsDesc")}
+                    </p>
                   </div>
                 </div>
               </div>

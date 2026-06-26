@@ -4272,7 +4272,7 @@
   "page.purchaseOrder.add.addEmployee": "Add Employee",
   "page.purchaseOrder.add.addEmployeeFirst": "Add Employee First",
   "page.purchaseOrder.add.addItem": "Add Item",
-  "page.purchaseOrder.add.addSupplier": "Add Supplier",
+  "page.purchaseOrder.add.addSupplier": "Tambah Supplier",
   "page.purchaseOrder.add.allStore": "All Store",
   "page.purchaseOrder.add.cancelModalBack": "Cancel Modal Back",
   "page.purchaseOrder.add.cancelModalConfirm": "Cancel Modal Confirm",
@@ -4986,5 +4986,9 @@
   "page.discount.list.deleteTitle": "Hapus Diskon",
   "page.goodsReceipt.detail.status.completed": "Selesai",
   "page.goodsReceipt.detail.status.cancelled": "Dibatalkan",
-  "page.location.form.saveDraft": "Save Draft"
+  "page.location.form.saveDraft": "Save Draft",
+  "page.purchaseOrder.add.supplierName": "Nama Supplier",
+  "page.purchaseOrder.add.supplierNamePlaceholder": "Masukkan nama supplier",
+  "page.purchaseOrder.add.supplierPhone": "Nomor Telepon",
+  "page.purchaseOrder.add.supplierPhonePlaceholder": "Masukkan nomor telepon"
 }

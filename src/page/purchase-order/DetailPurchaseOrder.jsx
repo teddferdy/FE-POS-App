@@ -1,631 +1,576 @@
-import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { getPurchaseOrderById } from "../../services/purchase-order";
+import { getPaymentsByPO, deletePayment } from "../../services/purchase-payment";
+import { getReturnsByPO } from "../../services/purchase-return";
+import { format } from "date-fns";
+// import { id } from "date-fns/locale";
+import { Button } from "../../components/ui/button";
+import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Package,
-  Wallet,
-  Trash2,
-  Plus
-} from "lucide-react";
-import { format } from "date-fns";
-import { DatePicker } from "@/components/ui/date-picker";
-import { getPurchaseOrderById } from "@/services/purchase-order";
-import { getPaymentsByPO, recordPayment, deletePayment } from "@/services/purchase-payment";
-import AbortController from "@/components/organism/abort-controller";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
-import Modal from "@/components/organism/modal";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "../../components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-const DetailPurchaseOrder = () => {
+  ArrowLeft,
+  FileText,
+  ShoppingBag,
+  Plus,
+  Undo2,
+  Clock,
+  CreditCard,
+  Receipt,
+  Building2,
+  User,
+  Store,
+  CalendarDays,
+  Hash,
+  Trash2,
+  CheckCircle2,
+  XCircle
+} from "lucide-react";
+
+export default function DetailPurchaseOrder() {
   const { t } = useTranslation();
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [po, setPo] = useState(null);
+  const [payments, setPayments] = useState([]);
+  const [returns, setReturns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
+
+  const totalAmount = po?.purchaseOrderItems?.reduce(
+    (sum, item) => sum + Number(item.totalPrice || 0),
+    0
+  );
+  const discount = po?.purchaseOrderItems?.reduce(
+    (sum, item) => sum + Number(item.discount || 0),
+    0
+  );
+  const finalAmount = totalAmount - discount;
+  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const remaining = finalAmount - totalPaid;
 
   const statusMap = {
+    draft: {
+      label: t("page.purchaseOrder.status.draft"),
+      class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+    },
     pending: {
       label: t("page.purchaseOrder.status.pending"),
-      class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
-      icon: Clock
+      class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
     },
     ordered: {
       label: t("page.purchaseOrder.status.ordered"),
-      class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
-      icon: Clock
+      class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
     },
     received: {
       label: t("page.purchaseOrder.status.received"),
-      class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
-      icon: CheckCircle2
+      class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
     },
     cancelled: {
       label: t("page.purchaseOrder.status.cancelled"),
-      class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
-      icon: XCircle
+      class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
     }
   };
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["purchase-order-detail", id],
-    () => getPurchaseOrderById(id),
-    { enabled: !!id }
-  );
 
-  const po = data?.data || {};
-  const st = statusMap[po.status] || statusMap.pending;
-  const StatusIcon = st.icon;
+  useEffect(() => {
+    loadData();
+  }, [id]);
 
-  const items = po.items || [];
-  const totalAmount =
-    items.reduce((sum, item) => sum + (item.quantity || 0) * (item.price || 0), 0) ||
-    po.totalAmount ||
-    0;
-  const discount = po.discount || 0;
-  const finalAmount = po.finalAmount || totalAmount - discount;
-
-  const queryClient = useQueryClient();
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [paymentToDelete, setPaymentToDelete] = useState(null);
-  const [paymentForm, setPaymentForm] = useState({
-    amount: "",
-    paymentDate: undefined,
-    paymentMethod: "cash",
-    reference: "",
-    notes: ""
-  });
-
-  const { data: paymentsData } = useQuery(["po-payments", id], () => getPaymentsByPO(id), {
-    enabled: !!id
-  });
-  const payments = paymentsData?.data || [];
-  const totalPaid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
-  const remaining = Math.max(0, finalAmount - totalPaid);
-
-  const recordMutation = useMutation(recordPayment, {
-    onSuccess: () => {
-      toast.success(t("page.purchaseOrder.detail.paymentRecorded"));
-      queryClient.invalidateQueries(["po-payments", id]);
-      queryClient.invalidateQueries(["purchase-order-detail", id]);
-      setPaymentModalOpen(false);
-      setPaymentForm({
-        amount: "",
-        paymentDate: undefined,
-        paymentMethod: "cash",
-        reference: "",
-        notes: ""
-      });
-    },
-    onError: (err) => {
-      toast.error(t("page.purchaseOrder.detail.paymentRecordFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [poRes, paymentRes, returnRes] = await Promise.all([
+        getPurchaseOrderById(id),
+        getPaymentsByPO(id),
+        getReturnsByPO(id)
+      ]);
+      setPo(poRes.data);
+      setPayments(paymentRes.data || []);
+      setReturns(returnRes.data || []);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to load purchase order");
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  const deletePaymentMutation = useMutation(deletePayment, {
-    onSuccess: () => {
+  const handleDeletePayment = async () => {
+    try {
+      await deletePayment(paymentToDelete.id);
       toast.success(t("page.purchaseOrder.detail.paymentDeleted"));
-      queryClient.invalidateQueries(["po-payments", id]);
-    },
-    onError: (err) => {
-      toast.error(t("page.purchaseOrder.detail.paymentDeleteFailed"), {
-        description: err?.response?.data?.message || err.message
-      });
+      setDeleteModalOpen(false);
+      setPaymentToDelete(null);
+      loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete payment");
     }
-  });
-
-  const handleRecordPayment = () => {
-    if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
-      toast.error(t("page.purchaseOrder.detail.paymentAmountRequired"));
-      return;
-    }
-    recordMutation.mutate({
-      purchaseOrder: po.id,
-      supplier: po.supplier,
-      amount: Number(paymentForm.amount),
-      paymentDate: paymentForm.paymentDate
-        ? format(paymentForm.paymentDate, "yyyy-MM-dd")
-        : format(new Date(), "yyyy-MM-dd"),
-      paymentMethod: paymentForm.paymentMethod,
-      reference: paymentForm.reference,
-      notes: paymentForm.notes
-    });
   };
 
-  if (!id) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">{t("page.purchaseOrder.detail.idNotFound")}</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
-  if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("common.loading")} />;
-  }
-
-  if (!po.id) {
+  if (!po) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <Package className="w-12 h-12 text-muted-foreground" />
         <p className="text-muted-foreground">{t("page.purchaseOrder.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/purchase-order")}>
-          <ArrowLeft size={16} className="mr-2" />
-          {t("common.back")}
+        <Button variant="outline" onClick={() => navigate("/purchase-orders")}>
+          <ArrowLeft size={16} className="mr-1" />
+          {t("page.purchaseOrder.detail.back")}
         </Button>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/purchase-order")}
-            className="hover:text-foreground transition-colors">
-            {t("page.purchaseOrder.list.title")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.purchaseOrder.detail.title")}</span>
-        </nav>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
-              <ArrowLeft size={18} />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {po.orderNumber || po.poNumber || `PO-${po.id}`}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("page.purchaseOrder.detail.pageDesc")}
-              </p>
-            </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/purchase-orders"
+            className="text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">
+              {po.name || `PO-${po.invoiceNumber || po.id}`}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t("page.purchaseOrder.detail.created")}:{" "}
+              {po.createdAt
+                ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", {
+                    locale: id
+                  })
+                : "-"}
+            </p>
           </div>
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-            <StatusIcon size={14} />
-            {st.label}
-          </span>
         </div>
+        {(() => {
+          const st = statusMap[po.status] || statusMap.pending;
+          const StatusIcon =
+            po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+              <StatusIcon size={14} />
+              {st.label}
+            </span>
+          );
+        })()}
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("page.purchaseOrder.detail.poInfo")}
-              </h3>
+      {/* Two-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Info, Items, Payment, Returns */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* PO Info Card */}
+          <Card className="p-6">
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FileText size={16} className="text-muted-foreground" />
+              {t("page.purchaseOrder.detail.info")}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <Building2 size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.supplier")}:
+                </span>
+                <span className="font-medium">{po.supplier?.name || "-"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <User size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.warehouse")}:
+                </span>
+                <span className="font-medium">{po.warehouse?.name || "-"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Store size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.createdBy")}:
+                </span>
+                <span className="font-medium">{po.createdByUser?.name || "-"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CalendarDays size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.date")}:
+                </span>
+                <span className="font-medium">
+                  {po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Hash size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.invoice")}:
+                </span>
+                <span className="font-medium">{po.invoiceNumber || "-"}</span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Items Card */}
+          <Card className="p-6">
+            <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <ShoppingBag size={16} className="text-muted-foreground" />
+              {t("page.purchaseOrder.detail.items")}
+            </h2>
+            <div className="overflow-x-auto border border-border rounded-lg">
               <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                    <th className="text-left py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.product")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.qty")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.price")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.discount")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.total")}
+                    </th>
+                  </tr>
+                </thead>
                 <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-2.5 text-muted-foreground w-36">
-                      {t("page.purchaseOrder.detail.supplier")}
-                    </td>
-                    <td className="py-2.5 font-medium">
-                      {po.supplierData?.name || po.supplier?.name || "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.pic")}
-                    </td>
-                    <td className="py-2.5 font-medium">{po.picData?.fullName || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.store")}
-                    </td>
-                    <td className="py-2.5 font-medium">{po.storeData?.name || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.poDate")}
-                    </td>
-                    <td className="py-2.5 font-medium">
-                      {po.orderDate
-                        ? new Date(po.orderDate).toLocaleDateString("id-ID", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                  {po.dueDate && (
-                    <tr>
-                      <td className="py-2.5 text-muted-foreground">
-                        {t("page.purchaseOrder.detail.dueDate")}
+                  {po.purchaseOrderItems?.map((item) => (
+                    <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <p className="font-medium">
+                              {item.product?.name || item.ingredient?.name || "-"}
+                            </p>
+                            {item.notes && (
+                              <p className="text-xs text-muted-foreground">{item.notes}</p>
+                            )}
+                          </div>
+                        </div>
                       </td>
-                      <td className="py-2.5 font-medium">
-                        {new Date(po.dueDate).toLocaleDateString("id-ID", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric"
-                        })}
+                      <td className="py-3 px-4 text-right font-mono">
+                        {item.qty || 0}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          {item.product?.uom || item.ingredient?.uom || ""}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        Rp {Number(item.price || 0).toLocaleString("id-ID")}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {item.discount > 0 ? (
+                          <span className="text-red-500">
+                            - Rp {Number(item.discount).toLocaleString("id-ID")}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold">
+                        Rp {Number(item.totalPrice || 0).toLocaleString("id-ID")}
                       </td>
                     </tr>
-                  )}
-                  <tr>
-                    <td className="py-2.5 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.notes")}
-                    </td>
-                    <td className="py-2.5">{po.notes || "-"}</td>
-                  </tr>
+                  ))}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-muted/30">
+                    <td colSpan={4} className="py-3 px-4" />
+                    <td className="py-3 px-4 text-right text-muted-foreground text-sm">
+                      {t("page.purchaseOrder.detail.total")}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-bold">
+                      Rp {Number(totalAmount).toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
-            </Card>
+            </div>
+          </Card>
 
-            <Card className="p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("page.purchaseOrder.detail.items")}
-              </h3>
-              <div className="overflow-x-auto">
+          {/* Payment Card */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <CreditCard size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.payment")}
+              </h2>
+              {remaining > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/purchase-orders/${id}/pay`)}>
+                  <Plus size={14} className="mr-1" />
+                  {t("page.purchaseOrder.detail.pay")}
+                </Button>
+              )}
+            </div>
+            {payments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {t("page.purchaseOrder.detail.noPayment")}
+              </p>
+            ) : (
+              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-2 px-2 text-muted-foreground font-medium w-8">
-                        #
+                    <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.date")}
                       </th>
-                      <th className="text-left py-2 px-2 text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.detail.itemName")}
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.paymentMethod")}
                       </th>
-                      <th className="text-right py-2 px-2 text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.detail.qty")}
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.amount")}
                       </th>
-                      <th className="text-center py-2 px-2 text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.detail.unit")}
-                      </th>
-                      <th className="text-right py-2 px-2 text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.detail.price")}
-                      </th>
-                      <th className="text-right py-2 px-2 text-muted-foreground font-medium">
-                        {t("page.purchaseOrder.detail.subtotal")}
-                      </th>
+                      <th className="text-right py-3 px-4 font-medium w-10" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {items.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-muted/20">
-                        <td className="py-2 px-2 text-muted-foreground">{idx + 1}</td>
-                        <td className="py-2 px-2 font-medium">
-                          {item.ingredientName || item.productData?.nameProduct || "-"}
+                    {payments.map((payment) => (
+                      <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-4">
+                          {payment.createdAt
+                            ? format(new Date(payment.createdAt), "dd MMM yyyy, HH:mm", {
+                                locale: id
+                              })
+                            : "-"}
                         </td>
-                        <td className="py-2 px-2 text-right">{item.quantity}</td>
-                        <td className="py-2 px-2 text-center">{item.unit || "pcs"}</td>
-                        <td className="py-2 px-2 text-right">
-                          Rp {Number(item.price).toLocaleString("id-ID")}
+                        <td className="py-3 px-4 capitalize">{payment.paymentMethod || "-"}</td>
+                        <td className="py-3 px-4 text-right font-mono font-bold">
+                          Rp {Number(payment.amount || 0).toLocaleString("id-ID")}
                         </td>
-                        <td className="py-2 px-2 text-right font-medium">
-                          Rp {Number(item.quantity * item.price).toLocaleString("id-ID")}
+                        <td className="py-3 px-4 text-right">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => {
+                              setPaymentToDelete(payment);
+                              setDeleteModalOpen(true);
+                            }}>
+                            <Trash2 size={14} />
+                          </Button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </Card>
-          </div>
+            )}
+          </Card>
 
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("page.purchaseOrder.detail.summary")}
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {t("page.purchaseOrder.detail.total")}
-                  </span>
-                  <span className="font-medium">
-                    Rp {Number(totalAmount).toLocaleString("id-ID")}
-                  </span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t("page.purchaseOrder.detail.discount")}
-                    </span>
-                    <span className="font-medium text-red-500">
-                      - Rp {Number(discount).toLocaleString("id-ID")}
-                    </span>
-                  </div>
-                )}
-                <div className="border-t border-border pt-3 flex justify-between text-sm font-bold">
-                  <span>{t("page.purchaseOrder.detail.grandTotal")}</span>
-                  <span>Rp {Number(finalAmount).toLocaleString("id-ID")}</span>
-                </div>
-                {totalPaid > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t("page.purchaseOrder.detail.paid")}
-                    </span>
-                    <span className="font-medium text-green-600">
-                      Rp {Number(totalPaid).toLocaleString("id-ID")}
-                    </span>
-                  </div>
-                )}
-                {remaining > 0 && (
-                  <div className="flex justify-between text-sm border-t border-border pt-3">
-                    <span className="text-muted-foreground font-medium">
-                      {t("page.purchaseOrder.detail.remaining")}
-                    </span>
-                    <span className="font-bold text-red-500">
-                      Rp {Number(remaining).toLocaleString("id-ID")}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-foreground">
-                  {t("page.purchaseOrder.detail.payment")}
-                </h3>
-                {remaining > 0 && (
-                  <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
-                    <Plus size={14} className="mr-1" />
-                    {t("page.purchaseOrder.detail.pay")}
-                  </Button>
-                )}
-              </div>
-              {payments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t("page.purchaseOrder.detail.noPayment")}
-                </p>
-              ) : (
-                <div className="overflow-x-auto max-h-64 overflow-y-auto">
-                  <table className="w-full text-sm text-center">
-                    <thead className="text-muted-foreground text-xs sticky top-0 bg-background">
-                      <tr className="border-b border-border">
-                        <th className="py-2 px-2 font-medium">
-                          {t("page.purchaseOrder.detail.date")}
-                        </th>
-                        <th className="py-2 px-2 font-medium">
-                          {t("page.purchaseOrder.detail.method")}
-                        </th>
-                        <th className="py-2 px-2 font-medium">
-                          {t("page.purchaseOrder.detail.amount")}
-                        </th>
-                        <th className="py-2 px-2 font-medium">
-                          {t("page.purchaseOrder.detail.reference")}
-                        </th>
-                        <th className="py-2 px-2 font-medium w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {payments.map((p) => (
-                        <tr key={p.id} className="hover:bg-muted/20">
-                          <td className="py-2.5 px-2">
-                            {p.paymentDate
-                              ? new Date(p.paymentDate).toLocaleDateString("id-ID")
-                              : "-"}
-                          </td>
-                          <td className="py-2.5 px-2 capitalize">{p.paymentMethod || "-"}</td>
-                          <td className="py-2.5 px-2 font-medium">
-                            Rp {Number(p.amount).toLocaleString("id-ID")}
-                          </td>
-                          <td className="py-2.5 px-2 text-muted-foreground">
-                            {p.reference || "-"}
-                          </td>
-                          <td className="py-2.5 px-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                              onClick={() => {
-                                setPaymentToDelete(p);
-                                setDeleteModalOpen(true);
-                              }}>
-                              <Trash2 size={13} />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+          {/* Returns Card */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Undo2 size={16} className="text-muted-foreground" />
+                {t("page.purchaseOrder.detail.returns")}
+              </h2>
+              {po.status !== "draft" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/purchase-orders/${id}/return`)}>
+                  <Plus size={14} className="mr-1" />
+                  {t("page.purchaseOrder.detail.addReturn")}
+                </Button>
               )}
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                {t("page.purchaseOrder.detail.system")}
-              </h3>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.created")}
-                    </td>
-                    <td className="py-2 text-right">
-                      {po.createdAt
-                        ? new Date(po.createdAt).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-muted-foreground">
-                      {t("page.purchaseOrder.detail.updated")}
-                    </td>
-                    <td className="py-2 text-right">
-                      {po.updatedAt
-                        ? new Date(po.updatedAt).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </Card>
-          </div>
-        </div>
-
-        <Modal
-          open={deleteModalOpen}
-          onOpenChange={setDeleteModalOpen}
-          type="confirm"
-          title={t("page.purchaseOrder.detail.deletePaymentTitle")}
-          description={t("page.purchaseOrder.detail.deletePaymentDesc", {
-            amount: Number(paymentToDelete?.amount || 0).toLocaleString("id-ID")
-          })}
-          confirmText={t("page.purchaseOrder.detail.deletePaymentConfirm")}
-          confirmVariant="destructive"
-          onConfirm={() => {
-            if (paymentToDelete) deletePaymentMutation.mutate(paymentToDelete.id);
-          }}
-        />
-
-        <Modal
-          open={paymentModalOpen}
-          onOpenChange={setPaymentModalOpen}
-          type="form"
-          title={t("page.purchaseOrder.detail.recordPaymentTitle")}
-          confirmText={t("common.save")}
-          onConfirm={handleRecordPayment}>
-          <div className="space-y-5">
-            {remaining > 0 && (
-              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/40 rounded-lg px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-orange-700 dark:text-orange-400">
-                  <Wallet size={18} />
-                  <span>{t("page.purchaseOrder.detail.remainingBill")}</span>
-                </div>
-                <span className="font-bold text-orange-700 dark:text-orange-400">
-                  Rp {Number(remaining).toLocaleString("id-ID")}
-                </span>
+            </div>
+            {returns.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {t("page.purchaseOrder.detail.noReturns")}
+              </p>
+            ) : (
+              <div className="overflow-x-auto max-h-64 overflow-y-auto border border-border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.date")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.status")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.returnedBy")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.amount")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {returns.map((r) => (
+                      <tr
+                        key={r.id}
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/purchase-returns/${r.id}`)}>
+                        <td className="py-3 px-4">
+                          {r.createdAt
+                            ? format(new Date(r.createdAt), "dd MMM yyyy, HH:mm", { locale: id })
+                            : "-"}
+                        </td>
+                        <td className="py-3 px-4">
+                          {(() => {
+                            const returnStatusMap = {
+                              pending:
+                                "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+                              approved:
+                                "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
+                              rejected:
+                                "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                            };
+                            const cls = returnStatusMap[r.status] || returnStatusMap.pending;
+                            return (
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+                                {r.status}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="py-3 px-4">{r.returnedBy?.name || "-"}</td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          Rp {Number(r.totalAmount || r.amount || 0).toLocaleString("id-ID")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                {t("page.purchaseOrder.detail.paymentAmount")}{" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                  Rp
-                </span>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={
-                    paymentForm.amount ? Number(paymentForm.amount).toLocaleString("id-ID") : ""
-                  }
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9]/g, "");
-                    setPaymentForm({ ...paymentForm, amount: raw ? Number(raw) : "" });
-                  }}
-                  className="pl-10 h-11 text-base"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("page.purchaseOrder.detail.paymentDate")}
-                </Label>
-                <DatePicker
-                  date={paymentForm.paymentDate}
-                  setDate={(date) => setPaymentForm({ ...paymentForm, paymentDate: date })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("page.purchaseOrder.detail.paymentMethod")}
-                </Label>
-                <Select
-                  value={paymentForm.paymentMethod}
-                  onValueChange={(value) =>
-                    setPaymentForm({ ...paymentForm, paymentMethod: value })
-                  }>
-                  <SelectTrigger className="h-11">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="z-[70]">
-                    <SelectItem value="cash">
-                      {t("page.purchaseOrder.paymentMethod.cash")}
-                    </SelectItem>
-                    <SelectItem value="transfer">
-                      {t("page.purchaseOrder.paymentMethod.transfer")}
-                    </SelectItem>
-                    <SelectItem value="giro">
-                      {t("page.purchaseOrder.paymentMethod.giro")}
-                    </SelectItem>
-                    <SelectItem value="other">
-                      {t("page.purchaseOrder.paymentMethod.other")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <hr className="border-t border-border" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("page.purchaseOrder.detail.reference")}
-                </Label>
-                <Input
-                  placeholder={t("page.purchaseOrder.detail.referencePlaceholder")}
-                  value={paymentForm.reference}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("page.purchaseOrder.detail.notes")}
-                </Label>
-                <Input
-                  placeholder={t("page.purchaseOrder.detail.notesPlaceholder")}
-                  value={paymentForm.notes}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-                  className="h-11"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
-      </div>
-    </>
-  );
-};
+          </Card>
+        </div>
 
-export default DetailPurchaseOrder;
+        {/* Right Column: Summary & System */}
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Receipt size={16} className="text-muted-foreground" />
+              {t("page.purchaseOrder.detail.summary")}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.total")}
+                </span>
+                <span className="font-medium">
+                  Rp {Number(totalAmount).toLocaleString("id-ID")}
+                </span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.discount")}
+                  </span>
+                  <span className="font-medium text-red-500">
+                    - Rp {Number(discount).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+              <div className="border-t border-border pt-3 flex justify-between text-sm font-bold">
+                <span>{t("page.purchaseOrder.detail.grandTotal")}</span>
+                <span>Rp {Number(finalAmount).toLocaleString("id-ID")}</span>
+              </div>
+              {totalPaid > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.paid")}
+                  </span>
+                  <span className="font-medium text-green-600">
+                    Rp {Number(totalPaid).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+              {remaining > 0 && (
+                <div className="flex justify-between text-sm border-t border-border pt-3">
+                  <span className="text-muted-foreground font-medium">
+                    {t("page.purchaseOrder.detail.remaining")}
+                  </span>
+                  <span className="font-bold text-red-500">
+                    Rp {Number(remaining).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Clock size={16} className="text-muted-foreground" />
+              {t("page.purchaseOrder.detail.system")}
+            </h3>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-border">
+                <tr>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchaseOrder.detail.created")}
+                  </td>
+                  <td className="py-2 text-right">
+                    {po.createdAt
+                      ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", {
+                          locale: id
+                        })
+                      : "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchaseOrder.detail.updated")}
+                  </td>
+                  <td className="py-2 text-right">
+                    {po.updatedAt
+                      ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", {
+                          locale: id
+                        })
+                      : "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      </div>
+
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("page.purchaseOrder.detail.deletePaymentTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("page.purchaseOrder.detail.deletePaymentDesc", {
+                amount: Number(paymentToDelete?.amount || 0).toLocaleString("id-ID")
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+              {t("page.purchaseOrder.detail.deletePaymentCancel")}
+            </Button>
+            <Button variant="destructive" onClick={handleDeletePayment}>
+              {t("page.purchaseOrder.detail.deletePaymentConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

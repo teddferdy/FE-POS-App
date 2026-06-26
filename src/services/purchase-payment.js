@@ -24,6 +24,12 @@ export const getAllPayments = async (payload = {}) => {
   return data;
 };
 
+export const getPaymentById = async (id) => {
+  const { data, status } = await axiosInstance.get(`/purchase-payment/detail/${id}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const recordPayment = async (payload) => {
   const { data, status } = await axiosInstance.post("/purchase-payment/create", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Wallet } from "lucide-react";
+import { Wallet, Eye } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -92,12 +92,12 @@ const PurchasePaymentList = () => {
       header: t("page.purchasePayment.list.columns.actions"),
       render: (p) => (
         <Button
-          size="sm"
-          variant="outline"
-          onClick={() =>
-            navigate(`/purchase-order/detail?id=${p.purchaseOrderData?.id || p.purchaseOrder}`)
-          }>
-          {t("page.purchasePayment.list.detailButton")}
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8"
+          onClick={() => navigate(`/purchase-payment-detail?id=${p.id}`)}
+          title={t("common.detail")}>
+          <Eye size={15} />
         </Button>
       )
     }

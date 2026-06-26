@@ -28,7 +28,7 @@ const AddGoodsReceipt = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: poData } = useQuery(["pos-for-gr"], () => getAllPurchaseOrder({ limit: 50 }), {
+  const { data: poData } = useQuery(["pos-for-gr"], () => getAllPurchaseOrder({ limit: 50, status: "received" }), {
     staleTime: 60000
   });
   const purchaseOrders = poData?.data || [];
@@ -47,6 +47,7 @@ const AddGoodsReceipt = () => {
         ingredientName: item.ingredientName || item.productData?.nameProduct || "",
         product: item.product || null,
         qty: item.quantity,
+        returnedQty: item.returnedQty || 0,
         unit: item.unit || "pcs",
         qtyReceived: "0",
         conditionNotes: "",
@@ -244,7 +245,14 @@ const AddGoodsReceipt = () => {
                         </td>
                         <td className="px-3 py-2 text-center">
                           {item.isFromPo ? (
-                            <span className="text-sm text-muted-foreground">{item.qty}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {Math.max(0, item.qty - item.returnedQty)}
+                              {item.returnedQty > 0 && (
+                                <span className="text-xs text-muted-foreground/60 ml-1">
+                                  ({t("page.goodsReceipt.add.label.returned")}: {item.returnedQty})
+                                </span>
+                              )}
+                            </span>
                           ) : (
                             <Input
                               type="text"

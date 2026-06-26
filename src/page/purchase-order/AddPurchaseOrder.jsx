@@ -46,7 +46,7 @@ const AddPurchaseOrder = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const [selectedStore, setSelectedStore] = useState(user?.store || "");
+  const [selectedStore, setSelectedStore] = useState(user?.store || 0);
   const locationParam = selectedStore;
 
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -64,6 +64,9 @@ const AddPurchaseOrder = () => {
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
+  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+  const [newSupplierName, setNewSupplierName] = useState("");
+  const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown"],
@@ -74,7 +77,7 @@ const AddPurchaseOrder = () => {
 
   const { data: employeesData } = useQuery(
     ["employees-for-po"],
-    () => getAllEmployee({ limit: 100 }),
+    () => getAllEmployee({ limit: 100, status: "active" }),
     { staleTime: 30000 }
   );
   const employees = employeesData?.data || [];
@@ -98,10 +101,11 @@ const AddPurchaseOrder = () => {
     { staleTime: 30000, enabled: !!selectedStore }
   );
   const ingredients = ingredientsData?.data || [];
+  const activeIngredients = ingredients.filter((i) => i.status === "active");
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const getFilteredIngredients = (search) =>
-    ingredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
+    activeIngredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },
@@ -133,6 +137,7 @@ const AddPurchaseOrder = () => {
       setSupplierSearch(newSupplier.name);
       setSupplierId(newSupplier.id || newSupplier._id);
       setShowSupplierList(false);
+      setShowAddSupplierModal(false);
       toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
     },
     onError: (err) => {
@@ -193,27 +198,29 @@ const AddPurchaseOrder = () => {
     if (e?.preventDefault) e.preventDefault();
     setErrors({});
 
-    const result = poSchema.safeParse({
-      store: selectedStore,
-      supplier: supplierId,
-      pic: picId,
-      orderDate,
-      orderTime,
-      dueDate,
-      items: items.filter((i) => i.name?.trim())
-    });
+    if (!saveAsDraft) {
+      const result = poSchema.safeParse({
+        store: Number(selectedStore) || 0,
+        supplier: supplierId,
+        pic: picId,
+        orderDate,
+        orderTime,
+        dueDate,
+        items: items.filter((i) => i.name?.trim())
+      });
 
-    if (!result.success) {
-      const fieldErrors = {};
-      result.error.errors.forEach((err) => {
-        const path = err.path[0];
-        if (!fieldErrors[path]) fieldErrors[path] = err.message;
-      });
-      setErrors(fieldErrors);
-      toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
-        description: fieldErrors[Object.keys(fieldErrors)[0]]
-      });
-      return;
+      if (!result.success) {
+        const fieldErrors = {};
+        result.error.errors.forEach((err) => {
+          const path = err.path[0];
+          if (!fieldErrors[path]) fieldErrors[path] = err.message;
+        });
+        setErrors(fieldErrors);
+        toast.error(t("page.purchaseOrder.add.validation.validationFailed"), {
+          description: fieldErrors[Object.keys(fieldErrors)[0]]
+        });
+        return;
+      }
     }
 
     createMutation.mutate({
@@ -221,7 +228,7 @@ const AddPurchaseOrder = () => {
       supplier: supplierId,
       notes,
       discount,
-      status: saveAsDraft ? "pending" : undefined,
+      status: saveAsDraft ? "draft" : undefined,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       pic: picId,
       orderDate: (() => {
@@ -320,19 +327,33 @@ const AddPurchaseOrder = () => {
                       {t("page.purchaseOrder.add.supplier")}{" "}
                       <span className="text-destructive">*</span>
                     </label>
-                    <Input
-                      placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
-                      value={supplierSearch}
-                      onChange={(e) => {
-                        setSupplierSearch(e.target.value);
-                        setSupplierId(null);
-                        setShowSupplierList(true);
-                        setErrors((prev) => ({ ...prev, supplier: undefined }));
-                      }}
-                      onFocus={() => setShowSupplierList(true)}
-                      onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
-                      className={`h-10 ${errors.supplier ? "border-destructive" : ""}`}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
+                        value={supplierSearch}
+                        onChange={(e) => {
+                          setSupplierSearch(e.target.value);
+                          setSupplierId(null);
+                          setShowSupplierList(true);
+                          setErrors((prev) => ({ ...prev, supplier: undefined }));
+                        }}
+                        onFocus={() => setShowSupplierList(true)}
+                        onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
+                        className={`h-10 flex-1 ${errors.supplier ? "border-destructive" : ""}`}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10 shrink-0"
+                        onClick={() => {
+                          setNewSupplierName("");
+                          setNewSupplierPhone("");
+                          setShowAddSupplierModal(true);
+                        }}>
+                        <Plus size={16} />
+                      </Button>
+                    </div>
                     {errors.supplier && (
                       <p className="text-xs text-destructive mt-1">{errors.supplier}</p>
                     )}
@@ -563,12 +584,8 @@ const AddPurchaseOrder = () => {
                           />
                           {ingredientFocusIdx === idx && (
                             <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                              {!item.name ? (
-                                <p className="p-3 text-xs text-muted-foreground text-center">
-                                  {t("page.purchaseOrder.add.typeToSearchIngredient")}
-                                </p>
-                              ) : getFilteredIngredients(item.name).length > 0 ? (
-                                getFilteredIngredients(item.name).map((ing) => (
+                              {getFilteredIngredients(item.name || "").length > 0 ? (
+                                getFilteredIngredients(item.name || "").map((ing) => (
                                   <button
                                     key={ing.id}
                                     type="button"
@@ -743,6 +760,52 @@ const AddPurchaseOrder = () => {
           handleSubmit(null, true);
         }}
       />
+      <Modal
+        type="form"
+        open={showAddSupplierModal}
+        onOpenChange={setShowAddSupplierModal}
+        title={t("page.purchaseOrder.add.addSupplier")}
+        confirmText={t("common.save")}
+        loading={addSupplierMutation.isLoading}
+        onConfirm={() => {
+          if (!newSupplierName.trim() || !newSupplierPhone.trim()) return;
+          if (newSupplierPhone.trim().length > 14) return;
+          addSupplierMutation.mutate({
+            name: newSupplierName.trim(),
+            phone: newSupplierPhone.trim(),
+            status: "active"
+          });
+        }}>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.purchaseOrder.add.supplierName")} <span className="text-destructive">*</span>
+            </label>
+            <Input
+              value={newSupplierName}
+              onChange={(e) => setNewSupplierName(e.target.value)}
+              placeholder={t("page.purchaseOrder.add.supplierNamePlaceholder")}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.purchaseOrder.add.supplierPhone")}{" "}
+              <span className="text-destructive">*</span>
+            </label>
+            <Input
+              value={newSupplierPhone}
+              onChange={(e) => setNewSupplierPhone(e.target.value)}
+              placeholder={t("page.purchaseOrder.add.supplierPhonePlaceholder")}
+              maxLength={14}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.purchaseOrder.add.supplierPhoneHint")}
+            </p>
+          </div>
+        </div>
+      </Modal>
+      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );

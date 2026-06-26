@@ -4993,5 +4993,9 @@
   "page.discount.list.deleteDescription": "Are you sure you want to delete this discount?",
   "page.discount.list.deleteTitle": "Delete Discount",
   "page.goodsReceipt.detail.status.completed": "Completed",
-  "page.goodsReceipt.detail.status.cancelled": "Cancelled"
+  "page.goodsReceipt.detail.status.cancelled": "Cancelled",
+  "page.purchaseOrder.add.supplierName": "Supplier Name",
+  "page.purchaseOrder.add.supplierNamePlaceholder": "Enter supplier name",
+  "page.purchaseOrder.add.supplierPhone": "Phone Number",
+  "page.purchaseOrder.add.supplierPhonePlaceholder": "Enter phone number"
 }

@@ -51,6 +51,10 @@ const PurchaseOrderList = () => {
   const { t } = useTranslation();
 
   const statusMap = {
+    draft: {
+      label: t("page.purchaseOrder.status.draft"),
+      class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+    },
     pending: {
       label: t("page.purchaseOrder.status.pending"),
       class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
@@ -75,6 +79,7 @@ const PurchaseOrderList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [storeFilter, setStoreFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
   const [returReason, setReturReason] = useState("");
@@ -122,7 +127,8 @@ const PurchaseOrderList = () => {
       setReturItems(
         poDetail.data.items.map((item) => ({
           ...item,
-          returnQty: 0
+          returnQty: 0,
+          notes: ""
         }))
       );
     }
@@ -139,8 +145,9 @@ const PurchaseOrderList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["purchase-orders", page, limit, search, storeFilter],
-    () => getAllPurchaseOrder({ location: locationParam, page, limit, search }),
+    ["purchase-orders", page, limit, search, storeFilter, statusFilter],
+    () =>
+      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
     { keepPreviousData: true }
   );
 
@@ -401,6 +408,28 @@ const PurchaseOrderList = () => {
                 <Wallet size={15} />
               </Button>
             )}
+          {po.status === "draft" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-blue-600"
+              onClick={() => navigate(`/edit-purchase-order?id=${po.id}`)}
+              title={t("page.purchaseOrder.list.action.edit")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
+              </svg>
+            </Button>
+          )}
           {po.status === "pending" && (
             <>
               <Button
@@ -497,7 +526,7 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
         <StatCard
           label={t("page.purchaseOrder.list.title")}
           value={total}
@@ -505,10 +534,22 @@ const PurchaseOrderList = () => {
           variant="default"
         />
         <StatCard
+          label={t("page.purchaseOrder.status.draft")}
+          value={data?.stats?.draft ?? 0}
+          icon="description"
+          variant="draft"
+        />
+        <StatCard
           label={t("page.purchaseOrder.status.pending")}
           value={data?.stats?.pending ?? 0}
           icon="edit_note"
           variant="draft"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.ordered")}
+          value={data?.stats?.ordered ?? 0}
+          icon="schedule"
+          variant="default"
         />
         <StatCard
           label={t("page.purchaseOrder.status.received")}
@@ -545,6 +586,20 @@ const PurchaseOrderList = () => {
                 ))}
               </select>
             )}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+              <option value="all">{t("common.all")}</option>
+              <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
+              <option value="pending">{t("page.purchaseOrder.status.pending")}</option>
+              <option value="ordered">{t("page.purchaseOrder.status.ordered")}</option>
+              <option value="received">{t("page.purchaseOrder.status.received")}</option>
+              <option value="cancelled">{t("page.purchaseOrder.status.cancelled")}</option>
+            </select>
             <div className="relative w-full sm:w-72">
               <Search
                 size={16}
@@ -588,64 +643,68 @@ const PurchaseOrderList = () => {
         returPo &&
         createPortal(
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">
-                  {t("page.purchaseOrder.detail.returModalTitle")}
-                </h3>
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-xl max-h-[90vh] overflow-y-auto">
+              <div className="px-6 py-4 border-b border-border flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                  <Package size={18} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t("page.purchaseOrder.detail.returModalTitle")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {returPo.orderNumber || `PO-${returPo.id}`}
+                  </p>
+                </div>
               </div>
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.poNumber")}
-                    </p>
-                    <p className="font-medium">{returPo.orderNumber || `PO-${returPo.id}`}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.supplier")}
-                    </p>
-                    <p className="font-medium">{returPo.supplierData?.name || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.pic")}
-                    </p>
-                    <p className="font-medium">{returPo.picData?.fullName || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.poDate")}
-                    </p>
-                    <p className="font-medium">
-                      {returPo.orderDate
-                        ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric"
-                          })
-                        : "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.poTime")}
-                    </p>
-                    <p className="font-medium">
-                      {returPo.orderDate
-                        ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
-                        : "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {t("page.purchaseOrder.list.returInfo.store")}
-                    </p>
-                    <p className="font-medium">{returPo.storeData?.name || "-"}</p>
+              <div className="p-6 space-y-5">
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.purchaseOrder.list.returInfo.supplier")}
+                      </p>
+                      <p className="text-sm font-medium">{returPo.supplierData?.name || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.purchaseOrder.list.returInfo.pic")}
+                      </p>
+                      <p className="text-sm font-medium">{returPo.picData?.fullName || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.purchaseOrder.list.returInfo.poDate")}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {returPo.orderDate
+                          ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric"
+                            })
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.purchaseOrder.list.returInfo.poTime")}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {returPo.orderDate
+                          ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })
+                          : "-"}
+                      </p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">
+                        {t("page.purchaseOrder.list.returInfo.store")}
+                      </p>
+                      <p className="text-sm font-medium">{returPo.storeData?.name || "-"}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -654,37 +713,42 @@ const PurchaseOrderList = () => {
                     <p className="text-sm font-semibold text-foreground mb-2">
                       {t("page.purchaseOrder.list.returInfo.itemTitle")}
                     </p>
-                    <div className="overflow-x-auto border rounded-lg">
+                    <div className="overflow-x-auto border border-border rounded-lg">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="bg-muted/60 border-b">
-                            <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">
+                          <tr className="bg-muted/50 border-b border-border">
+                            <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">
                               {t("page.purchaseOrder.list.returInfo.itemHeader")}
                             </th>
-                            <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
+                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-16">
                               {t("page.purchaseOrder.list.returInfo.qtyPo")}
                             </th>
-                            <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
+                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-14">
                               {t("page.purchaseOrder.list.returInfo.unit")}
                             </th>
-                            <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
+                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-20">
                               {t("page.purchaseOrder.list.returInfo.return")}
+                            </th>
+                            <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground w-40">
+                              {t("page.purchaseOrder.list.returInfo.notes")}
                             </th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-border/50">
                           {returItems.map((item, idx) => (
-                            <tr key={item.id || idx} className="border-b border-muted/20">
-                              <td className="px-3 py-2 text-sm">
+                            <tr
+                              key={item.id || idx}
+                              className="hover:bg-muted/20 transition-colors">
+                              <td className="px-3 py-2.5 text-sm font-medium">
                                 {item.productData?.nameProduct || item.ingredientName || "-"}
                               </td>
-                              <td className="px-3 py-2 text-center text-sm">
+                              <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
                                 {item.quantity || 0}
                               </td>
-                              <td className="px-3 py-2 text-center text-sm">
+                              <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
                                 {item.unit || "pcs"}
                               </td>
-                              <td className="px-3 py-2 text-center">
+                              <td className="px-3 py-2.5 text-center">
                                 <input
                                   type="text"
                                   inputMode="numeric"
@@ -706,8 +770,29 @@ const PurchaseOrderList = () => {
                                       )
                                     );
                                   }}
-                                  className="w-16 h-8 text-center border border-input rounded bg-background text-sm"
+                                  className={`w-16 h-8 text-center border rounded bg-background text-sm transition-colors ${
+                                    parseFloat(item.returnQty) > 0
+                                      ? "border-amber-300 ring-1 ring-amber-200 dark:border-amber-700"
+                                      : "border-input"
+                                  }`}
                                   placeholder="0"
+                                />
+                              </td>
+                              <td className="px-3 py-2.5">
+                                <input
+                                  type="text"
+                                  value={item.notes ?? ""}
+                                  onChange={(e) =>
+                                    setReturItems((prev) =>
+                                      prev.map((it, i) =>
+                                        i === idx ? { ...it, notes: e.target.value } : it
+                                      )
+                                    )
+                                  }
+                                  className="w-full h-8 px-2 text-sm border rounded bg-background transition-colors border-input"
+                                  placeholder={t(
+                                    "page.purchaseOrder.list.returInfo.notesPlaceholder"
+                                  )}
                                 />
                               </td>
                             </tr>
@@ -719,60 +804,66 @@ const PurchaseOrderList = () => {
                 )}
 
                 <div>
-                  <label className="text-sm text-muted-foreground block mb-1">
-                    {t("page.purchaseOrder.list.returInfo.reasonLabel")}
+                  <label className="text-sm font-medium text-foreground block mb-1.5">
+                    {t("page.purchaseOrder.list.returInfo.reasonLabel")}{" "}
+                    <span className="text-destructive">*</span>
                   </label>
                   <textarea
-                    className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full min-h-[100px] px-3 py-2.5 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
                     placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
                     value={returReason}
                     onChange={(e) => setReturReason(e.target.value)}
                   />
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setReturModal(false);
-                    setReturPo(null);
-                    setReturReason("");
-                    setReturItems([]);
-                  }}>
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
-                  onClick={() => {
-                    const itemsToReturn = returItems
-                      .filter((it) => {
-                        const q = parseFloat(it.returnQty);
-                        return !isNaN(q) && q > 0;
-                      })
-                      .map((it) => ({
-                        productId: it.product,
-                        ingredient: it.ingredient,
-                        qty: parseFloat(it.returnQty),
-                        unit: it.unit || "pcs",
-                        notes: ""
-                      }));
-                    if (itemsToReturn.length === 0) {
-                      toast.error(t("page.purchaseOrder.list.returInfo.validationTitle"), {
-                        description: t("page.purchaseOrder.list.returInfo.validationDesc")
+              <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-2 bg-muted/20">
+                <p className="text-xs text-muted-foreground">
+                  {returItems.filter((it) => parseFloat(it.returnQty) > 0).length} item dipilih
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setReturModal(false);
+                      setReturPo(null);
+                      setReturReason("");
+                      setReturItems([]);
+                    }}>
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                    onClick={() => {
+                      const itemsToReturn = returItems
+                        .filter((it) => {
+                          const q = parseFloat(it.returnQty);
+                          return !isNaN(q) && q > 0;
+                        })
+                        .map((it) => ({
+                          productId: it.product,
+                          ingredient: it.ingredient,
+                          qty: parseFloat(it.returnQty),
+                          unit: it.unit || "pcs",
+                          notes: it.notes || ""
+                        }));
+                      if (itemsToReturn.length === 0) {
+                        toast.error(t("page.purchaseOrder.list.returInfo.validationTitle"), {
+                          description: t("page.purchaseOrder.list.returInfo.validationDesc")
+                        });
+                        return;
+                      }
+                      returnMutation.mutate({
+                        po: returPo,
+                        reason: returReason,
+                        items: itemsToReturn
                       });
-                      return;
-                    }
-                    returnMutation.mutate({
-                      po: returPo,
-                      reason: returReason,
-                      items: itemsToReturn
-                    });
-                  }}
-                  disabled={!returReason.trim() || returnMutation.isLoading}>
-                  {returnMutation.isLoading
-                    ? t("common.processing")
-                    : t("page.purchaseOrder.list.returInfo.confirmButton")}
-                </Button>
+                    }}
+                    disabled={!returReason.trim() || returnMutation.isLoading}>
+                    {returnMutation.isLoading
+                      ? t("common.processing")
+                      : t("page.purchaseOrder.list.returInfo.confirmButton")}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>,

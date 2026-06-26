@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2 } from "lucide-react";
+import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -45,6 +45,9 @@ const EditPurchaseOrder = () => {
   const [picSearch, setPicSearch] = useState("");
   const [picId, setPicId] = useState(null);
   const [showPicList, setShowPicList] = useState(false);
+  const [showAddSupplierModal, setShowAddSupplierModal] = useState(false);
+  const [newSupplierName, setNewSupplierName] = useState("");
+  const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
   const {
     data: poData,
@@ -90,7 +93,7 @@ const EditPurchaseOrder = () => {
 
   const { data: employeesData } = useQuery(
     ["employees-for-po"],
-    () => getAllEmployee({ limit: 100 }),
+    () => getAllEmployee({ limit: 100, status: "active" }),
     { staleTime: 30000 }
   );
   const employees = employeesData?.data || [];
@@ -147,6 +150,7 @@ const EditPurchaseOrder = () => {
       setSupplierSearch(newSupplier.name);
       setSupplierId(newSupplier.id || newSupplier._id);
       setShowSupplierList(false);
+      setShowAddSupplierModal(false);
       toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
     },
     onError: (err) => {
@@ -249,7 +253,7 @@ const EditPurchaseOrder = () => {
       notes,
       pic: picId,
       discount,
-      status: saveAsDraft ? "pending" : undefined,
+      status: saveAsDraft ? "draft" : undefined,
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       orderDate: (() => {
         const d = new Date(orderDate);
@@ -319,350 +323,401 @@ const EditPurchaseOrder = () => {
       <div>
         <div>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-base font-semibold text-foreground mb-4">
-                {t("page.purchaseOrder.add.supplierSection")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    value={selectedStore}
-                    onChange={(e) => setSelectedStore(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
-                    <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
-                    {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.name}
-                      </option>
-                    ))}
-                  </select>
+            <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+              <div className="bg-gradient-to-r from-blue-600/90 to-blue-700/90 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                    <ShoppingCart size={18} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">
+                      {t("page.purchaseOrder.add.supplierSection")}
+                    </h3>
+                    <p className="text-xs text-blue-100">
+                      {t("page.purchaseOrder.add.supplierSectionDesc")}
+                    </p>
+                  </div>
                 </div>
-                <div className="relative">
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.supplier")}{" "}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
-                    value={supplierSearch}
-                    onChange={(e) => {
-                      setSupplierSearch(e.target.value);
-                      setSupplierId(null);
-                      setShowSupplierList(true);
-                    }}
-                    onFocus={() => setShowSupplierList(true)}
-                    onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
-                    className="h-10"
-                  />
-                  {showSupplierList && (
-                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredSuppliers.length > 0 ? (
-                        filteredSuppliers.map((s) => (
-                          <button
-                            key={s.id || s._id}
-                            type="button"
-                            onMouseDown={() => selectSupplier(s)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                            {s.name}
-                          </button>
-                        ))
-                      ) : supplierSearch ? (
-                        <p className="p-3 text-xs text-muted-foreground text-center">
-                          {t("page.purchaseOrder.add.noSupplierFound")}
-                        </p>
-                      ) : (
-                        <p className="p-3 text-xs text-muted-foreground text-center">
-                          {t("page.purchaseOrder.add.typeToSearchSupplier")}
-                        </p>
-                      )}
-                      {supplierSearch &&
-                        !filteredSuppliers.some((s) => s.name === supplierSearch) && (
-                          <button
-                            type="button"
-                            onMouseDown={() =>
-                              addSupplierMutation.mutate({ name: supplierSearch, isActive: true })
-                            }
-                            disabled={addSupplierMutation.isLoading}
-                            className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
-                            <Plus size={15} /> {t("page.purchaseOrder.add.addSupplier")} &quot;
-                            {supplierSearch}&quot;
-                          </button>
-                        )}
-                    </div>
-                  )}
-                </div>
-                <div className="relative">
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
-                  </label>
-                  {employees.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-foreground">
-                          {t("page.purchaseOrder.add.noEmployee")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t("page.purchaseOrder.add.addEmployeeFirst")}
-                        </p>
-                      </div>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
+                    </label>
+                    <select
+                      value={selectedStore}
+                      onChange={(e) => setSelectedStore(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors">
+                      <option value="">{t("page.purchaseOrder.add.selectStore")}</option>
+                      {locations.map((loc) => (
+                        <option key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="relative">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.supplier")} <span className="text-destructive">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t("page.purchaseOrder.add.supplierPlaceholder")}
+                        value={supplierSearch}
+                        onChange={(e) => {
+                          setSupplierSearch(e.target.value);
+                          setSupplierId(null);
+                          setShowSupplierList(true);
+                        }}
+                        onFocus={() => setShowSupplierList(true)}
+                        onBlur={() => setTimeout(() => setShowSupplierList(false), 200)}
+                        className="h-10 flex-1"
+                      />
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
-                        onClick={() => navigate("/add-employee")}
-                        className="gap-2">
-                        <Plus size={15} /> {t("page.purchaseOrder.add.addEmployee")}
+                        size="icon"
+                        className="h-10 w-10 shrink-0"
+                        onClick={() => {
+                          setNewSupplierName("");
+                          setNewSupplierPhone("");
+                          setShowAddSupplierModal(true);
+                        }}>
+                        <Plus size={16} />
                       </Button>
                     </div>
-                  ) : (
-                    <>
-                      <Input
-                        placeholder={t("page.purchaseOrder.add.picPlaceholder")}
-                        value={picSearch}
-                        onChange={(e) => {
-                          setPicSearch(e.target.value);
-                          setPicId(null);
-                          setShowPicList(true);
-                        }}
-                        onFocus={() => setShowPicList(true)}
-                        onBlur={() => setTimeout(() => setShowPicList(false), 200)}
-                        className="h-10"
-                      />
-                      {showPicList && (
-                        <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                          {filteredEmployees.length > 0 ? (
-                            filteredEmployees.map((e) => (
-                              <button
-                                key={e.id || e._id}
-                                type="button"
-                                onMouseDown={() => selectPic(e)}
-                                className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
-                                {e.fullName || e.userName}
-                              </button>
-                            ))
-                          ) : picSearch ? (
-                            <p className="p-3 text-xs text-muted-foreground text-center">
-                              {t("page.purchaseOrder.add.noEmployeeFound")}
-                            </p>
-                          ) : (
-                            <p className="p-3 text-xs text-muted-foreground text-center">
-                              {t("page.purchaseOrder.add.typeToSearchPic")}
-                            </p>
+                    {showSupplierList && (
+                      <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {filteredSuppliers.length > 0 ? (
+                          filteredSuppliers.map((s) => (
+                            <button
+                              key={s.id || s._id}
+                              type="button"
+                              onMouseDown={() => selectSupplier(s)}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                              {s.name}
+                            </button>
+                          ))
+                        ) : supplierSearch ? (
+                          <p className="p-3 text-xs text-muted-foreground text-center">
+                            {t("page.purchaseOrder.add.noSupplierFound")}
+                          </p>
+                        ) : (
+                          <p className="p-3 text-xs text-muted-foreground text-center">
+                            {t("page.purchaseOrder.add.typeToSearchSupplier")}
+                          </p>
+                        )}
+                        {supplierSearch &&
+                          !filteredSuppliers.some((s) => s.name === supplierSearch) && (
+                            <button
+                              type="button"
+                              onMouseDown={() =>
+                                addSupplierMutation.mutate({ name: supplierSearch, isActive: true })
+                              }
+                              disabled={addSupplierMutation.isLoading}
+                              className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-accent/50 transition-colors border-t border-border flex items-center gap-2">
+                              <Plus size={15} /> {t("page.purchaseOrder.add.addSupplier")} &quot;
+                              {supplierSearch}&quot;
+                            </button>
                           )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.pic")} <span className="text-destructive">*</span>
+                    </label>
+                    {employees.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            {t("page.purchaseOrder.add.noEmployee")}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t("page.purchaseOrder.add.addEmployeeFirst")}
+                          </p>
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
-                  </label>
-                  <DatePicker date={orderDate} setDate={setOrderDate} />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
-                  </label>
-                  <TimePicker value={orderTime} onChange={setOrderTime} />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.dueDate")}{" "}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <DatePicker date={dueDate} setDate={setDueDate} />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    {t("page.purchaseOrder.add.notes")}
-                  </label>
-                  <Textarea
-                    placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="min-h-[80px]"
-                  />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold text-foreground">
-                  {t("page.purchaseOrder.add.itemSection")}
-                </h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  onClick={addItem}>
-                  <Plus size={15} /> {t("page.purchaseOrder.add.addItem")}
-                </Button>
-              </div>
-
-              {items.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  {t("page.purchaseOrder.add.noItems")}
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {items.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
-                        {idx + 1}
-                      </span>
-                      <div className="relative flex-1 min-w-0">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate("/add-employee")}
+                          className="gap-2">
+                          <Plus size={15} /> {t("page.purchaseOrder.add.addEmployee")}
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
                         <Input
-                          placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
-                          value={item.name}
+                          placeholder={t("page.purchaseOrder.add.picPlaceholder")}
+                          value={picSearch}
                           onChange={(e) => {
-                            updateItem(idx, "name", e.target.value);
-                            updateItem(idx, "ingredientId", null);
-                            setIngredientFocusIdx(idx);
+                            setPicSearch(e.target.value);
+                            setPicId(null);
+                            setShowPicList(true);
                           }}
-                          onFocus={() => setIngredientFocusIdx(idx)}
-                          onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
-                          className="h-9 text-sm w-full"
+                          onFocus={() => setShowPicList(true)}
+                          onBlur={() => setTimeout(() => setShowPicList(false), 200)}
+                          className="h-10"
                         />
-                        {ingredientFocusIdx === idx && (
+                        {showPicList && (
                           <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                            {!item.name ? (
-                              <p className="p-3 text-xs text-muted-foreground text-center">
-                                {t("page.purchaseOrder.add.typeToSearchIngredient")}
-                              </p>
-                            ) : getFilteredIngredients(item.name).length > 0 ? (
-                              getFilteredIngredients(item.name).map((ing) => (
+                            {filteredEmployees.length > 0 ? (
+                              filteredEmployees.map((e) => (
                                 <button
-                                  key={ing.id}
+                                  key={e.id || e._id}
                                   type="button"
-                                  onMouseDown={() => {
-                                    updateItem(idx, "name", ing.name);
-                                    updateItem(idx, "ingredientId", ing.id);
-                                    updateItem(idx, "unit", ing.unit || "pcs");
-                                    setIngredientFocusIdx(null);
-                                  }}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
-                                  <span>{ing.name}</span>
-                                  <span className="text-xs text-muted-foreground ml-auto">
-                                    {ing.unit || "pcs"}
-                                  </span>
+                                  onMouseDown={() => selectPic(e)}
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors">
+                                  {e.fullName || e.userName}
                                 </button>
                               ))
+                            ) : picSearch ? (
+                              <p className="p-3 text-xs text-muted-foreground text-center">
+                                {t("page.purchaseOrder.add.noEmployeeFound")}
+                              </p>
                             ) : (
                               <p className="p-3 text-xs text-muted-foreground text-center">
-                                {t("page.purchaseOrder.add.noIngredientFound")}
+                                {t("page.purchaseOrder.add.typeToSearchPic")}
                               </p>
                             )}
                           </div>
                         )}
-                      </div>
-                      <Input
-                        placeholder={t("page.purchaseOrder.add.qty")}
-                        value={item.qty || ""}
-                        onChange={(e) =>
-                          updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
-                        }
-                        className="h-9 text-sm w-20 shrink-0"
-                      />
-                      <select
-                        value={item.unit}
-                        onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                        className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
-                        {unitOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                      <Input
-                        placeholder={t("page.purchaseOrder.add.pricePlaceholder")}
-                        value={item.price ? formatIDR(item.price) : ""}
-                        onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
-                        className="h-9 text-sm w-36 shrink-0"
-                      />
-                      <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
-                        Rp {(item.qty * item.price).toLocaleString("id-ID")}
-                      </span>
-                      {items.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive shrink-0"
-                          onClick={() => removeItem(idx)}>
-                          <Trash2 size={15} />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex flex-col items-end mt-4 pt-4 border-t border-border space-y-2">
-                <div className="flex items-center gap-4">
-                  <label className="text-sm text-muted-foreground">
-                    {t("page.purchaseOrder.add.discount")}
-                  </label>
-                  <Input
-                    placeholder={t("page.purchaseOrder.add.discountPlaceholder")}
-                    value={discount ? formatIDR(discount) : ""}
-                    onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                    className="h-9 text-sm w-36 text-right"
-                  />
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">
-                    {t("page.purchaseOrder.add.total")}
-                  </p>
-                  <p className="text-xl font-bold text-foreground">
-                    Rp {totalAmount.toLocaleString("id-ID")}
-                  </p>
-                </div>
-                {discount > 0 && (
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground text-red-500">
-                      {t("page.purchaseOrder.add.discountLabel", {
-                        amount: discount.toLocaleString("id-ID")
-                      })}
-                    </p>
-                    <p className="text-lg font-bold text-foreground">
-                      Rp {finalAmount.toLocaleString("id-ID")}
-                    </p>
+                      </>
+                    )}
                   </div>
-                )}
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
+                    </label>
+                    <DatePicker date={orderDate} setDate={setOrderDate} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.time")} <span className="text-destructive">*</span>
+                    </label>
+                    <TimePicker value={orderTime} onChange={setOrderTime} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.dueDate")} <span className="text-destructive">*</span>
+                    </label>
+                    <DatePicker date={dueDate} setDate={setDueDate} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      {t("page.purchaseOrder.add.notes")}
+                    </label>
+                    <Textarea
+                      placeholder={t("page.purchaseOrder.add.notesPlaceholder")}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[80px] resize-none"
+                    />
+                  </div>
+                </div>
               </div>
             </Card>
 
-            <div className="flex justify-between items-center gap-4 bg-card border border-border rounded-xl p-4">
+            <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+              <div className="bg-gradient-to-r from-emerald-600/90 to-emerald-700/90 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+                      <Package size={18} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-white">
+                        {t("page.purchaseOrder.add.itemSection")}
+                      </h3>
+                      <p className="text-xs text-emerald-100">
+                        {t("page.purchaseOrder.add.itemSectionDesc")}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
+                    onClick={addItem}>
+                    <Plus size={15} />
+                    {t("page.purchaseOrder.add.addItem")}
+                  </Button>
+                </div>
+              </div>
+              <div className="p-6">
+                {items.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    {t("page.purchaseOrder.add.noItem")}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                        <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="relative flex-1 min-w-0">
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.itemNamePlaceholder")}
+                            value={item.name}
+                            onChange={(e) => {
+                              updateItem(idx, "name", e.target.value);
+                              updateItem(idx, "ingredientId", null);
+                              setIngredientFocusIdx(idx);
+                            }}
+                            onFocus={() => setIngredientFocusIdx(idx)}
+                            onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
+                            className="h-9 text-sm w-full"
+                          />
+                          {ingredientFocusIdx === idx && (
+                            <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                              {getFilteredIngredients(item.name || "").length > 0 ? (
+                                getFilteredIngredients(item.name || "").map((ing) => (
+                                  <button
+                                    key={ing.id}
+                                    type="button"
+                                    onMouseDown={() => {
+                                      updateItem(idx, "name", ing.name);
+                                      updateItem(idx, "ingredientId", ing.id);
+                                      updateItem(idx, "unit", ing.unit || "pcs");
+                                      setIngredientFocusIdx(null);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
+                                    <span>{ing.name}</span>
+                                    <span className="text-xs text-muted-foreground ml-auto">
+                                      {ing.unit || "pcs"}
+                                    </span>
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="p-3 text-xs text-muted-foreground text-center">
+                                  {t("page.purchaseOrder.add.noIngredientFound")}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <Input
+                          placeholder={t("page.purchaseOrder.add.qty")}
+                          value={item.qty || ""}
+                          onChange={(e) =>
+                            updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                          }
+                          className="h-9 text-sm w-20 shrink-0"
+                        />
+                        <select
+                          value={item.unit}
+                          onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                          className="h-9 text-sm w-20 shrink-0 rounded-lg border border-border bg-background px-2 outline-none focus:border-primary transition-colors">
+                          {unitOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                          value={item.price ? formatIDR(item.price) : ""}
+                          onChange={(e) => updateItem(idx, "price", parseIDR(e.target.value))}
+                          className="h-9 text-sm w-36 shrink-0"
+                        />
+                        <span className="text-sm font-medium text-foreground w-28 text-right shrink-0">
+                          Rp {(item.qty * item.price).toLocaleString("id-ID")}
+                        </span>
+                        {items.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive shrink-0"
+                            onClick={() => removeItem(idx)}>
+                            <Trash2 size={15} />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-muted/40 rounded-xl p-5 mt-4">
+                  <div className="flex flex-col items-end space-y-2">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-muted-foreground font-medium">
+                        {t("page.purchaseOrder.add.discount")}
+                      </label>
+                      <Input
+                        placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                        value={discount ? formatIDR(discount) : ""}
+                        onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                        className="h-9 text-sm w-36 text-right"
+                      />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">
+                        {t("page.purchaseOrder.add.totalPrice")}
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        Rp {totalAmount.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                    {discount > 0 && (
+                      <>
+                        <div className="w-full border-t border-border my-1" />
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-red-500">
+                            {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                            {discount.toLocaleString("id-ID")}
+                          </p>
+                          <p className="text-xl font-bold text-foreground">
+                            Rp {finalAmount.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <div className="sticky bottom-4 flex justify-between items-center gap-4 bg-card border border-border/60 shadow-lg rounded-xl p-4 backdrop-blur-sm">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setCancelModal(true)}
                 className="gap-2">
-                <X size={18} /> {t("common.cancel")}
+                <X size={18} />
+                {t("common.cancel")}
               </Button>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDraftModal(true)}
-                  disabled={updateMutation.isLoading}>
-                  Simpan sebagai Draft
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={updateMutation.isLoading}
-                  className="gap-2 shadow-md">
-                  <Save size={18} />
-                  {updateMutation.isLoading
-                    ? t("common.saving")
-                    : t("page.purchaseOrder.edit.saveChanges")}
-                </Button>
+              <div className="flex items-center gap-4">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs text-muted-foreground">
+                    {t("page.purchaseOrder.add.totalAfterDiscount")}
+                  </p>
+                  <p className="text-sm font-semibold">
+                    Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={updateMutation.isLoading}>
+                    Simpan sebagai Draft
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateMutation.isLoading}
+                    className="gap-2 min-w-[140px] shadow-md">
+                    <Save size={18} />
+                    {updateMutation.isLoading
+                      ? t("common.saving")
+                      : t("page.purchaseOrder.edit.saveChanges")}
+                  </Button>
+                </div>
               </div>
             </div>
           </form>
@@ -691,6 +746,51 @@ const EditPurchaseOrder = () => {
           handleSubmit(null, true);
         }}
       />
+      <Modal
+        type="form"
+        open={showAddSupplierModal}
+        onOpenChange={setShowAddSupplierModal}
+        title={t("page.purchaseOrder.add.addSupplier")}
+        confirmText={t("common.save")}
+        loading={addSupplierMutation.isLoading}
+        onConfirm={() => {
+          if (!newSupplierName.trim() || !newSupplierPhone.trim()) return;
+          if (newSupplierPhone.trim().length > 14) return;
+          addSupplierMutation.mutate({
+            name: newSupplierName.trim(),
+            phone: newSupplierPhone.trim(),
+            status: "active"
+          });
+        }}>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.purchaseOrder.add.supplierName")} <span className="text-destructive">*</span>
+            </label>
+            <Input
+              value={newSupplierName}
+              onChange={(e) => setNewSupplierName(e.target.value)}
+              placeholder={t("page.purchaseOrder.add.supplierNamePlaceholder")}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {t("page.purchaseOrder.add.supplierPhone")} <span className="text-destructive">*</span>
+            </label>
+            <Input
+              value={newSupplierPhone}
+              onChange={(e) => setNewSupplierPhone(e.target.value)}
+              placeholder={t("page.purchaseOrder.add.supplierPhonePlaceholder")}
+              maxLength={14}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("page.purchaseOrder.add.supplierPhoneHint")}
+            </p>
+          </div>
+        </div>
+      </Modal>
+      {addSupplierMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       {updateMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );

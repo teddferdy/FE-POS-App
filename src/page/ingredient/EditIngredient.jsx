@@ -96,11 +96,9 @@ const EditIngredient = () => {
   );
   const categories = categoriesData?.data || [];
 
-  const { data: locationsData } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const {
@@ -184,7 +182,7 @@ const EditIngredient = () => {
       supplier: values.supplier ? parseInt(values.supplier) : null,
       category: values.category ? parseInt(values.category) : null,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: values.store ? parseInt(values.store) : (cookie?.user?.store || null)
+      store: values.store ? parseInt(values.store) : cookie?.user?.store || null
     });
   };
 
@@ -247,8 +245,7 @@ const EditIngredient = () => {
                   render={({ field }) => (
                     <FormItem className="mb-6 bg-card rounded-xl p-4 border border-border shadow-sm">
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Toko{" "}
-                        <span className="text-destructive">*</span>
+                        Toko <span className="text-destructive">*</span>
                       </FormLabel>
                       <Combobox
                         options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
@@ -517,7 +514,10 @@ const EditIngredient = () => {
                                 ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
                                 : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
                             }`}
-                            onClick={() => field.onChange(!field.value)}>
+                            onClick={(e) => {
+                              if (!e.isTrusted) return;
+                              field.onChange(!field.value);
+                            }}>
                             <div className="flex items-center gap-3">
                               <div
                                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -653,12 +653,14 @@ const EditIngredient = () => {
                 </Button>
                 <div className="flex gap-3">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={mutation.isLoading}>
                     Save as Draft
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => {
                       if (isSuperAdmin && !form.getValues("store")) {
                         form.setError("store", { message: "Pilih toko terlebih dahulu" });

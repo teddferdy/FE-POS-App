@@ -13,21 +13,19 @@ import {
 } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
   pending: {
-    label: "Pending",
     class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
   },
   approved: {
-    label: "Approved",
     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
   },
   rejected: {
-    label: "Rejected",
     class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   }
 };
@@ -124,7 +122,7 @@ const PurchaseReturnList = () => {
     {
       header: t("page.purchaseReturn.list.header.returnedBy"),
       render: (item) => (
-        <span className="text-sm">{item.returnedBy || item.returnedByData?.name || "-"}</span>
+        <span className="text-sm">{item.returnedBy?.name || "-"}</span>
       )
     },
     {
@@ -135,7 +133,7 @@ const PurchaseReturnList = () => {
         return (
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${sc.class}`}>
-            {sc.label}
+            {t(`page.purchaseReturn.status.${item.status}`)}
           </span>
         );
       }
@@ -203,6 +201,33 @@ const PurchaseReturnList = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <StatCard
+          label={t("page.purchaseReturn.list.title")}
+          value={total}
+          icon="assignment_return"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.purchaseReturn.status.pending")}
+          value={data?.stats?.pending ?? 0}
+          icon="hourglass_empty"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.purchaseReturn.status.approved")}
+          value={data?.stats?.approved ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("page.purchaseReturn.status.rejected")}
+          value={data?.stats?.rejected ?? 0}
+          icon="cancel"
+          variant="inactive"
+        />
+      </div>
+
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
@@ -222,9 +247,9 @@ const PurchaseReturnList = () => {
                   }}
                   className="h-9 px-3 rounded-md border border-input bg-background text-sm">
                   <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
-                  {Object.entries(statusCfg).map(([k, v]) => (
+                  {Object.keys(statusCfg).map((k) => (
                     <option key={k} value={k}>
-                      {v.label}
+                      {t(`page.purchaseReturn.status.${k}`)}
                     </option>
                   ))}
                 </select>

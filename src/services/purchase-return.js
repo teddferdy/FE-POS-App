@@ -10,6 +10,12 @@ export const getAllPurchaseReturn = async (payload) => {
   return data;
 };
 
+export const getReturnsByPO = async (poId) => {
+  const { data, status } = await axiosInstance.get(`/purchase-return/by-po/${poId}`);
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const getPurchaseReturnById = async (id) => {
   const { data, status } = await axiosInstance.get(`/purchase-return/get-by-id/${id}`);
   if (status !== 200) throw Error(`${data?.message}`);

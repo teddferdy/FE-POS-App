@@ -1,18 +1,49 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import {
+  ArrowLeft,
+  ShoppingBag,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Building2,
+  FileText,
+  User,
+  Store
+} from "lucide-react";
 import { getPurchaseReturnById } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 
-const statusDetail = {
-  pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
-  approved: { label: "Approved", class: "bg-green-100 text-green-800" },
-  rejected: { label: "Rejected", class: "bg-red-100 text-red-800" }
+const statusBadge = {
+  pending: {
+    label: "Pending",
+    class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+    icon: Clock
+  },
+  approved: {
+    label: "Approved",
+    class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
+    icon: CheckCircle2
+  },
+  rejected: {
+    label: "Rejected",
+    class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
+    icon: XCircle
+  }
 };
+
+const Row = ({ label, children }) => (
+  <tr>
+    <td className="py-2.5 text-muted-foreground w-44 align-top">{label}</td>
+    <td className="py-2.5 font-medium">{children || "-"}</td>
+  </tr>
+);
 
 const DetailPurchaseReturn = () => {
   const { t } = useTranslation();
@@ -26,114 +57,161 @@ const DetailPurchaseReturn = () => {
     { enabled: !!id }
   );
   const ret = data?.data;
+  const st = statusBadge[ret?.status] || statusBadge.pending;
+  const StatusIcon = st.icon;
 
-  if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading)
+  if (!id) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">{t("page.purchaseReturn.detail.idNotFound")}</p>
       </div>
     );
-  if (!ret)
+  }
+
+  if (isError) return <AbortController refetch={refetch} />;
+  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
+  if (!ret) {
     return (
-      <div className="p-6">
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <ShoppingBag className="w-12 h-12 text-muted-foreground" />
         <p className="text-muted-foreground">{t("page.purchaseReturn.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/purchase-return")} className="mt-4">
-          <ArrowLeft size={16} className="mr-1" /> {t("page.purchaseReturn.detail.back")}
+        <Button variant="outline" onClick={() => navigate("/purchase-return")}>
+          <ArrowLeft size={16} className="mr-2" />
+          {t("page.purchaseReturn.detail.back")}
         </Button>
       </div>
     );
-
-  const st = statusDetail[ret.status] || statusDetail.pending;
+  }
 
   return (
-    <>
-      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.purchaseReturn.detail.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/purchase-return")} className="hover:text-foreground">
-            {t("page.purchaseReturn.detail.breadcrumb.list")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.purchaseReturn.detail.breadcrumb.detail")}
-          </span>
-        </nav>
+    <div className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
+          {t("page.purchaseReturn.detail.breadcrumb.dashboard")}
+        </button>
+        <span className="text-xs">/</span>
+        <button
+          onClick={() => navigate("/purchase-return")}
+          className="hover:text-foreground transition-colors">
+          {t("page.purchaseReturn.detail.breadcrumb.list")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">
+          {t("page.purchaseReturn.detail.breadcrumb.detail")}
+        </span>
+      </nav>
 
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-return")}>
+            <ArrowLeft size={18} />
+          </Button>
           <div>
-            <h1 className="text-2xl font-bold">{t("page.purchaseReturn.detail.title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.purchaseReturn.detail.title")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">{ret.returnNumber}</p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/purchase-return")}>
-            <ArrowLeft size={16} className="mr-1" /> {t("page.purchaseReturn.detail.back")}
-          </Button>
         </div>
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+          <StatusIcon size={14} />
+          {st.label}
+        </span>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("page.purchaseReturn.detail.section.informasiRetur")}
-              </h2>
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    [t("page.purchaseReturn.detail.field.returnNo"), ret.returnNumber],
-                    [t("page.purchaseReturn.detail.field.store"), ret.storeData?.name || "-"],
-                    [t("page.purchaseReturn.detail.field.reason"), ret.reason || "-"],
-                    [
-                      t("page.purchaseReturn.detail.field.returnedBy"),
-                      ret.returnedBy || ret.returnedByData?.name || "-"
-                    ],
-                    [
-                      t("page.purchaseReturn.detail.field.date"),
-                      new Date(ret.createdAt).toLocaleDateString("id")
-                    ]
-                  ].map(([l, v]) => (
-                    <tr key={l} className="border-b border-muted/30">
-                      <td className="py-2 pr-4 text-muted-foreground w-40">{l}</td>
-                      <td className="py-2 font-medium">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FileText size={16} className="text-muted-foreground" />
+              {t("page.purchaseReturn.detail.section.informasiRetur")}
+            </h3>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-border">
+                <Row label={t("page.purchaseReturn.detail.field.returnNo")}>{ret.returnNumber}</Row>
+                <Row label={t("page.purchaseReturn.detail.field.store")}>
+                  <div className="flex items-center gap-2">
+                    <Store size={14} className="text-muted-foreground" />
+                    {ret.storeData?.name || "-"}
+                  </div>
+                </Row>
+                <Row label={t("page.purchaseReturn.detail.field.reason")}>{ret.reason || "-"}</Row>
+                <Row label={t("page.purchaseReturn.detail.field.returnedBy")}>
+                  <div className="flex items-center gap-2">
+                    <User size={14} className="text-muted-foreground" />
+                    {ret.returnedBy?.name || "-"}
+                  </div>
+                </Row>
+                <Row label={t("page.purchaseReturn.detail.field.date")}>
+                  {ret.createdAt
+                    ? new Date(ret.createdAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })
+                    : "-"}
+                </Row>
+              </tbody>
+            </table>
+          </Card>
 
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("page.purchaseReturn.detail.section.items")}
-              </h2>
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <ShoppingBag size={16} className="text-muted-foreground" />
+              {t("page.purchaseReturn.detail.section.items")}
+            </h3>
+            <div className="overflow-x-auto border border-border rounded-lg">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2">{t("page.purchaseReturn.detail.table.product")}</th>
-                    <th className="pb-2 text-right">{t("page.purchaseReturn.detail.table.qty")}</th>
-                    <th className="pb-2 text-center">
+                  <tr className="bg-muted/50 border-b border-border">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.purchaseReturn.detail.table.product")}
+                    </th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
+                      {t("page.purchaseReturn.detail.table.qty")}
+                    </th>
+                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
                       {t("page.purchaseReturn.detail.table.unit")}
                     </th>
-                    <th className="pb-2">{t("page.purchaseReturn.detail.table.notes")}</th>
+                    <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
+                      {t("page.purchaseReturn.detail.table.price")}
+                    </th>
+                    <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-28">
+                      {t("page.purchaseReturn.detail.table.subtotal")}
+                    </th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t("page.purchaseReturn.detail.table.notes")}
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/50">
                   {ret.items?.length > 0 ? (
                     ret.items.map((item, i) => (
-                      <tr key={i} className="border-b border-muted/20">
-                        <td className="py-2">{item.productData?.nameProduct || "-"}</td>
-                        <td className="py-2 text-right font-mono">{item.qty}</td>
-                        <td className="py-2 text-center">{item.unit || "pcs"}</td>
-                        <td className="py-2">{item.notes || "-"}</td>
+                      <tr key={i} className="hover:bg-muted/20 transition-colors">
+                        <td className="py-3 px-4 font-medium">
+                          {item.product?.name || item.ingredient?.name || "-"}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono">{item.qty}</td>
+                        <td className="py-3 px-4 text-center text-muted-foreground">
+                          {item.unit || "pcs"}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-muted-foreground">
+                          Rp {Number(item.price || 0).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-medium">
+                          Rp {Number(item.subtotal || 0).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">{item.notes || "-"}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-4 text-center text-muted-foreground">
+                      <td colSpan={6} className="py-8 text-center text-muted-foreground">
                         {t("page.purchaseReturn.detail.table.noItems")}
                       </td>
                     </tr>
@@ -141,22 +219,70 @@ const DetailPurchaseReturn = () => {
                 </tbody>
               </table>
             </div>
-          </div>
 
-          <div className="space-y-6">
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                {t("page.purchaseReturn.detail.section.status")}
-              </h2>
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
-                <ShoppingBag size={14} /> {st.label}
+            {ret.items?.length > 0 && (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="p-4 bg-muted/20 border-border/50">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.purchaseReturn.detail.table.totalItems")}
+                  </p>
+                  <p className="text-lg font-bold text-foreground">{ret.items.length}</p>
+                </Card>
+                <Card className="p-4 bg-muted/20 border-border/50">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.purchaseReturn.detail.table.totalQty")}
+                  </p>
+                  <p className="text-lg font-bold text-foreground font-mono">
+                    {ret.items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0)}
+                  </p>
+                </Card>
+                <Card className="p-4 bg-muted/20 border-border/50">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t("page.purchaseReturn.detail.table.totalAmount")}
+                  </p>
+                  <p className="text-lg font-bold text-foreground font-mono text-primary">
+                    Rp {Number(ret.totalAmount || 0).toLocaleString("id-ID")}
+                  </p>
+                </Card>
               </div>
+            )}
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <ShoppingBag size={16} className="text-muted-foreground" />
+              {t("page.purchaseReturn.detail.section.status")}
+            </h3>
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${st.class}`}>
+              <StatusIcon size={16} />
+              {st.label}
             </div>
-          </div>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Building2 size={16} className="text-muted-foreground" />
+              {t("page.purchaseReturn.detail.section.poInfo")}
+            </h3>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-border">
+                <tr>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchaseReturn.detail.field.poNumber")}
+                  </td>
+                  <td className="py-2 text-right font-medium">
+                    {ret.purchaseOrder ? `PO-${ret.purchaseOrder}` : "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

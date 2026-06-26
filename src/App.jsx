@@ -124,6 +124,9 @@ const AddPurchaseOrder = React.lazy(() => import("./page/purchase-order/AddPurch
 const DetailPurchaseOrder = React.lazy(() => import("./page/purchase-order/DetailPurchaseOrder"));
 const EditPurchaseOrder = React.lazy(() => import("./page/purchase-order/EditPurchaseOrder"));
 const PurchasePaymentList = React.lazy(() => import("./page/purchase-order/PurchasePaymentList"));
+const PurchasePaymentDetail = React.lazy(
+  () => import("./page/purchase-order/PurchasePaymentDetail")
+);
 
 // Production Order
 const ProductionOrderList = React.lazy(() => import("./page/production-order/ProductionOrderList"));
@@ -405,6 +408,10 @@ function App() {
             <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
             <Route path="/edit-purchase-order" element={withLayout(<EditPurchaseOrder />)} />
             <Route path="/purchase-payment" element={withLayout(<PurchasePaymentList />)} />
+            <Route
+              path="/purchase-payment-detail"
+              element={withLayout(<PurchasePaymentDetail />)}
+            />
 
             <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
             <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
