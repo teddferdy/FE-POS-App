@@ -4329,6 +4329,7 @@
   "page.purchaseOrder.add.validation.supplier": "Supplier harus dipilih",
   "page.purchaseOrder.add.validation.validationFailed": "Validasi gagal",
   "page.purchaseOrder.detail.amount": "Jumlah",
+  "page.purchaseOrder.detail.back": "Kembali",
   "page.purchaseOrder.detail.created": "Dibuat",
   "page.purchaseOrder.detail.date": "Tanggal",
   "page.purchaseOrder.detail.deletePaymentConfirm": "Hapus Pembayaran",

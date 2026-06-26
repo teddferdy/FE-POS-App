@@ -4380,6 +4380,7 @@
   "page.purchaseOrder.add.validation.supplier": "Supplier",
   "page.purchaseOrder.add.validation.validationFailed": "Validation Failed",
   "page.purchaseOrder.detail.amount": "Amount",
+  "page.purchaseOrder.detail.back": "Back",
   "page.purchaseOrder.detail.created": "Created",
   "page.purchaseOrder.detail.date": "Date",
   "page.purchaseOrder.detail.deletePaymentConfirm": "Are you sure you want to delete this payment?",
