@@ -183,8 +183,10 @@ const CheckoutModal = ({
       : selectedDiscount.value
     : discountAmount;
   const total = Math.max(0, subtotal + taxAmount - discountValue);
+  const pointsDiscount = Number(redeemPoints) || 0;
+  const remainingTotal = Math.max(0, total - pointsDiscount);
   const cashAmountNum = parseFloat(cashAmount) || 0;
-  const change = Math.max(0, cashAmountNum - total);
+  const change = Math.max(0, cashAmountNum - remainingTotal);
 
   const applyFullPayment = useCallback(() => {
     setFullPayment(true);
@@ -403,7 +405,7 @@ const CheckoutModal = ({
     return [base, base + 10000, base + 20000, base + 50000, base + 100000];
   }, [total]);
 
-  const canSubmit = paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= total);
+  const canSubmit = paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -514,13 +516,13 @@ const CheckoutModal = ({
                       inputMode="numeric"
                     />
                   </div>
-                  {cashAmountNum > 0 && cashAmountNum < total && (
+                  {cashAmountNum > 0 && remainingTotal > 0 && cashAmountNum < remainingTotal && (
                     <div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/5 rounded-lg px-3 py-2">
                       <AlertCircle size={12} />
                       {t("page.cashier.insufficientCash")}
                     </div>
                   )}
-                  {cashAmountNum >= total && (
+                  {cashAmountNum >= remainingTotal && (
                     <div className="flex items-center justify-between text-sm bg-emerald-500/5 rounded-lg px-3 py-2">
                       <span className="text-emerald-500 font-medium">
                         {t("page.cashier.change")}
