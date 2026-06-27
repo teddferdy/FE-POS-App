@@ -41,7 +41,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle size={20} className="text-emerald-500" />
-            <h2 className="text-lg font-bold">{t("page.cashier.receipt")}</h2>
+            <h2 className="text-lg font-bold">{t("page.cashier.receipt.title")}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
             <X size={18} />
@@ -55,18 +55,18 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
                 <CheckCircle size={24} className="text-emerald-500" />
               </div>
               <p className="font-bold text-sm text-muted-foreground">
-                {t("page.cashier.paymentSuccess")}
+                {t("page.cashier.receipt.paymentSuccess")}
               </p>
               <p className="text-lg font-bold mt-0.5">{orderNumber}</p>
             </div>
 
             <div className="space-y-1.5 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">{t("page.cashier.date")}</span>
+                <span className="text-muted-foreground">{t("page.cashier.receipt.date")}</span>
                 <span className="font-medium">{formattedDate}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">{t("page.cashier.cashier")}</span>
+                <span className="text-muted-foreground">{t("page.cashier.receipt.cashier")}</span>
                 <span className="font-medium">{cashierName}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -81,7 +81,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
 
             <div className="border-t border-border/30 pt-3">
               <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                {t("page.cashier.orderItems")}
+                {t("page.cashier.receipt.item")}
               </p>
               <div className="space-y-2">
                 {items.length > 0 ? (
@@ -150,7 +150,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             className="flex-1 h-11 rounded-xl border-border/60"
             onClick={() => window.print()}>
             <Printer size={16} />
-            {t("page.cashier.print")}
+            {t("page.cashier.receipt.print")}
           </Button>
           <Button
             onClick={onNewTransaction}
@@ -158,7 +158,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/90 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
             <span className="relative flex items-center justify-center gap-2">
               <RotateCcw size={16} />
-              {t("page.cashier.newTransaction")}
+              {t("page.cashier.receipt.newTransaction")}
             </span>
           </Button>
         </div>
