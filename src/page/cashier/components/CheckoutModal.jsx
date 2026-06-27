@@ -739,8 +739,8 @@ const CheckoutModal = ({
                         const max = Math.min(memberPoints, Math.floor(total / 100));
                         setRedeemPoints(val ? String(Math.min(Number(val), max)) : "");
                       }}
-                      placeholder="0 pts"
-                      className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                      placeholder="0"
+                      className="flex-1 h-12 px-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors text-right tabular-nums"
                       inputMode="numeric"
                     />
                     <button
@@ -748,7 +748,7 @@ const CheckoutModal = ({
                         const max = Math.min(memberPoints, Math.floor(total / 100));
                         setRedeemPoints(String(max));
                       }}
-                      className="shrink-0 h-10 px-3 rounded-xl bg-violet-500/10 border border-violet-500/30 text-xs font-medium text-violet-600 hover:bg-violet-500/20 transition-all"
+                      className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all"
                     >
                       Max
                     </button>
