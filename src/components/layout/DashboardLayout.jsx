@@ -212,12 +212,12 @@ const DashboardLayout = ({ children }) => {
           onOpenPalette={() => setIsPaletteOpen(true)}
         />
         <main className="p-4 lg:p-6">
-          {children}
           {tips && (
-            <div className="mt-6">
+            <div className="mb-4">
               <TipsCard title={t("common.tips")} variant="default" tips={tips} />
             </div>
           )}
+          {children}
         </main>
       </div>
 

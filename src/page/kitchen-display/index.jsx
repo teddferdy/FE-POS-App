@@ -166,9 +166,8 @@ const KitchenDisplay = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   return (
-    <div>
-      <div className="h-full">
-        <div className="flex items-center justify-between mb-6">
+    <div className="h-full flex flex-col">
+        <div className="flex items-center justify-between mb-6 shrink-0">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
@@ -184,7 +183,7 @@ const KitchenDisplay = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 shrink-0">
             {[1, 2, 3].map((i) => (
               <div key={i} className="space-y-3">
                 <Skeleton className="h-10 w-32" />
@@ -194,7 +193,8 @@ const KitchenDisplay = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-180px)]">
+          // ponytail: flex-1 min-h-0 fills remaining space instead of hardcoded calc — tips card now lives above
+          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4">
             {statusColumns.map((colStatus) => {
               const cfg = statusConfig[colStatus];
               const Icon = cfg.icon;
@@ -293,7 +293,6 @@ const KitchenDisplay = () => {
             })}
           </div>
         )}
-      </div>
     </div>
   );
 };
