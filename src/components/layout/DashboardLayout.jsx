@@ -211,13 +211,15 @@ const DashboardLayout = ({ children }) => {
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}
         />
-        <main className="p-4 lg:p-6">
+        <main className="p-4 lg:p-6 flex flex-col">
+          <div className="flex-1 min-h-0">
+            {children}
+          </div>
           {tips && (
-            <div className="mb-4">
+            <div className="mt-6 shrink-0">
               <TipsCard title={t("common.tips")} variant="default" tips={tips} />
             </div>
           )}
-          {children}
         </main>
       </div>
 
