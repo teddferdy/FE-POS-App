@@ -7,11 +7,12 @@ export const orderList = create(
       order: [],
       addOrder: (product) => {
         const id = product.id || product.ID || product.idProduct || product._id;
-        const existing = get().order.find((item) => (item.id || item.ID || item.idProduct || item._id) === id);
+        const cartKey = `${id}_${product.variantName || ''}`;
+        const existing = get().order.find((item) => item.cartKey === cartKey);
         if (existing) {
           return set((state) => ({
             order: state.order.map((item) => {
-              if ((item.id || item.ID || item.idProduct || item._id) === id) {
+              if (item.cartKey === cartKey) {
                 return {
                   ...item,
                   count: (item.count || 0) + 1,
@@ -26,6 +27,7 @@ export const orderList = create(
         return set((state) => ({
           order: [...state.order, {
             id,
+            cartKey,
             nameProduct: product.nameProduct || product.name,
             variantName: product.variantName || null,
             price,
@@ -52,7 +54,7 @@ export const orderList = create(
         return set((state) => {
           return {
             order: state.order.map((items) => {
-              if (items?.id === decrementOrder?.id) {
+              if (items.cartKey === decrementOrder.cartKey) {
                 return {
                   ...items,
                   count: items.count - 1,
@@ -71,8 +73,7 @@ export const orderList = create(
         return set((state) => {
           return {
             order: state.order.map((items) => {
-              // console.log("counTotal =>", counTotal);
-              if (items?.id === incrementOrder?.id) {
+              if (items.cartKey === incrementOrder.cartKey) {
                 return {
                   ...items,
                   count: items.count + 1,

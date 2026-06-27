@@ -41,10 +41,12 @@ const CartPanel = ({
   const [quantities, setQuantities] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
+
   useEffect(() => {
     const initial = {};
     items.forEach((item) => {
-      const key = item.id || item.ID || item.idProduct || item._id;
+      const key = itemKey(item);
       initial[key] = item.count || item.qty || 0;
     });
     setQuantities((prev) => {
@@ -93,13 +95,13 @@ const CartPanel = ({
   );
 
   const startEditingPrice = (item) => {
-    setEditingPrice(item.id || item.ID || item.idProduct || item._id);
+    setEditingPrice(itemKey(item));
     setPriceValue(String(item.price || item.unitPrice || 0));
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const savePrice = (item) => {
-    const key = item.id || item.ID || item.idProduct || item._id;
+    const key = itemKey(item);
     const val = parseFloat(priceValue);
     if (isNaN(val) || val < 0) {
       setPriceErrors((prev) => ({ ...prev, [key]: t("page.cashier.invalidPrice") }));
@@ -149,7 +151,7 @@ const CartPanel = ({
           </div>
         ) : (
           items.map((item, idx) => {
-            const key = item.id || item.ID || item.idProduct || item._id;
+            const key = itemKey(item);
             const isEditing = editingPrice === key;
             const err = priceErrors[key];
             const price = item.price || item.unitPrice || 0;
