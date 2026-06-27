@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -65,6 +66,17 @@ const CheckoutModal = ({
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
+  const customerPortalRef = useRef(null);
+  const discountPortalRef = useRef(null);
+  const [customerDropdownPos, setCustomerDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  const [discountDropdownPos, setDiscountDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const updateDropdownPos = useCallback(() => {
+    const custRect = searchContainerRef.current?.getBoundingClientRect();
+    if (custRect) setCustomerDropdownPos({ top: custRect.bottom + 4, left: custRect.left, width: custRect.width });
+    const discRect = discountSearchRef.current?.getBoundingClientRect();
+    if (discRect) setDiscountDropdownPos({ top: discRect.bottom + 4, left: discRect.left, width: discRect.width });
+  }, []);
 
   const items = useMemo(() => {
     if (propItems && propItems.length > 0) {
@@ -220,16 +232,32 @@ const CheckoutModal = ({
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target) && !customerPortalRef.current?.contains(e.target)) {
         setShowCustomerDropdown(false);
       }
-      if (discountSearchRef.current && !discountSearchRef.current.contains(e.target)) {
+      if (discountSearchRef.current && !discountSearchRef.current.contains(e.target) && !discountPortalRef.current?.contains(e.target)) {
         setShowDiscountDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!showCustomerDropdown && !showDiscountDropdown) return;
+    const updatePos = () => {
+      const custRect = searchContainerRef.current?.getBoundingClientRect();
+      if (custRect) setCustomerDropdownPos({ top: custRect.bottom + 4, left: custRect.left, width: custRect.width });
+      const discRect = discountSearchRef.current?.getBoundingClientRect();
+      if (discRect) setDiscountDropdownPos({ top: discRect.bottom + 4, left: discRect.left, width: discRect.width });
+    };
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [showCustomerDropdown, showDiscountDropdown]);
 
   useEffect(() => {
     if (customerId) {
@@ -523,8 +551,12 @@ const CheckoutModal = ({
                       onChange={(e) => {
                         setCustomerSearch(e.target.value);
                         setShowCustomerDropdown(true);
+                        updateDropdownPos();
                       }}
-                      onFocus={() => setShowCustomerDropdown(true)}
+                      onFocus={() => {
+                        setShowCustomerDropdown(true);
+                        updateDropdownPos();
+                      }}
                       placeholder={t("page.cashier.searchCustomer")}
                       className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                     />
@@ -536,8 +568,17 @@ const CheckoutModal = ({
                     <Plus size={18} />
                   </button>
                 </div>
-                {showCustomerDropdown && (
-                  <div className="absolute z-10 mt-1 w-full bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
+                {showCustomerDropdown && createPortal(
+                  <div
+                    ref={customerPortalRef}
+                    style={{
+                      position: 'fixed',
+                      top: customerDropdownPos.top,
+                      left: customerDropdownPos.left,
+                      width: customerDropdownPos.width,
+                      zIndex: 70
+                    }}
+                    className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
                     {filteredCustomers.length > 0 ? (
                       <div className="max-h-40 overflow-y-auto">
                         {filteredCustomers.map((c, idx) => (
@@ -562,7 +603,8 @@ const CheckoutModal = ({
                         {t("page.cashier.noCustomer")}
                       </div>
                     )}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
@@ -581,8 +623,12 @@ const CheckoutModal = ({
                     onChange={(e) => {
                       setDiscountSearch(e.target.value);
                       setShowDiscountDropdown(true);
+                      updateDropdownPos();
                     }}
-                    onFocus={() => setShowDiscountDropdown(true)}
+                    onFocus={() => {
+                      setShowDiscountDropdown(true);
+                      updateDropdownPos();
+                    }}
                     placeholder={t("page.cashier.searchDiscount")}
                     className="w-full h-10 pl-9 pr-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
                   />
@@ -594,8 +640,17 @@ const CheckoutModal = ({
                     </button>
                   )}
                 </div>
-                {showDiscountDropdown && (
-                  <div className="absolute z-10 mt-1 w-full bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
+                {showDiscountDropdown && createPortal(
+                  <div
+                    ref={discountPortalRef}
+                    style={{
+                      position: 'fixed',
+                      top: discountDropdownPos.top,
+                      left: discountDropdownPos.left,
+                      width: discountDropdownPos.width,
+                      zIndex: 70
+                    }}
+                    className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
                     {filteredDiscounts.length > 0 ? (
                       <div className="max-h-40 overflow-y-auto">
                         {filteredDiscounts.map((d, idx) => (
@@ -618,7 +673,8 @@ const CheckoutModal = ({
                         {t("page.cashier.noDiscount")}
                       </div>
                     )}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
