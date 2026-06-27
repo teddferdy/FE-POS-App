@@ -193,6 +193,7 @@ const CheckoutModal = ({
 
   const handleDiscountSelect = useCallback((disc) => {
     setSelectedDiscount(disc);
+    setDiscountSearch(disc.nameDiscount || disc.name || disc.discountName || "");
     setShowDiscountDropdown(false);
     setDiscountAmount(0);
   }, []);
@@ -201,6 +202,7 @@ const CheckoutModal = ({
     setSelectedDiscount(null);
     setDiscountAmount(0);
     setPromoCode("");
+    setDiscountSearch("");
   }, []);
 
   const handleApplyPromoCode = useCallback(async () => {
