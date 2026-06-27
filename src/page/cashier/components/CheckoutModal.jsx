@@ -346,7 +346,7 @@ const CheckoutModal = ({
       toast.error(t("page.cashier.selectPayment"));
       return;
     }
-    if (paymentMethod === "cash" && cashAmountNum < total) {
+    if (paymentMethod === "cash" && cashAmountNum < remainingTotal) {
       toast.error(t("page.cashier.insufficientCash"));
       return;
     }
