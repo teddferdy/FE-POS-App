@@ -44,18 +44,12 @@ const CartPanel = ({
   const itemKey = (item) => item.cartKey || item.id || item.ID || item.idProduct || item._id;
 
   useEffect(() => {
-    const initial = {};
+    const next = {};
     items.forEach((item) => {
       const key = itemKey(item);
-      initial[key] = item.count || item.qty || 0;
+      next[key] = item.count || item.qty || 0;
     });
-    setQuantities((prev) => {
-      const merged = { ...initial };
-      Object.keys(prev).forEach((k) => {
-        if (initial[k] !== undefined) merged[k] = prev[k];
-      });
-      return merged;
-    });
+    setQuantities(next);
   }, [items]);
 
   const handleDecrement = useCallback(
