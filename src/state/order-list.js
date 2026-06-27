@@ -27,6 +27,7 @@ export const orderList = create(
           order: [...state.order, {
             id,
             nameProduct: product.nameProduct || product.name,
+            variantName: product.variantName || null,
             price,
             count: 1,
             totalPrice: price,

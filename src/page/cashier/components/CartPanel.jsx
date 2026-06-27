@@ -196,12 +196,12 @@ const CartPanel = ({
                       <div className="min-w-0">
                         <p className="font-medium text-sm text-foreground truncate">
                           {item.nameProduct || item.name || t("page.cashier.unnamedProduct")}
+                          {item.variantName && (
+                            <span className="text-muted-foreground/70 font-normal ml-1">
+                              - {item.variantName}
+                            </span>
+                          )}
                         </p>
-                        {item.variantName && (
-                          <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                            {item.variantName}
-                          </p>
-                        )}
                       </div>
                       <button
                         onClick={() => onDelete(item)}
