@@ -736,7 +736,7 @@ const CheckoutModal = ({
                       value={redeemPoints ? Number(redeemPoints).toLocaleString("id-ID") : ""}
                       onChange={(e) => {
                         const val = e.target.value.replace(/[^0-9]/g, "");
-                        const max = Math.min(memberPoints, Math.floor(total / 100));
+                        const max = memberPoints;
                         setRedeemPoints(val ? String(Math.min(Number(val), max)) : "");
                       }}
                       placeholder="0"
@@ -745,8 +745,7 @@ const CheckoutModal = ({
                     />
                     <button
                       onClick={() => {
-                        const max = Math.min(memberPoints, Math.floor(total / 100));
-                        setRedeemPoints(String(max));
+                        setRedeemPoints(String(memberPoints));
                       }}
                       className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all"
                     >
