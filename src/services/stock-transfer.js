@@ -20,22 +20,14 @@ export const getTransferById = async (id) => {
   return data;
 };
 
-export const deleteStockTransfer = async (id, store) => {
-  const { data, status } = await axiosInstance.delete(`/pos/transfer/${id}`, {
-    params: { store }
-  });
-  if (status !== 200 && status !== 204) throw Error(`${data?.message}`);
-  return data;
-};
-
-export const approveStockTransfer = async (id) => {
-  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/approve`);
+export const receiveStockTransfer = async (id) => {
+  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/receive`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 
-export const rejectStockTransfer = async (id) => {
-  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/reject`);
+export const cancelStockTransfer = async (id) => {
+  const { data, status } = await axiosInstance.put(`/pos/transfer/${id}/cancel`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

@@ -2,16 +2,29 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
-import { Save, X, Plus, Trash2 } from "lucide-react";
+import { Save, X, Plus, Trash2, Package, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { transferStock } from "@/services/stock-transfer";
 import { getAllLocation } from "@/services/location";
 import { getAllProduct } from "@/services/product";
+import { Combobox } from "@/components/ui/combobox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "@/components/ui/command";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 
@@ -22,7 +35,8 @@ const AddStockTransfer = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
 
-  const [fromStore, setFromStore] = useState(user?.store || "");
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const [fromStore, setFromStore] = useState(isSuperAdmin ? "" : user?.store || "");
   const [toStore, setToStore] = useState("");
   const [notes, setNotes] = useState("");
   const [transferredBy, setTransferredBy] = useState(user?.name || "");
@@ -34,10 +48,13 @@ const AddStockTransfer = () => {
     staleTime: 60000
   });
   const locations = locData?.data || locData?.locations || locData || [];
+  const storeOptions = locations.map((l) => ({ value: String(l.id), label: l.name }));
 
-  const { data: prodData } = useQuery(["products-for-transfer"], () => getAllProduct({}), {
-    staleTime: 60000
-  });
+  const { data: prodData } = useQuery(
+    ["products-for-transfer", fromStore],
+    () => getAllProduct({ location: fromStore, status: "active" }),
+    { staleTime: 60000, enabled: !!fromStore }
+  );
   const products = prodData?.data || [];
 
   const addItem = () =>
@@ -121,39 +138,33 @@ const AddStockTransfer = () => {
           onSubmit={handleSubmit}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>
-                {t("page.stockTransfer.add.form.fromStore")}{" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              <select
-                value={fromStore}
-                onChange={(e) => setFromStore(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
-                {locations.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isSuperAdmin && (
+              <div className="space-y-2">
+                <Label>
+                  {t("page.stockTransfer.add.form.fromStore")}{" "}
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Combobox
+                  options={storeOptions}
+                  value={fromStore}
+                  onChange={setFromStore}
+                  placeholder={t("page.stockTransfer.add.form.selectStore")}
+                  searchPlaceholder={t("common.search")}
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>
                 {t("page.stockTransfer.add.form.toStore")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <select
+              <Combobox
+                options={storeOptions}
                 value={toStore}
-                onChange={(e) => setToStore(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="">{t("page.stockTransfer.add.form.selectStore")}</option>
-                {locations.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setToStore}
+                placeholder={t("page.stockTransfer.add.form.selectStore")}
+                searchPlaceholder={t("common.search")}
+              />
             </div>
           </div>
 
@@ -166,89 +177,146 @@ const AddStockTransfer = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>{t("page.stockTransfer.add.form.items")}</Label>
-            <div className="overflow-x-auto border rounded-lg">
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">{t("page.stockTransfer.add.form.items")}</Label>
+            <div className="overflow-x-auto border rounded-xl shadow-sm">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-muted/60 border-b">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                  <tr className="bg-muted/50 border-b">
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       {t("page.stockTransfer.add.table.product")}
                     </th>
-                    <th className="px-3 py-2 text-right font-semibold text-muted-foreground text-xs">
+                    <th className="px-4 py-3 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       {t("page.stockTransfer.add.table.qty")}
                     </th>
-                    <th className="px-3 py-2 text-center font-semibold text-muted-foreground text-xs">
+                    <th className="px-4 py-3 text-center font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       {t("page.stockTransfer.add.table.unit")}
                     </th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground text-xs">
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       {t("page.stockTransfer.add.table.notes")}
                     </th>
-                    <th className="w-10"></th>
+                    <th className="w-12 px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-muted/20">
-                      <td className="px-3 py-2">
-                        <select
-                          value={item.productId}
-                          onChange={(e) => updateItem(idx, "productId", e.target.value)}
-                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                          <option value="">
-                            {t("page.stockTransfer.add.table.selectProduct")}
-                          </option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.nameProduct}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.qty}
-                          onChange={(e) => updateItem(idx, "qty", e.target.value)}
-                          className="h-8 text-xs text-right"
-                          placeholder="0"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <select
-                          value={item.unit}
-                          onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                          className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
-                          <option value="pcs">pcs</option>
-                          <option value="kg">kg</option>
-                          <option value="liter">liter</option>
-                          <option value="box">box</option>
-                        </select>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Input
-                          value={item.notes}
-                          onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                          className="h-8 text-xs"
-                          placeholder="Catatan"
-                        />
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          type="button"
-                          disabled={items.length <= 1}
-                          onClick={() => removeItem(idx)}
-                          className="text-muted-foreground/30 hover:text-destructive disabled:opacity-20">
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {items.map((item, idx) => {
+                    const selectedProduct = products.find((p) => String(p.id) === item.productId);
+                    return (
+                      <tr key={idx} className="border-b border-muted/10 last:border-b-0 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3 min-w-[220px]">
+                          <div className="flex items-center gap-2">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="flex-1 flex items-center gap-2 h-9 px-3 rounded-lg border border-input bg-background text-xs hover:border-primary/50 transition-colors text-left">
+                                  <Package size={14} className="shrink-0 text-muted-foreground/40" />
+                                  {selectedProduct ? (
+                                    <span className="flex-1 truncate font-medium">
+                                      {selectedProduct.nameProduct}
+                                    </span>
+                                  ) : (
+                                    <span className="flex-1 text-muted-foreground">
+                                      {t("page.stockTransfer.add.table.selectProduct")}
+                                    </span>
+                                  )}
+                                  <Search size={12} className="shrink-0 text-muted-foreground/30" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent align="start" side="bottom" className="p-0 w-[300px]">
+                                <Command>
+                                  <CommandInput placeholder={t("common.search")} />
+                                  <CommandList>
+                                    <CommandEmpty>
+                                      {t("page.stockTransfer.add.table.productNotFound")}
+                                    </CommandEmpty>
+                                    {products.map((p) => (
+                                      <CommandItem
+                                        key={p.id}
+                                        value={p.nameProduct}
+                                        onSelect={() => updateItem(idx, "productId", String(p.id))}>
+                                        <div className="flex items-center justify-between w-full gap-3">
+                                          <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-medium truncate">
+                                              {p.nameProduct}
+                                            </span>
+                                            {p.barcode && (
+                                              <span className="text-[10px] text-muted-foreground truncate">
+                                                {p.barcode}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <span className="shrink-0 text-xs font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
+                                            {t("page.stockTransfer.add.table.stock")}: {p.stock ?? 0}
+                                          </span>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            {selectedProduct && (
+                              <span className="shrink-0 text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-1 rounded-md border border-border/50">
+                                {t("page.stockTransfer.add.table.stock")}: {selectedProduct.stock ?? 0}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 w-[100px]">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={selectedProduct?.stock ?? 0}
+                            value={item.qty}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const max = selectedProduct?.stock ?? 0;
+                              if (val && parseInt(val) > max) {
+                                updateItem(idx, "qty", String(max));
+                              } else {
+                                updateItem(idx, "qty", val);
+                              }
+                            }}
+                            className="h-9 text-xs text-right"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="px-4 py-3 w-[100px]">
+                          <select
+                            value={item.unit}
+                            onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                            className="w-full h-9 px-2 rounded-lg border border-input bg-background text-xs">
+                            <option value="pcs">pcs</option>
+                            <option value="kg">kg</option>
+                            <option value="liter">liter</option>
+                            <option value="box">box</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3 min-w-[140px]">
+                          <Input
+                            value={item.notes}
+                            onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                            className="h-9 text-xs"
+                            placeholder={t("page.stockTransfer.add.table.notesPlaceholder")}
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-center w-12">
+                          <button
+                            type="button"
+                            disabled={items.length <= 1}
+                            onClick={() => removeItem(idx)}
+                            className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 disabled:opacity-20 transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1">
+            <Button type="button" variant="outline" size="sm" onClick={addItem} className="gap-1.5">
               <Plus size={14} /> {t("page.stockTransfer.add.table.addItem")}
             </Button>
           </div>

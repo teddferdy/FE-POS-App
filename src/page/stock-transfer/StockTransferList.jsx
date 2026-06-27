@@ -2,23 +2,29 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import { Plus, Search, Eye, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Plus, Search, Eye, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
-import {
-  getTransferHistory,
-  deleteStockTransfer,
-  approveStockTransfer,
-  rejectStockTransfer
-} from "@/services/stock-transfer";
+import { getTransferHistory, receiveStockTransfer, cancelStockTransfer } from "@/services/stock-transfer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
-import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusCfg = {
+  sent: {
+    label: "Sent",
+    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+  },
+  received: {
+    label: "Received",
+    class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+  },
+  cancelled: {
+    label: "Cancelled",
+    class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+  },
   pending: {
     label: "Pending",
     class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
@@ -36,7 +42,6 @@ const statusCfg = {
 const StockTransferList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const store = user?.store || "";
@@ -45,7 +50,6 @@ const StockTransferList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfers", page, limit, statusFilter],
@@ -59,6 +63,24 @@ const StockTransferList = () => {
     { keepPreviousData: true }
   );
 
+  const queryClient = useQueryClient();
+
+  const receiveMutation = useMutation(receiveStockTransfer, {
+    onSuccess: () => {
+      toast.success(t("page.stockTransfer.list.receiveSuccess"));
+      queryClient.invalidateQueries("stock-transfers");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const cancelMutation = useMutation(cancelStockTransfer, {
+    onSuccess: () => {
+      toast.success(t("page.stockTransfer.list.cancelSuccess"));
+      queryClient.invalidateQueries("stock-transfers");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
@@ -69,46 +91,6 @@ const StockTransferList = () => {
       if (!item.transferNumber?.toLowerCase().includes(q)) return false;
     }
     return true;
-  });
-
-  const deleteMut = useMutation(() => deleteStockTransfer(deleteTarget, store), {
-    onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), {
-        description: t("page.stockTransfer.list.toast.deleteDesc")
-      });
-      queryClient.invalidateQueries(["stock-transfers"]);
-      setDeleteTarget(null);
-    },
-    onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
-  });
-
-  const approveMut = useMutation((id) => approveStockTransfer(id), {
-    onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), {
-        description: t("page.stockTransfer.list.toast.approveDesc")
-      });
-      queryClient.invalidateQueries(["stock-transfers"]);
-    },
-    onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
-  });
-
-  const rejectMut = useMutation((id) => rejectStockTransfer(id), {
-    onSuccess: () => {
-      toast.success(t("page.stockTransfer.list.toast.success"), {
-        description: t("page.stockTransfer.list.toast.rejectDesc")
-      });
-      queryClient.invalidateQueries(["stock-transfers"]);
-    },
-    onError: (err) =>
-      toast.error(t("page.stockTransfer.list.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
   });
 
   const columns = [
@@ -163,6 +145,26 @@ const StockTransferList = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          {item.status === "sent" && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                title={t("page.stockTransfer.list.receive")}
+                onClick={() => receiveMutation.mutate(item.id)}>
+                <CheckCircle size={15} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-600"
+                title={t("page.stockTransfer.list.cancel")}
+                onClick={() => cancelMutation.mutate(item.id)}>
+                <XCircle size={15} />
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -170,35 +172,6 @@ const StockTransferList = () => {
             onClick={() => navigate(`/stock-transfer/detail?id=${item.id}`)}>
             <Eye size={15} />
           </Button>
-          {item.status === "pending" && canAccess(user, MENU_KEY, "delete") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive"
-              onClick={() => setDeleteTarget(item.id)}>
-              <Trash2 size={15} />
-            </Button>
-          )}
-          {item.status === "pending" && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-600"
-                title={t("page.stockTransfer.list.approveTitle")}
-                onClick={() => approveMut.mutate(item.id)}>
-                <CheckCircle size={15} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive"
-                title={t("page.stockTransfer.list.rejectTitle")}
-                onClick={() => rejectMut.mutate(item.id)}>
-                <XCircle size={15} />
-              </Button>
-            </>
-          )}
         </div>
       )
     }
@@ -274,17 +247,6 @@ const StockTransferList = () => {
           />
         </div>
       )}
-
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.stockTransfer.list.modal.deleteTitle")}
-        description={t("page.stockTransfer.list.modal.deleteDesc")}
-        confirmText={t("page.stockTransfer.list.modal.deleteConfirm")}
-        loading={deleteMut.isLoading}
-        onConfirm={() => deleteMut.mutate()}
-      />
     </div>
   );
 };

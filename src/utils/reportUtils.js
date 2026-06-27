@@ -19,15 +19,16 @@ const periods = [
 
 const getDateRangeForPeriod = (period) => {
   const now = new Date();
+  const p = period?.toLowerCase();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  if (period === "today") {
+  if (p === "today") {
     return {
       startDate: todayStart.toISOString(),
       endDate: new Date(todayStart.getTime() + 86400000 - 1).toISOString()
     };
   }
-  if (period === "monthly") {
+  if (p === "monthly") {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
     return { startDate: monthStart.toISOString(), endDate: monthEnd.toISOString() };

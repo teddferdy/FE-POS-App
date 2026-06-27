@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getPurchaseOrderById } from "../../services/purchase-order";
 import { getPaymentsByPO, deletePayment } from "../../services/purchase-payment";
@@ -38,7 +38,8 @@ import {
 
 export default function DetailPurchaseOrder() {
   const { t } = useTranslation();
-  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const navigate = useNavigate();
 
   const [po, setPo] = useState(null);

@@ -330,7 +330,7 @@ flowchart LR
 | **Goods Receipt**    | Terima barang dari PO. Barang sesuai? Stok nambah. Gak sesuai? Retur.         | ➡ Purchase Return  |
 | **Sales Return**     | Pelanggan balikin barang? Catat di sini, stok balik, uang balik.              | ➡ POS              |
 | **Purchase Return**  | Retur barang ke supplier. Stok berkurang.                                     | ➡ Goods Receipt    |
-| **Transfer Stok**    | Kirim barang antar cabang. Biar stok merata.                                  | ➡ History Stok     |
+| **Transfer Stok**    | Kirim **barang inventory/produk** antar cabang. Biar stok merata. Aset tetap (komputer, mesin) beda alur — hubungi tim support. | ➡ History Stok     |
 
 ### 📈 Laporan
 
@@ -1427,13 +1427,19 @@ stateDiagram-v2
 
 ### 6.5 Stock Transfer — State Machine
 
+> **Catatan**: Transfer Stok hanya untuk **produk/inventory**. Aset tetap (komputer, coffee maker, dll) tidak termasuk — hubungi tim support.
+
 ```mermaid
 stateDiagram-v2
     [*] --> Draft : Buat Transfer baru
     Draft --> Sent : Kirim barang ✅
     Draft --> [*] : Hapus
 
-    Sent --> [*] : Stok otomatis update
+    Sent --> Received : Toko tujuan terima ✅
+    Sent --> Cancelled : Batalkan ❌
+
+    Received --> [*] : Stok toko tujuan +, asal -
+    Cancelled --> [*] : Stok kembali ke asal
 
 ```
 
@@ -1473,7 +1479,7 @@ stateDiagram-v2
 | **Goods Receipt**    | Draft → Completed / Cancelled                  | Completed → stok +; Cancelled → stok - |
 | **Production Order** | Draft → InProgress → Completed / Cancelled     | Completed → stok update otomatis       |
 | **Stock Opname**     | Draft → Completed                              | Completed → stok disesuaikan           |
-| **Stock Transfer**   | Draft → Sent                                   | Sent → stok pindah toko                |
+| **Stock Transfer**   | Draft → Sent → Received / Cancelled            | Sent → stok toko asal -; Received → stok toko tujuan +; Cancelled → stok balik |
 | **Purchase Return**  | Draft → Completed                              | Completed → stok -                     |
 | **Sales Return**     | Draft → Completed                              | Completed → stok +                     |
 
@@ -1547,7 +1553,17 @@ stateDiagram-v2
 | 3   | **Kalau punya BOM, sistem otomatis hitung kebutuhan bahan**  | Tinggal masukin qty produksi           |
 | 4   | **Kalau bahan kurang, sistem kasih peringatan**              | Bisa langsung bikin PO dari notifikasi |
 
-### 8.4 Aturan Stok
+### 8.4 Aturan Transfer Stok
+
+| # | Aturan | Penjelasan |
+| --- | ------ | ---------- |
+| 1 | **Hanya untuk produk/inventory** | Aset tetap (komputer, coffee maker, dll) tidak termasuk — beda alur |
+| 2 | **Toko asal dan tujuan harus berbeda** | Gak bisa transfer ke toko yang sama |
+| 3 | **Stok per toko otomatis berubah** | Stok toko asal berkurang, stok toko tujuan bertambah — saat dikirim & diterima |
+| 4 | **Transfer yang sudah diterima gabisa dibatalkan** | Kalau terlanjur, bikin transfer balik (reverse) |
+| 5 | **Stok gabisa negatif** | Kalau stok di toko asal kurang dari qty transfer, sistem tolak |
+
+### 8.5 Aturan Stok
 
 | #   | Aturan                                                                      | Penjelasan                                               |
 | --- | --------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -1556,7 +1572,7 @@ stateDiagram-v2
 | 3   | **Stock Opname** otomatis sesuaikan stok sesuai selisih                     | Stok fisik berbeda dengan sistem → sistem ngikutin fisik |
 | 4   | **History Stok** mencatat SEMUA perubahan                                   | Bisa diliat kapan, siapa, dan dari transaksi apa         |
 
-### 8.5 Aturan Pembayaran
+### 8.6 Aturan Pembayaran
 
 | #   | Aturan                                        | Penjelasan                         |
 | --- | --------------------------------------------- | ---------------------------------- |
@@ -1565,7 +1581,7 @@ stateDiagram-v2
 | 3   | **Sisa utang = Grand Total - Total Terbayar** | Sistem otomatis hitung             |
 | 4   | **Satu PO bisa punya banyak pembayaran**      | Dicicil berkali-kali sampe lunas   |
 
-### 8.6 Aturan Retur
+### 8.7 Aturan Retur
 
 | #   | Aturan                                           | Penjelasan                                               |
 | --- | ------------------------------------------------ | -------------------------------------------------------- |
@@ -1573,7 +1589,7 @@ stateDiagram-v2
 | 2   | **Sales Return** nambahin stok                   | Barang diterima kembali dari pelanggan                   |
 | 3   | **Retur tidak otomatis batalkan transaksi asal** | Transaksi asal tetap ada, retur sebagai catatan terpisah |
 
-### 8.7 Aturan Role & Akses
+### 8.8 Aturan Role & Akses
 
 | #   | Aturan                                               | Penjelasan                                      |
 | --- | ---------------------------------------------------- | ----------------------------------------------- |
@@ -1582,7 +1598,7 @@ stateDiagram-v2
 | 3   | **Cashier cuma bisa akses POS & Membership**         | Gak bisa buka menu pengaturan                   |
 | 4   | **Role bisa dikustom**                               | Bikin role sendiri dengan izin sesuai kebutuhan |
 
-### 8.8 Aturan Accounts Receivable (Piutang)
+### 8.9 Aturan Accounts Receivable (Piutang)
 
 | #   | Aturan                                                               | Penjelasan                                                         |
 | --- | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -1591,7 +1607,7 @@ stateDiagram-v2
 | 3   | **Status piutang: Belum Lunas / Sebagian / Lunas**                   | Tracking otomatis, tinggal lihat di daftar piutang                 |
 | 4   | **Laporan piutang real-time**                                        | Tau total tagihan yang outstanding kapan aja                       |
 
-### 8.9 Aturan Redeem Points
+### 8.10 Aturan Redeem Points
 
 | #   | Aturan                                     | Penjelasan                                                 |
 | --- | ------------------------------------------ | ---------------------------------------------------------- |

@@ -2,18 +2,17 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, XCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import {
-  getTransferById,
-  approveStockTransfer,
-  rejectStockTransfer
-} from "@/services/stock-transfer";
+import { useTranslation } from "react-i18next";
+import { getTransferById, receiveStockTransfer, cancelStockTransfer } from "@/services/stock-transfer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusDetail = {
+  sent: { label: "Sent", class: "bg-blue-100 text-blue-800" },
+  received: { label: "Received", class: "bg-green-100 text-green-800" },
+  cancelled: { label: "Cancelled", class: "bg-red-100 text-red-800" },
   pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800" },
   approved: { label: "Approved", class: "bg-green-100 text-green-800" },
   rejected: { label: "Rejected", class: "bg-red-100 text-red-800" }
@@ -25,7 +24,6 @@ const DetailStockTransfer = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
 
-  const queryClient = useQueryClient();
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfer-detail", id],
     () => getTransferById(id),
@@ -35,30 +33,22 @@ const DetailStockTransfer = () => {
   );
   const transfer = data?.data;
 
-  const approveMut = useMutation(() => approveStockTransfer(id), {
+  const queryClient = useQueryClient();
+
+  const receiveMutation = useMutation(receiveStockTransfer, {
     onSuccess: () => {
-      toast.success(t("page.stockTransfer.detail.toast.success"), {
-        description: t("page.stockTransfer.detail.toast.approveDesc")
-      });
-      queryClient.invalidateQueries(["stock-transfer-detail", id]);
+      toast.success(t("page.stockTransfer.detail.receiveSuccess"));
+      queryClient.invalidateQueries("stock-transfer-detail");
     },
-    onError: (err) =>
-      toast.error(t("page.stockTransfer.detail.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => toast.error(err.message)
   });
 
-  const rejectMut = useMutation(() => rejectStockTransfer(id), {
+  const cancelMutation = useMutation(cancelStockTransfer, {
     onSuccess: () => {
-      toast.success(t("page.stockTransfer.detail.toast.success"), {
-        description: t("page.stockTransfer.detail.toast.rejectDesc")
-      });
-      queryClient.invalidateQueries(["stock-transfer-detail", id]);
+      toast.success(t("page.stockTransfer.detail.cancelSuccess"));
+      queryClient.invalidateQueries("stock-transfer-detail");
     },
-    onError: (err) =>
-      toast.error(t("page.stockTransfer.detail.toast.error"), {
-        description: err?.response?.data?.message || err.message
-      })
+    onError: (err) => toast.error(err.message)
   });
 
   if (isError) return <AbortController refetch={refetch} />;
@@ -193,22 +183,18 @@ const DetailStockTransfer = () => {
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${st.class}`}>
                 <ArrowRightLeft size={14} /> {st.label}
               </div>
-              {transfer.status === "pending" && (
+              {transfer.status === "sent" && (
                 <div className="mt-4 space-y-2">
                   <Button
-                    className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
-                    size="sm"
-                    disabled={approveMut.isLoading}
-                    onClick={() => approveMut.mutate()}>
-                    <CheckCircle size={15} /> {t("page.stockTransfer.detail.approve")}
+                    className="w-full gap-2"
+                    onClick={() => receiveMutation.mutate(transfer.id)}>
+                    <CheckCircle size={16} /> {t("page.stockTransfer.detail.receive")}
                   </Button>
                   <Button
-                    className="w-full gap-2"
-                    variant="destructive"
-                    size="sm"
-                    disabled={rejectMut.isLoading}
-                    onClick={() => rejectMut.mutate()}>
-                    <XCircle size={15} /> {t("page.stockTransfer.detail.reject")}
+                    variant="outline"
+                    className="w-full gap-2 text-red-600"
+                    onClick={() => cancelMutation.mutate(transfer.id)}>
+                    <XCircle size={16} /> {t("page.stockTransfer.detail.cancel")}
                   </Button>
                 </div>
               )}

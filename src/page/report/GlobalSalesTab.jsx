@@ -164,7 +164,7 @@ const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}>
-                  {t(`page.report.sales.${p.label.toLowerCase()}`)}
+                  {t(p.dateLabel)}
                 </button>
               ))}
             </div>

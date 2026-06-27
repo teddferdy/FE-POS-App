@@ -25,17 +25,11 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { createOrder } from "@/services/order";
 import { getAllCustomer, addCustomer } from "@/services/customer";
-import { getDiscount, lookupDiscountByCode } from "@/services/discount";
+import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
+import { getAllTypePayment } from "@/services/type-payment";
+import { getMemberById } from "@/services/member";
 import { toast } from "sonner";
-
-const PAYMENT_METHODS = [
-  { id: "cash", label: "Tunai", icon: Banknote, color: "from-emerald-500 to-emerald-600" },
-  { id: "qris", label: "QRIS", icon: Smartphone, color: "from-violet-500 to-violet-600" },
-  { id: "debit", label: "Debit", icon: CreditCard, color: "from-blue-500 to-blue-600" },
-  { id: "credit", label: "Kredit", icon: CreditCard, color: "from-orange-500 to-orange-600" },
-  { id: "other", label: "Lainnya", icon: Wallet, color: "from-slate-500 to-slate-600" }
-];
 
 const CheckoutModal = ({
   items: propItems,
@@ -66,6 +60,8 @@ const CheckoutModal = ({
   const [selectedTier, setSelectedTier] = useState(null);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
+  const [redeemPoints, setRedeemPoints] = useState("");
+  const [memberPoints, setMemberPoints] = useState(0);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -92,16 +88,36 @@ const CheckoutModal = ({
   );
 
   const { data: customersData } = useQuery(["customers"], getAllCustomer, {});
-  const { data: discountsData } = useQuery(["discounts"], getDiscount, {});
+  const { data: discountsData } = useQuery(
+    ["discounts-active"],
+    () => getAllDiscount({ page: 1, limit: 999, statusDiscount: "active" }),
+    { staleTime: 5 * 60 * 1000 }
+  );
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
     { staleTime: 5 * 60 * 1000 }
   );
+  const { data: paymentMethodsData } = useQuery(
+    ["payment-methods-active"],
+    () => getAllTypePayment({ store, status: "active" }),
+    { staleTime: 5 * 60 * 1000 }
+  );
+  const customerId = selectedCustomer?.id || selectedCustomer?._id;
+  const { data: memberData } = useQuery(
+    ["member-points", customerId],
+    () => getMemberById({ id: customerId }),
+    { enabled: !!customerId, retry: false, staleTime: 10 * 1000 }
+  );
 
   const customers = useMemo(() => {
     const data = customersData?.data || customersData || [];
-    return Array.isArray(data) ? data : [];
+    const list = Array.isArray(data) ? data : [];
+    // ponytail: filter active only client-side; BE doesn't support status filter
+    return list.filter((c) => {
+      const s = (c.status || "").toString().toLowerCase();
+      return !s || s === "active" || s === "true";
+    });
   }, [customersData]);
 
   const discounts = useMemo(() => {
@@ -113,6 +129,30 @@ const CheckoutModal = ({
     const data = tiersData?.data || tiersData?.tiers || [];
     return Array.isArray(data) ? data : [];
   }, [tiersData]);
+
+  const paymentMethods = useMemo(() => {
+    const data = paymentMethodsData?.data || paymentMethodsData || [];
+    const list = Array.isArray(data) ? data : [];
+    if (list.length > 0) {
+      return list.map((pm) => ({
+        id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(),
+        label: pm.name,
+        icon: pm.type === "cash" || pm.type === "tunai" ? Banknote
+             : pm.type === "qris" || pm.type === "e-wallet" ? Smartphone
+             : pm.type === "debit" || pm.type === "kartu" ? CreditCard
+             : Wallet,
+        color: "from-primary to-primary/70"
+      }))
+    }
+    // ponytail: fallback when API unavailable
+    return [
+      { id: "cash", label: "Tunai", icon: Banknote, color: "from-emerald-500 to-emerald-600" },
+      { id: "qris", label: "QRIS", icon: Smartphone, color: "from-violet-500 to-violet-600" },
+      { id: "debit", label: "Debit", icon: CreditCard, color: "from-blue-500 to-blue-600" },
+      { id: "credit", label: "Kredit", icon: CreditCard, color: "from-orange-500 to-orange-600" },
+      { id: "other", label: "Lainnya", icon: Wallet, color: "from-slate-500 to-slate-600" }
+    ];
+  }, [paymentMethodsData]);
 
   const taxRate = 0.11;
   const taxAmount = subtotal * taxRate;
@@ -191,6 +231,17 @@ const CheckoutModal = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (customerId) {
+      const pts = memberData?.data?.totalPoints || memberData?.totalPoints || 0;
+      setMemberPoints(Number(pts));
+      setRedeemPoints("");
+    } else {
+      setMemberPoints(0);
+      setRedeemPoints("");
+    }
+  }, [customerId, memberData]);
+
   const mutation = useMutation({
     mutationFn: (payload) => createOrder(payload),
     onSuccess: (res, variables) => {
@@ -267,6 +318,7 @@ const CheckoutModal = ({
       customerName: selectedCustomer?.name || selectedCustomer?.Name || null,
       discountId: selectedDiscount?.id || selectedDiscount?._id || null,
       promoCode: promoCode.trim() || undefined,
+      redeemedPoints: Number(redeemPoints) || 0,
       paymentMethod: paymentMethod,
       cashAmount: paymentMethod === "cash" ? cashAmountNum : total,
       changeAmount: paymentMethod === "cash" ? change : 0,
@@ -294,6 +346,7 @@ const CheckoutModal = ({
     selectedCustomer,
     selectedDiscount,
     promoCode,
+    redeemPoints,
     change,
     mutation,
     cookie,
@@ -362,7 +415,7 @@ const CheckoutModal = ({
                   {t("page.cashier.paymentMethod")}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {PAYMENT_METHODS.map((method) => {
+                  {(paymentMethods.length > 0 ? paymentMethods : []).map((method) => {
                     const Icon = method.icon;
                     const isSelected = paymentMethod === method.id;
                     return (
@@ -601,6 +654,45 @@ const CheckoutModal = ({
                   </p>
                 )}
               </div>
+
+              {memberPoints > 0 && (
+                <div className="bg-violet-500/5 rounded-xl p-4 border border-violet-500/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-muted-foreground">Redeem Poin</label>
+                    <span className="text-xs text-violet-500 font-medium">
+                      {t("common.available", "Tersedia")}: {memberPoints.toLocaleString("id-ID")} pts
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={redeemPoints ? Number(redeemPoints).toLocaleString("id-ID") : ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, "");
+                        const max = Math.min(memberPoints, Math.floor(total / 100));
+                        setRedeemPoints(val ? String(Math.min(Number(val), max)) : "");
+                      }}
+                      placeholder="0 pts"
+                      className="flex-1 h-10 px-4 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors"
+                      inputMode="numeric"
+                    />
+                    <button
+                      onClick={() => {
+                        const max = Math.min(memberPoints, Math.floor(total / 100));
+                        setRedeemPoints(String(max));
+                      }}
+                      className="shrink-0 h-10 px-3 rounded-xl bg-violet-500/10 border border-violet-500/30 text-xs font-medium text-violet-600 hover:bg-violet-500/20 transition-all"
+                    >
+                      Max
+                    </button>
+                  </div>
+                  {redeemPoints > 0 && (
+                    <p className="text-xs text-emerald-500 flex items-center gap-1">
+                      Diskon: Rp {(Number(redeemPoints) * 100).toLocaleString("id-ID")}
+                    </p>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -637,7 +729,7 @@ const CheckoutModal = ({
                 <div className="flex items-center justify-between text-sm mt-1">
                   <span className="text-muted-foreground">{t("page.cashier.paymentMethod")}</span>
                   <span className="font-medium">
-                    {PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.label || "-"}
+                    {paymentMethods.find((m) => m.id === paymentMethod)?.label || (paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1))}
                   </span>
                 </div>
                 {paymentMethod === "cash" && (
