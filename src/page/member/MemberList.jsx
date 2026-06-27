@@ -85,7 +85,7 @@ const MemberList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["members", page, limit, search, tierFilter, sortBy],
     () => getAllMember({ page, limit, nameMember: search }),
-    { keepPreviousData: true }
+    { keepPreviousData: true, staleTime: 0 }
   );
 
   const deleteMutation = useMutation(deleteMember, {
@@ -166,17 +166,26 @@ const MemberList = () => {
       render: (member) => {
         const matchedTier = tiers.find((t) => Number(t.id) === Number(member.tier));
         const tierName = matchedTier?.name || "-";
-        const levelStyle = matchedTier
-          ? { bg: "bg-primary/10 text-primary border border-primary/20", icon: "stars" }
-          : defaultLevel;
+        const color = matchedTier?.color;
         return (
           <span
-            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${levelStyle.bg}`}>
-            <span
-              className="material-symbols-outlined text-sm"
-              style={{ fontVariationSettings: "'FILL' 1" }}>
-              {levelStyle.icon}
-            </span>
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold"
+            style={color ? {
+              backgroundColor: color + "20",
+              color,
+              border: `1px solid ${color}40`
+            } : {
+              backgroundColor: "rgb(0 0 0 / 0.03)",
+              color: "rgb(0 0 0 / 0.5)",
+              border: "1px solid rgb(0 0 0 / 0.08)"
+            }}>
+            {matchedTier && (
+              <span
+                className="material-symbols-outlined text-sm"
+                style={{ fontVariationSettings: "'FILL' 1" }}>
+                stars
+              </span>
+            )}
             {tierName}
           </span>
         );
