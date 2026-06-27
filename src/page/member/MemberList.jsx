@@ -164,7 +164,10 @@ const MemberList = () => {
     {
       header: t("page.member.table.level"),
       render: (member) => {
-        const matchedTier = tiers.find((t) => Number(t.id) === Number(member.tier));
+        const pts = member.totalPoints || member.points || 0;
+        const activeTiers = tiers.filter(t => t.status === "active");
+        const exact = activeTiers.find(t => pts >= t.minPoints && pts <= t.maxPoints);
+        const matchedTier = exact || activeTiers.filter(t => t.minPoints <= pts).sort((a, b) => b.minPoints - a.minPoints)[0] || null;
         const tierName = matchedTier?.name || "-";
         const color = matchedTier?.color;
         return (

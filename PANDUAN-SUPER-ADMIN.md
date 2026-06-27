@@ -1754,6 +1754,16 @@ stateDiagram-v2
 | **Backend** (otak aplikasi)     | [api-bisa-nota.vercel.app](https://api-bisa-nota.vercel.app)   | ✅ Online                                         |
 | **Database** (penyimpanan data) | Neon PostgreSQL                                                | ✅ Online — Data sudah dibersihkan, siap produksi |
 
+### 🔧 Perbaikan & Optimalisasi (27 Juni 2026)
+
+| #  | Perubahan                                                                                                                                                                                                                                | Dampak buat Bisnis                                                                                                                      |
+| -- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Member Tier auto-discount di POS** — pas milih member, diskon tier (misal VVIP 15%) otomatis kehitung di total. Tampil sebagai baris diskon terpisah di ringkasan (contoh: "VVIP (15%) -Rp 5.100").                                    | ✅ Kasir gak perlu manual ngitung diskon member — otomatis, kurangi human error                                                         |
+| 2  | **Tier badge di modal bayar** — nama tier, warna, dan diskon% tampil di bawah field pencarian pelanggan.                                                                                                                                 | ✅ Kasir & pelanggan lihat langsung level member tanpa buka halaman lain                                                                |
+| 3  | **Points-only checkout** — kalau poin nutup total belanja, tombol konfirmasi aktif & gak perlu milih metode bayar. Sistem catat sebagai pembayaran "points".                                                                             | ✅ Pelanggan bisa bayar full pake poin — alur lebih cepet, gak perlu uang tunai/kartu                                                   |
+| 4  | **Dynamic tier dari totalPoints** — tier badge sekarang dihitung dari `totalPoints` member, bukan dari foreign key `member.tier` yang bisa stale. Pake fallback cari tier tertinggi yang poinnya mencukupi (handle gap antar range tier). | ✅ Badge level selalu akurat meskipun poin berubah (misal: setelah redeem, turun dari VVIP ke Gold)                                     |
+| 5  | **Cash validation pake remainingTotal** — validasi "Uang tunai tidak mencukupi" pake nilai setelah diskon & poin, bukan total kotor.                                                                                                      | ✅ Kasir gak dapat error palsu pas pelanggan bayar pake poin + cash                                                                     |
+
 ### 📋 Yang Lagi Dikerjakan
 
 | Fitur                            | Rencana                                                                 |

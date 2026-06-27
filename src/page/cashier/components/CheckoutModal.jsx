@@ -177,12 +177,26 @@ const CheckoutModal = ({
 
   const taxRate = 0.11;
   const taxAmount = subtotal * taxRate;
+  const matchedTier = useMemo(() => {
+    if (!memberPoints || memberTiers.length === 0) return null;
+    const active = memberTiers.filter(t => t.status === "active");
+    const exact = active.find(t => memberPoints >= t.minPoints && memberPoints <= t.maxPoints);
+    if (exact) return exact;
+    // ponytail: no exact range match; pick highest tier whose minPoints we meet
+    return active
+      .filter(t => t.minPoints <= memberPoints)
+      .sort((a, b) => b.minPoints - a.minPoints)[0] || null;
+  }, [memberPoints, memberTiers]);
+  const tierDiscountValue = matchedTier?.discountPercent > 0
+    ? subtotal * (matchedTier.discountPercent / 100)
+    : 0;
   const discountValue = selectedDiscount
     ? selectedDiscount.type === "percent"
       ? subtotal * (selectedDiscount.value / 100)
       : selectedDiscount.value
     : discountAmount;
-  const total = Math.max(0, subtotal + taxAmount - discountValue);
+  const totalDiscount = discountValue + tierDiscountValue;
+  const total = Math.max(0, subtotal + taxAmount - totalDiscount);
   const pointsDiscount = Number(redeemPoints) || 0;
   const remainingTotal = Math.max(0, total - pointsDiscount);
   const cashAmountNum = parseFloat(cashAmount) || 0;
@@ -342,15 +356,16 @@ const CheckoutModal = ({
   }, [newCustomerName, newCustomerPhone, selectedTier, addCustomerMutation]);
 
   const handleSubmit = useCallback(() => {
-    if (!paymentMethod) {
+    if (remainingTotal > 0 && !paymentMethod) {
       toast.error(t("page.cashier.selectPayment"));
       return;
     }
-    if (paymentMethod === "cash" && cashAmountNum < remainingTotal) {
+    if (remainingTotal > 0 && paymentMethod === "cash" && cashAmountNum < remainingTotal) {
       toast.error(t("page.cashier.insufficientCash"));
       return;
     }
 
+    const method = paymentMethod || "points";
     const payload = {
       store: store,
       cashierId: cashierId || cookie?.user?.id || cookie?.user?.ID,
@@ -360,9 +375,9 @@ const CheckoutModal = ({
       discountId: selectedDiscount?.id || selectedDiscount?._id || null,
       promoCode: promoCode.trim() || undefined,
       redeemedPoints: Number(redeemPoints) || 0,
-      paymentMethod: paymentMethod,
-      cashAmount: paymentMethod === "cash" ? cashAmountNum : total,
-      changeAmount: paymentMethod === "cash" ? change : 0,
+      paymentMethod: method,
+      cashAmount: method === "cash" ? cashAmountNum : total,
+      changeAmount: method === "cash" ? change : 0,
       items: items.map((item) => ({
         product: item.idProduct,
         productName: item.nameProduct,
@@ -380,6 +395,7 @@ const CheckoutModal = ({
     paymentMethod,
     cashAmountNum,
     total,
+    remainingTotal,
     items,
     cashierId,
     cashierName,
@@ -405,7 +421,8 @@ const CheckoutModal = ({
     return [base, base + 10000, base + 20000, base + 50000, base + 100000];
   }, [total]);
 
-  const canSubmit = paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal);
+  const canSubmit = remainingTotal === 0
+    || (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal));
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -432,16 +449,32 @@ const CheckoutModal = ({
                   <span className="text-muted-foreground">{t("page.cashier.tax")} (11%)</span>
                   <span className="font-medium">Rp {formatPrice(taxAmount)}</span>
                 </div>
-                {discountValue > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <Percent size={12} />
-                      {t("page.cashier.discount")}
-                    </span>
-                    <span className="font-medium text-emerald-500">
-                      -Rp {formatPrice(discountValue)}
-                    </span>
-                  </div>
+                {totalDiscount > 0 && (
+                  <>
+                    {tierDiscountValue > 0 && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-emerald-500 flex items-center gap-1">
+                          <Percent size={12} />
+                          {matchedTier.name} ({matchedTier.discountPercent}%)
+                        </span>
+                        <span className="font-medium text-emerald-500">
+                          -Rp {formatPrice(tierDiscountValue)}
+                        </span>
+                      </div>
+                    )}
+                    {discountValue > 0 && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-emerald-500 flex items-center gap-1">
+                          <Percent size={12} />
+                          {selectedDiscount?.nameDiscount || selectedDiscount?.name || t("page.cashier.discount")}
+                          {selectedDiscount && (selectedDiscount.type === "percent" && ` (${selectedDiscount.value}%)`)}
+                        </span>
+                        <span className="font-medium text-emerald-500">
+                          -Rp {formatPrice(discountValue)}
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="border-t border-border/40 pt-1.5 mt-1.5">
                   <div className="flex items-center justify-between">
@@ -620,6 +653,23 @@ const CheckoutModal = ({
                   document.body
                 )}
               </div>
+
+              {selectedCustomer && matchedTier && (
+                <div className="flex items-center gap-2 px-1 -mt-1">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: matchedTier.color || "#f59e0b" }} />
+                  <span className="text-xs font-semibold">{matchedTier.name}</span>
+                  {matchedTier.discountPercent > 0 && (
+                    <span className="text-xs text-emerald-500 font-medium">
+                      {matchedTier.discountPercent}% {t("page.cashier.discount")}
+                    </span>
+                  )}
+                  {memberPoints > 0 && (
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {memberPoints.toLocaleString("id-ID")} pts
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div ref={discountSearchRef} className="relative">
                 <label className="block text-sm font-medium mb-1.5 text-muted-foreground">
