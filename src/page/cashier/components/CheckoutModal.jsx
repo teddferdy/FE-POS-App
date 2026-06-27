@@ -99,7 +99,11 @@ const CheckoutModal = ({
     [propSubtotal, items]
   );
 
-  const { data: customersData } = useQuery(["customers"], getAllCustomer, {});
+  const { data: customersData } = useQuery(
+    ["customers"],
+    () => getAllCustomer({ page: 1, limit: 999 }),
+    { staleTime: 5 * 60 * 1000 }
+  );
   const { data: discountsData } = useQuery(
     ["discounts-active"],
     () => getAllDiscount({ page: 1, limit: 999, statusDiscount: "active" }),
@@ -146,15 +150,20 @@ const CheckoutModal = ({
     const data = paymentMethodsData?.data || paymentMethodsData || [];
     const list = Array.isArray(data) ? data : [];
     if (list.length > 0) {
-      return list.map((pm) => ({
-        id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(),
-        label: pm.name,
-        icon: pm.type === "cash" || pm.type === "tunai" ? Banknote
-             : pm.type === "qris" || pm.type === "e-wallet" ? Smartphone
-             : pm.type === "debit" || pm.type === "kartu" ? CreditCard
-             : Wallet,
-        color: "from-primary to-primary/70"
-      }))
+      return list
+        .filter((pm) => {
+          const s = (pm.status || '').toString().toLowerCase();
+          return !s || s === 'active' || s === 'true';
+        })
+        .map((pm) => ({
+          id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(),
+          label: pm.name,
+          icon: pm.type === "cash" || pm.type === "tunai" ? Banknote
+               : pm.type === "qris" || pm.type === "e-wallet" ? Smartphone
+               : pm.type === "debit" || pm.type === "kartu" ? CreditCard
+               : Wallet,
+          color: "from-primary to-primary/70"
+        }))
     }
     // ponytail: fallback when API unavailable
     return [

@@ -1,7 +1,7 @@
 import { axiosInstance } from ".";
 
-export const getAllCustomer = async () => {
-  const { data, status } = await axiosInstance.get("/customer/get-all-customer");
+export const getAllCustomer = async (params = {}) => {
+  const { data, status } = await axiosInstance.get("/member/get-member", { params });
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
@@ -13,7 +13,7 @@ export const getCustomerById = async (id) => {
 };
 
 export const addCustomer = async (payload) => {
-  const { data, status } = await axiosInstance.post("/customer/add-customer", payload);
+  const { data, status } = await axiosInstance.post("/member/add-new-member", payload);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
   return data;
 };
