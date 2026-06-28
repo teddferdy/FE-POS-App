@@ -188,6 +188,7 @@ const CustomerDisplay = React.lazy(() => import("./page/customer-display"));
 const ReservationList = React.lazy(() => import("./page/reservation/ReservationList"));
 const AddReservation = React.lazy(() => import("./page/reservation/AddReservation"));
 const EditReservation = React.lazy(() => import("./page/reservation/EditReservation"));
+const DetailReservation = React.lazy(() => import("./page/reservation/DetailReservation"));
 
 // Profile
 const ProfilePage = React.lazy(() => import("./page/profile/ProfilePage"));
@@ -301,6 +302,7 @@ function App() {
             <Route path="/reservation" element={withLayout(<ReservationList />)} />
             <Route path="/add-reservation" element={withLayout(<AddReservation />)} />
             <Route path="/edit-reservation" element={withLayout(<EditReservation />)} />
+            <Route path="/reservation/:id" element={withLayout(<DetailReservation />)} />
 
             {/* Super Admin & Admin Routes */}
 

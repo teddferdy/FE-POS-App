@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,6 +44,7 @@ const formSchema = z.object({
 const AddReservation = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
   const [stores, setStores] = useState([]);
   const [availableTables, setAvailableTables] = useState([]);
@@ -66,7 +67,9 @@ const AddReservation = () => {
   });
 
   useEffect(() => {
-    getAllLocation().then((res) => setStores(res.data || [])).catch(() => {});
+    getAllLocation()
+      .then((res) => setStores(res.data || []))
+      .catch(() => {});
   }, []);
 
   const selectedStore = form.watch("store");
@@ -95,7 +98,10 @@ const AddReservation = () => {
   };
 
   const createMutation = useMutation(createReservation, {
-    onSuccess: () => navigate("/reservation"),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reservations"]);
+      navigate("/reservation");
+    },
     onError: (err) =>
       toast.error("Gagal", {
         description: err?.response?.data?.message || err.message || "Gagal membuat reservasi"
@@ -299,13 +305,9 @@ const AddReservation = () => {
                           Pilih toko terlebih dahulu
                         </p>
                       ) : loadingTables ? (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Memuat meja...
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Memuat meja...</p>
                       ) : availableTables.length === 0 ? (
-                        <p className="text-xs text-destructive mt-1">
-                          Meja tidak tersedia
-                        </p>
+                        <p className="text-xs text-destructive mt-1">Meja tidak tersedia</p>
                       ) : null}
                       <FormMessage />
                     </FormItem>

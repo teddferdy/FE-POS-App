@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X, Eye } from "lucide-react";
 import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
@@ -46,26 +46,26 @@ const ReservationList = () => {
   const [dateFilter, setDateFilter] = useState(undefined);
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [confirmTarget, setConfirmTarget] = useState(null);
   const [stores, setStores] = useState([]);
   const storeMap = Object.fromEntries(stores.map((s) => [String(s.id), s.name]));
 
   useEffect(() => {
-    getAllLocation().then((res) => setStores(res.data || [])).catch(() => {});
+    getAllLocation()
+      .then((res) => setStores(res.data || []))
+      .catch(() => {});
   }, []);
 
-  const statusMutation = useMutation(
-    ({ id, status }) => updateReservation({ id, status }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["reservations"]);
-        toast.success(t("common.success"));
-      },
-      onError: (err) =>
-        toast.error(t("common.failed"), {
-          description: err?.response?.data?.message || err.message
-        })
-    }
-  );
+  const statusMutation = useMutation(({ id, status }) => updateReservation({ id, status }), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reservations"]);
+      toast.success(t("common.success"));
+    },
+    onError: (err) =>
+      toast.error(t("common.failed"), {
+        description: err?.response?.data?.message || err.message
+      })
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["reservations", page, limit, dateFilter, statusFilter],
@@ -127,7 +127,8 @@ const ReservationList = () => {
     },
     {
       header: t("page.reservation.columns.table"),
-      render: (item) => (item.tableId ? `${t("page.reservation.tablePrefix")} ${item.tableId}` : "-")
+      render: (item) =>
+        item.tableId ? `${t("page.reservation.tablePrefix")} ${item.tableId}` : "-"
     },
     {
       header: t("page.reservation.columns.date"),
@@ -184,7 +185,13 @@ const ReservationList = () => {
                 size="icon"
                 className="h-8 w-8 text-green-600"
                 disabled={statusMutation.isLoading}
-                onClick={() => statusMutation.mutate({ id: item.id, status: "confirmed" })}>
+                onClick={() =>
+                  setConfirmTarget({
+                    id: item.id,
+                    status: "confirmed",
+                    customerName: item.customerName
+                  })
+                }>
                 <Check size={15} />
               </Button>
               <Button
@@ -192,11 +199,24 @@ const ReservationList = () => {
                 size="icon"
                 className="h-8 w-8 text-red-600"
                 disabled={statusMutation.isLoading}
-                onClick={() => statusMutation.mutate({ id: item.id, status: "cancelled" })}>
+                onClick={() =>
+                  setConfirmTarget({
+                    id: item.id,
+                    status: "cancelled",
+                    customerName: item.customerName
+                  })
+                }>
                 <X size={15} />
               </Button>
             </>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => navigate(`/reservation/${item.id}`)}>
+            <Eye size={15} />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -243,10 +263,30 @@ const ReservationList = () => {
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard label={t("page.reservation.stats.total")} value={stats.total ?? total} icon="calendar_month" variant="default" />
-            <StatCard label={t("page.reservation.status.pending")} value={stats.pending ?? 0} icon="pending" variant="draft" />
-            <StatCard label={t("page.reservation.status.confirmed")} value={stats.confirmed ?? 0} icon="check_circle" variant="active" />
-            <StatCard label={t("page.reservation.status.cancelled")} value={stats.cancelled ?? 0} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.reservation.stats.total")}
+              value={stats.total ?? total}
+              icon="calendar_month"
+              variant="default"
+            />
+            <StatCard
+              label={t("page.reservation.status.pending")}
+              value={stats.pending ?? 0}
+              icon="pending"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.reservation.status.confirmed")}
+              value={stats.confirmed ?? 0}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("page.reservation.status.cancelled")}
+              value={stats.cancelled ?? 0}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="w-full sm:w-60">
@@ -286,6 +326,28 @@ const ReservationList = () => {
           </div>
         </>
       )}
+
+      <Modal
+        type="confirm"
+        open={!!confirmTarget}
+        onOpenChange={(open) => !open && setConfirmTarget(null)}
+        title={
+          confirmTarget?.status === "confirmed"
+            ? t("page.reservation.confirmTitle")
+            : t("page.reservation.cancelTitle")
+        }
+        description={
+          confirmTarget?.status === "confirmed"
+            ? t("page.reservation.confirmDesc", { name: confirmTarget?.customerName || "" })
+            : t("page.reservation.cancelDesc", { name: confirmTarget?.customerName || "" })
+        }
+        confirmText={t("common.yes")}
+        loading={statusMutation.isLoading}
+        onConfirm={() => {
+          statusMutation.mutate({ id: confirmTarget.id, status: confirmTarget.status });
+          setConfirmTarget(null);
+        }}
+      />
 
       <Modal
         type="confirm"

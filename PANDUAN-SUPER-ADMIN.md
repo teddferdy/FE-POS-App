@@ -1248,33 +1248,48 @@ flowchart TD
 flowchart TD
     RES_LIST[Daftar Reservasi] -->|Tambah| RES_ADD[Buat Reservasi Baru]
     RES_LIST -->|Edit| RES_EDIT[Edit Reservasi]
-    RES_LIST -->|Detail| RES_DETAIL[Lihat detail]
+    RES_LIST -->|Detail| RES_DETAIL[Halaman Detail Reservasi]
 
-    RES_ADD --> FORM_RES[Form Reservasi:<br/>1. Pilih Toko<br/>2. Pilih Tanggal & Jam<br/>3. Pilih Meja: lihat ketersediaan<br/>4. Nama Pelanggan<br/>5. Jumlah Orang<br/>6. No Telepon<br/>7. Catatan]
+    RES_ADD --> FORM_RES[Form Reservasi:<br/>1. Pilih Toko<br/>2. Pilih Tanggal & Jam<br/>3. Pilih Meja: lihat ketersediaan<br/>4. Nama Pelanggan<br/>5. Jumlah Orang<br/>6. No Telepon & Email<br/>7. Catatan]
 
     FORM_RES --> CEK_MEJA{Cek ketersediaan<br/>meja}
     CEK_MEJA -->|Tersedia| TERSEDIA[Meja tersedia ✅]
     CEK_MEJA -->|Terbooking| SARAN_MEJA[Sarankan meja lain<br/>atau jam alternatif]
     SARAN_MEJA --> FORM_RES
 
-    TERSEDIA --> SAVE_RES[Simpan Reservasi<br/>status: Confirmed]
-    SAVE_RES --> NOTIF_RES[Notifikasi:<br/>Reservasi tercatat]
+    TERSEDIA --> SAVE_RES[Simpan Reservasi<br/>status: Pending]
 
-    RES_DETAIL --> TAMPIL_RES[Detail:<br/>- Nama & Telepon<br/>- Tanggal & Jam<br/>- Meja & Jumlah Orang<br/>- Status<br/>- Catatan]
+    SAVE_RES --> KONFIRMASI_DULU{Dari daftar,<br/>klik Confirm ✅}
+    KONFIRMASI_DULU --> MODAL_KONFIR[Muncul modal konfirmasi]
+    MODAL_KONFIR -->|Ya| STATUS_JADI[Status: Confirmed<br/>Meja otomatis: Reserved]
+
+    RES_LIST -->|Klik Cancel ❌| MODAL_BATAL[Muncul modal batalkan]
+    MODAL_BATAL -->|Ya| STATUS_BATAL[Status: Cancelled<br/>Meja otomatis: Available]
+
+    RES_LIST -->|Klik Detail 👁️| RES_DETAIL
+
+    RES_DETAIL --> TAMPIL_RES[Halaman Detail:<br/>- Nama, Telepon, Email<br/>- Tanggal & Jam<br/>- Nama Meja & Toko<br/>- Jumlah Orang & Catatan<br/>- Status & Audit Trail<br/>- Tombol Kirim WA]
+
+    TAMPIL_RES -->|Klik Kirim WA| WA_BUKA[WA otomatis terbuka<br/>dengan pesan konfirmasi<br/>ke nomor pelanggan]
+
+    %% Update status dari Table List
+    TABEL_LIST[Halaman Table List] -->|Klik Set Available 🔄| MODAL_AVAIL[Muncul modal<br/>Set Meja Tersedia]
+    MODAL_AVAIL -->|Ya| TABEL_AVAIL[Meja: Available<br/>Reservasi: Completed ✅]
+
+    NOTIF_RES --> DATANG{Ketika pelanggan<br/>datang}
+    DATANG --> UPDATE_STATUS[Update status:<br/>Selesai / No Show]
 
     RES_EDIT --> FORM_EDIT[Ubah data reservasi]
     FORM_EDIT --> SAVE_EDIT[Simpan perubahan ✅]
-
-    %% Saat pelanggan datang
-    NOTIF_RES --> DATANG{Ketika pelanggan<br/>datang}
-    DATANG --> UPDATE_STATUS[Update status:<br/>Duduk / Selesai / No Show]
 ```
 
 **Yang perlu kamu tau:**
 
 - **Cek ketersediaan real-time** — kalau meja udah dibooking, sistem kasih tau
-- Status reservasi: Confirmed → Duduk → Selesai / No Show
-- Terintegrasi dengan modul **Meja** — reservasi otomatis booking meja
+- **Konfirmasi dengan modal** — Confirm & Cancel pakai modal konfirmasi, gak langsung eksekusi
+- **WA Confirmation** — dari halaman detail, kirim konfirmasi via WhatsApp ke nomor pelanggan (hanya untuk status Confirmed)
+- **Table List terintegrasi** — meja otomatis Reserved saat dikonfirmasi, balik Available saat dibatalkan/dihapus. Admin juga bisa手动 set Available dari Table List
+- Status reservasi: Pending → Confirmed (Reserved) → Completed / Cancelled / No Show
 
 ---
 
@@ -1763,6 +1778,19 @@ stateDiagram-v2
 | 3  | **Points-only checkout** — kalau poin nutup total belanja, tombol konfirmasi aktif & gak perlu milih metode bayar. Sistem catat sebagai pembayaran "points".                                                                             | ✅ Pelanggan bisa bayar full pake poin — alur lebih cepet, gak perlu uang tunai/kartu                                                   |
 | 4  | **Dynamic tier dari totalPoints** — tier badge sekarang dihitung dari `totalPoints` member, bukan dari foreign key `member.tier` yang bisa stale. Pake fallback cari tier tertinggi yang poinnya mencukupi (handle gap antar range tier). | ✅ Badge level selalu akurat meskipun poin berubah (misal: setelah redeem, turun dari VVIP ke Gold)                                     |
 | 5  | **Cash validation pake remainingTotal** — validasi "Uang tunai tidak mencukupi" pake nilai setelah diskon & poin, bukan total kotor.                                                                                                      | ✅ Kasir gak dapat error palsu pas pelanggan bayar pake poin + cash                                                                     |
+
+### 🔧 Perbaikan & Fitur Baru (28 Juni 2026)
+
+| #  | Perubahan                                                                                                                                                                                                                                                                                    | Dampak buat Bisnis                                                                                                          |
+| -- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Reservasi — confirm/cancel pakai modal** — klik Confirm/Cancel sekarang muncul konfirmasi modal dulu, gak langsung eksekusi.                                                                                                                                                               | ✅ Admin gak salah klik — butuh konfirmasi ulang sebelum status berubah                                                     |
+| 2  | **Reservasi — table status sync** — pas reservasi dikonfirmasi, meja otomatis jadi Reserved. Pas dibatalkan/dihapus/di-set Available, meja balik ke Available.                                                                                                                                 | ✅ Meja selalu sinkron sama reservasi — gak perlu manual 2x                                                                 |
+| 3  | **Reservasi — halaman detail + WA** — halaman detail `/reservation/:id` lengkap (nama, meja, toko, audit trail). Tombol Kirim WhatsApp buat konfirmasi ke nomor pelanggan (hanya untuk status Confirmed).                                                                                   | ✅ Admin lihat detail reservasi lengkap & kirim WA konfirmasi langsung dari aplikasi                                        |
+| 4  | **Table List — Set Available** — tombol 🔄 di baris meja status Reserved/Occupied. Klik → konfirmasi → meja Available & reservasi otomatis Completed.                                                                                                                                        | ✅ Admin bisa benerin status meja kalo pelanggan no-show atau meja kelar dipake                                            |
+| 5  | **Reservasi — store filter on add** — pas bikin reservasi, pilih toko dulu baru muncul meja yang tersedia.                                                                                                                                                                                   | ✅ Admin gak bingung meja punya toko mana                                                                                   |
+| 6  | **Table List — show reservation** — status Reserved di tabel meja sekarang nampilin nama pelanggan + jam booking.                                                                                                                                                                            | ✅ Admin tau siapa yang booking meja tertentu                                                                               |
+| 7  | **Reservasi — auto-refresh setelah create** — setelah bikin reservasi, daftar reservasi langsung refetch data terbaru.                                                                                                                                                                      | ✅ Data selalu up-to-date                                                                                                   |
+| 8  | **Calendar icon fix** — icon calendar di stat card pake `calendar_month` (Material Symbols) yang valid, bukan teks fallback.                                                                                                                                                                 | ✅ Icon tampil bener, gak jadi tulisan "calender"                                                                           |
 
 ### 📋 Yang Lagi Dikerjakan
 

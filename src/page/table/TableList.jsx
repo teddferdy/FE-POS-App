@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from "react";
-import {
-  useQuery,
-  useMutation
-  // useQueryClient
-} from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store } from "lucide-react";
-import { getTablesByStore, addTable, editTable, deleteTable } from "@/services/table";
+import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store, RotateCcw } from "lucide-react";
+import {
+  getTablesByStore,
+  addTable,
+  editTable,
+  deleteTable,
+  updateTableStatus
+} from "@/services/table";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +39,7 @@ const statusColors = {
 const TableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -72,6 +74,19 @@ const TableList = () => {
     onSuccess: () => {
       toast.success(t("common.success"), { description: t("page.table.toast.deleted") });
       refetch();
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
+    }
+  });
+
+  const [statusTarget, setStatusTarget] = useState(null);
+
+  const statusMutation = useMutation(({ id }) => updateTableStatus(id, { status: "available" }), {
+    onSuccess: () => {
+      toast.success(t("common.success"));
+      setStatusTarget(null);
+      queryClient.invalidateQueries(["tables"]);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
@@ -141,10 +156,23 @@ const TableList = () => {
     {
       header: t("common.status"),
       render: (row) => (
-        <span
-          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[row.status] || statusColors.available}`}>
-          {t(`page.table.status.${row.status || "available"}`)}
-        </span>
+        <div className="flex flex-col gap-1">
+          <span
+            className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${statusColors[row.status] || statusColors.available}`}>
+            {t(`page.table.status.${row.status || "available"}`)}
+          </span>
+          {row.activeReservation && (
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <div className="font-medium text-foreground">
+                {row.activeReservation.customerName}
+              </div>
+              <div>
+                {row.activeReservation.startTime?.slice(0, 5)} -{" "}
+                {row.activeReservation.endTime?.slice(0, 5)}
+              </div>
+            </div>
+          )}
+        </div>
       )
     },
     {
@@ -152,6 +180,16 @@ const TableList = () => {
       align: "right",
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
+          {(row.status === "reserved" || row.status === "occupied") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600"
+              title={t("page.table.setAvailable")}
+              onClick={() => setStatusTarget(row)}>
+              <RotateCcw size={15} />
+            </Button>
+          )}
           {canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
@@ -359,6 +397,19 @@ const TableList = () => {
             onConfirm={() => {
               deleteMutation.mutate(deleteTarget.id);
               setDeleteTarget(null);
+            }}
+          />
+
+          <Modal
+            type="confirm"
+            open={!!statusTarget}
+            onOpenChange={(o) => !o && setStatusTarget(null)}
+            title={t("page.table.setAvailableTitle")}
+            description={t("page.table.setAvailableDesc", { name: statusTarget?.name || "" })}
+            confirmText={t("common.yes")}
+            loading={statusMutation.isLoading}
+            onConfirm={() => {
+              statusMutation.mutate({ id: statusTarget.id });
             }}
           />
 
