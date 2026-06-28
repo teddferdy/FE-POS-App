@@ -7,7 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
-import { createReservation, getAvailableTables } from "@/services/reservation";
+import { createReservation } from "@/services/reservation";
+import { getAllLocation } from "@/services/location";
+import { getTablesByStore } from "@/services/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
@@ -31,6 +33,7 @@ const formSchema = z.object({
   customerPhone: z.string().max(14).optional().or(z.literal("")),
   customerEmail: z.string().optional().or(z.literal("")),
   guestCount: z.coerce.number().min(1, "Minimal 1 tamu"),
+  store: z.string().min(1, "Pilih toko terlebih dahulu"),
   reservationDate: z.date({ required_error: "Tanggal reservasi wajib diisi" }),
   startTime: z.string().min(1, "Jam mulai wajib diisi"),
   endTime: z.string().optional().or(z.literal("")),
@@ -42,7 +45,7 @@ const AddReservation = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
-  const [successModal, setSuccessModal] = useState(false);
+  const [stores, setStores] = useState([]);
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
 
@@ -53,6 +56,7 @@ const AddReservation = () => {
       customerPhone: "",
       customerEmail: "",
       guestCount: 2,
+      store: "",
       reservationDate: undefined,
       startTime: "",
       endTime: "",
@@ -61,24 +65,27 @@ const AddReservation = () => {
     }
   });
 
+  useEffect(() => {
+    getAllLocation().then((res) => setStores(res.data || [])).catch(() => {});
+  }, []);
+
+  const selectedStore = form.watch("store");
   const reservationDate = form.watch("reservationDate");
   const startTime = form.watch("startTime");
   const endTime = form.watch("endTime");
 
   useEffect(() => {
-    if (reservationDate && startTime) {
-      loadAvailableTables();
+    if (selectedStore) {
+      loadTablesByStore();
+    } else {
+      setAvailableTables([]);
     }
-  }, [reservationDate, startTime, endTime]);
+  }, [selectedStore]);
 
-  const loadAvailableTables = async () => {
+  const loadTablesByStore = async () => {
     setLoadingTables(true);
     try {
-      const res = await getAvailableTables({
-        date: reservationDate ? format(reservationDate, "yyyy-MM-dd") : "",
-        startTime,
-        endTime: endTime || undefined
-      });
+      const res = await getTablesByStore({ location: selectedStore });
       setAvailableTables(res.data || []);
     } catch (e) {
       setAvailableTables([]);
@@ -88,7 +95,7 @@ const AddReservation = () => {
   };
 
   const createMutation = useMutation(createReservation, {
-    onSuccess: () => setSuccessModal(true),
+    onSuccess: () => navigate("/reservation"),
     onError: (err) =>
       toast.error("Gagal", {
         description: err?.response?.data?.message || err.message || "Gagal membuat reservasi"
@@ -97,6 +104,7 @@ const AddReservation = () => {
 
   const onSubmit = (values) => {
     const payload = {
+      store: Number(values.store),
       customerName: values.customerName,
       customerPhone: values.customerPhone || null,
       customerEmail: values.customerEmail || null,
@@ -233,6 +241,30 @@ const AddReservation = () => {
                 />
                 <FormField
                   control={form.control}
+                  name="store"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Toko <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih toko" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stores.map((s) => (
+                            <SelectItem key={s.id} value={String(s.id)}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="tableId"
                   render={({ field }) => (
                     <FormItem>
@@ -245,16 +277,34 @@ const AddReservation = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">Tidak pilih meja</SelectItem>
-                          {availableTables.map((t) => (
-                            <SelectItem key={t.id} value={String(t.id)}>
-                              {t.name} (Kap. {t.capacity})
-                            </SelectItem>
-                          ))}
+                          {availableTables.map((t) => {
+                            const unavailable = t.status !== "available";
+                            return (
+                              <SelectItem
+                                key={t.id}
+                                value={String(t.id)}
+                                disabled={unavailable}
+                                className={unavailable ? "text-muted-foreground" : ""}>
+                                {t.name} (Kap. {t.capacity})
+                                {unavailable && (
+                                  <span className="text-destructive ml-1">- Not Available</span>
+                                )}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
-                      {!reservationDate || !startTime ? (
+                      {!selectedStore ? (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Pilih tanggal dan jam untuk melihat meja tersedia
+                          Pilih toko terlebih dahulu
+                        </p>
+                      ) : loadingTables ? (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Memuat meja...
+                        </p>
+                      ) : availableTables.length === 0 ? (
+                        <p className="text-xs text-destructive mt-1">
+                          Meja tidak tersedia
                         </p>
                       ) : null}
                       <FormMessage />
@@ -293,15 +343,6 @@ const AddReservation = () => {
           title="Batalkan?"
           description="Perubahan yang belum disimpan akan hilang."
           confirmText="Ya, Batalkan"
-          onConfirm={() => navigate("/reservation")}
-        />
-        <Modal
-          type="success"
-          open={successModal}
-          onOpenChange={setSuccessModal}
-          title="Berhasil!"
-          description="Reservasi berhasil dibuat."
-          confirmText="Kembali ke Daftar"
           onConfirm={() => navigate("/reservation")}
         />
       </div>

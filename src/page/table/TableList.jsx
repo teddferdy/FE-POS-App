@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useQuery,
   useMutation
@@ -56,8 +56,11 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation);
-  const locations = locationsData?.data || [];
+  const { data: locationsRaw } = useQuery(["allLocations"], getAllLocation);
+  const locations = useMemo(() => {
+    const raw = locationsRaw?.data || locationsRaw || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [locationsRaw]);
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
@@ -123,6 +126,13 @@ const TableList = () => {
     {
       header: t("page.table.table.name"),
       render: (row) => row.name || row.number || `${t("page.table.table.name")} ${row.id}`
+    },
+    {
+      header: t("page.table.form.store"),
+      render: (row) => {
+        const loc = locations.find((l) => l.id === row.store || l.store === row.store);
+        return loc?.name || row.store || "-";
+      }
     },
     {
       header: t("page.table.table.capacity"),

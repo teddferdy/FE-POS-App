@@ -30,6 +30,7 @@ import { getAllDiscount, lookupDiscountByCode } from "@/services/discount";
 import { getAllMemberTier } from "@/services/member-tier";
 import { getAllTypePayment } from "@/services/type-payment";
 import { getMemberById } from "@/services/member";
+import { getTableAvailability } from "@/services/table";
 import { toast } from "sonner";
 
 const CheckoutModal = ({
@@ -63,6 +64,8 @@ const CheckoutModal = ({
   const [promoLoading, setPromoLoading] = useState(false);
   const [redeemPoints, setRedeemPoints] = useState("");
   const [memberPoints, setMemberPoints] = useState(0);
+  const [orderType, setOrderType] = useState("take-away");
+  const [selectedTable, setSelectedTable] = useState(null);
   const cashInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const discountSearchRef = useRef(null);
@@ -119,6 +122,16 @@ const CheckoutModal = ({
     () => getAllTypePayment({ store, status: "active" }),
     { staleTime: 5 * 60 * 1000 }
   );
+  const { data: tablesData } = useQuery(
+    ["table-availability", store],
+    () => getTableAvailability({ location: store }),
+    { enabled: !!store, staleTime: 30_000 }
+  );
+  const availableTables = useMemo(() => {
+    const data = tablesData?.data?.tables || [];
+    return Array.isArray(data) ? data.filter((t) => t.status === "available") : [];
+  }, [tablesData]);
+
   const customerId = selectedCustomer?.id || selectedCustomer?._id;
   const { data: memberData } = useQuery(
     ["member-points", customerId],
@@ -356,6 +369,10 @@ const CheckoutModal = ({
   }, [newCustomerName, newCustomerPhone, selectedTier, addCustomerMutation]);
 
   const handleSubmit = useCallback(() => {
+    if (orderType === "dine-in" && !selectedTable) {
+      toast.error(t("page.cashier.selectTable", "Pilih meja terlebih dahulu"));
+      return;
+    }
     if (remainingTotal > 0 && !paymentMethod) {
       toast.error(t("page.cashier.selectPayment"));
       return;
@@ -376,6 +393,8 @@ const CheckoutModal = ({
       promoCode: promoCode.trim() || undefined,
       redeemedPoints: Number(redeemPoints) || 0,
       paymentMethod: method,
+      source: "pos",
+      tableId: orderType === "dine-in" ? selectedTable?.id || null : null,
       cashAmount: method === "cash" ? cashAmountNum : total,
       changeAmount: method === "cash" ? change : 0,
       items: items.map((item) => ({
@@ -405,6 +424,8 @@ const CheckoutModal = ({
     promoCode,
     redeemPoints,
     change,
+    orderType,
+    selectedTable,
     mutation,
     cookie,
     t
@@ -482,6 +503,50 @@ const CheckoutModal = ({
                     <span className="font-bold text-lg text-primary">Rp {formatPrice(total)}</span>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-muted-foreground">
+                  {t("page.cashier.modal.orderType")}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setOrderType("dine-in"); setSelectedTable(null); }}
+                    className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all ${
+                      orderType === "dine-in"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border/50 bg-card/50 hover:border-border"
+                    }`}>
+                    {t("page.cashier.modal.dineIn")}
+                  </button>
+                  <button
+                    onClick={() => { setOrderType("take-away"); setSelectedTable(null); }}
+                    className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all ${
+                      orderType === "take-away"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border/50 bg-card/50 hover:border-border"
+                    }`}>
+                    {t("page.cashier.modal.takeAway")}
+                  </button>
+                </div>
+                {orderType === "dine-in" && (
+                  <div className="mt-2">
+                    <select
+                      value={selectedTable?.id || ""}
+                      onChange={(e) => {
+                        const t = availableTables.find((tbl) => tbl.id === Number(e.target.value));
+                        setSelectedTable(t || null);
+                      }}
+                      className="w-full h-10 px-3 text-sm rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors">
+                      <option value="">{t("page.cashier.selectTable", "Pilih Meja")}</option>
+                      {availableTables.map((tbl) => (
+                        <option key={tbl.id} value={tbl.id}>
+                          {tbl.name} ({t("page.cashier.capacity", "Kapasitas")}: {tbl.capacity})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div>

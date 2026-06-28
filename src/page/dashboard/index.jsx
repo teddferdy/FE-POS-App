@@ -57,10 +57,18 @@ const Dashboard = () => {
   const store = cookie?.store;
   const { t } = useTranslation();
   const [chartFilter, setChartFilter] = useState("weekly");
+  const [orderPage, setOrderPage] = useState(1);
+  const ORDER_PAGE_SIZE = 5;
 
   const { data: dashData, isLoading } = useQuery(
-    ["dashboard-summary", store, chartFilter],
-    () => getDashboardSummary({ store, filter: chartFilter }),
+    ["dashboard-summary", store, chartFilter, orderPage],
+    () =>
+      getDashboardSummary({
+        store,
+        filter: chartFilter,
+        page: orderPage,
+        pageSize: ORDER_PAGE_SIZE
+      }),
     { enabled: true, staleTime: 30_000 }
   );
 
@@ -158,8 +166,21 @@ const Dashboard = () => {
     return result;
   };
   const chartData = buildChartData();
-  const bestSelling = d.bestSellers || [];
-  const recentOrders = d.recentOrders || [];
+  const bestSelling = (d.bestSellers || []).slice(0, 5);
+  const recentOrdersData = d.recentOrders || {};
+  const recentOrders = recentOrdersData.rows || [];
+  const recentOrdersTotal = recentOrdersData.total || 0;
+  const recentOrdersPages = Math.max(1, Math.ceil(recentOrdersTotal / ORDER_PAGE_SIZE));
+  const formatDate = (iso) =>
+    iso
+      ? new Date(iso).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : "-";
 
   return (
     <div className="space-y-6">
@@ -417,7 +438,16 @@ const Dashboard = () => {
                         <td className="px-5 py-3.5 font-mono text-xs font-semibold text-primary">
                           {order.id || order.invoice || "-"}
                         </td>
-                        <td className="px-5 py-3.5">{order.table || order.tableName || "-"}</td>
+                        <td className="px-5 py-3.5">
+                          {order.table || order.tableName ? (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                              {order.tableName}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Take Away</span>
+                          )}
+                        </td>
                         <td className="px-5 py-3.5 font-medium text-foreground">
                           {order.customer || order.memberName || order.customerName || "-"}
                         </td>
@@ -425,8 +455,8 @@ const Dashboard = () => {
                           {formatCurrencyRupiah(order.total || order.totalPrice || 0)}
                         </td>
                         <td className="px-5 py-3.5">{statusBadge(order.status)}</td>
-                        <td className="px-5 py-3.5 text-muted-foreground">
-                          {order.time || order.createdAt || "-"}
+                        <td className="px-5 py-3.5 text-muted-foreground text-xs">
+                          {formatDate(order.createdAt)}
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
@@ -446,6 +476,37 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
+            {recentOrdersTotal > ORDER_PAGE_SIZE && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+                <span className="text-xs text-muted-foreground">{recentOrdersTotal} orders</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    disabled={orderPage <= 1}
+                    onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
+                    className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
+                    Prev
+                  </button>
+                  {Array.from({ length: recentOrdersPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setOrderPage(p)}
+                      className={`px-2.5 py-1 text-xs rounded border ${
+                        p === orderPage
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border hover:bg-accent"
+                      }`}>
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    disabled={orderPage >= recentOrdersPages}
+                    onClick={() => setOrderPage((p) => Math.min(recentOrdersPages, p + 1))}
+                    className="px-2.5 py-1 text-xs rounded border border-border hover:bg-accent disabled:opacity-30 disabled:pointer-events-none">
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

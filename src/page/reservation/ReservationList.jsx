@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Calendar, Users, Clock } from "lucide-react";
-import { getReservations, deleteReservation } from "@/services/reservation";
+import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X } from "lucide-react";
+import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
@@ -11,6 +11,8 @@ import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
+import { getAllLocation } from "@/services/location";
+import StatCard from "@/components/ui/StatCard";
 
 const ReservationList = () => {
   const { t } = useTranslation();
@@ -44,6 +46,26 @@ const ReservationList = () => {
   const [dateFilter, setDateFilter] = useState(undefined);
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [stores, setStores] = useState([]);
+  const storeMap = Object.fromEntries(stores.map((s) => [String(s.id), s.name]));
+
+  useEffect(() => {
+    getAllLocation().then((res) => setStores(res.data || [])).catch(() => {});
+  }, []);
+
+  const statusMutation = useMutation(
+    ({ id, status }) => updateReservation({ id, status }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["reservations"]);
+        toast.success(t("common.success"));
+      },
+      onError: (err) =>
+        toast.error(t("common.failed"), {
+          description: err?.response?.data?.message || err.message
+        })
+    }
+  );
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["reservations", page, limit, dateFilter, statusFilter],
@@ -71,6 +93,7 @@ const ReservationList = () => {
   const reservations = data?.data || [];
   const total = data?.totalItems || 0;
   const totalPages = data?.totalPages || 1;
+  const stats = data?.stats || {};
 
   const formatDate = (d) => {
     if (!d) return "-";
@@ -92,8 +115,19 @@ const ReservationList = () => {
           {item.customerPhone && (
             <span className="text-xs text-muted-foreground">{item.customerPhone}</span>
           )}
+          {item.customerEmail && (
+            <span className="text-xs text-muted-foreground">{item.customerEmail}</span>
+          )}
         </div>
       )
+    },
+    {
+      header: t("page.reservation.columns.store"),
+      render: (item) => storeMap[String(item.store)] || `Store #${item.store}`
+    },
+    {
+      header: t("page.reservation.columns.table"),
+      render: (item) => (item.tableId ? `${t("page.reservation.tablePrefix")} ${item.tableId}` : "-")
     },
     {
       header: t("page.reservation.columns.date"),
@@ -130,10 +164,39 @@ const ReservationList = () => {
       }
     },
     {
+      header: t("page.reservation.columns.notes"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground max-w-[150px] truncate block">
+          {item.notes || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.reservation.columns.actions"),
       align: "right",
+      stickyRight: true,
       render: (item) => (
         <div className="flex items-center justify-end gap-1">
+          {item.status === "pending" && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600"
+                disabled={statusMutation.isLoading}
+                onClick={() => statusMutation.mutate({ id: item.id, status: "confirmed" })}>
+                <Check size={15} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-600"
+                disabled={statusMutation.isLoading}
+                onClick={() => statusMutation.mutate({ id: item.id, status: "cancelled" })}>
+                <X size={15} />
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -179,6 +242,12 @@ const ReservationList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <StatCard label={t("page.reservation.stats.total")} value={stats.total ?? total} icon="calendar_month" variant="default" />
+            <StatCard label={t("page.reservation.status.pending")} value={stats.pending ?? 0} icon="pending" variant="draft" />
+            <StatCard label={t("page.reservation.status.confirmed")} value={stats.confirmed ?? 0} icon="check_circle" variant="active" />
+            <StatCard label={t("page.reservation.status.cancelled")} value={stats.cancelled ?? 0} icon="cancel" variant="inactive" />
+          </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="w-full sm:w-60">
               <DatePicker
