@@ -98,7 +98,8 @@ function DatePicker({
   className,
   fromYear = 1945,
   toYear = 2999,
-  captionLayout = "dropdown"
+  captionLayout = "dropdown",
+  ...rest
 }) {
   const [month, setMonth] = React.useState(date || new Date());
 
@@ -134,6 +135,7 @@ function DatePicker({
           captionLayout={captionLayout}
           fromYear={fromYear}
           toYear={toYear}
+          {...rest}
         />
       </PopoverContent>
     </Popover>

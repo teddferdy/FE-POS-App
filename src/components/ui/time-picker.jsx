@@ -35,7 +35,7 @@ const TIME_PRESETS = [
   { label: "Malam", value: "20:00" }
 ];
 
-export function TimePicker({ value, onChange, placeholder = "Pilih jam", disabled = false }) {
+export const TimePicker = React.forwardRef(function TimePicker({ value, onChange, placeholder = "Pilih jam", disabled = false, slots }, ref) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -65,7 +65,7 @@ export function TimePicker({ value, onChange, placeholder = "Pilih jam", disable
             {!value && (
               <CommandGroup heading="Cepat">
                 <div className="grid grid-cols-4 gap-1.5 p-2">
-                  {TIME_PRESETS.map((preset) => (
+                  {(slots ? TIME_PRESETS.filter(p => slots.includes(p.value)) : TIME_PRESETS).map((preset) => (
                     <Button
                       key={preset.value}
                       variant="outline"
@@ -83,7 +83,7 @@ export function TimePicker({ value, onChange, placeholder = "Pilih jam", disable
             )}
             <CommandGroup heading="Semua Jam">
               <ScrollArea className="h-48">
-                {TIME_SLOTS.map((time) => (
+                {(slots || TIME_SLOTS).map((time) => (
                   <CommandItem
                     key={time}
                     value={time}
@@ -104,4 +104,4 @@ export function TimePicker({ value, onChange, placeholder = "Pilih jam", disable
       </PopoverContent>
     </Popover>
   );
-}
+});

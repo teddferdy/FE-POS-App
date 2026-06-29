@@ -166,6 +166,14 @@ const guides = {
       { icon: "toggle_on", textKey: "guide.addIngredient.step6" },
       { icon: "save", textKey: "guide.addIngredient.step7" }
     ]
+  },
+  "adjust-stock": {
+    titleKey: "guide.adjustStock.title",
+    steps: [
+      { icon: "inventory_2", textKey: "guide.adjustStock.step1" },
+      { icon: "add_circle", textKey: "guide.adjustStock.step2" },
+      { icon: "save", textKey: "guide.adjustStock.step3" }
+    ]
   }
 };
 

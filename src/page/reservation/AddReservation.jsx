@@ -8,7 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
 import { createReservation } from "@/services/reservation";
-import { getAllLocation } from "@/services/location";
+import { getAllLocation, getLocationDetail } from "@/services/location";
 import { getTablesByStore } from "@/services/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,18 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function generateTimeSlots(open, close) {
+  const [oh, om] = open.split(':').map(Number);
+  const [ch, cm] = close.split(':').map(Number);
+  const start = oh * 60 + om, end = ch * 60 + cm;
+  const slots = [];
+  for (let m = start; m <= end; m += 30)
+    slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+  return slots;
+}
 
 const formSchema = z.object({
   customerName: z.string().min(1, "Nama customer wajib diisi"),
@@ -49,6 +61,7 @@ const AddReservation = () => {
   const [stores, setStores] = useState([]);
   const [availableTables, setAvailableTables] = useState([]);
   const [loadingTables, setLoadingTables] = useState(false);
+  const [locationDetail, setLocationDetail] = useState(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -80,10 +93,37 @@ const AddReservation = () => {
   useEffect(() => {
     if (selectedStore) {
       loadTablesByStore();
+      getLocationDetail({ id: selectedStore })
+        .then(res => setLocationDetail(res.data || null))
+        .catch(() => setLocationDetail(null));
     } else {
       setAvailableTables([]);
+      setLocationDetail(null);
     }
   }, [selectedStore]);
+
+  const openingHours = locationDetail?.openingHours || [];
+  const offDays = openingHours.filter(oh => !oh.open && !oh.close).map(oh => DAY_NAMES.indexOf(oh.day));
+  const isOffDay = reservationDate ? offDays.includes(reservationDate.getDay()) : false;
+  const dayName = reservationDate ? DAY_NAMES[reservationDate.getDay()] : null;
+  const dayHours = openingHours.find(oh => oh.day === dayName);
+  const timeSlots = isOffDay ? [] : (dayHours?.open && dayHours?.close ? generateTimeSlots(dayHours.open, dayHours.close) : null);
+  const detailLoading = !!selectedStore && !locationDetail;
+
+  useEffect(() => {
+    if (isOffDay && (startTime || endTime)) {
+      form.setValue("startTime", "");
+      form.setValue("endTime", "");
+    }
+  }, [isOffDay]);
+
+  useEffect(() => {
+    if (reservationDate && dayHours?.open && dayHours?.close) {
+      const valid = generateTimeSlots(dayHours.open, dayHours.close);
+      if (startTime && !valid.includes(startTime)) form.setValue("startTime", "");
+      if (endTime && !valid.includes(endTime)) form.setValue("endTime", "");
+    }
+  }, [locationDetail, reservationDate]);
 
   const loadTablesByStore = async () => {
     setLoadingTables(true);
@@ -152,6 +192,73 @@ const AddReservation = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="col-span-full">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detail Reservasi</h3>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="store"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Toko <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih toko" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stores.map((s) => (
+                            <SelectItem key={s.id} value={String(s.id)}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="reservationDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Tanggal <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <DatePicker date={field.value} setDate={(d) => { if (d && offDays.includes(d.getDay())) return; field.onChange(d); }} disabled={(date) => offDays.includes(date.getDay())} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Jam Mulai <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <TimePicker {...field} placeholder="Pilih jam mulai" slots={timeSlots} disabled={detailLoading} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Jam Selesai</FormLabel>
+                      <TimePicker {...field} placeholder="Pilih jam selesai" slots={timeSlots} disabled={detailLoading} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="col-span-full">
+                  <div className="border-t border-border my-2" />
+                </div>
                 <FormField
                   control={form.control}
                   name="customerName"
@@ -208,72 +315,14 @@ const AddReservation = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="reservationDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Tanggal <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <DatePicker date={field.value} setDate={field.onChange} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Jam Mulai <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam mulai" />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jam Selesai</FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam selesai" />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="store"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Toko <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih toko" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {stores.map((s) => (
-                            <SelectItem key={s.id} value={String(s.id)}>
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="col-span-full">
+                  <div className="border-t border-border my-2" />
+                </div>
                 <FormField
                   control={form.control}
                   name="tableId"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="col-span-full">
                       <FormLabel>Meja</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>

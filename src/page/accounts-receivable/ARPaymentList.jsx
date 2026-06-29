@@ -7,7 +7,6 @@ import { getARList, getARAging, recordARPayment } from "@/services/accounts-rece
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
-import { TipsCard } from "@/components/ui/tips-card";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -20,25 +19,24 @@ const STATUS_LABELS = {
   PAID: { label: "Lunas", color: "bg-green-100 text-green-800" },
   OVERDUE: { label: "Jatuh Tempo", color: "bg-red-100 text-red-800" }
 };
-
 const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OVERDUE: "overdue" };
 
-const AccountsReceivableList = () => {
+const ARPaymentList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("UNPAID");
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["ar-list", page, limit, statusFilter],
+    ["ar-payment-list", page, limit, statusFilter],
     () => getARList({ page, limit, status: statusFilter || undefined }),
     { keepPreviousData: true }
   );
 
-  const { data: agingData } = useQuery(["ar-aging"], () => getARAging(), {
+  const { data: agingData } = useQuery(["ar-aging-payment"], () => getARAging(), {
     refetchInterval: 60000
   });
 
@@ -57,18 +55,10 @@ const AccountsReceivableList = () => {
   const agingBuckets = agingData?.data?.buckets || {};
   const grandTotal = agingData?.data?.grandTotal || 0;
 
-  // const totalOutstanding = arList.reduce((s, ar) => s + Number(ar.outstandingAmount || 0), 0);
-
   const columns = [
     {
       header: t("page.accountsReceivable.list.header.invoice"),
-      render: (ar) => (
-        <span
-          className="font-medium text-primary cursor-pointer hover:underline"
-          onClick={() => navigate(`/accounts-receivable/detail?id=${ar.id}`)}>
-          {ar.invoiceNo || `AR-${ar.id}`}
-        </span>
-      )
+      render: (ar) => <span className="font-medium">{ar.invoiceNo || `AR-${ar.id}`}</span>
     },
     {
       header: t("page.accountsReceivable.list.header.pelanggan"),
@@ -77,10 +67,6 @@ const AccountsReceivableList = () => {
     {
       header: t("page.accountsReceivable.list.header.total"),
       render: (ar) => formatCurrencyRupiah(ar.totalAmount || 0)
-    },
-    {
-      header: t("page.accountsReceivable.list.header.terbayar"),
-      render: (ar) => formatCurrencyRupiah(ar.paidAmount || 0)
     },
     {
       header: t("page.accountsReceivable.list.header.sisa"),
@@ -123,7 +109,6 @@ const AccountsReceivableList = () => {
         ar.status !== "PAID" && (
           <Button
             size="sm"
-            variant="outline"
             onClick={() => {
               setPayModal(ar);
               setPayAmount(String(ar.outstandingAmount || 0));
@@ -144,28 +129,18 @@ const AccountsReceivableList = () => {
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.accountsReceivable.list.breadcrumb")}
-          </span>
+          <span className="text-primary font-semibold">Pembayaran Piutang</span>
         </nav>
       </div>
 
       <div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.accountsReceivable.list.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.accountsReceivable.list.subtitle")}
-            </p>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-foreground">Pembayaran Piutang</h1>
+        <p className="text-sm text-muted-foreground mt-1">Catat pembayaran piutang pelanggan</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <StatCard
-          label={t("page.accountsReceivable.list.totalPiutang")}
+          label="Total Piutang"
           value={formatCurrencyRupiah(grandTotal)}
           icon="account_balance"
           variant="default"
@@ -201,7 +176,7 @@ const AccountsReceivableList = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
+        {["", "UNPAID", "PARTIAL", "OVERDUE"].map((s) => (
           <button
             key={s}
             onClick={() => {
@@ -223,21 +198,19 @@ const AccountsReceivableList = () => {
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={arList}
-            isLoading={isLoading}
-            emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
-            emptyIcon={Receipt}
-            pagination={{
-              page,
-              totalPages: pagination.totalPages || 1,
-              total: pagination.total || 0,
-              onPageChange: setPage
-            }}
-          />
-        </div>
+        <DataTable
+          columns={columns}
+          data={arList}
+          isLoading={isLoading}
+          emptyMessage="Tidak ada piutang yang perlu dibayar"
+          emptyIcon={Receipt}
+          pagination={{
+            page,
+            totalPages: pagination.totalPages || 1,
+            total: pagination.total || 0,
+            onPageChange: setPage
+          }}
+        />
       )}
 
       {payModal && (
@@ -277,19 +250,8 @@ const AccountsReceivableList = () => {
           </div>
         </Modal>
       )}
-
-      <div>
-        <TipsCard
-          tips={[
-            t("page.accountsReceivable.list.tips.1"),
-            t("page.accountsReceivable.list.tips.2"),
-            t("page.accountsReceivable.list.tips.3"),
-            t("page.accountsReceivable.list.tips.4")
-          ]}
-        />
-      </div>
     </div>
   );
 };
 
-export default AccountsReceivableList;
+export default ARPaymentList;

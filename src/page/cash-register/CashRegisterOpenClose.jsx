@@ -4,9 +4,20 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { DollarSign, X, Wallet, Coins, Landmark } from "lucide-react";
+import {
+  DollarSign,
+  X,
+  Wallet,
+  Coins,
+  Landmark,
+  Smartphone,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 import { openCashRegister } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
+import { getWhatsAppStatus, restartWhatsApp } from "@/services/invoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +51,23 @@ const CashRegisterOpenClose = () => {
   const [notes, setNotes] = useState("");
 
   const numericBalance = parseIDR(rawBalance);
+
+  const { data: waStatus, refetch: refetchWa } = useQuery(
+    ["wa-status"],
+    () => getWhatsAppStatus(),
+    { refetchInterval: 5000 }
+  );
+  const waData = waStatus?.data;
+  const waReady = waData?.ready;
+  const waQR = waData?.qrBase64;
+
+  const restartWaMut = useMutation(() => restartWhatsApp(), {
+    onSuccess: () => {
+      toast.info("WhatsApp client restarting, QR akan muncul dalam beberapa detik");
+      setTimeout(() => refetchWa(), 2000);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || err.message)
+  });
 
   const openMut = useMutation(
     () =>
@@ -215,6 +243,65 @@ const CashRegisterOpenClose = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* WA Connection Status */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent px-6 py-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Smartphone size={18} className="text-primary" />
+              <h2 className="font-semibold text-sm">WhatsApp</h2>
+            </div>
+            {waReady ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full">
+                <CheckCircle2 size={12} />
+                Terhubung
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-full">
+                <AlertCircle size={12} />
+                Belum Terhubung
+              </span>
+            )}
+          </div>
+          <div className="p-6">
+            {waReady ? (
+              <p className="text-sm text-muted-foreground">
+                WhatsApp terhubung — invoice bisa dikirim langsung dari POS.
+              </p>
+            ) : waQR ? (
+              <div className="flex flex-col items-center gap-3">
+                <img
+                  src={waQR}
+                  alt="WhatsApp QR Code"
+                  className="w-48 h-48 border border-border rounded-lg"
+                />
+                <p className="text-sm text-muted-foreground text-center">
+                  Scan QR code ini dengan WhatsApp kamu untuk menghubungkan.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => restartWaMut.mutate()}
+                  loading={restartWaMut.isLoading}>
+                  <RefreshCw size={14} className="mr-1" />
+                  QR Tidak Muncul? Klik Refresh
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-muted-foreground text-center">Menunggu QR code...</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => restartWaMut.mutate()}
+                  loading={restartWaMut.isLoading}>
+                  <RefreshCw size={14} className="mr-1" />
+                  Mulai Ulang WhatsApp
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

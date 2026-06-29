@@ -2,32 +2,12 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getMemberById, getMemberPointHistory } from "@/services/member";
+import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
 import { Stars } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
-
-const getLevel = (level, t) => {
-  const config = {
-    platinum: {
-      bg: "bg-primary/10 text-primary border border-primary/20",
-      icon: "stars",
-      label: t("page.member.detail.levelPlatinum")
-    },
-    gold: {
-      bg: "bg-tertiary/10 text-tertiary border border-tertiary/20",
-      icon: "stars",
-      label: t("page.member.detail.levelGold")
-    },
-    silver: {
-      bg: "bg-secondary/10 text-secondary border border-secondary/20",
-      icon: "stars",
-      label: t("page.member.detail.levelSilver")
-    }
-  };
-  return config[level?.toLowerCase()] || config.silver;
-};
 
 const getInitials = (name) => {
   if (!name) return "?";
@@ -70,14 +50,22 @@ const MemberDetail = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [activeTab, setActiveTab] = useState("transactions");
+  const [transactionPage, setTransactionPage] = useState(1);
   const [pointPage, setPointPage] = useState(1);
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["member-detail", id],
-    () => getMemberById({ id }),
+    ["member-detail", id, transactionPage],
+    () => getMemberById({ id, page: transactionPage, limit: 5 }),
     {
-      enabled: !!id
+      enabled: !!id,
+      keepPreviousData: true
     }
+  );
+
+  const { data: tierData } = useQuery(
+    ["member-tiers"],
+    () => getAllMemberTier(),
+    { staleTime: 300000 }
   );
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
@@ -87,6 +75,14 @@ const MemberDetail = () => {
   );
 
   const member = data?.data || data?.member || data;
+  const tiers = tierData?.data || [];
+  const currentTier = tiers.find((t) => t.id === member?.tier) || {};
+  const level = {
+    bg: "bg-primary/10 text-primary border border-primary/20",
+    icon: "stars",
+    label: currentTier.name || t("page.member.detail.levelSilver"),
+    color: currentTier.color || "#f59e0b"
+  };
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -210,16 +206,18 @@ const MemberDetail = () => {
     );
   }
 
-  const level = getLevel(member.level, t);
   const name = member.name || "-";
   const transactions = member.transactions || [];
-  const totalTransactions = member.totalTransactions || transactions.length || 0;
+  const totalTransactions = member.transactionPagination?.total || transactions.length || 0;
   const totalSpent = member.totalSpent || 0;
-  const visitFrequency = member.visitFrequency || 0;
-  const averageSpending = member.averageSpending || 0;
+  const count = totalTransactions;
+  const visitFrequency = count;
+  const averageSpending = count > 0 ? totalSpent / count : 0;
   const points = member.points ?? member.totalPoints ?? 0;
-  const nextTier = member.nextTier || "Diamond";
-  const pointsRemaining = member.pointsRemaining || 4580;
+  const sortedTiers = [...tiers].filter(t => t.status === 'active').sort((a, b) => a.minPoints - b.minPoints);
+  const nextTierObj = sortedTiers.find(t => t.id !== member?.tier && t.minPoints > points);
+  const nextTier = nextTierObj?.name || "-";
+  const pointsRemaining = nextTierObj ? Math.max(0, nextTierObj.minPoints - points) : 0;
   const expiringPoints = member.expiringPoints || 1200;
   const expiringDate = member.expiringDate || "31 Dec 2023";
   const memberId = member.memberId || member.code || "-";
@@ -239,13 +237,13 @@ const MemberDetail = () => {
   const stats = [
     {
       label: t("page.member.detail.totalTransactions"),
-      value: formatCurrency(totalSpent),
-      icon: "payments",
+      value: `${totalTransactions}`,
+      icon: "receipt_long",
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
-      trend: "+12% vs last month",
-      trendIcon: "trending_up",
-      trendColor: "text-secondary"
+      trend: `${totalSpent > 0 ? formatCurrency(totalSpent) : "Rp 0"} total belanja`,
+      trendIcon: "payments",
+      trendColor: "text-foreground"
     },
     {
       label: t("page.member.detail.visitFrequency"),
@@ -253,9 +251,9 @@ const MemberDetail = () => {
       icon: "calendar_month",
       iconBg: "bg-tertiary/10",
       iconColor: "text-tertiary",
-      trend: t("page.member.detail.weeklyVisitsTrend", { count: member.weeklyVisits || 0 }),
+      trend: "",
       trendIcon: "trending_up",
-      trendColor: "text-secondary"
+      trendColor: "text-foreground"
     },
     {
       label: t("page.member.detail.averageSpending"),
@@ -263,9 +261,9 @@ const MemberDetail = () => {
       icon: "shopping_bag",
       iconBg: "bg-secondary/10",
       iconColor: "text-secondary",
-      trend: t("page.member.detail.stablePerformance"),
+      trend: "",
       trendIcon: "remove",
-      trendColor: "text-on-surface-variant"
+      trendColor: "text-foreground"
     }
   ];
 
@@ -377,7 +375,8 @@ const MemberDetail = () => {
                   </span>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${level.bg}`}>
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
+                  style={{ backgroundColor: level.color + "20", color: level.color, borderColor: level.color + "40", borderWidth: 1 }}>
                   <span
                     className="material-symbols-outlined text-sm"
                     style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -636,15 +635,15 @@ const MemberDetail = () => {
                                     : "-"}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-foreground">
-                                  {pt.description || pt.reason || "-"}
+                                  {pt.notes || pt.description || pt.reason || "-"}
                                 </td>
                                 <td
-                                  className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
-                                  {pt.points > 0 ? "+" : ""}
-                                  {pt.points?.toLocaleString() || 0}
+                                  className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
+                                  {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
+                                  {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                                  {pt.balance?.toLocaleString() || "-"}
+                                  {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
                                 </td>
                               </tr>
                             ))
@@ -682,25 +681,19 @@ const MemberDetail = () => {
               {activeTab === "transactions" && (
                 <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
                   <p className="text-xs text-muted-foreground">
-                    {t("page.member.detail.showingTransactions", {
-                      shown: transactions.length,
-                      total: totalTransactions
-                    })}
+                    Menampilkan {transactions.length} dari {member?.transactionPagination?.total || 0} transaksi
                   </p>
                   <div className="flex gap-1">
-                    <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
+                    <button
+                      onClick={() => setTransactionPage(Math.max(1, transactionPage - 1))}
+                      disabled={transactionPage <= 1}
+                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <span className="material-symbols-outlined text-lg">chevron_left</span>
                     </button>
-                    <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                      1
-                    </button>
-                    <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                      2
-                    </button>
-                    <button className="px-3 py-1.5 text-foreground hover:bg-muted rounded-lg text-sm">
-                      3
-                    </button>
-                    <button className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground">
+                    <button
+                      onClick={() => setTransactionPage(transactionPage + 1)}
+                      disabled={transactionPage >= (member?.transactionPagination?.totalPages || 1)}
+                      className="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground disabled:opacity-30">
                       <span className="material-symbols-outlined text-lg">chevron_right</span>
                     </button>
                   </div>

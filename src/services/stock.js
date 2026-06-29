@@ -122,6 +122,12 @@ export const uploadStockOpnameExcel = async (file, auditDate) => {
   return data;
 };
 
+export const adjustStock = async (payload) => {
+  const { data, status } = await axiosInstance.post('/pos/adjust', payload)
+  if (status !== 200 && status !== 201) throw Error(`${data.message}`)
+  return data
+}
+
 export const downloadStockOpnameTemplate = async () => {
   const { data, status } = await axiosInstance.get("/stock-opname/download-excel", {
     responseType: "arraybuffer"

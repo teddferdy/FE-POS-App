@@ -13,8 +13,10 @@ export const getAllMember = async ({
   return data;
 };
 
-export const getMemberById = async ({ id } = {}) => {
-  const { data, status } = await axiosInstance.get(`/member/get-member/${id}`);
+export const getMemberById = async ({ id, page, limit } = {}) => {
+  const { data, status } = await axiosInstance.get(`/member/get-member/${id}`, {
+    params: { page, limit }
+  });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

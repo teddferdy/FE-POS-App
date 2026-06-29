@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { X, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getReservations, updateReservation, getAvailableTables } from "@/services/reservation";
+import { getLocationDetail } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
@@ -27,6 +28,18 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function generateTimeSlots(open, close) {
+  const [oh, om] = open.split(':').map(Number);
+  const [ch, cm] = close.split(':').map(Number);
+  const start = oh * 60 + om, end = ch * 60 + cm;
+  const slots = [];
+  for (let m = start; m <= end; m += 30)
+    slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+  return slots;
+}
 
 const EditReservation = () => {
   const { t } = useTranslation();
@@ -50,6 +63,7 @@ const EditReservation = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [availableTables, setAvailableTables] = useState([]);
+  const [locationDetail, setLocationDetail] = useState(null);
 
   const {
     data: listData,
@@ -97,6 +111,41 @@ const EditReservation = () => {
       });
     }
   }, [reservation, form]);
+
+  useEffect(() => {
+    if (reservation?.store) {
+      getLocationDetail({ id: String(reservation.store) })
+        .then(res => setLocationDetail(res.data || null))
+        .catch(() => setLocationDetail(null));
+    }
+  }, [reservation]);
+
+  const reservationDateWatch = form.watch("reservationDate");
+  const startTimeWatch = form.watch("startTime");
+  const endTimeWatch = form.watch("endTime");
+
+  const openingHours = locationDetail?.openingHours || [];
+  const offDays = openingHours.filter(oh => !oh.open && !oh.close).map(oh => DAY_NAMES.indexOf(oh.day));
+  const isOffDay = reservationDateWatch ? offDays.includes(reservationDateWatch.getDay()) : false;
+  const dayName = reservationDateWatch ? DAY_NAMES[reservationDateWatch.getDay()] : null;
+  const dayHours = openingHours.find(oh => oh.day === dayName);
+  const timeSlots = isOffDay ? [] : (dayHours?.open && dayHours?.close ? generateTimeSlots(dayHours.open, dayHours.close) : null);
+  const detailLoading = !!reservation?.store && !locationDetail;
+
+  useEffect(() => {
+    if (isOffDay && (startTimeWatch || endTimeWatch)) {
+      form.setValue("startTime", "");
+      form.setValue("endTime", "");
+    }
+  }, [isOffDay]);
+
+  useEffect(() => {
+    if (reservationDateWatch && dayHours?.open && dayHours?.close) {
+      const valid = generateTimeSlots(dayHours.open, dayHours.close);
+      if (startTimeWatch && !valid.includes(startTimeWatch)) form.setValue("startTime", "");
+      if (endTimeWatch && !valid.includes(endTimeWatch)) form.setValue("endTime", "");
+    }
+  }, [locationDetail, reservationDateWatch]);
 
   const loadAvailableTables = async () => {
     try {
@@ -180,6 +229,93 @@ const EditReservation = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="col-span-full">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detail Reservasi</h3>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="reservationDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.date")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <DatePicker date={field.value} setDate={(d) => { if (d && offDays.includes(d.getDay())) return; field.onChange(d); }} disabled={(date) => offDays.includes(date.getDay())} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t("page.reservation.edit.form.startTime")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <TimePicker
+                        {...field}
+                        slots={timeSlots}
+                        disabled={detailLoading}
+                        placeholder={t("page.reservation.edit.form.startTimePlaceholder")}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.endTime")}</FormLabel>
+                      <TimePicker
+                        {...field}
+                        slots={timeSlots}
+                        disabled={detailLoading}
+                        placeholder={t("page.reservation.edit.form.endTimePlaceholder")}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("page.reservation.edit.form.status")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            {t("page.reservation.edit.form.statusPending")}
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            {t("page.reservation.edit.form.statusConfirmed")}
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            {t("page.reservation.edit.form.statusCancelled")}
+                          </SelectItem>
+                          <SelectItem value="completed">
+                            {t("page.reservation.edit.form.statusCompleted")}
+                          </SelectItem>
+                          <SelectItem value="no_show">
+                            {t("page.reservation.edit.form.statusNoShow")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="col-span-full">
+                  <div className="border-t border-border my-2" />
+                </div>
                 <FormField
                   control={form.control}
                   name="customerName"
@@ -238,88 +374,14 @@ const EditReservation = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="reservationDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("page.reservation.edit.form.date")}{" "}
-                        <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <DatePicker date={field.value} setDate={field.onChange} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t("page.reservation.edit.form.startTime")}{" "}
-                        <span className="text-destructive">*</span>
-                      </FormLabel>
-                      <TimePicker
-                        {...field}
-                        placeholder={t("page.reservation.edit.form.startTimePlaceholder")}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("page.reservation.edit.form.endTime")}</FormLabel>
-                      <TimePicker
-                        {...field}
-                        placeholder={t("page.reservation.edit.form.endTimePlaceholder")}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("page.reservation.edit.form.status")}</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">
-                            {t("page.reservation.edit.form.statusPending")}
-                          </SelectItem>
-                          <SelectItem value="confirmed">
-                            {t("page.reservation.edit.form.statusConfirmed")}
-                          </SelectItem>
-                          <SelectItem value="cancelled">
-                            {t("page.reservation.edit.form.statusCancelled")}
-                          </SelectItem>
-                          <SelectItem value="completed">
-                            {t("page.reservation.edit.form.statusCompleted")}
-                          </SelectItem>
-                          <SelectItem value="no_show">
-                            {t("page.reservation.edit.form.statusNoShow")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="col-span-full">
+                  <div className="border-t border-border my-2" />
+                </div>
                 <FormField
                   control={form.control}
                   name="tableId"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="col-span-full">
                       <FormLabel>{t("page.reservation.edit.form.table")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>

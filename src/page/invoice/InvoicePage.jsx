@@ -632,6 +632,14 @@ const InvoicePage = () => {
                 <Printer size={14} />
                 {t("page.invoice.printPreview")}
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="gap-1.5 shrink-0">
+                <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                PDF
+              </Button>
             </div>
             <InvoicePreview
               storeName={storeName}

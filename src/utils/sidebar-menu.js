@@ -246,6 +246,12 @@ export const sidebarMenuSuperAdmin = [
             href: "/low-stock",
             icon: TriangleAlert,
             actions: ["view"]
+          },
+          {
+            title: "Adjustment Stok",
+            href: "/stock-adjustment",
+            icon: Package,
+            actions: ["add"]
           }
         ]
       },
@@ -621,6 +627,12 @@ export const sidebarMenuAdmin = [
             href: "/low-stock",
             icon: TriangleAlert,
             actions: ["view"]
+          },
+          {
+            title: "Adjustment Stok",
+            href: "/stock-adjustment",
+            icon: Package,
+            actions: ["add"]
           },
           {
             title: "Dapur (KDS)",

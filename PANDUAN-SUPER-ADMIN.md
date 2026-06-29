@@ -331,6 +331,7 @@ flowchart LR
 | **Sales Return**     | Pelanggan balikin barang? Catat di sini, stok balik, uang balik.              | ➡ POS              |
 | **Purchase Return**  | Retur barang ke supplier. Stok berkurang.                                     | ➡ Goods Receipt    |
 | **Transfer Stok**    | Kirim **barang inventory/produk** antar cabang. Biar stok merata. Aset tetap (komputer, mesin) beda alur — hubungi tim support. | ➡ History Stok     |
+| **Adjustment Stok**  | Sesuaikan stok produk secara manual — tambah atau kurangi. Cocok buat koreksi stok (barang rusak, hilang, kelebihan stok).      | ➡ History Stok     |
 
 ### 📈 Laporan
 
@@ -374,6 +375,7 @@ flowchart TB
         B3["Goods Receipt"]
         B4["Purchase Return"]
         B5["Production Order"]
+        B6["Adjustment Stok"]
     end
 
     subgraph MONITOR["🟡 MONITORING"]
@@ -414,7 +416,8 @@ flowchart TB
     B4 --> C4
     B3 --> C4
     C2 --> B3
-    C1 --> C3
+    C1 --> B6
+    B6 --> C3
 
     B1 --> D1
     B1 --> D2
@@ -1057,6 +1060,25 @@ flowchart TD
     UPDATE_STOK_TF --> HISTORY_TF[Catat History Stok<br/>di kedua toko]
 ```
 
+#### 5.10.10 Adjustment Stok — Koreksi Stok Manual
+
+```mermaid
+flowchart TD
+    ADJ_LIST[Halaman Adjustment Stok] --> PILIH_PRODUK[Pilih Produk<br/>dari daftar produk toko]
+
+    PILIH_PRODUK --> FORM_ADJ[Tentukan:<br/>1. Jenis: Plus / Minus<br/>2. Jumlah Qty<br/>3. Catatan (opsional)]
+
+    FORM_ADJ --> REVIEW_ADJ[Review perubahan:<br/>- Produk: Nama<br/>- Perubahan: +5 / -3<br/>- Catatan]
+
+    REVIEW_ADJ --> KONFIRMASI_ADJ{Konfirmasi<br/>Adjustment?}
+    KONFIRMASI_ADJ -->|Ya| UPDATE_STOK_ADJ[Update stok:<br/>- product.stock: ± qty<br/>- product_store_stock: ± qty]
+    KONFIRMASI_ADJ -->|Tidak| BATAL_ADJ[Batal]
+
+    UPDATE_STOK_ADJ --> HISTORY_ADJ[Catat History Stok<br/>dengan tipe adjustment]
+```
+
+> **Kapan pake ini?** Barang rusak, hilang, kelebihan stok, atau koreksi stok lainnya yang gak lewat penjualan atau pembelian.
+
 ---
 
 ### 5.11 Laporan — Semua Jenis Laporan
@@ -1188,6 +1210,7 @@ flowchart TD
 | **Bikin resep produk**              | BOM → Tambah                             |
 | **Cek stok fisik**                  | Stock Opname                             |
 | **Transfer barang ke cabang lain**  | Transfer Stok                            |
+| **Koreksi stok manual**            | Adjustment Stok                          |
 | **Pelanggan mau daftar member**     | Pelanggan → Daftar Member                |
 | **Kasir baru**                      | Karyawan → Daftar Karyawan + Role        |
 | **Buat laporan penjualan**          | Laporan → Penjualan                      |
@@ -1687,6 +1710,7 @@ stateDiagram-v2
 | Sales Return                 |     ✅      |  ✅   |    —    |        —        |  —   |
 | Purchase Return              |     ✅      |  ✅   |    —    |        —        |  —   |
 | Transfer Stok                |     ✅      |  ✅   |    —    |        —        |  —   |
+| Adjustment Stok              |     ✅      |  ✅   |    —    |        —        |  —   |
 | **Piutang & Pembayaran**     |             |       |         |                 |      |
 | Accounts Receivable (Lihat)  |     ✅      |  ✅   |    —    |        —        |  —   |
 | AR Payment (Tambah)          |     ✅      |  ✅   |    —    |        —        |  —   |
@@ -1791,6 +1815,19 @@ stateDiagram-v2
 | 6  | **Table List — show reservation** — status Reserved di tabel meja sekarang nampilin nama pelanggan + jam booking.                                                                                                                                                                            | ✅ Admin tau siapa yang booking meja tertentu                                                                               |
 | 7  | **Reservasi — auto-refresh setelah create** — setelah bikin reservasi, daftar reservasi langsung refetch data terbaru.                                                                                                                                                                      | ✅ Data selalu up-to-date                                                                                                   |
 | 8  | **Calendar icon fix** — icon calendar di stat card pake `calendar_month` (Material Symbols) yang valid, bukan teks fallback.                                                                                                                                                                 | ✅ Icon tampil bener, gak jadi tulisan "calender"                                                                           |
+| 9  | **PriceStoreList — edit harga per toko** — tiap produk punya tombol edit, klik → modal atur harga khusus untuk toko terpilih. Simpan pake existing endpoint `PUT /pos/product/update-price-by-store`.                          | ✅ Admin bisa atur harga jual berbeda per cabang langsung dari daftar harga                                                  |
+| 10 | **Invoice — tombol Download PDF** — tombol PDF di halaman preview invoice. Pake fitur native browser `window.print()` → Save as PDF.                                                                                         | ✅ Download struk/invoice sebagai PDF tanpa install library tambahan                                                        |
+| 11 | **Split Bill UI — Pisah Bayar di struk** — tombol "Pisah Bayar" di ReceiptModal setelah transaksi. Bisa atur jumlah orang & nominal per orang. Total harus sama dengan transaksi.                                              | ✅ Kasir bisa catat pembagian pembayaran per orang langsung dari POS                                                        |
+| 12 | **AR Payment — halaman khusus pembayaran piutang** — route `/ar-payment` baru. Filter default UNPAID, fokus catat pembayaran.                                                                                                 | ✅ Admin punya halaman dedicated buat catat pembayaran piutang tanpa harus lihat semua list                                  |
+| 13 | **NaN bug fix (BE)** — `getProductByLocationSuperAdmin` sekarang validasi `store` param. Kalau NaN, skip filter instead of crash 500.                                                                                         | ✅ Halaman daftar harga gak crash lagi kalau ada request dengan store ID invalid                                             |
+| 14 | **Cookie fallback fix (BE)** — `getAllProduct` sekarang baca `store` dari `req.query` juga, bukan cuma `req.cookies`.                                                                                                          | ✅ Filter store di daftar produk jalan bener kalau dikirim via query param                                                   |
+| 15 | **Kirim invoice via WA & Email** — di ReceiptModal setelah transaksi, input nomor HP kirim WhatsApp atau input email kirim invoice.                                                                                            | ✅ Kasir bisa kirim struk/invoice ke pelanggan langsung dari POS                                                             |
+
+### 🔧 Fitur Baru (29 Juni 2026)
+
+| #  | Perubahan                                                                                                                                                                           | Dampak buat Bisnis                                                                                     |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1  | **Adjustment Stok** — halaman `/stock-adjustment` buat koreksi stok manual. Pilih produk → tentuin plus/minus + qty → simpan. Stok produk & `product_store_stock` langsung terupdate. | ✅ Barang rusak, hilang, atau kelebihan stok bisa langsung dikoreksi tanpa perlu lewat jual/beli lagi  |
 
 ### 📋 Yang Lagi Dikerjakan
 
@@ -1800,6 +1837,7 @@ stateDiagram-v2
 | **Dashboard Utang (AP Module)**  | Daftar semua PO yang belum lunas, total utang per supplier, jatuh tempo |
 | **Payment Tracking di Supplier** | Filter & cari pembayaran berdasarkan supplier                           |
 | **Laporan Piutang (AR Report)**  | Rekap piutang pelanggan, umur piutang, collection tracking              |
+| **Bulk GET /product/prices-by-store?store=X** | Biar PriceStoreList bisa nampilin harga toko saat ini (N+1 problem) |
 
 ---
 

@@ -84,6 +84,7 @@ const DetailStockOpname = React.lazy(() => import("./page/stock-opname/DetailSto
 const StockHistory = React.lazy(() => import("./page/stock-opname/StockHistory"));
 const LowStock = React.lazy(() => import("./page/stock-opname/LowStock"));
 const LowStockAll = React.lazy(() => import("./page/stock-opname/LowStockAll"));
+const StockAdjustment = React.lazy(() => import("./page/stock-adjustment/StockAdjustment"));
 const AddEmployee = React.lazy(() => import("./page/employee/AddEmployee"));
 const EditEmployee = React.lazy(() => import("./page/employee/EditEmployee"));
 const DetailEmployee = React.lazy(() => import("./page/employee/DetailEmployee"));
@@ -206,6 +207,7 @@ const AccountsReceivableList = React.lazy(
 const AccountsReceivableDetail = React.lazy(
   () => import("./page/accounts-receivable/AccountsReceivableDetail")
 );
+const ARPaymentList = React.lazy(() => import("./page/accounts-receivable/ARPaymentList"));
 
 // Backup
 const BackupPage = React.lazy(() => import("./page/backup/BackupPage"));
@@ -340,6 +342,7 @@ function App() {
               path="/accounts-receivable/detail"
               element={withLayout(<AccountsReceivableDetail />)}
             />
+            <Route path="/ar-payment" element={withLayout(<ARPaymentList />)} />
 
             <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
             <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
@@ -461,6 +464,7 @@ function App() {
             <Route path="/stock-history" element={withLayout(<StockHistory />)} />
             <Route path="/low-stock" element={withLayout(<LowStock />)} />
             <Route path="/low-stock-all" element={withLayout(<LowStockAll />)} />
+            <Route path="/stock-adjustment" element={withLayout(<StockAdjustment />)} />
             <Route path="/notification" element={withLayout(<NotificationPage />)} />
 
             <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />

@@ -22,13 +22,15 @@ const MemberPointHistory = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [activeTab, setActiveTab] = useState("transactions");
+  const [transactionPage, setTransactionPage] = useState(1);
   const [pointPage, setPointPage] = useState(1);
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["member-detail", id],
-    () => getMemberById({ id }),
+    ["member-detail", id, transactionPage],
+    () => getMemberById({ id, page: transactionPage, limit: 5 }),
     {
-      enabled: !!id
+      enabled: !!id,
+      keepPreviousData: true
     }
   );
 
@@ -190,6 +192,26 @@ const MemberPointHistory = () => {
                 )}
               </tbody>
             </table>
+            <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
+              <p className="text-xs text-muted-foreground">
+                Menampilkan {transactions.length} dari{" "}
+                {member?.transactionPagination?.total || 0} transaksi
+              </p>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setTransactionPage(Math.max(1, transactionPage - 1))}
+                  disabled={transactionPage <= 1}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  {t("page.member.pointHistory.previous")}
+                </button>
+                <button
+                  onClick={() => setTransactionPage(transactionPage + 1)}
+                  disabled={transactionPage >= (member?.transactionPagination?.totalPages || 1)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  {t("page.member.pointHistory.next")}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -262,15 +284,15 @@ const MemberPointHistory = () => {
                             : "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-foreground">
-                          {pt.description || pt.reason || "-"}
+                          {pt.notes || pt.description || pt.reason || "-"}
                         </td>
                         <td
-                          className={`px-4 py-3 text-sm font-bold text-right ${pt.points > 0 ? "text-green-600" : "text-red-600"}`}>
-                          {pt.points > 0 ? "+" : ""}
-                          {pt.points?.toLocaleString() || 0}
+                          className={`px-4 py-3 text-sm font-bold text-right ${(pt.pointsChange || pt.points) > 0 ? "text-green-600" : "text-red-600"}`}>
+                          {(pt.pointsChange || pt.points) > 0 ? "+" : ""}
+                          {(pt.pointsChange || pt.points)?.toLocaleString() || 0}
                         </td>
                         <td className="px-4 py-3 text-sm font-semibold text-right text-foreground">
-                          {pt.balance?.toLocaleString() || "-"}
+                          {(pt.pointsAfter || pt.balance)?.toLocaleString() || "-"}
                         </td>
                       </tr>
                     ))

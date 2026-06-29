@@ -76,9 +76,19 @@ const CheckoutModal = ({
 
   const updateDropdownPos = useCallback(() => {
     const custRect = searchContainerRef.current?.getBoundingClientRect();
-    if (custRect) setCustomerDropdownPos({ top: custRect.bottom + 4, left: custRect.left, width: custRect.width });
+    if (custRect)
+      setCustomerDropdownPos({
+        top: custRect.bottom + 4,
+        left: custRect.left,
+        width: custRect.width
+      });
     const discRect = discountSearchRef.current?.getBoundingClientRect();
-    if (discRect) setDiscountDropdownPos({ top: discRect.bottom + 4, left: discRect.left, width: discRect.width });
+    if (discRect)
+      setDiscountDropdownPos({
+        top: discRect.bottom + 4,
+        left: discRect.left,
+        width: discRect.width
+      });
   }, []);
 
   const items = useMemo(() => {
@@ -165,18 +175,22 @@ const CheckoutModal = ({
     if (list.length > 0) {
       return list
         .filter((pm) => {
-          const s = (pm.status || '').toString().toLowerCase();
-          return !s || s === 'active' || s === 'true';
+          const s = (pm.status || "").toString().toLowerCase();
+          return !s || s === "active" || s === "true";
         })
         .map((pm) => ({
           id: pm.type || pm.id?.toString() || pm.name?.toLowerCase(),
           label: pm.name,
-          icon: pm.type === "cash" || pm.type === "tunai" ? Banknote
-               : pm.type === "qris" || pm.type === "e-wallet" ? Smartphone
-               : pm.type === "debit" || pm.type === "kartu" ? CreditCard
-               : Wallet,
+          icon:
+            pm.type === "cash" || pm.type === "tunai"
+              ? Banknote
+              : pm.type === "qris" || pm.type === "e-wallet"
+                ? Smartphone
+                : pm.type === "debit" || pm.type === "kartu"
+                  ? CreditCard
+                  : Wallet,
           color: "from-primary to-primary/70"
-        }))
+        }));
     }
     // ponytail: fallback when API unavailable
     return [
@@ -192,17 +206,18 @@ const CheckoutModal = ({
   const taxAmount = subtotal * taxRate;
   const matchedTier = useMemo(() => {
     if (!memberPoints || memberTiers.length === 0) return null;
-    const active = memberTiers.filter(t => t.status === "active");
-    const exact = active.find(t => memberPoints >= t.minPoints && memberPoints <= t.maxPoints);
+    const active = memberTiers.filter((t) => t.status === "active");
+    const exact = active.find((t) => memberPoints >= t.minPoints && memberPoints <= t.maxPoints);
     if (exact) return exact;
     // ponytail: no exact range match; pick highest tier whose minPoints we meet
-    return active
-      .filter(t => t.minPoints <= memberPoints)
-      .sort((a, b) => b.minPoints - a.minPoints)[0] || null;
+    return (
+      active
+        .filter((t) => t.minPoints <= memberPoints)
+        .sort((a, b) => b.minPoints - a.minPoints)[0] || null
+    );
   }, [memberPoints, memberTiers]);
-  const tierDiscountValue = matchedTier?.discountPercent > 0
-    ? subtotal * (matchedTier.discountPercent / 100)
-    : 0;
+  const tierDiscountValue =
+    matchedTier?.discountPercent > 0 ? subtotal * (matchedTier.discountPercent / 100) : 0;
   const discountValue = selectedDiscount
     ? selectedDiscount.type === "percent"
       ? subtotal * (selectedDiscount.value / 100)
@@ -272,10 +287,18 @@ const CheckoutModal = ({
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target) && !customerPortalRef.current?.contains(e.target)) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target) &&
+        !customerPortalRef.current?.contains(e.target)
+      ) {
         setShowCustomerDropdown(false);
       }
-      if (discountSearchRef.current && !discountSearchRef.current.contains(e.target) && !discountPortalRef.current?.contains(e.target)) {
+      if (
+        discountSearchRef.current &&
+        !discountSearchRef.current.contains(e.target) &&
+        !discountPortalRef.current?.contains(e.target)
+      ) {
         setShowDiscountDropdown(false);
       }
     };
@@ -287,9 +310,19 @@ const CheckoutModal = ({
     if (!showCustomerDropdown && !showDiscountDropdown) return;
     const updatePos = () => {
       const custRect = searchContainerRef.current?.getBoundingClientRect();
-      if (custRect) setCustomerDropdownPos({ top: custRect.bottom + 4, left: custRect.left, width: custRect.width });
+      if (custRect)
+        setCustomerDropdownPos({
+          top: custRect.bottom + 4,
+          left: custRect.left,
+          width: custRect.width
+        });
       const discRect = discountSearchRef.current?.getBoundingClientRect();
-      if (discRect) setDiscountDropdownPos({ top: discRect.bottom + 4, left: discRect.left, width: discRect.width });
+      if (discRect)
+        setDiscountDropdownPos({
+          top: discRect.bottom + 4,
+          left: discRect.left,
+          width: discRect.width
+        });
     };
     window.addEventListener("scroll", updatePos, true);
     window.addEventListener("resize", updatePos);
@@ -315,6 +348,8 @@ const CheckoutModal = ({
     onSuccess: (res, variables) => {
       toast.success(t("page.cashier.transactionSuccess"));
       const order = res?.data || res;
+      queryClient.invalidateQueries(["products-outlet", store]);
+      queryClient.invalidateQueries(["categories-cashier", store]);
       onComplete({
         ...order,
         subtotal: order.subTotal,
@@ -442,8 +477,9 @@ const CheckoutModal = ({
     return [base, base + 10000, base + 20000, base + 50000, base + 100000];
   }, [total]);
 
-  const canSubmit = remainingTotal === 0
-    || (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal));
+  const canSubmit =
+    remainingTotal === 0 ||
+    (paymentMethod && (paymentMethod !== "cash" || cashAmountNum >= remainingTotal));
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -487,8 +523,12 @@ const CheckoutModal = ({
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-emerald-500 flex items-center gap-1">
                           <Percent size={12} />
-                          {selectedDiscount?.nameDiscount || selectedDiscount?.name || t("page.cashier.discount")}
-                          {selectedDiscount && (selectedDiscount.type === "percent" && ` (${selectedDiscount.value}%)`)}
+                          {selectedDiscount?.nameDiscount ||
+                            selectedDiscount?.name ||
+                            t("page.cashier.discount")}
+                          {selectedDiscount &&
+                            selectedDiscount.type === "percent" &&
+                            ` (${selectedDiscount.value}%)`}
                         </span>
                         <span className="font-medium text-emerald-500">
                           -Rp {formatPrice(discountValue)}
@@ -511,7 +551,10 @@ const CheckoutModal = ({
                 </label>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setOrderType("dine-in"); setSelectedTable(null); }}
+                    onClick={() => {
+                      setOrderType("dine-in");
+                      setSelectedTable(null);
+                    }}
                     className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all ${
                       orderType === "dine-in"
                         ? "border-primary bg-primary/10 shadow-sm"
@@ -520,7 +563,10 @@ const CheckoutModal = ({
                     {t("page.cashier.modal.dineIn")}
                   </button>
                   <button
-                    onClick={() => { setOrderType("take-away"); setSelectedTable(null); }}
+                    onClick={() => {
+                      setOrderType("take-away");
+                      setSelectedTable(null);
+                    }}
                     className={`flex-1 p-3 rounded-xl border text-sm font-medium transition-all ${
                       orderType === "take-away"
                         ? "border-primary bg-primary/10 shadow-sm"
@@ -679,49 +725,53 @@ const CheckoutModal = ({
                     <Plus size={18} />
                   </button>
                 </div>
-                {showCustomerDropdown && createPortal(
-                  <div
-                    ref={customerPortalRef}
-                    style={{
-                      position: 'fixed',
-                      top: customerDropdownPos.top,
-                      left: customerDropdownPos.left,
-                      width: customerDropdownPos.width,
-                      zIndex: 70
-                    }}
-                    className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
-                    {filteredCustomers.length > 0 ? (
-                      <div className="max-h-40 overflow-y-auto">
-                        {filteredCustomers.map((c, idx) => (
-                          <button
-                            key={c.id || c._id || idx}
-                            onClick={() => {
-                              setSelectedCustomer(c);
-                              setShowCustomerDropdown(false);
-                              setCustomerSearch(c.name || c.Name || "");
-                            }}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2">
-                            <Users size={14} className="text-muted-foreground" />
-                            <span className="font-medium">{c.name || c.Name || "-"}</span>
-                            <span className="text-muted-foreground text-xs ml-auto">
-                              {c.phone || c.Phone || ""}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="px-4 py-3 text-sm text-muted-foreground">
-                        {t("page.cashier.noCustomer")}
-                      </div>
-                    )}
-                  </div>,
-                  document.body
-                )}
+                {showCustomerDropdown &&
+                  createPortal(
+                    <div
+                      ref={customerPortalRef}
+                      style={{
+                        position: "fixed",
+                        top: customerDropdownPos.top,
+                        left: customerDropdownPos.left,
+                        width: customerDropdownPos.width,
+                        zIndex: 70
+                      }}
+                      className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
+                      {filteredCustomers.length > 0 ? (
+                        <div className="max-h-40 overflow-y-auto">
+                          {filteredCustomers.map((c, idx) => (
+                            <button
+                              key={c.id || c._id || idx}
+                              onClick={() => {
+                                setSelectedCustomer(c);
+                                setShowCustomerDropdown(false);
+                                setCustomerSearch(c.name || c.Name || "");
+                              }}
+                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2">
+                              <Users size={14} className="text-muted-foreground" />
+                              <span className="font-medium">{c.name || c.Name || "-"}</span>
+                              <span className="text-muted-foreground text-xs ml-auto">
+                                {c.phone || c.Phone || ""}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-muted-foreground">
+                          {t("page.cashier.noCustomer")}
+                        </div>
+                      )}
+                    </div>,
+                    document.body
+                  )}
               </div>
 
               {selectedCustomer && matchedTier && (
                 <div className="flex items-center gap-2 px-1 -mt-1">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: matchedTier.color || "#f59e0b" }} />
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: matchedTier.color || "#f59e0b" }}
+                  />
                   <span className="text-xs font-semibold">{matchedTier.name}</span>
                   {matchedTier.discountPercent > 0 && (
                     <span className="text-xs text-emerald-500 font-medium">
@@ -768,42 +818,45 @@ const CheckoutModal = ({
                     </button>
                   )}
                 </div>
-                {showDiscountDropdown && createPortal(
-                  <div
-                    ref={discountPortalRef}
-                    style={{
-                      position: 'fixed',
-                      top: discountDropdownPos.top,
-                      left: discountDropdownPos.left,
-                      width: discountDropdownPos.width,
-                      zIndex: 70
-                    }}
-                    className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
-                    {filteredDiscounts.length > 0 ? (
-                      <div className="max-h-40 overflow-y-auto">
-                        {filteredDiscounts.map((d, idx) => (
-                          <button
-                            key={d.id || d._id || idx}
-                            onClick={() => handleDiscountSelect(d)}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2">
-                            <Percent size={14} className="text-emerald-500" />
-                            <span className="font-medium">
-                              {d.nameDiscount || d.name || d.discountName || "-"}
-                            </span>
-                            <span className="text-muted-foreground text-xs ml-auto">
-                              {d.type === "percent" ? `${d.value}%` : `Rp ${formatPrice(d.value)}`}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="px-4 py-3 text-sm text-muted-foreground">
-                        {t("page.cashier.noDiscount")}
-                      </div>
-                    )}
-                  </div>,
-                  document.body
-                )}
+                {showDiscountDropdown &&
+                  createPortal(
+                    <div
+                      ref={discountPortalRef}
+                      style={{
+                        position: "fixed",
+                        top: discountDropdownPos.top,
+                        left: discountDropdownPos.left,
+                        width: discountDropdownPos.width,
+                        zIndex: 70
+                      }}
+                      className="bg-card border border-border/60 rounded-xl shadow-xl overflow-hidden">
+                      {filteredDiscounts.length > 0 ? (
+                        <div className="max-h-40 overflow-y-auto">
+                          {filteredDiscounts.map((d, idx) => (
+                            <button
+                              key={d.id || d._id || idx}
+                              onClick={() => handleDiscountSelect(d)}
+                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-accent transition-colors flex items-center gap-2">
+                              <Percent size={14} className="text-emerald-500" />
+                              <span className="font-medium">
+                                {d.nameDiscount || d.name || d.discountName || "-"}
+                              </span>
+                              <span className="text-muted-foreground text-xs ml-auto">
+                                {d.type === "percent"
+                                  ? `${d.value}%`
+                                  : `Rp ${formatPrice(d.value)}`}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-muted-foreground">
+                          {t("page.cashier.noDiscount")}
+                        </div>
+                      )}
+                    </div>,
+                    document.body
+                  )}
               </div>
 
               <div className="space-y-1.5">
@@ -844,7 +897,8 @@ const CheckoutModal = ({
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-muted-foreground">Redeem Poin</label>
                     <span className="text-xs text-violet-500 font-medium">
-                      {t("common.available", "Tersedia")}: {memberPoints.toLocaleString("id-ID")} pts
+                      {t("common.available", "Tersedia")}: {memberPoints.toLocaleString("id-ID")}{" "}
+                      pts
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -864,8 +918,7 @@ const CheckoutModal = ({
                       onClick={() => {
                         setRedeemPoints(String(Math.min(memberPoints, total)));
                       }}
-                      className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all"
-                    >
+                      className="shrink-0 h-12 px-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-sm font-semibold text-violet-600 hover:bg-violet-500/20 transition-all">
                       Max
                     </button>
                   </div>
@@ -912,7 +965,8 @@ const CheckoutModal = ({
                 <div className="flex items-center justify-between text-sm mt-1">
                   <span className="text-muted-foreground">{t("page.cashier.paymentMethod")}</span>
                   <span className="font-medium">
-                    {paymentMethods.find((m) => m.id === paymentMethod)?.label || (paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1))}
+                    {paymentMethods.find((m) => m.id === paymentMethod)?.label ||
+                      paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)}
                   </span>
                 </div>
                 {paymentMethod === "cash" && (
