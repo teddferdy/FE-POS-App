@@ -14,9 +14,10 @@ export const getAllDiscountByLocationAndActive = async ({ limit, page, statusDis
   return data;
 };
 
-export const getAllDiscount = async ({ page, limit, statusDiscount }) => {
+export const getAllDiscount = async ({ page, limit, statusDiscount, location } = {}) => {
+  const storeParam = location ? `&store=${location}` : "";
   const { data, status } = await axiosInstance.get(
-    `/discount/get-discount?page=${page}&limit=${limit}&status=${statusDiscount}`
+    `/discount/get-discount?page=${page}&limit=${limit}&status=${statusDiscount}${storeParam}`
   );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

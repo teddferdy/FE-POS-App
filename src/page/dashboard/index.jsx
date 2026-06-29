@@ -288,7 +288,7 @@ const Dashboard = () => {
                   {t("page.dashboard.downloadReport")}
                 </button>
               </div>
-              <div className="p-5 h-[280px]">
+              <div className="p-5 h-[81%]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} barCategoryGap="20%">
                     <CartesianGrid

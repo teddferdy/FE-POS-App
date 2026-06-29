@@ -43,7 +43,7 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { getProductById, editProduct } from "@/services/product";
-import { getAllCategory } from "@/services/category";
+import { getAllCategoryActive } from "@/services/category";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
 
@@ -132,8 +132,11 @@ const EditProduct = () => {
   });
   const product = productData?.data || {};
 
-  const { data: categoriesData } = useQuery(["categories-for-edit"], () =>
-    getAllCategory({ location: product.store || "" })
+  const productStore = product?.store || "";
+  const { data: categoriesData } = useQuery(
+    ["categories-for-edit", productStore],
+    () => getAllCategoryActive({ location: productStore }),
+    { enabled: !!productStore }
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 

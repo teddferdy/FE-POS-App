@@ -44,7 +44,7 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { addProduct } from "@/services/product";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
-import { getAllCategory } from "@/services/category";
+import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { getAllSupplier } from "@/services/supplier";
 import { getAllTaxConfig } from "@/services/tax-config";
@@ -116,9 +116,9 @@ const AddProduct = () => {
 
   const firstStore = selectedStores[0] || "";
   const { data: categoriesData } = useQuery(
-    ["categories-for-product"],
-    () => getAllCategory({ location: firstStore }),
-    { staleTime: 30000 }
+    ["categories-for-product", firstStore],
+    () => getAllCategoryActive({ location: firstStore }),
+    { staleTime: 30000, enabled: true }
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
