@@ -1222,6 +1222,8 @@ flowchart TD
 | **Tukar poin member dengan produk** | Set harga poin di Produk → Redeem di POS |
 | **Pisah bayar per orang**           | Split Bill di POS                        |
 | **Kirim notifikasi ke pelanggan**   | WhatsApp notifikasi otomatis             |
+| **Tanya soal penggunaan POS**      | FAQ Chat (floating button)               |
+| **Analisa performa toko / revenue** | FAQ Chat → ganti mode AI                 |
 
 ---
 
@@ -1353,7 +1355,44 @@ flowchart TD
 
 ---
 
-### 5.17 Ringkasan Fitur Tambahan
+### 5.17 FAQ Chat — Tanya Jawab & AI Analisa
+
+> Fitur chatbot interaktif untuk tanya jawab soal penggunaan POS dan analisa bisnis bertemu AI. Ada di pojok kanan bawah sebagai floating button 💬.
+
+```mermaid
+flowchart TD
+    FAB[Floating Button 💬<br/>pojok kanan bawah] -->|Klik| PANEL[Panel Chat Terbuka]
+
+    PANEL --> PILIH_MODE{Pilih Mode}
+    PILIH_MODE -->|Klik FAQ| FAQ_MODE[Mode FAQ]
+    PILIH_MODE -->|Klik AI| AI_MODE[Mode AI]
+
+    FAQ_MODE --> TOPIK[Ketik pertanyaan<br/>atau pilih topik cepat]
+    FAQ_MODE --> Q_LIST[Daftar topik:<br/>reset password, cetak ulang,<br/>refund, laporan, dll]
+
+    TOPIK --> SEARCH_FAQ[GET /faq?q=...]
+    Q_LIST --> SEARCH_FAQ
+    SEARCH_FAQ --> HASIL_FAQ[Tampilkan jawaban<br/>dari database FAQ]
+
+    AI_MODE --> TANYA_AI[Ketik pertanyaan<br/>analisa toko]
+    TANYA_AI --> POST_AI[POST /faq/ask]
+    POST_AI --> GEMINI[Gemini AI proses<br/>data toko]
+    GEMINI --> JAWAB_AI[Tampilkan jawaban AI ✅]
+
+    PANEL -->|Klik Escape / luar panel| TUTUP[Panel Tertutup]
+```
+
+**Yang perlu kamu tau:**
+
+- **FAQ mode (default):** Jawaban dari database FAQ — cepat, offline-ready, tanpa AI
+- **AI mode:** Jawaban pake Gemini AI buat analisa toko (revenue, stok, performa)
+- **Tombol AI / FAQ** di pojok kanan atas panel buat ganti mode
+- Pencet **Escape** atau klik di luar panel → otomatis nutup
+- Bisa pake dari halaman mana aja — floating button selalu ada
+
+---
+
+### 5.18 Ringkasan Fitur Tambahan
 
 | Fitur              | Input                                   | Proses                       | Output / Dampak                                       |
 | ------------------ | --------------------------------------- | ---------------------------- | ----------------------------------------------------- |
@@ -1553,6 +1592,7 @@ stateDiagram-v2
 | **Redeem Points**                      | Penukaran poin member dengan produk atau diskon                                           | "Produk ini bisa ditebus dengan 100 poin"                     |
 | **Split Bill**                         | Fitur pisah bayar — 1 meja dibagi pembayarannya per orang                                 | "4 orang makan total Rp 200rb, masing2 bayar Rp 50rb"         |
 | **i18n**                               | Internationalization — dukungan multi bahasa (Indonesia & Inggris)                        | "Switch ke English dari menu pengaturan"                      |
+| **FAQ Chat**                           | Fitur chatbot floating buat tanya jawab seputar POS dan analisa bisnis pake AI            | "Klik ikon 💬 di pojok kanan bawah untuk mulai"               |
 
 ---
 
@@ -1728,6 +1768,7 @@ stateDiagram-v2
 | Harga per Toko               |     ✅      |  ✅   |    —    |        —        |  —   |
 | Meja                         |     ✅      |  ✅   |    —    |        —        |  —   |
 | **Lain-lain**                |             |       |         |                 |      |
+| FAQ Chat                     |     ✅      |  ✅   |   ✅    |       ✅        |  ✅  |
 | Reservasi                    |     ✅      |  ✅   |    —    |        —        |  —   |
 | Pengeluaran                  |     ✅      |  ✅   |    —    |        —        |  —   |
 | Notifikasi                   |     ✅      |  ✅   |   ✅    |       ✅        |  ✅  |
@@ -1828,6 +1869,12 @@ stateDiagram-v2
 | #  | Perubahan                                                                                                                                                                           | Dampak buat Bisnis                                                                                     |
 | -- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | 1  | **Adjustment Stok** — halaman `/stock-adjustment` buat koreksi stok manual. Pilih produk → tentuin plus/minus + qty → simpan. Stok produk & `product_store_stock` langsung terupdate. | ✅ Barang rusak, hilang, atau kelebihan stok bisa langsung dikoreksi tanpa perlu lewat jual/beli lagi  |
+
+### 🔧 Fitur Baru (30 Juni 2026)
+
+| #  | Perubahan                                                                                                                                                             | Dampak buat Bisnis                                                                                     |
+| -- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1  | **FAQ Chat (Floating Chatbot)** — floating button 💬 di pojok kanan bawah. 2 mode: FAQ (search dari database) & AI (pake Gemini buat analisa toko). Panel bisa di-scroll, nutup otomatis pas klik luar / Escape. | ✅ Semua role bisa cari jawaban cepat soal POS tanpa buka menu. Admin bisa analisa bisnis pake AI langsung dari panel chat |
 
 ### 📋 Yang Lagi Dikerjakan
 

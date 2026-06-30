@@ -19,7 +19,7 @@ const FAQ_TOPICS = [
   "split bill"
 ];
 
-const MODE = { FAQ: "faq", AI: "ai" }
+const MODE = { FAQ: "faq", AI: "ai" };
 
 // ponytail: flat list, upgrade ke grouped/carousel kalo > 15 topik
 const GREETINGS = {
@@ -57,10 +57,10 @@ function FaqChat() {
   }, []);
 
   const switchMode = useCallback((newMode) => {
-    setMode(newMode)
-    setMessages([GREETINGS[newMode]])
-    setInput("")
-  }, [])
+    setMode(newMode);
+    setMessages([GREETINGS[newMode]]);
+    setInput("");
+  }, []);
 
   const handleSearch = useCallback(
     async (query) => {
@@ -73,8 +73,8 @@ function FaqChat() {
 
       try {
         if (mode === MODE.AI) {
-          const answer = await askAi(q)
-          addMessage({ role: "bot", text: answer || "Maaf, AI belum bisa jawab. Coba lagi." })
+          const answer = await askAi(q);
+          addMessage({ role: "bot", text: answer || "Maaf, AI belum bisa jawab. Coba lagi." });
         } else {
           const results = await searchFaq(q);
           if (results.length === 0) {
@@ -158,7 +158,9 @@ function FaqChat() {
                     {mode === MODE.AI ? "AI Analisa" : "FAQ Chat"}
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
-                    {mode === MODE.AI ? "Tanya AI soal bisnis toko" : "Tanya seputar penggunaan POS"}
+                    {mode === MODE.AI
+                      ? "Tanya AI soal bisnis toko"
+                      : "Tanya seputar penggunaan POS"}
                   </p>
                 </div>
               </div>
