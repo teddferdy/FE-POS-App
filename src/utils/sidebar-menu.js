@@ -41,35 +41,54 @@ export const sidebarMenuSuperAdmin = [
     actions: ["view"]
   },
   {
-    title: "Kasir",
-    i18nKey: "sidebar.cashier",
-    href: "/home",
+    title: "POS",
+    section: true,
+    i18nKey: "sidebar.section.pos",
     icon: Calculator,
-    children: [],
-    actions: ["view", "add"]
+    children: [
+      {
+        title: "Kasir",
+        i18nKey: "sidebar.cashier",
+        href: "/home",
+        icon: Calculator,
+        actions: ["view", "add"]
+      },
+      {
+        title: "Kasir (Register)",
+        i18nKey: "sidebar.cashRegister",
+        href: "/cash-register/current",
+        icon: DollarSign,
+        actions: ["view", "add"]
+      },
+      {
+        title: "Dapur (KDS)",
+        i18nKey: "sidebar.kitchenDisplay",
+        href: "/kitchen-display",
+        icon: ChefHat,
+        actions: ["view"]
+      }
+    ]
   },
   {
-    title: "Kasir (Register)",
-    i18nKey: "sidebar.cashRegister",
-    href: "/cash-register/current",
-    icon: DollarSign,
-    children: [],
-    actions: ["view", "add"]
-  },
-  {
-    title: "Kelola Toko",
-    i18nKey: "sidebar.kelolaToko",
-    href: "/location-list",
-    icon: Store,
-    children: [],
-    actions: ["add", "edit", "view", "delete", "import", "export"]
-  },
-  {
-    title: "Produk",
-    i18nKey: "sidebar.produk",
-    href: "",
+    title: "Master Data",
+    section: true,
+    i18nKey: "sidebar.section.masterData",
     icon: Package,
     children: [
+      {
+        title: "Kelola Toko",
+        i18nKey: "sidebar.kelolaToko",
+        href: "/location-list",
+        icon: Store,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Produk",
+        i18nKey: "sidebar.daftarProduk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
       {
         title: "Kategori",
         i18nKey: "sidebar.kategori",
@@ -78,33 +97,10 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Daftar Produk",
-        i18nKey: "sidebar.daftarProduk",
-        href: "/product-list",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Pengadaan",
-    i18nKey: "sidebar.pengadaan",
-    href: "",
-    icon: ShoppingCart,
-    children: [
-      {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
-      {
-        title: "Kategori Bahan Baku",
-        i18nKey: "sidebar.ingredientCategory",
-        href: "/ingredient-category",
-        icon: Tag,
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
@@ -115,6 +111,35 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
+        title: "Kategori Bahan Baku",
+        i18nKey: "sidebar.ingredientCategory",
+        href: "/ingredient-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Diskon",
+        i18nKey: "sidebar.diskon",
+        href: "/discount-list",
+        icon: BadgePercent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      }
+    ]
+  },
+  {
+    title: "Pembelian",
+    section: true,
+    i18nKey: "sidebar.section.pembelian",
+    icon: ShoppingCart,
+    children: [
+      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -122,19 +147,139 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view"]
       },
       {
+        title: "Dashboard Utang (AP)",
+        i18nKey: "sidebar.apDashboard",
+        href: "/ap-dashboard",
+        icon: Wallet,
+        actions: ["view"]
+      },
+      {
         title: "Riwayat Pembayaran",
         i18nKey: "sidebar.purchasePayment",
         href: "/purchase-payment",
         icon: Wallet,
         actions: ["view"]
+      },
+      {
+        title: "Goods Receipt",
+        i18nKey: "sidebar.goodsReceipt",
+        href: "/goods-receipt",
+        icon: FileText,
+        actions: ["add", "view", "delete"]
+      },
+      {
+        title: "Purchase Return",
+        i18nKey: "sidebar.purchaseReturn",
+        href: "/purchase-return",
+        icon: ShoppingCart,
+        actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Pelanggan",
-    i18nKey: "sidebar.pelanggan",
-    href: "",
+    title: "Penjualan",
+    section: true,
+    i18nKey: "sidebar.section.penjualan",
+    icon: TrendingUp,
+    children: [
+      {
+        title: "Sales Return",
+        i18nKey: "sidebar.salesReturn",
+        href: "/sales-return",
+        icon: ShoppingCart,
+        actions: ["view"]
+      },
+      {
+        title: "Piutang (AR)",
+        i18nKey: "sidebar.piutang",
+        href: "/accounts-receivable",
+        icon: Receipt,
+        actions: ["view"]
+      }
+    ]
+  },
+  {
+    title: "Inventory",
+    section: true,
+    i18nKey: "sidebar.section.inventory",
+    icon: Warehouse,
+    children: [
+      {
+        title: "Stock Opname",
+        i18nKey: "sidebar.stockOpname",
+        href: "/stock-opname",
+        icon: ClipboardList,
+        actions: ["add", "view"]
+      },
+      {
+        title: "History Stok",
+        i18nKey: "sidebar.historyStok",
+        href: "/stock-history",
+        icon: FileText,
+        actions: ["view"]
+      },
+      {
+        title: "Low Stock",
+        i18nKey: "sidebar.lowStock",
+        href: "/low-stock",
+        icon: TriangleAlert,
+        actions: ["view"]
+      },
+      {
+        title: "Stock Adjustment",
+        href: "/stock-adjustment",
+        icon: Package,
+        actions: ["add"]
+      },
+      {
+        title: "Transfer Stok",
+        i18nKey: "sidebar.transferStok",
+        href: "/stock-transfer",
+        icon: ArrowRightLeft,
+        actions: ["view", "add", "delete"]
+      },
+      {
+        title: "Production Order",
+        i18nKey: "sidebar.productionOrder",
+        href: "/production-order",
+        icon: Package,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "BOM",
+        i18nKey: "sidebar.bom",
+        href: "/bom",
+        icon: ClipboardList,
+        actions: ["add", "view", "delete"]
+      }
+    ]
+  },
+  {
+    title: "Keuangan",
+    section: true,
+    i18nKey: "sidebar.section.keuangan",
+    icon: DollarSign,
+    children: [
+      {
+        title: "Kategori Pengeluaran",
+        i18nKey: "sidebar.kategoriPengeluaran",
+        href: "/expense-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Daftar Pengeluaran",
+        i18nKey: "sidebar.daftarPengeluaran",
+        href: "/expense",
+        icon: Receipt,
+        actions: ["add", "edit", "view", "approve"]
+      }
+    ]
+  },
+  {
+    title: "Membership",
+    section: true,
+    i18nKey: "sidebar.section.membership",
     icon: BookUser,
     children: [
       {
@@ -151,36 +296,12 @@ export const sidebarMenuSuperAdmin = [
         icon: BookUser,
         actions: ["add", "edit", "view", "edit-points"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Transaksi",
-    i18nKey: "sidebar.transaksi",
-    href: "",
-    icon: CreditCard,
-    children: [
-      {
-        title: "Diskon",
-        i18nKey: "sidebar.diskon",
-        href: "/discount-list",
-        icon: BadgePercent,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Piutang (AR)",
-        i18nKey: "sidebar.piutang",
-        href: "/accounts-receivable",
-        icon: Receipt,
-        actions: ["view"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Karyawan",
-    i18nKey: "sidebar.karyawan",
-    href: "",
+    title: "SDM",
+    section: true,
+    i18nKey: "sidebar.section.sdm",
     icon: Users,
     children: [
       {
@@ -211,146 +332,12 @@ export const sidebarMenuSuperAdmin = [
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
       }
-    ],
-    actions: []
-  },
-  {
-    title: "Manajemen Stok",
-    i18nKey: "sidebar.manajemenStok",
-    href: "",
-    icon: ClipboardList,
-    children: [
-      {
-        title: "Persediaan",
-        i18nKey: "sidebar.persediaan",
-        href: "",
-        icon: ClipboardList,
-        children: [
-          {
-            title: "Stock Opname",
-            i18nKey: "sidebar.stockOpname",
-            href: "/stock-opname",
-            icon: ClipboardList,
-            actions: ["add", "view"]
-          },
-          {
-            title: "History Stok",
-            i18nKey: "sidebar.historyStok",
-            href: "/stock-history",
-            icon: FileText,
-            actions: ["view"]
-          },
-          {
-            title: "Low Stock",
-            i18nKey: "sidebar.lowStock",
-            href: "/low-stock",
-            icon: TriangleAlert,
-            actions: ["view"]
-          },
-          {
-            title: "Adjustment Stok",
-            href: "/stock-adjustment",
-            icon: Package,
-            actions: ["add"]
-          }
-        ]
-      },
-      {
-        title: "Produksi",
-        i18nKey: "sidebar.produksi",
-        href: "",
-        icon: Package,
-        children: [
-          {
-            title: "Dapur (KDS)",
-            i18nKey: "sidebar.kitchenDisplay",
-            href: "/kitchen-display",
-            icon: ChefHat,
-            actions: ["view"]
-          },
-          {
-            title: "Production Order",
-            i18nKey: "sidebar.productionOrder",
-            href: "/production-order",
-            icon: Package,
-            actions: ["add", "edit", "view", "delete"]
-          },
-          {
-            title: "BOM",
-            i18nKey: "sidebar.bom",
-            href: "/bom",
-            icon: ClipboardList,
-            actions: ["add", "view", "delete"]
-          }
-        ]
-      },
-      {
-        title: "Penerimaan & Retur",
-        i18nKey: "sidebar.penerimaanRetur",
-        href: "",
-        icon: FileText,
-        children: [
-          {
-            title: "Goods Receipt",
-            i18nKey: "sidebar.goodsReceipt",
-            href: "/goods-receipt",
-            icon: FileText,
-            actions: ["add", "view", "delete"]
-          },
-          {
-            title: "Sales Return",
-            i18nKey: "sidebar.salesReturn",
-            href: "/sales-return",
-            icon: ShoppingCart,
-            actions: ["view"]
-          },
-          {
-            title: "Purchase Return",
-            i18nKey: "sidebar.purchaseReturn",
-            href: "/purchase-return",
-            icon: ShoppingCart,
-            actions: ["view"]
-          }
-        ]
-      },
-      {
-        title: "Transfer Stok",
-        i18nKey: "sidebar.transferStok",
-        href: "/stock-transfer",
-        icon: ArrowRightLeft,
-        children: [],
-        actions: ["view", "add", "delete"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Pengeluaran",
-    i18nKey: "sidebar.pengeluaran",
-    href: "",
-    icon: Receipt,
-    children: [
-      {
-        title: "Kategori Pengeluaran",
-        i18nKey: "sidebar.kategoriPengeluaran",
-        href: "/expense-category",
-        icon: Tag,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Daftar Pengeluaran",
-        i18nKey: "sidebar.daftarPengeluaran",
-        href: "/expense",
-        icon: Receipt,
-        actions: ["add", "edit", "view", "approve"]
-      }
-    ],
-    actions: []
+    ]
   },
   {
     title: "Laporan",
-    i18nKey: "sidebar.laporan",
-    href: "",
+    section: true,
+    i18nKey: "sidebar.section.laporan",
     icon: BarChart3,
     children: [
       {
@@ -388,13 +375,12 @@ export const sidebarMenuSuperAdmin = [
         icon: Receipt,
         actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   },
   {
     title: "Pengaturan",
-    i18nKey: "sidebar.pengaturan",
-    href: "",
+    section: true,
+    i18nKey: "sidebar.section.pengaturan",
     icon: Settings,
     children: [
       {
@@ -433,13 +419,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["view", "edit"]
       },
       {
-        title: "Meja",
-        i18nKey: "sidebar.meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
-      },
-      {
         title: "Reservasi Meja",
         i18nKey: "sidebar.reservation",
         href: "/reservation",
@@ -453,27 +432,55 @@ export const sidebarMenuSuperAdmin = [
         icon: Database,
         actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   }
 ];
 
 export const sidebarMenuAdmin = [
   {
-    title: "Dashboard Toko",
+    title: "Dashboard",
     i18nKey: "sidebar.dashboardAdmin",
     href: "/dashboard-admin",
     icon: Crown,
     actions: ["view"]
   },
   {
-    title: "Produk",
-    i18nKey: "sidebar.produk",
-    href: "",
+    title: "POS",
+    section: true,
+    i18nKey: "sidebar.section.pos",
+    icon: Calculator,
+    children: [
+      {
+        title: "Kasir",
+        i18nKey: "sidebar.cashier",
+        href: "/home",
+        icon: Calculator,
+        actions: ["view", "add"]
+      },
+      {
+        title: "Kasir (Register)",
+        i18nKey: "sidebar.cashRegister",
+        href: "/cash-register/current",
+        icon: DollarSign,
+        actions: ["view", "add"]
+      },
+      {
+        title: "Dapur (KDS)",
+        i18nKey: "sidebar.kitchenDisplay",
+        href: "/kitchen-display",
+        icon: ChefHat,
+        actions: ["view"]
+      }
+    ]
+  },
+  {
+    title: "Master Data",
+    section: true,
+    i18nKey: "sidebar.section.masterData",
     icon: Package,
     children: [
       {
-        title: "Daftar Produk",
+        title: "Produk",
         i18nKey: "sidebar.daftarProduk",
         href: "/product-list",
         icon: UtensilsCrossed,
@@ -485,28 +492,12 @@ export const sidebarMenuAdmin = [
         href: "/category-list",
         icon: Tag,
         actions: ["add", "edit", "view", "delete", "import", "export"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Pengadaan",
-    i18nKey: "sidebar.pengadaan",
-    href: "",
-    icon: ShoppingCart,
-    children: [
+      },
       {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
-      {
-        title: "Kategori Bahan Baku",
-        i18nKey: "sidebar.ingredientCategory",
-        href: "/ingredient-category",
-        icon: Tag,
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
@@ -517,6 +508,35 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete"]
       },
       {
+        title: "Kategori Bahan Baku",
+        i18nKey: "sidebar.ingredientCategory",
+        href: "/ingredient-category",
+        icon: Tag,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      },
+      {
+        title: "Diskon",
+        i18nKey: "sidebar.diskon",
+        href: "/discount-list",
+        icon: BadgePercent,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      }
+    ]
+  },
+  {
+    title: "Pembelian",
+    section: true,
+    i18nKey: "sidebar.section.pembelian",
+    icon: ShoppingCart,
+    children: [
+      {
         title: "Purchase Order",
         i18nKey: "sidebar.purchaseOrder",
         href: "/purchase-order",
@@ -524,66 +544,47 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view"]
       },
       {
+        title: "Dashboard Utang (AP)",
+        i18nKey: "sidebar.apDashboard",
+        href: "/ap-dashboard",
+        icon: Wallet,
+        actions: ["view"]
+      },
+      {
         title: "Riwayat Pembayaran",
         i18nKey: "sidebar.purchasePayment",
         href: "/purchase-payment",
         icon: Wallet,
         actions: ["view"]
-      }
-    ],
-    actions: []
-  },
-  {
-    title: "Kasir",
-    i18nKey: "sidebar.cashier",
-    href: "/home",
-    icon: Calculator,
-    children: [],
-    actions: ["view", "add"]
-  },
-  {
-    title: "Kasir (Register)",
-    i18nKey: "sidebar.cashRegister",
-    href: "/cash-register/current",
-    icon: DollarSign,
-    children: [],
-    actions: ["view", "add"]
-  },
-  {
-    title: "Pelanggan",
-    i18nKey: "sidebar.pelanggan",
-    href: "",
-    icon: BookUser,
-    children: [
-      {
-        title: "Tier / Level",
-        i18nKey: "sidebar.memberTier",
-        href: "/member-tier",
-        icon: TrendingUp,
-        actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Daftar Member",
-        i18nKey: "sidebar.daftarMember",
-        href: "/member-list",
-        icon: BookUser,
-        actions: ["add", "edit", "view"]
+        title: "Goods Receipt",
+        i18nKey: "sidebar.goodsReceipt",
+        href: "/goods-receipt",
+        icon: FileText,
+        actions: ["add", "view", "delete"]
+      },
+      {
+        title: "Purchase Return",
+        i18nKey: "sidebar.purchaseReturn",
+        href: "/purchase-return",
+        icon: ShoppingCart,
+        actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Transaksi",
-    i18nKey: "sidebar.transaksi",
-    href: "",
-    icon: CreditCard,
+    title: "Penjualan",
+    section: true,
+    i18nKey: "sidebar.section.penjualan",
+    icon: TrendingUp,
     children: [
       {
-        title: "Diskon",
-        i18nKey: "sidebar.diskon",
-        href: "/discount-list",
-        icon: Percent,
-        actions: ["add", "edit", "view", "delete"]
+        title: "Sales Return",
+        i18nKey: "sidebar.salesReturn",
+        href: "/sales-return",
+        icon: ShoppingCart,
+        actions: ["view"]
       },
       {
         title: "Piutang (AR)",
@@ -592,109 +593,69 @@ export const sidebarMenuAdmin = [
         icon: Receipt,
         actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   },
   {
     title: "Inventory",
-    i18nKey: "sidebar.inventory",
-    href: "",
+    section: true,
+    i18nKey: "sidebar.section.inventory",
     icon: Warehouse,
     children: [
       {
-        title: "Persediaan",
-        i18nKey: "sidebar.persediaan",
-        href: "",
+        title: "Stock Opname",
+        i18nKey: "sidebar.stockOpname",
+        href: "/stock-opname",
         icon: ClipboardList,
-        children: [
-          {
-            title: "Stock Opname",
-            i18nKey: "sidebar.stockOpname",
-            href: "/stock-opname",
-            icon: ClipboardList,
-            actions: ["add", "view"]
-          },
-          {
-            title: "History Stok",
-            i18nKey: "sidebar.historyStok",
-            href: "/stock-history",
-            icon: FileText,
-            actions: ["view"]
-          },
-          {
-            title: "Low Stock",
-            i18nKey: "sidebar.lowStock",
-            href: "/low-stock",
-            icon: TriangleAlert,
-            actions: ["view"]
-          },
-          {
-            title: "Adjustment Stok",
-            href: "/stock-adjustment",
-            icon: Package,
-            actions: ["add"]
-          },
-          {
-            title: "Dapur (KDS)",
-            i18nKey: "sidebar.kitchenDisplay",
-            href: "/kitchen-display",
-            icon: ChefHat,
-            actions: ["view"]
-          },
-          {
-            title: "Production Order",
-            i18nKey: "sidebar.productionOrder",
-            href: "/production-order",
-            icon: Package,
-            actions: ["add", "edit", "view", "delete"]
-          }
-        ]
+        actions: ["add", "view"]
       },
       {
-        title: "Penerimaan & Retur",
-        i18nKey: "sidebar.penerimaanRetur",
-        href: "",
+        title: "History Stok",
+        i18nKey: "sidebar.historyStok",
+        href: "/stock-history",
         icon: FileText,
-        children: [
-          {
-            title: "Goods Receipt",
-            i18nKey: "sidebar.goodsReceipt",
-            href: "/goods-receipt",
-            icon: FileText,
-            actions: ["add", "view", "delete"]
-          },
-          {
-            title: "Sales Return",
-            i18nKey: "sidebar.salesReturn",
-            href: "/sales-return",
-            icon: ShoppingCart,
-            actions: ["view"]
-          },
-          {
-            title: "Purchase Return",
-            i18nKey: "sidebar.purchaseReturn",
-            href: "/purchase-return",
-            icon: ShoppingCart,
-            actions: ["view"]
-          }
-        ]
+        actions: ["view"]
+      },
+      {
+        title: "Low Stock",
+        i18nKey: "sidebar.lowStock",
+        href: "/low-stock",
+        icon: TriangleAlert,
+        actions: ["view"]
+      },
+      {
+        title: "Stock Adjustment",
+        href: "/stock-adjustment",
+        icon: Package,
+        actions: ["add"]
       },
       {
         title: "Transfer Stok",
         i18nKey: "sidebar.transferStok",
         href: "/stock-transfer",
         icon: ArrowRightLeft,
-        children: [],
         actions: ["view", "add", "delete"]
+      },
+      {
+        title: "Production Order",
+        i18nKey: "sidebar.productionOrder",
+        href: "/production-order",
+        icon: Package,
+        actions: ["add", "edit", "view", "delete"]
+      },
+      {
+        title: "BOM",
+        i18nKey: "sidebar.bom",
+        href: "/bom",
+        icon: ClipboardList,
+        actions: ["add", "view", "delete"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Pengeluaran",
-    i18nKey: "sidebar.pengeluaran",
-    href: "",
-    icon: Receipt,
+    title: "Keuangan",
+    section: true,
+    i18nKey: "sidebar.section.keuangan",
+    icon: DollarSign,
     children: [
       {
         title: "Kategori Pengeluaran",
@@ -717,36 +678,34 @@ export const sidebarMenuAdmin = [
         icon: Percent,
         actions: ["add", "edit", "view", "delete", "import", "export"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Laporan",
-    i18nKey: "sidebar.laporan",
-    href: "",
-    icon: BarChart3,
+    title: "Membership",
+    section: true,
+    i18nKey: "sidebar.section.membership",
+    icon: BookUser,
     children: [
       {
-        title: "Penjualan",
-        i18nKey: "sidebar.penjualan",
-        href: "/report/sales",
+        title: "Member Tier",
+        i18nKey: "sidebar.memberTier",
+        href: "/member-tier",
         icon: TrendingUp,
-        actions: ["view", "export"]
+        actions: ["add", "edit", "view", "delete"]
       },
       {
-        title: "Best Selling",
-        i18nKey: "sidebar.produkTerlaris",
-        href: "/best-selling",
-        icon: BarChart3,
-        actions: ["view", "export"]
+        title: "Daftar Member",
+        i18nKey: "sidebar.daftarMember",
+        href: "/member-list",
+        icon: BookUser,
+        actions: ["add", "edit", "view"]
       }
-    ],
-    actions: []
+    ]
   },
   {
-    title: "Karyawan",
-    i18nKey: "sidebar.karyawan",
-    href: "",
+    title: "SDM",
+    section: true,
+    i18nKey: "sidebar.section.sdm",
     icon: Users,
     children: [
       {
@@ -777,29 +736,36 @@ export const sidebarMenuAdmin = [
         icon: CalendarDays,
         actions: ["add", "edit", "view", "delete"]
       }
-    ],
-    actions: []
+    ]
+  },
+  {
+    title: "Laporan",
+    section: true,
+    i18nKey: "sidebar.section.laporan",
+    icon: BarChart3,
+    children: [
+      {
+        title: "Penjualan",
+        i18nKey: "sidebar.penjualan",
+        href: "/report/sales",
+        icon: TrendingUp,
+        actions: ["view", "export"]
+      },
+      {
+        title: "Best Selling",
+        i18nKey: "sidebar.produkTerlaris",
+        href: "/best-selling",
+        icon: BarChart3,
+        actions: ["view", "export"]
+      }
+    ]
   },
   {
     title: "Pengaturan",
-    i18nKey: "sidebar.pengaturan",
-    href: "",
+    section: true,
+    i18nKey: "sidebar.section.pengaturan",
     icon: Settings,
     children: [
-      {
-        title: "Meja",
-        i18nKey: "sidebar.meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
-      },
-      {
-        title: "Reservasi Meja",
-        i18nKey: "sidebar.reservation",
-        href: "/reservation",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
       {
         title: "Metode Pembayaran",
         i18nKey: "sidebar.metodePembayaran",
@@ -822,11 +788,11 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view"]
       },
       {
-        title: "Harga per Toko",
-        i18nKey: "sidebar.pricePerStore",
-        href: "/price-list-template",
-        icon: BadgePercent,
-        actions: ["view", "edit"]
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Backup & Restore",
@@ -835,8 +801,7 @@ export const sidebarMenuAdmin = [
         icon: Database,
         actions: ["view"]
       }
-    ],
-    actions: []
+    ]
   }
 ];
 
@@ -935,6 +900,12 @@ export const urlWithArrowBack = [
     title: "Purchase Order",
     i18nKey: "sidebar.purchaseOrder",
     pathName: "/purchase-order"
+  },
+  {
+    url: -1,
+    title: "Dashboard Utang",
+    i18nKey: "sidebar.apDashboard",
+    pathName: "/ap-dashboard"
   },
   {
     url: -1,

@@ -168,6 +168,25 @@ const Sidebar = ({ collapsed, onToggle }) => {
   };
 
   const renderNavItem = (item, depth = 0) => {
+    if (item.section) {
+      return (
+        <div key={item.title}>
+          {!collapsed && (
+            <div className="flex items-center gap-2 px-3 py-1.5 mt-3 mb-0.5">
+              {item.icon && <span className="text-muted-foreground/40">{renderIcon(item.icon, 13)}</span>}
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
+                {t(item.i18nKey) || item.title}
+              </span>
+              <div className="flex-1 border-t border-border/30" />
+            </div>
+          )}
+          <div className="space-y-0.5">
+            {item.children?.map((child) => renderNavItem(child, depth + 1))}
+          </div>
+        </div>
+      );
+    }
+
     if (item.children && item.children.length > 0) {
       if (item.children.length === 1) {
         const child = item.children[0];
@@ -177,14 +196,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
             onClick={() => {
               if (child.href) navigate(child.href);
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
               isActive(child.href)
                 ? "bg-primary text-primary-foreground font-medium shadow-sm"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}>
             <span className="shrink-0">{renderIcon(item.icon)}</span>
             <span
-              className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
+              className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${
                 collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               }`}>
               {t(item.i18nKey) || item.title}
@@ -207,14 +226,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 toggleSubmenu(item.title);
               }
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
               parentActive
                 ? "bg-primary/10 text-primary font-medium"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}>
             <span className="shrink-0">{renderIcon(item.icon)}</span>
             <span
-              className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
+              className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${
                 collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               }`}>
               {t(item.i18nKey) || item.title}
@@ -223,14 +242,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
               className={`ml-auto shrink-0 transition-all duration-200 ${
                 collapsed ? "hidden" : ""
               } ${isOpen ? "rotate-180" : ""}`}>
-              <ChevronDown size={16} />
+              <ChevronDown size={14} />
             </span>
           </button>
           <div
             className={`overflow-y-auto transition-all duration-300 ${
               collapsed ? "max-h-0" : isOpen ? "max-h-[800px]" : "max-h-0"
             }`}>
-            <div className="ml-2 mt-1 space-y-1 border-l-2 border-border pl-3">
+            <div className="ml-2 mt-1 space-y-0.5 pl-3">
               {item.children.map((child) => renderNavItem(child, depth + 1))}
             </div>
           </div>
@@ -244,14 +263,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
         onClick={() => {
           if (item.href) navigate(item.href);
         }}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
           isActive(item.href)
             ? "bg-primary text-primary-foreground font-medium shadow-sm"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         }`}>
         <span className="shrink-0">{renderIcon(item.icon)}</span>
         <span
-          className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${
+          className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300 ${
             collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
           }`}>
           {t(item.i18nKey) || item.title}

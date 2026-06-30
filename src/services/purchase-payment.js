@@ -36,6 +36,12 @@ export const recordPayment = async (payload) => {
   return data;
 };
 
+export const getAPDashboard = async () => {
+  const { data, status } = await axiosInstance.get("/purchase-payment/ap-dashboard");
+  if (status !== 200) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const deletePayment = async (id) => {
   const { data, status } = await axiosInstance.delete(`/purchase-payment/delete/${id}`);
   if (status !== 200 && status !== 204) throw Error(`${data?.message}`);

@@ -125,6 +125,7 @@ const PurchasePaymentList = React.lazy(() => import("./page/purchase-order/Purch
 const PurchasePaymentDetail = React.lazy(
   () => import("./page/purchase-order/PurchasePaymentDetail")
 );
+const DashboardUtang = React.lazy(() => import("./page/purchase-order/DashboardUtang"));
 
 // Production Order
 const ProductionOrderList = React.lazy(() => import("./page/production-order/ProductionOrderList"));
@@ -417,6 +418,7 @@ function App() {
               path="/purchase-payment-detail"
               element={withLayout(<PurchasePaymentDetail />)}
             />
+            <Route path="/ap-dashboard" element={withLayout(<DashboardUtang />)} />
 
             <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
             <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
