@@ -9,9 +9,6 @@ import { translationSelect } from "@/state/translation";
 import OfflineIndicator from "./components/organism/OfflineIndicator";
 import { setupAutoSync } from "@/services/offline";
 
-// Tour Guide
-const SuperAdminTour = React.lazy(() => import("./components/organism/SuperAdminTour"));
-
 // Layout
 import DashboardLayout from "./components/layout/DashboardLayout";
 
@@ -243,6 +240,9 @@ const AddExpense = React.lazy(() => import("./page/expense/AddExpense"));
 const EditExpense = React.lazy(() => import("./page/expense/EditExpense"));
 const DetailExpense = React.lazy(() => import("./page/expense/DetailExpense"));
 
+// FAQ
+const SupportComponent = React.lazy(() => import("@/components/organism/Support"));
+
 const Support = React.lazy(() => import("./page/support"));
 
 function App() {
@@ -279,7 +279,7 @@ function App() {
               <Loading />
             </div>
           }>
-          <SuperAdminTour />
+          <SupportComponent />
           <RouteProgress />
           <AnimatedRoutes>
             {/* Auth */}

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Tag, ArrowLeft, Clock, User, Edit } from "lucide-react";
+import { Tag, ArrowLeft, Clock, Edit } from "lucide-react";
 import { getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -71,11 +71,15 @@ const ExpenseCategoryDetail = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <button onClick={() => navigate("/expense-category")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/expense-category")}
+          className="hover:text-foreground transition-colors">
           {t("page.expenseCategory.list.title")}
         </button>
         <span className="text-xs">/</span>
@@ -94,7 +98,7 @@ const ExpenseCategoryDetail = () => {
           </Button>
           <Button onClick={() => navigate(`/edit-expense-category?id=${id}`)} className="gap-2">
             <Edit size={18} />
-{t("common.edit")}
+            {t("common.edit")}
           </Button>
         </div>
       </div>
@@ -112,17 +116,24 @@ const ExpenseCategoryDetail = () => {
             </div>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nama</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Nama
+                </p>
                 <p className="text-sm font-semibold text-foreground mt-1">{category.name}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</p>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${statusStyle}`}>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Status
+                </p>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${statusStyle}`}>
                   {statusLabel}
                 </span>
               </div>
               <div className="md:col-span-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Deskripsi</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Deskripsi
+                </p>
                 <p className="text-sm text-foreground mt-1">{category.description || "-"}</p>
               </div>
             </div>
@@ -138,19 +149,33 @@ const ExpenseCategoryDetail = () => {
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                 <span className="text-xs font-medium text-muted-foreground">Dibuat Pada</span>
-                <span className="text-xs font-semibold text-foreground text-right">{formatDate(category.createdAt)}</span>
+                <span className="text-xs font-semibold text-foreground text-right">
+                  {formatDate(category.createdAt)}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                 <span className="text-xs font-medium text-muted-foreground">Diperbarui Pada</span>
-                <span className="text-xs font-semibold text-foreground text-right">{formatDate(category.updatedAt)}</span>
+                <span className="text-xs font-semibold text-foreground text-right">
+                  {formatDate(category.updatedAt)}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                 <span className="text-xs font-medium text-muted-foreground">Dibuat Oleh</span>
-                <span className="text-xs font-semibold text-foreground text-right">{category.createdByUser?.fullName || category.createdByUser?.userName || category.createdBy || "-"}</span>
+                <span className="text-xs font-semibold text-foreground text-right">
+                  {category.createdByUser?.fullName ||
+                    category.createdByUser?.userName ||
+                    category.createdBy ||
+                    "-"}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                 <span className="text-xs font-medium text-muted-foreground">Diubah Oleh</span>
-                <span className="text-xs font-semibold text-foreground text-right">{category.modifiedByUser?.fullName || category.modifiedByUser?.userName || category.modifiedBy || "-"}</span>
+                <span className="text-xs font-semibold text-foreground text-right">
+                  {category.modifiedByUser?.fullName ||
+                    category.modifiedByUser?.userName ||
+                    category.modifiedBy ||
+                    "-"}
+                </span>
               </div>
             </div>
           </Card>

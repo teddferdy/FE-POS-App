@@ -28,9 +28,13 @@ const AddGoodsReceipt = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: poData } = useQuery(["pos-for-gr"], () => getAllPurchaseOrder({ limit: 50, status: "received" }), {
-    staleTime: 60000
-  });
+  const { data: poData } = useQuery(
+    ["pos-for-gr"],
+    () => getAllPurchaseOrder({ limit: 50, status: "received" }),
+    {
+      staleTime: 60000
+    }
+  );
   const purchaseOrders = poData?.data || [];
 
   const { data: poDetail, isLoading: loadingPo } = useQuery(
@@ -155,7 +159,10 @@ const AddGoodsReceipt = () => {
         </div>
 
         <form
-          onSubmit={(e) => { e.preventDefault(); doSubmit(false); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            doSubmit(false);
+          }}
           className="bg-card p-6 rounded-xl border border-border space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -361,7 +368,11 @@ const AddGoodsReceipt = () => {
               <X size={16} className="mr-1" /> {t("page.goodsReceipt.add.form.cancel")}
             </Button>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDraftModal(true)}
+                disabled={isSubmitting}>
                 Simpan sebagai Draft
               </Button>
               <Button type="submit" disabled={isSubmitting || items.length === 0}>
@@ -397,7 +408,10 @@ const AddGoodsReceipt = () => {
           title="Simpan sebagai Draft"
           description="Data akan disimpan sebagai draft"
           confirmText="Ya, Simpan"
-          onConfirm={() => { setDraftModal(false); doSubmit(true); }}
+          onConfirm={() => {
+            setDraftModal(false);
+            doSubmit(true);
+          }}
         />
       </div>
     </>

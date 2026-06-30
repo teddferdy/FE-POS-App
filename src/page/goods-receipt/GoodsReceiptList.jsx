@@ -258,10 +258,30 @@ const GoodsReceiptList = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label={t("page.goodsReceipt.list.stats.total")} value={stats.total ?? total} icon="inventory" variant="default" />
-        <StatCard label={t("common.draft")} value={stats.draft ?? 0} icon="edit_note" variant="draft" />
-        <StatCard label={t("common.completed")} value={stats.completed ?? 0} icon="check_circle" variant="active" />
-        <StatCard label={t("common.cancelled")} value={stats.cancelled ?? 0} icon="cancel" variant="inactive" />
+        <StatCard
+          label={t("page.goodsReceipt.list.stats.total")}
+          value={stats.total ?? total}
+          icon="inventory"
+          variant="default"
+        />
+        <StatCard
+          label={t("common.draft")}
+          value={stats.draft ?? 0}
+          icon="edit_note"
+          variant="draft"
+        />
+        <StatCard
+          label={t("common.completed")}
+          value={stats.completed ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("common.cancelled")}
+          value={stats.cancelled ?? 0}
+          icon="cancel"
+          variant="inactive"
+        />
       </div>
 
       {isError ? (

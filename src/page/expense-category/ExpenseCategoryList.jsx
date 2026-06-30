@@ -107,13 +107,17 @@ const ExpenseCategoryList = () => {
     {
       header: t("common.createdBy"),
       render: (row) => (
-        <span className="text-sm text-muted-foreground">{row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}</span>
+        <span className="text-sm text-muted-foreground">
+          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+        </span>
       )
     },
     {
       header: t("common.modifiedBy"),
       render: (row) => (
-        <span className="text-sm text-muted-foreground">{row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}</span>
+        <span className="text-sm text-muted-foreground">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+        </span>
       )
     },
     {
@@ -122,7 +126,12 @@ const ExpenseCategoryList = () => {
         if (!row.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(row.createdAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -131,7 +140,12 @@ const ExpenseCategoryList = () => {
         if (!row.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(row.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return <span className="text-sm font-mono text-muted-foreground">{d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
       }
     },
     {
@@ -205,10 +219,30 @@ const ExpenseCategoryList = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard label={t("page.expenseCategory.list.total")} value={totalStats} icon="folder" variant="default" />
-            <StatCard label={t("common.active")} value={activeCount} icon="check_circle" variant="active" />
-            <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
-            <StatCard label={t("common.inactive")} value={inactiveCount} icon="cancel" variant="inactive" />
+            <StatCard
+              label={t("page.expenseCategory.list.total")}
+              value={totalStats}
+              icon="folder"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+            />
           </div>
 
           <div>

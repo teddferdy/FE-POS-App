@@ -127,9 +127,7 @@ const EditExpenseCategory = () => {
             {t("page.expenseCategory.list.title")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("breadcrumb.edit")}
-          </span>
+          <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
         </nav>
 
         <div>
@@ -183,12 +181,23 @@ const EditExpenseCategory = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${field.value ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"}`}>
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${field.value ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"}`}>
                       <div className="flex items-center gap-3">
-                        {field.value ? <CheckCircle2 size={20} className="text-green-600" /> : <XCircle size={20} className="text-red-600" />}
+                        {field.value ? (
+                          <CheckCircle2 size={20} className="text-green-600" />
+                        ) : (
+                          <XCircle size={20} className="text-red-600" />
+                        )}
                         <div>
-                          <p className="text-sm font-semibold text-foreground">{field.value ? t("common.active") : t("common.inactive")}</p>
-                          <p className="text-xs text-muted-foreground">{field.value ? "Kategori aktif dan dapat digunakan" : "Kategori tidak aktif"}</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {field.value ? t("common.active") : t("common.inactive")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {field.value
+                              ? "Kategori aktif dan dapat digunakan"
+                              : "Kategori tidak aktif"}
+                          </p>
                         </div>
                       </div>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -215,9 +224,7 @@ const EditExpenseCategory = () => {
                     disabled={updateMutation.isLoading}
                     className="gap-2">
                     <Save size={18} />
-                    {updateMutation.isLoading
-                      ? t("button.saving")
-                      : t("button.save")}
+                    {updateMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>
                 </div>
               </div>
