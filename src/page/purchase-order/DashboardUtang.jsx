@@ -2,12 +2,12 @@ import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Wallet, Building2, Clock, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Wallet, Building2, Clock } from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
+import PageHeader from "@/components/ui/PageHeader";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -22,10 +22,7 @@ const DashboardUtang = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    "ap-dashboard",
-    getAPDashboard
-  );
+  const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard);
 
   const { summary = {}, suppliers = [], outstandingPOs = [] } = data?.data || {};
 
@@ -37,8 +34,7 @@ const DashboardUtang = () => {
       render: (s) => (
         <span
           className="font-medium text-primary cursor-pointer hover:underline"
-          onClick={() => navigate(`/detail-supplier?id=${s.supplierId}`)}
-        >
+          onClick={() => navigate(`/detail-supplier?id=${s.supplierId}`)}>
           <Building2 size={14} className="inline mr-1" />
           {s.supplierName}
         </span>
@@ -58,9 +54,7 @@ const DashboardUtang = () => {
       header: t("page.apDashboard.supplier.totalPaid"),
       align: "right",
       render: (s) => (
-        <span className="text-green-600">
-          Rp {(s.totalPaid || 0).toLocaleString("id-ID")}
-        </span>
+        <span className="text-green-600">Rp {(s.totalPaid || 0).toLocaleString("id-ID")}</span>
       )
     },
     {
@@ -80,8 +74,7 @@ const DashboardUtang = () => {
       render: (po) => (
         <span
           className="font-medium text-primary cursor-pointer hover:underline"
-          onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}
-        >
+          onClick={() => navigate(`/purchase-order/detail?id=${po.id}`)}>
           {po.orderNumber || `PO-${po.id}`}
         </span>
       )
@@ -111,10 +104,7 @@ const DashboardUtang = () => {
     },
     {
       header: t("page.apDashboard.po.dueDate"),
-      render: (po) =>
-        po.dueDate
-          ? new Date(po.dueDate).toLocaleDateString("id")
-          : "-"
+      render: (po) => (po.dueDate ? new Date(po.dueDate).toLocaleDateString("id") : "-")
     },
     {
       header: t("page.apDashboard.po.overdue"),
@@ -134,9 +124,7 @@ const DashboardUtang = () => {
       render: (po) => {
         const st = statusStyles[po.status] || "bg-gray-100";
         return (
-          <span
-            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${st}`}
-          >
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${st}`}>
             {po.status}
           </span>
         );
@@ -146,31 +134,28 @@ const DashboardUtang = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Wallet size={24} className="text-primary" />{" "}
-            {t("page.apDashboard.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("page.apDashboard.subtitle")}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          {
+            label: t("breadcrumb.home"),
+            href: "/dashboard-super-admin",
+            i18nKey: "breadcrumb.home"
+          },
+          { label: t("page.apDashboard.title"), i18nKey: "page.apDashboard.title" }
+        ]}
+        title={t("page.apDashboard.title")}
+        description={t("page.apDashboard.subtitle")}
+      />
 
       {isLoading ? (
         <Loading fullscreen size="lg" label={t("page.apDashboard.loading")} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             <StatCard
-              label={t("page.apDashboard.card.totalOutstanding")}
-              value={`Rp ${(summary.totalOutstanding || 0).toLocaleString("id-ID")}`}
-              icon="account_balance"
-              variant="inactive"
+              label={t("page.apDashboard.card.supplierCount")}
+              value={summary.supplierCount || 0}
+              icon="business"
             />
             <StatCard
               label={t("page.apDashboard.card.totalPaid")}
@@ -179,9 +164,10 @@ const DashboardUtang = () => {
               variant="active"
             />
             <StatCard
-              label={t("page.apDashboard.card.supplierCount")}
-              value={summary.supplierCount || 0}
-              icon="business"
+              label={t("page.apDashboard.card.totalOutstanding")}
+              value={`Rp ${(summary.totalOutstanding || 0).toLocaleString("id-ID")}`}
+              icon="account_balance"
+              variant="inactive"
             />
             <StatCard
               label={t("page.apDashboard.card.outstandingPO")}
@@ -192,9 +178,7 @@ const DashboardUtang = () => {
           </div>
 
           <Card className="p-5">
-            <h3 className="text-lg font-semibold mb-4">
-              {t("page.apDashboard.supplierTitle")}
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.supplierTitle")}</h3>
             <DataTable
               columns={supplierColumns}
               data={suppliers}
@@ -205,9 +189,7 @@ const DashboardUtang = () => {
           </Card>
 
           <Card className="p-5">
-            <h3 className="text-lg font-semibold mb-4">
-              {t("page.apDashboard.poTitle")}
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.poTitle")}</h3>
             <DataTable
               columns={poColumns}
               data={outstandingPOs}

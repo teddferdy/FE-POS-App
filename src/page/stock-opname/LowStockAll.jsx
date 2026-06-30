@@ -15,9 +15,13 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import AbortController from "@/components/organism/abort-controller";
+import { TipsCard } from "@/components/ui/tips-card";
+import StatCard from "@/components/ui/StatCard";
+import { useSidebar } from "@/components/layout/DashboardLayout";
 
 const LowStockAll = () => {
-  useTranslation();
+  const { t } = useTranslation();
+  const sidebarCollapsed = useSidebar();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [search, setSearch] = useState("");
@@ -45,6 +49,39 @@ const LowStockAll = () => {
   const items = data?.data?.items || [];
   const total = data?.data?.total || 0;
   const totalPages = data?.data?.pagination?.totalPages || 1;
+  const stats = data?.data?.stats || {};
+  const statCards = [
+    {
+      label: t("page.lowStockAll.totalLowStock"),
+      value: String(stats.totalLowStock ?? 0),
+      icon: "inventory_2",
+      variant: "default"
+    },
+    {
+      label: t("page.lowStockAll.products"),
+      value: String(stats.totalProducts ?? 0),
+      icon: "package_2",
+      variant: "active"
+    },
+    {
+      label: t("page.lowStockAll.ingredients"),
+      value: String(stats.totalIngredients ?? 0),
+      icon: "nutrition",
+      variant: "draft"
+    },
+    {
+      label: t("page.lowStockAll.storesAffected"),
+      value: String(stats.totalStores ?? 0),
+      icon: "store",
+      variant: "default"
+    },
+    {
+      label: t("page.lowStockAll.outOfStock"),
+      value: String(stats.totalOutOfStock ?? 0),
+      icon: "block",
+      variant: "inactive"
+    }
+  ];
 
   const getStockStatus = (stock) => {
     if (stock <= 0) {
@@ -192,10 +229,34 @@ const LowStockAll = () => {
       <div>
         <div>
           <PageHeader
-            title="Low Stock - Semua Toko"
-            description="Daftar barang dengan stok menipis di seluruh toko"></PageHeader>
+            title={t("sidebar.lowStockAll")}
+            description={t("page.lowStock.description")}></PageHeader>
         </div>
       </div>
+
+      <div className="flex flex-wrap gap-4">
+        {statCards.map((card, i) => (
+          <div
+            key={i}
+            style={{
+              width: `calc((100% - ${sidebarCollapsed ? 4 : 2}rem) / ${sidebarCollapsed ? 5 : 3})`,
+              transition: "width 300ms ease"
+            }}>
+            <StatCard {...card} />
+          </div>
+        ))}
+      </div>
+
+      <TipsCard
+        variant="warning"
+        title={t("tips.lowStock")}
+        tips={[
+          t("page.lowStockAll.tip1"),
+          t("page.lowStockAll.tip2"),
+          t("page.lowStockAll.tip3"),
+          t("page.lowStockAll.tip4")
+        ]}
+      />
 
       {isError ? (
         <AbortController refetch={refetch} />
@@ -206,7 +267,7 @@ const LowStockAll = () => {
               columns={columns}
               data={items}
               isLoading={isLoading}
-              emptyMessage="Tidak ada barang dengan stok menipis"
+              emptyMessage={t("page.lowStock.empty")}
               emptyIcon={AlertTriangle}
               toolbar={filters}
               pagination={{

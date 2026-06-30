@@ -121,9 +121,7 @@ const PurchaseReturnList = () => {
     },
     {
       header: t("page.purchaseReturn.list.header.returnedBy"),
-      render: (item) => (
-        <span className="text-sm">{item.returnedBy?.name || "-"}</span>
-      )
+      render: (item) => <span className="text-sm">{item.returnedBy?.name || "-"}</span>
     },
     {
       header: t("page.purchaseReturn.list.header.status"),

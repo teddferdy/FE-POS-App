@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
+import { useSidebar } from "@/components/layout/DashboardLayout";
 import {
   TrendingUp,
   TrendingDown,
@@ -182,11 +183,13 @@ const Dashboard = () => {
         })
       : "-";
 
+  const sidebarCollapsed = useSidebar();
+
   return (
     <div className="space-y-6">
       {isLoading ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="bg-card rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -212,9 +215,7 @@ const Dashboard = () => {
         </>
       ) : (
         <>
-          <div
-            data-tour="dashboard-stats"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div data-tour="dashboard-stats" className="flex flex-wrap gap-4">
             {summaryCards.map((card) => {
               const Icon = card.icon;
               const isLowStock = card.icon === AlertTriangle;
@@ -230,6 +231,10 @@ const Dashboard = () => {
                         ? () => navigate("/member-list")
                         : undefined
                   }
+                  style={{
+                    width: `calc((100% - ${sidebarCollapsed ? 4 : 2}rem) / ${sidebarCollapsed ? 5 : 3})`,
+                    transition: "width 300ms ease"
+                  }}
                   className={`bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow ${
                     card.bg || ""
                   } ${isClickable ? "cursor-pointer hover:ring-2 hover:ring-primary/30" : ""}`}>

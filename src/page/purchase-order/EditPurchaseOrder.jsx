@@ -343,7 +343,8 @@ const EditPurchaseOrder = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("page.purchaseOrder.add.store")} <span className="text-destructive">*</span>
+                      {t("page.purchaseOrder.add.store")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <select
                       value={selectedStore}
@@ -359,7 +360,8 @@ const EditPurchaseOrder = () => {
                   </div>
                   <div className="relative">
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("page.purchaseOrder.add.supplier")} <span className="text-destructive">*</span>
+                      {t("page.purchaseOrder.add.supplier")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <div className="flex gap-2">
                       <Input
@@ -489,7 +491,8 @@ const EditPurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("page.purchaseOrder.add.poDate")} <span className="text-destructive">*</span>
+                      {t("page.purchaseOrder.add.poDate")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <DatePicker date={orderDate} setDate={setOrderDate} />
                   </div>
@@ -501,7 +504,8 @@ const EditPurchaseOrder = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">
-                      {t("page.purchaseOrder.add.dueDate")} <span className="text-destructive">*</span>
+                      {t("page.purchaseOrder.add.dueDate")}{" "}
+                      <span className="text-destructive">*</span>
                     </label>
                     <DatePicker date={dueDate} setDate={setDueDate} />
                   </div>
@@ -604,7 +608,11 @@ const EditPurchaseOrder = () => {
                           placeholder={t("page.purchaseOrder.add.qty")}
                           value={item.qty || ""}
                           onChange={(e) =>
-                            updateItem(idx, "qty", Number(e.target.value.replace(/[^0-9]/g, "")) || 0)
+                            updateItem(
+                              idx,
+                              "qty",
+                              Number(e.target.value.replace(/[^0-9]/g, "")) || 0
+                            )
                           }
                           className="h-9 text-sm w-20 shrink-0"
                         />
@@ -776,7 +784,8 @@ const EditPurchaseOrder = () => {
           </div>
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("page.purchaseOrder.add.supplierPhone")} <span className="text-destructive">*</span>
+              {t("page.purchaseOrder.add.supplierPhone")}{" "}
+              <span className="text-destructive">*</span>
             </label>
             <Input
               value={newSupplierPhone}

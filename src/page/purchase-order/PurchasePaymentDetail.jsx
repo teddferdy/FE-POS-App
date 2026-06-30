@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
@@ -10,18 +11,45 @@ import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 
 const methodBadge = {
-  cash: { label: "Cash", class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" },
-  transfer: { label: "Transfer", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400" },
-  giro: { label: "Giro", class: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400" },
-  other: { label: "Other", class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" }
+  cash: {
+    label: "Cash",
+    class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+  },
+  transfer: {
+    label: "Transfer",
+    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+  },
+  giro: {
+    label: "Giro",
+    class: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
+  },
+  other: {
+    label: "Other",
+    class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+  }
 };
 
 const poStatusBadge = {
-  draft: { label: "Draft", class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400" },
-  pending: { label: "Pending", class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" },
-  ordered: { label: "Ordered", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400" },
-  received: { label: "Received", class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" },
-  cancelled: { label: "Cancelled", class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400" }
+  draft: {
+    label: "Draft",
+    class: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+  },
+  pending: {
+    label: "Pending",
+    class: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+  },
+  ordered: {
+    label: "Ordered",
+    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+  },
+  received: {
+    label: "Received",
+    class: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+  },
+  cancelled: {
+    label: "Cancelled",
+    class: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+  }
 };
 
 const Row = ({ label, children }) => (
@@ -100,7 +128,8 @@ const PurchasePaymentDetail = () => {
             </p>
           </div>
         </div>
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${mb.class}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${mb.class}`}>
           <Wallet size={14} />
           {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`) || mb.label}
         </span>
@@ -121,7 +150,9 @@ const PurchasePaymentDetail = () => {
                   </span>
                 </Row>
                 <Row label={t("page.purchasePayment.detail.paymentMethod")}>
-                  <span className="capitalize">{t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}</span>
+                  <span className="capitalize">
+                    {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`)}
+                  </span>
                 </Row>
                 <Row label={t("page.purchasePayment.detail.paymentDate")}>
                   {payment.paymentDate
@@ -136,9 +167,7 @@ const PurchasePaymentDetail = () => {
                 <Row label={t("page.purchasePayment.detail.reference")}>
                   {payment.reference || "-"}
                 </Row>
-                <Row label={t("page.purchasePayment.detail.notes")}>
-                  {payment.notes || "-"}
-                </Row>
+                <Row label={t("page.purchasePayment.detail.notes")}>{payment.notes || "-"}</Row>
               </tbody>
             </table>
           </Card>
@@ -161,8 +190,14 @@ const PurchasePaymentDetail = () => {
                 </Row>
                 <Row label={t("page.purchasePayment.detail.poStatus")}>
                   {(() => {
-                    const s = poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
-                    return <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>{s.label}</span>;
+                    const s =
+                      poStatusBadge[payment.purchaseOrderData?.status] || poStatusBadge.pending;
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.class}`}>
+                        {s.label}
+                      </span>
+                    );
                   })()}
                 </Row>
                 <Row label={t("page.purchasePayment.detail.poAmount")}>
@@ -184,13 +219,17 @@ const PurchasePaymentDetail = () => {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-border">
                 <tr>
-                  <td className="py-2 text-muted-foreground">{t("page.purchasePayment.detail.createdBy")}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchasePayment.detail.createdBy")}
+                  </td>
                   <td className="py-2 text-right font-medium">
                     {payment.createdByUser?.fullName || "-"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="py-2 text-muted-foreground">{t("page.purchasePayment.detail.created")}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchasePayment.detail.created")}
+                  </td>
                   <td className="py-2 text-right">
                     {payment.createdAt
                       ? new Date(payment.createdAt).toLocaleDateString("id-ID", {
@@ -204,7 +243,9 @@ const PurchasePaymentDetail = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td className="py-2 text-muted-foreground">{t("page.purchasePayment.detail.updated")}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchasePayment.detail.updated")}
+                  </td>
                   <td className="py-2 text-right">
                     {payment.updatedAt
                       ? new Date(payment.updatedAt).toLocaleDateString("id-ID", {

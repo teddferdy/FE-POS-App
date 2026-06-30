@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
+export const SidebarContext = createContext(false);
+export const useSidebar = () => useContext(SidebarContext);
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { useLocation } from "react-router-dom";
@@ -213,7 +215,9 @@ const DashboardLayout = ({ children }) => {
         />
         <main className="p-4 lg:p-6 flex flex-col">
           <div className="flex-1 min-h-0">
-            {children}
+            <SidebarContext.Provider value={sidebarCollapsed}>
+              {children}
+            </SidebarContext.Provider>
           </div>
           {tips && (
             <div className="mt-6 shrink-0">

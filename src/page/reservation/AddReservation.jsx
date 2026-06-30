@@ -28,15 +28,16 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function generateTimeSlots(open, close) {
-  const [oh, om] = open.split(':').map(Number);
-  const [ch, cm] = close.split(':').map(Number);
-  const start = oh * 60 + om, end = ch * 60 + cm;
+  const [oh, om] = open.split(":").map(Number);
+  const [ch, cm] = close.split(":").map(Number);
+  const start = oh * 60 + om,
+    end = ch * 60 + cm;
   const slots = [];
   for (let m = start; m <= end; m += 30)
-    slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+    slots.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
   return slots;
 }
 
@@ -94,7 +95,7 @@ const AddReservation = () => {
     if (selectedStore) {
       loadTablesByStore();
       getLocationDetail({ id: selectedStore })
-        .then(res => setLocationDetail(res.data || null))
+        .then((res) => setLocationDetail(res.data || null))
         .catch(() => setLocationDetail(null));
     } else {
       setAvailableTables([]);
@@ -103,11 +104,17 @@ const AddReservation = () => {
   }, [selectedStore]);
 
   const openingHours = locationDetail?.openingHours || [];
-  const offDays = openingHours.filter(oh => !oh.open && !oh.close).map(oh => DAY_NAMES.indexOf(oh.day));
+  const offDays = openingHours
+    .filter((oh) => !oh.open && !oh.close)
+    .map((oh) => DAY_NAMES.indexOf(oh.day));
   const isOffDay = reservationDate ? offDays.includes(reservationDate.getDay()) : false;
   const dayName = reservationDate ? DAY_NAMES[reservationDate.getDay()] : null;
-  const dayHours = openingHours.find(oh => oh.day === dayName);
-  const timeSlots = isOffDay ? [] : (dayHours?.open && dayHours?.close ? generateTimeSlots(dayHours.open, dayHours.close) : null);
+  const dayHours = openingHours.find((oh) => oh.day === dayName);
+  const timeSlots = isOffDay
+    ? []
+    : dayHours?.open && dayHours?.close
+      ? generateTimeSlots(dayHours.open, dayHours.close)
+      : null;
   const detailLoading = !!selectedStore && !locationDetail;
 
   useEffect(() => {
@@ -193,7 +200,9 @@ const AddReservation = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detail Reservasi</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Detail Reservasi
+                  </h3>
                 </div>
                 <FormField
                   control={form.control}
@@ -227,7 +236,14 @@ const AddReservation = () => {
                       <FormLabel>
                         Tanggal <span className="text-destructive">*</span>
                       </FormLabel>
-                      <DatePicker date={field.value} setDate={(d) => { if (d && offDays.includes(d.getDay())) return; field.onChange(d); }} disabled={(date) => offDays.includes(date.getDay())} />
+                      <DatePicker
+                        date={field.value}
+                        setDate={(d) => {
+                          if (d && offDays.includes(d.getDay())) return;
+                          field.onChange(d);
+                        }}
+                        disabled={(date) => offDays.includes(date.getDay())}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -240,7 +256,12 @@ const AddReservation = () => {
                       <FormLabel>
                         Jam Mulai <span className="text-destructive">*</span>
                       </FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam mulai" slots={timeSlots} disabled={detailLoading} />
+                      <TimePicker
+                        {...field}
+                        placeholder="Pilih jam mulai"
+                        slots={timeSlots}
+                        disabled={detailLoading}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -251,7 +272,12 @@ const AddReservation = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Jam Selesai</FormLabel>
-                      <TimePicker {...field} placeholder="Pilih jam selesai" slots={timeSlots} disabled={detailLoading} />
+                      <TimePicker
+                        {...field}
+                        placeholder="Pilih jam selesai"
+                        slots={timeSlots}
+                        disabled={detailLoading}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

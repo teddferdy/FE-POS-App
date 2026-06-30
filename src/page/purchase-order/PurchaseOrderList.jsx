@@ -526,11 +526,23 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
           label={t("page.purchaseOrder.list.title")}
           value={total}
           icon="shopping_cart"
+          variant="default"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.received")}
+          value={data?.stats?.received ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+        <StatCard
+          label={t("page.purchaseOrder.status.ordered")}
+          value={data?.stats?.ordered ?? 0}
+          icon="schedule"
           variant="default"
         />
         <StatCard
@@ -544,18 +556,6 @@ const PurchaseOrderList = () => {
           value={data?.stats?.pending ?? 0}
           icon="edit_note"
           variant="draft"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.ordered")}
-          value={data?.stats?.ordered ?? 0}
-          icon="schedule"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.received")}
-          value={data?.stats?.received ?? 0}
-          icon="check_circle"
-          variant="active"
         />
         <StatCard
           label={t("page.purchaseOrder.status.cancelled")}

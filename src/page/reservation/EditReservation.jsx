@@ -29,15 +29,16 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function generateTimeSlots(open, close) {
-  const [oh, om] = open.split(':').map(Number);
-  const [ch, cm] = close.split(':').map(Number);
-  const start = oh * 60 + om, end = ch * 60 + cm;
+  const [oh, om] = open.split(":").map(Number);
+  const [ch, cm] = close.split(":").map(Number);
+  const start = oh * 60 + om,
+    end = ch * 60 + cm;
   const slots = [];
   for (let m = start; m <= end; m += 30)
-    slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+    slots.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
   return slots;
 }
 
@@ -115,7 +116,7 @@ const EditReservation = () => {
   useEffect(() => {
     if (reservation?.store) {
       getLocationDetail({ id: String(reservation.store) })
-        .then(res => setLocationDetail(res.data || null))
+        .then((res) => setLocationDetail(res.data || null))
         .catch(() => setLocationDetail(null));
     }
   }, [reservation]);
@@ -125,11 +126,17 @@ const EditReservation = () => {
   const endTimeWatch = form.watch("endTime");
 
   const openingHours = locationDetail?.openingHours || [];
-  const offDays = openingHours.filter(oh => !oh.open && !oh.close).map(oh => DAY_NAMES.indexOf(oh.day));
+  const offDays = openingHours
+    .filter((oh) => !oh.open && !oh.close)
+    .map((oh) => DAY_NAMES.indexOf(oh.day));
   const isOffDay = reservationDateWatch ? offDays.includes(reservationDateWatch.getDay()) : false;
   const dayName = reservationDateWatch ? DAY_NAMES[reservationDateWatch.getDay()] : null;
-  const dayHours = openingHours.find(oh => oh.day === dayName);
-  const timeSlots = isOffDay ? [] : (dayHours?.open && dayHours?.close ? generateTimeSlots(dayHours.open, dayHours.close) : null);
+  const dayHours = openingHours.find((oh) => oh.day === dayName);
+  const timeSlots = isOffDay
+    ? []
+    : dayHours?.open && dayHours?.close
+      ? generateTimeSlots(dayHours.open, dayHours.close)
+      : null;
   const detailLoading = !!reservation?.store && !locationDetail;
 
   useEffect(() => {
@@ -230,7 +237,9 @@ const EditReservation = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detail Reservasi</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Detail Reservasi
+                  </h3>
                 </div>
                 <FormField
                   control={form.control}
@@ -241,7 +250,14 @@ const EditReservation = () => {
                         {t("page.reservation.edit.form.date")}{" "}
                         <span className="text-destructive">*</span>
                       </FormLabel>
-                      <DatePicker date={field.value} setDate={(d) => { if (d && offDays.includes(d.getDay())) return; field.onChange(d); }} disabled={(date) => offDays.includes(date.getDay())} />
+                      <DatePicker
+                        date={field.value}
+                        setDate={(d) => {
+                          if (d && offDays.includes(d.getDay())) return;
+                          field.onChange(d);
+                        }}
+                        disabled={(date) => offDays.includes(date.getDay())}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

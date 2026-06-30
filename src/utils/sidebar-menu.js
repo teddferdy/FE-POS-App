@@ -38,7 +38,8 @@ export const sidebarMenuSuperAdmin = [
     href: "/dashboard-super-admin",
     icon: Crown,
     children: [],
-    actions: ["view"]
+    actions: ["view"],
+    activePaths: ["/low-stock-all", "/low-stock"]
   },
   {
     title: "POS",
@@ -442,7 +443,8 @@ export const sidebarMenuAdmin = [
     i18nKey: "sidebar.dashboardAdmin",
     href: "/dashboard-admin",
     icon: Crown,
-    actions: ["view"]
+    actions: ["view"],
+    activePaths: ["/low-stock-all", "/low-stock"]
   },
   {
     title: "POS",

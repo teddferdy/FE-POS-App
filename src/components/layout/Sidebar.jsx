@@ -22,17 +22,17 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const navigate = useNavigate();
   const [cookie, , removeCookie] = useCookies();
 
-  const matchPath = (href) => {
+  const matchPath = (href, item) => {
     if (!href) return false;
     if (location.pathname === href) return true;
 
-    // Handle standard case: menu item ending with "-list" matches add/edit/detail pages
+    if (item?.activePaths?.includes(location.pathname)) return true;
+
     if (href.endsWith("-list")) {
       const base = href.replace("/", "").replace("-list", "");
       return ["add", "edit", "detail"].some((action) => location.pathname === `/${action}-${base}`);
     }
 
-    // Handle exception cases where add/edit/detail paths don't follow standard naming
     const exceptionMap = {
       "/role-management": ["/add-role", "/edit-role", "/detail-role"],
       "/cash-register/current": [
@@ -51,7 +51,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
       });
     }
 
-    // Handle standard case: menu item matches add/edit/detail pages
     const resource = href.replace("/", "");
     if (resource) {
       return ["add", "edit", "detail"].some(
@@ -64,7 +63,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const hasActiveChild = (item) => {
     if (!item.children) return false;
-    return item.children.some((child) => matchPath(child.href) || hasActiveChild(child));
+    return item.children.some((child) => matchPath(child.href, child) || hasActiveChild(child));
   };
 
   const markActiveParents = (items, result) => {
@@ -133,9 +132,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
     });
   }, [location.pathname, collapsed, menuItems]);
 
-  const isActive = (href) => {
+  const isActive = (href, item) => {
     if (!href) return false;
-    return matchPath(href);
+    return matchPath(href, item);
   };
 
   const isParentActive = (item) => {
@@ -173,7 +172,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <div key={item.title}>
           {!collapsed && (
             <div className="flex items-center gap-2 px-3 py-1.5 mt-3 mb-0.5">
-              {item.icon && <span className="text-muted-foreground/40">{renderIcon(item.icon, 13)}</span>}
+              {item.icon && (
+                <span className="text-muted-foreground/40">{renderIcon(item.icon, 13)}</span>
+              )}
               <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
                 {t(item.i18nKey) || item.title}
               </span>
@@ -197,7 +198,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
               if (child.href) navigate(child.href);
             }}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
-              isActive(child.href)
+              isActive(child.href, child)
                 ? "bg-primary text-primary-foreground font-medium shadow-sm"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}>
@@ -264,7 +265,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           if (item.href) navigate(item.href);
         }}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
-          isActive(item.href)
+          isActive(item.href, item)
             ? "bg-primary text-primary-foreground font-medium shadow-sm"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         }`}>

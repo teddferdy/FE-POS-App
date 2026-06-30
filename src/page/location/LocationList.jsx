@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { useSidebar } from "@/components/layout/DashboardLayout";
 import { Plus, Search, Edit, Trash2, Eye, Store, Map } from "lucide-react";
 import { toast } from "sonner";
 import { getAllLocationTable, deleteLocation } from "@/services/location";
@@ -52,6 +53,7 @@ const LocationList = () => {
     }
   });
 
+  const sidebarCollapsed = useSidebar();
   const locations = data?.data || data?.locations || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
@@ -302,53 +304,68 @@ const LocationList = () => {
       ) : (
         <div>
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              <StatCard
-                label={t("page.location.stats.total")}
-                value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
-                icon="store"
-                variant="default"
-                subtitle={t("page.location.stats.totalSub")}
-              />
-              <StatCard
-                label={t("page.location.stats.active")}
-                value={(data?.stats?.active ?? 0).toLocaleString()}
-                icon="check_circle"
-                variant="active"
-                subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`}
-              />
-              <StatCard
-                label={t("page.location.stats.inactive")}
-                value={(data?.stats?.inactive ?? 0).toLocaleString()}
-                icon="cancel"
-                variant="inactive"
-                subtitle={t("page.location.stats.inactiveSub")}
-              />
-              <StatCard
-                label={t("page.location.stats.draft")}
-                value={(data?.stats?.draft ?? 0).toLocaleString()}
-                icon="edit_note"
-                variant="draft"
-              />
-              <div
-                data-tour="location-stat-cities"
-                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.location.stats.cities")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-foreground">
-                    {(data?.stats?.cities ?? 0).toLocaleString()}
-                  </h3>
-                  <p className="text-xs font-semibold text-tertiary flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">location_city</span>
-                    {t("page.location.stats.citiesSub")}
-                  </p>
+            <div className="flex flex-wrap gap-6">
+              {[
+                {
+                  Comp: StatCard,
+                  props: {
+                    label: t("page.location.stats.total"),
+                    value: (data?.stats?.total ?? data?.total ?? 0).toLocaleString(),
+                    icon: "store",
+                    variant: "default",
+                    subtitle: t("page.location.stats.totalSub")
+                  }
+                },
+                {
+                  Comp: StatCard,
+                  props: {
+                    label: t("page.location.stats.active"),
+                    value: (data?.stats?.active ?? 0).toLocaleString(),
+                    icon: "check_circle",
+                    variant: "active",
+                    subtitle: `${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`
+                  }
+                },
+                {
+                  Comp: StatCard,
+                  props: {
+                    label: t("page.location.stats.cities"),
+                    value: (data?.stats?.cities ?? 0).toLocaleString(),
+                    icon: "location_city",
+                    variant: "active",
+                    subtitle: `${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.cities ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.citiesSub")}`
+                  }
+                },
+                {
+                  Comp: StatCard,
+                  props: {
+                    label: t("page.location.stats.inactive"),
+                    value: (data?.stats?.inactive ?? 0).toLocaleString(),
+                    icon: "cancel",
+                    variant: "inactive",
+                    subtitle: t("page.location.stats.inactiveSub")
+                  }
+                },
+                {
+                  Comp: StatCard,
+                  props: {
+                    label: t("page.location.stats.draft"),
+                    value: (data?.stats?.draft ?? 0).toLocaleString(),
+                    icon: "edit_note",
+                    variant: "draft",
+                    subtitle: t("page.location.stats.draftSub")
+                  }
+                }
+              ].map(({ Comp, props }, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: `calc((100% - ${sidebarCollapsed ? 6 : 3}rem) / ${sidebarCollapsed ? 5 : 3})`,
+                    transition: "width 300ms ease"
+                  }}>
+                  <Comp {...props} />
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">location_city</span>
-                </div>
-              </div>
+              ))}
             </div>
 
             <div data-tour="location-table" className="mt-6">
