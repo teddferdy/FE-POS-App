@@ -526,43 +526,70 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard
-          label={t("page.purchaseOrder.list.title")}
-          value={total}
-          icon="shopping_cart"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.received")}
-          value={data?.stats?.received ?? 0}
-          icon="check_circle"
-          variant="active"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.ordered")}
-          value={data?.stats?.ordered ?? 0}
-          icon="schedule"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.draft")}
-          value={data?.stats?.draft ?? 0}
-          icon="description"
-          variant="draft"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.pending")}
-          value={data?.stats?.pending ?? 0}
-          icon="edit_note"
-          variant="draft"
-        />
-        <StatCard
-          label={t("page.purchaseOrder.status.cancelled")}
-          value={data?.stats?.cancelled ?? 0}
-          icon="cancel"
-          variant="inactive"
-        />
+      <div className="space-y-6">
+        <h3>Status Order :</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            label={t("page.purchaseOrder.list.title")}
+            value={total}
+            icon="shopping_cart"
+            variant="default"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.status.received")}
+            value={data?.stats?.received ?? 0}
+            icon="check_circle"
+            variant="active"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.status.ordered")}
+            value={data?.stats?.ordered ?? 0}
+            icon="schedule"
+            variant="blue"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.status.draft")}
+            value={data?.stats?.draft ?? 0}
+            icon="description"
+            variant="gray"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.status.pending")}
+            value={data?.stats?.pending ?? 0}
+            icon="edit_note"
+            variant="yellow"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.status.cancelled")}
+            value={data?.stats?.cancelled ?? 0}
+            icon="cancel"
+            variant="red"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <h3>Status Payment :</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            label={t("page.purchaseOrder.list.paymentStatus.paid")}
+            value={data?.paymentStats?.paid ?? 0}
+            icon="paid"
+            variant="active"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.list.paymentStatus.unpaid")}
+            value={data?.paymentStats?.unpaid ?? 0}
+            icon="money_off"
+            variant="yellow"
+          />
+          <StatCard
+            label={t("page.purchaseOrder.list.paymentStatus.partial")}
+            value={data?.paymentStats?.partial ?? 0}
+            icon="payments"
+            variant="blue"
+          />
+        </div>
       </div>
 
       {isError ? (

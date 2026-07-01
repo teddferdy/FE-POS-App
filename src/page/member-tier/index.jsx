@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Award, Plus, PackageOpen } from "lucide-react";
+import { Plus, PackageOpen } from "lucide-react";
+import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, deleteMemberTier } from "@/services/member-tier";
@@ -271,72 +272,30 @@ const MemberTier = () => {
         <div>
           <div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div
-                data-tour="tier-stat-total"
-                className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <Award size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("page.memberTier.list.totalTiers")}
-                    </p>
-                    <h3 className="text-2xl font-bold mt-1">{tiers.length}</h3>
-                  </div>
-                </div>
-              </div>
-              <div
-                data-tour="tier-stat-active"
-                className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                    <Award size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("common.active")}
-                    </p>
-                    <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-                      {activeTierCount}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div
-                data-tour="tier-stat-draft"
-                className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                    <Award size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("common.draft")}
-                    </p>
-                    <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-                      {draftTierCount}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div
-                data-tour="tier-stat-inactive"
-                className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                    <Award size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {t("common.inactive")}
-                    </p>
-                    <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                      {inactiveTierCount}
-                    </h3>
-                  </div>
-                </div>
-              </div>
+              <StatCard
+                label={t("page.memberTier.list.totalTiers")}
+                value={tiers.length}
+                icon="workspace_premium"
+                variant="default"
+              />
+              <StatCard
+                label={t("common.active")}
+                value={activeTierCount}
+                icon="check_circle"
+                variant="active"
+              />
+              <StatCard
+                label={t("common.draft")}
+                value={draftTierCount}
+                icon="edit_note"
+                variant="draft"
+              />
+              <StatCard
+                label={t("common.inactive")}
+                value={inactiveTierCount}
+                icon="cancel"
+                variant="red"
+              />
             </div>
 
             {tiers.length === 0 ? (

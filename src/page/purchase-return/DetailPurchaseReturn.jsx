@@ -240,7 +240,7 @@ const DetailPurchaseReturn = () => {
                   <p className="text-xs text-muted-foreground mb-1">
                     {t("page.purchaseReturn.detail.table.totalAmount")}
                   </p>
-                  <p className="text-lg font-bold text-foreground font-mono text-primary">
+                  <p className="text-lg font-bold font-mono text-primary">
                     Rp {Number(ret.totalAmount || 0).toLocaleString("id-ID")}
                   </p>
                 </Card>

@@ -6,12 +6,12 @@ import { toast } from "sonner";
 import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import StatCard from "@/components/ui/StatCard";
 
 const RoleManagement = () => {
   const { t } = useTranslation();
@@ -96,22 +96,15 @@ const RoleManagement = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">Total Role</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.total ?? total}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">Aktif</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">Draft</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">{draftCount}</p>
-            </Card>
-            <Card className="p-5">
-              <p className="text-sm text-muted-foreground">Non-Aktif</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{inactiveCount}</p>
-            </Card>
+            <StatCard
+              label="Total Role"
+              value={stats.total ?? total}
+              icon="shield"
+              variant="default"
+            />
+            <StatCard label="Aktif" value={activeCount} icon="check_circle" variant="active" />
+            <StatCard label="Draft" value={draftCount} icon="edit_note" variant="draft" />
+            <StatCard label="Non-Aktif" value={inactiveCount} icon="cancel" variant="red" />
           </div>
           <div
             data-tour="role-table"

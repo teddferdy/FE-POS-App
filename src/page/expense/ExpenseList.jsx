@@ -292,16 +292,16 @@ const ExpenseList = () => {
               variant="default"
             />
             <StatCard
-              label={t("page.expense.list.pending")}
-              value={pendingExpenses}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
               label={t("page.expense.list.approved")}
               value={approvedExpenses}
               icon="check_circle"
               variant="active"
+            />
+            <StatCard
+              label={t("page.expense.list.pending")}
+              value={pendingExpenses}
+              icon="edit_note"
+              variant="draft"
             />
             <StatCard
               label={t("page.expense.list.rejected")}

@@ -270,16 +270,16 @@ const ReservationList = () => {
               variant="default"
             />
             <StatCard
-              label={t("page.reservation.status.pending")}
-              value={stats.pending ?? 0}
-              icon="pending"
-              variant="draft"
-            />
-            <StatCard
               label={t("page.reservation.status.confirmed")}
               value={stats.confirmed ?? 0}
               icon="check_circle"
               variant="active"
+            />
+            <StatCard
+              label={t("page.reservation.status.pending")}
+              value={stats.pending ?? 0}
+              icon="pending"
+              variant="draft"
             />
             <StatCard
               label={t("page.reservation.status.cancelled")}

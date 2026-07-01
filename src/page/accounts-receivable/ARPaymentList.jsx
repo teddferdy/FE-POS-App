@@ -138,7 +138,7 @@ const ARPaymentList = () => {
         <p className="text-sm text-muted-foreground mt-1">Catat pembayaran piutang pelanggan</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="Total Piutang"
           value={formatCurrencyRupiah(grandTotal)}

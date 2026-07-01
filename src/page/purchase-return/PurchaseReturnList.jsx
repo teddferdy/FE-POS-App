@@ -207,16 +207,16 @@ const PurchaseReturnList = () => {
           variant="default"
         />
         <StatCard
-          label={t("page.purchaseReturn.status.pending")}
-          value={data?.stats?.pending ?? 0}
-          icon="hourglass_empty"
-          variant="default"
-        />
-        <StatCard
           label={t("page.purchaseReturn.status.approved")}
           value={data?.stats?.approved ?? 0}
           icon="check_circle"
           variant="active"
+        />
+        <StatCard
+          label={t("page.purchaseReturn.status.pending")}
+          value={data?.stats?.pending ?? 0}
+          icon="hourglass_empty"
+          variant="draft"
         />
         <StatCard
           label={t("page.purchaseReturn.status.rejected")}

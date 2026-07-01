@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
+import StatCard from "@/components/ui/StatCard";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -116,6 +117,19 @@ const PriceStoreList = () => {
               <span className="font-semibold text-lg">{storeName}</span>
             </div>
           </div>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[160px]">
+              <StatCard
+                label={t("page.priceStore.list.totalProducts")}
+                value={products.length}
+                icon="inventory_2"
+                variant="default"
+                subtitle={`${new Set(products.map((p) => p.categoryData?.name || p.nameCategory)).size} ${t("page.priceStore.list.totalCategories")}`}
+              />
+            </div>
+          </div>
+
           <Card className="p-6">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -123,6 +137,7 @@ const PriceStoreList = () => {
                   <tr className="border-b text-left text-muted-foreground">
                     <th className="pb-3 font-medium">{t("page.priceStore.list.product")}</th>
                     <th className="pb-3 font-medium">{t("page.priceStore.list.category")}</th>
+                    <th className="pb-3 font-medium">{t("page.priceStore.list.type")}</th>
                     <th className="pb-3 font-medium text-right">
                       {t("page.priceStore.list.defaultPrice")}
                     </th>
@@ -139,7 +154,7 @@ const PriceStoreList = () => {
                 <tbody>
                   {products.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                      <td colSpan={8} className="py-8 text-center text-muted-foreground">
                         {t("common.loading")}
                       </td>
                     </tr>
@@ -147,7 +162,12 @@ const PriceStoreList = () => {
                     products.map((p) => (
                       <tr key={p.id} className="border-b last:border-0">
                         <td className="py-3">{p.nameProduct || p.name}</td>
-                        <td className="py-3 text-muted-foreground">{p.nameCategory || "-"}</td>
+                        <td className="py-3 text-muted-foreground">{p.categoryData?.name || p.nameCategory || "-"}</td>
+                        <td className="py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+                            {p.tipeProduk || "menu"}
+                          </span>
+                        </td>
                         <td className="py-3 text-right font-medium">
                           {Number(p.price).toLocaleString("id-ID")}
                         </td>

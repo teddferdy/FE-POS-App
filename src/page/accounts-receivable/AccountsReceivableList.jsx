@@ -163,13 +163,16 @@ const AccountsReceivableList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1">
         <StatCard
           label={t("page.accountsReceivable.list.totalPiutang")}
           value={formatCurrencyRupiah(grandTotal)}
           icon="account_balance"
           variant="default"
         />
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Object.entries(agingBuckets).map(([key, bucket]) => {
           const lk = key.toLowerCase();
           const icon = lk.includes("paid")

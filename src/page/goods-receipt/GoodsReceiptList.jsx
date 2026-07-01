@@ -265,22 +265,22 @@ const GoodsReceiptList = () => {
           variant="default"
         />
         <StatCard
-          label={t("common.draft")}
-          value={stats.draft ?? 0}
-          icon="edit_note"
-          variant="draft"
-        />
-        <StatCard
-          label={t("common.completed")}
+          label={t("page.goodsReceipt.list.status.completed")}
           value={stats.completed ?? 0}
           icon="check_circle"
           variant="active"
         />
         <StatCard
-          label={t("common.cancelled")}
+          label={t("page.goodsReceipt.list.status.draft")}
+          value={stats.draft ?? 0}
+          icon="edit_note"
+          variant="draft"
+        />
+        <StatCard
+          label={t("page.goodsReceipt.list.status.cancelled")}
           value={stats.cancelled ?? 0}
           icon="cancel"
-          variant="inactive"
+          variant="red"
         />
       </div>
 

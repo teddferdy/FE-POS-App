@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, PackageOpen, Users, UserCheck, UserPen, UserX } from "lucide-react";
+import { Plus, PackageOpen } from "lucide-react";
+import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
@@ -165,23 +166,32 @@ const MemberList = () => {
       header: t("page.member.table.level"),
       render: (member) => {
         const pts = member.totalPoints || member.points || 0;
-        const activeTiers = tiers.filter(t => t.status === "active");
-        const exact = activeTiers.find(t => pts >= t.minPoints && pts <= t.maxPoints);
-        const matchedTier = exact || activeTiers.filter(t => t.minPoints <= pts).sort((a, b) => b.minPoints - a.minPoints)[0] || null;
+        const activeTiers = tiers.filter((t) => t.status === "active");
+        const exact = activeTiers.find((t) => pts >= t.minPoints && pts <= t.maxPoints);
+        const matchedTier =
+          exact ||
+          activeTiers
+            .filter((t) => t.minPoints <= pts)
+            .sort((a, b) => b.minPoints - a.minPoints)[0] ||
+          null;
         const tierName = matchedTier?.name || "-";
         const color = matchedTier?.color;
         return (
           <span
             className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold"
-            style={color ? {
-              backgroundColor: color + "20",
-              color,
-              border: `1px solid ${color}40`
-            } : {
-              backgroundColor: "rgb(0 0 0 / 0.03)",
-              color: "rgb(0 0 0 / 0.5)",
-              border: "1px solid rgb(0 0 0 / 0.08)"
-            }}>
+            style={
+              color
+                ? {
+                    backgroundColor: color + "20",
+                    color,
+                    border: `1px solid ${color}40`
+                  }
+                : {
+                    backgroundColor: "rgb(0 0 0 / 0.03)",
+                    color: "rgb(0 0 0 / 0.5)",
+                    border: "1px solid rgb(0 0 0 / 0.08)"
+                  }
+            }>
             {matchedTier && (
               <span
                 className="material-symbols-outlined text-sm"
@@ -344,64 +354,30 @@ const MemberList = () => {
 
       {!isError && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <Users size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("page.member.list.totalMembers")}
-                </p>
-                <h3 className="text-2xl font-bold mt-1">{stats.total}</h3>
-              </div>
-            </div>
-          </div>
-          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                <UserCheck size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("common.active")}
-                </p>
-                <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-                  {stats.active}
-                </h3>
-              </div>
-            </div>
-          </div>
-          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                <UserPen size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("common.draft")}
-                </p>
-                <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-                  {stats.draft}
-                </h3>
-              </div>
-            </div>
-          </div>
-          <div className="bg-card p-5 rounded-xl shadow-sm border border-border group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                <UserX size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("common.inactive")}
-                </p>
-                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                  {stats.inactive}
-                </h3>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label={t("page.member.list.totalMembers")}
+            value={stats.total}
+            icon="group"
+            variant="default"
+          />
+          <StatCard
+            label={t("common.active")}
+            value={stats.active}
+            icon="check_circle"
+            variant="active"
+          />
+          <StatCard
+            label={t("common.draft")}
+            value={stats.draft}
+            icon="edit_note"
+            variant="draft"
+          />
+          <StatCard
+            label={t("common.inactive")}
+            value={stats.inactive}
+            icon="cancel"
+            variant="red"
+          />
         </div>
       )}
 

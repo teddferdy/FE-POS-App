@@ -172,7 +172,7 @@ const LoginPage = () => {
         </header>
 
         {/* Left Side: Brand Visual */}
-        <section className="hidden lg:flex lg:w-1/2 relative h-screen sticky top-0 overflow-hidden bg-foreground">
+        <section className="hidden lg:flex lg:w-1/2 h-screen sticky top-0 overflow-hidden bg-foreground">
           <div className="absolute inset-0">
             <img
               alt=""
@@ -185,7 +185,7 @@ const LoginPage = () => {
           </div>
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-white px-lg">
             <div className="max-w-md text-center">
-              <div className="mb-md inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 mb-6">
                 <span className="text-3xl font-light tracking-tight">KL</span>
               </div>
               <span className="block text-4xl xl:text-5xl leading-tight font-light mb-4 tracking-tight">

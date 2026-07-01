@@ -320,7 +320,7 @@ const DepartmentList = () => {
 
       <div>
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <StatCard
               label={t("page.department.list.statsTotal")}
               value={stats?.totalDepartemen ?? total}
@@ -335,6 +335,8 @@ const DepartmentList = () => {
               variant="active"
               subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
             />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
             <StatCard
               label={t("page.department.list.statsDraft")}
               value={stats?.totalDepartemenDraft ?? 0}

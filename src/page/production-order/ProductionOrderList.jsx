@@ -277,7 +277,7 @@ const ProductionOrderList = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <StatCard
           label={t("page.productionOrder.list.statTotal")}
           value={stats.total ?? total}
@@ -285,28 +285,30 @@ const ProductionOrderList = () => {
           variant="default"
         />
         <StatCard
-          label={t("page.productionOrder.list.statDraft")}
-          value={stats.draft ?? 0}
-          icon="edit_note"
-          variant="draft"
+          label={t("page.productionOrder.list.statCompleted")}
+          value={stats.completed ?? 0}
+          icon="check_circle"
+          variant="active"
+        />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard
+          label={t("page.productionOrder.list.statInProgress")}
+          value={stats.inProgress ?? 0}
+          icon="play_circle"
+          variant="yellow"
         />
         <StatCard
           label={t("page.productionOrder.list.statPlanned")}
           value={stats.planned ?? 0}
           icon="schedule"
-          variant="default"
+          variant="blue"
         />
         <StatCard
-          label={t("page.productionOrder.list.statInProgress")}
-          value={stats.inProgress ?? 0}
-          icon="play_circle"
-          variant="active"
-        />
-        <StatCard
-          label={t("page.productionOrder.list.statCompleted")}
-          value={stats.completed ?? 0}
-          icon="check_circle"
-          variant="active"
+          label={t("page.productionOrder.list.statDraft")}
+          value={stats.draft ?? 0}
+          icon="edit_note"
+          variant="gray"
         />
       </div>
 

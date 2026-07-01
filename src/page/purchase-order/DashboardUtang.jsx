@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Wallet, Building2, Clock } from "lucide-react";
+import { Wallet, Building2, Clock, Eye } from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
 import { Card } from "@/components/ui/card";
 import StatCard from "@/components/ui/StatCard";
@@ -10,6 +10,13 @@ import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 
 const statusStyles = {
   draft: "bg-gray-100 text-gray-800",
@@ -21,10 +28,14 @@ const statusStyles = {
 const DashboardUtang = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
 
   const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard);
 
   const { summary = {}, suppliers = [], outstandingPOs = [] } = data?.data || {};
+  const supplierPOs = selectedSupplier
+    ? outstandingPOs.filter((po) => po.supplierId === selectedSupplier.supplierId)
+    : [];
 
   if (isError) return <AbortController refetch={refetch} />;
 
@@ -32,9 +43,7 @@ const DashboardUtang = () => {
     {
       header: t("page.apDashboard.supplier.name"),
       render: (s) => (
-        <span
-          className="font-medium text-primary cursor-pointer hover:underline"
-          onClick={() => navigate(`/detail-supplier?id=${s.supplierId}`)}>
+        <span>
           <Building2 size={14} className="inline mr-1" />
           {s.supplierName}
         </span>
@@ -64,6 +73,18 @@ const DashboardUtang = () => {
         <span className="font-semibold text-red-600">
           Rp {(s.outstanding || 0).toLocaleString("id-ID")}
         </span>
+      )
+    },
+    {
+      header: "",
+      align: "center",
+      render: (s) => (
+        <button
+          onClick={() => setSelectedSupplier(s)}
+          className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-accent transition-colors"
+          title={t("page.apDashboard.detailTitle")}>
+          <Eye size={16} />
+        </button>
       )
     }
   ];
@@ -200,6 +221,28 @@ const DashboardUtang = () => {
           </Card>
         </>
       )}
+
+      <Dialog open={!!selectedSupplier} onOpenChange={() => setSelectedSupplier(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedSupplier?.supplierName} — {t("page.apDashboard.detailTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {supplierPOs.length} outstanding PO{supplierPOs.length !== 1 ? "s" : ""} — total
+              outstanding:{" "}
+              <strong>Rp {(selectedSupplier?.outstanding || 0).toLocaleString("id-ID")}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <DataTable
+            columns={poColumns}
+            data={supplierPOs}
+            isLoading={false}
+            emptyMessage={t("page.apDashboard.emptyPOs")}
+            emptyIcon={Wallet}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

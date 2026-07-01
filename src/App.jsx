@@ -1,6 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { BrowserRouter, Navigate, Route } from "react-router-dom";
-import { AnimatedRoutes } from "@/components/ui/page-transition";
+import { BrowserRouter, Routes, Navigate, Route } from "react-router-dom";
 import RouteProgress from "@/components/ui/route-progress";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
@@ -268,8 +267,6 @@ function App() {
     return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
   }, []);
 
-  const withLayout = (element) => <DashboardLayout>{element}</DashboardLayout>;
-
   return (
     <React.Fragment>
       <OfflineIndicator />
@@ -282,219 +279,185 @@ function App() {
           }>
           <SupportComponent />
           <RouteProgress />
-          <AnimatedRoutes>
-            {/* Auth */}
+          <Routes>
+            {/* Auth (no layout) */}
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-
-            {/* Dashboard Routes */}
-            <Route path="/dashboard-super-admin" element={withLayout(<Dashboard />)} />
-            <Route path="/dashboard-admin" element={withLayout(<Dashboard />)} />
-
             <Route path="/home" element={<CashierPage />} />
-            <Route path="/kitchen-display" element={withLayout(<KitchenDisplay />)} />
-
-            {/* Customer Order */}
             <Route path="/customer-order" element={<CustomerOrder />} />
-
-            {/* Customer Display */}
             <Route path="/customer-display" element={<CustomerDisplay />} />
 
-            {/* Reservation Routes */}
-            <Route path="/reservation" element={withLayout(<ReservationList />)} />
-            <Route path="/add-reservation" element={withLayout(<AddReservation />)} />
-            <Route path="/edit-reservation" element={withLayout(<EditReservation />)} />
-            <Route path="/reservation/:id" element={withLayout(<DetailReservation />)} />
+            {/* App layout: sidebar & header persist across route changes */}
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard-super-admin" element={<Dashboard />} />
+              <Route path="/dashboard-admin" element={<Dashboard />} />
+              <Route path="/kitchen-display" element={<KitchenDisplay />} />
 
-            {/* Super Admin & Admin Routes */}
+              <Route path="/reservation" element={<ReservationList />} />
+              <Route path="/add-reservation" element={<AddReservation />} />
+              <Route path="/edit-reservation" element={<EditReservation />} />
+              <Route path="/reservation/:id" element={<DetailReservation />} />
 
-            <Route path="/product-list" element={withLayout(<ProductList />)} />
-            <Route path="/add-product" element={withLayout(<AddProduct />)} />
-            <Route path="/edit-product" element={withLayout(<EditProduct />)} />
-            <Route path="/detail-product/:id" element={withLayout(<DetailProduct />)} />
+              <Route path="/product-list" element={<ProductList />} />
+              <Route path="/add-product" element={<AddProduct />} />
+              <Route path="/edit-product" element={<EditProduct />} />
+              <Route path="/detail-product/:id" element={<DetailProduct />} />
 
-            <Route path="/category-list" element={withLayout(<CategoryList />)} />
-            <Route path="/add-category" element={withLayout(<AddCategory />)} />
-            <Route path="/edit-category" element={withLayout(<EditCategory />)} />
-            <Route path="/detail-category" element={withLayout(<DetailCategory />)} />
+              <Route path="/category-list" element={<CategoryList />} />
+              <Route path="/add-category" element={<AddCategory />} />
+              <Route path="/edit-category" element={<EditCategory />} />
+              <Route path="/detail-category" element={<DetailCategory />} />
 
-            <Route path="/member-list" element={withLayout(<MemberList />)} />
-            <Route path="/add-member" element={withLayout(<AddMember />)} />
-            <Route path="/edit-member" element={withLayout(<EditMember />)} />
-            <Route path="/detail-member" element={withLayout(<MemberDetail />)} />
-            <Route path="/member-point-history" element={withLayout(<MemberPointHistory />)} />
+              <Route path="/member-list" element={<MemberList />} />
+              <Route path="/add-member" element={<AddMember />} />
+              <Route path="/edit-member" element={<EditMember />} />
+              <Route path="/detail-member" element={<MemberDetail />} />
+              <Route path="/member-point-history" element={<MemberPointHistory />} />
 
-            <Route path="/member-tier" element={withLayout(<MemberTier />)} />
-            <Route
-              path="/add-member-tier"
-              element={withLayout(<AddMemberTier title="Add Member Tier" />)}
-            />
-            <Route path="/edit-member-tier/:id" element={withLayout(<EditMemberTier />)} />
-            <Route path="/detail-member-tier" element={withLayout(<DetailMemberTier />)} />
+              <Route path="/member-tier" element={<MemberTier />} />
+              <Route path="/add-member-tier" element={<AddMemberTier title="Add Member Tier" />} />
+              <Route path="/edit-member-tier/:id" element={<EditMemberTier />} />
+              <Route path="/detail-member-tier" element={<DetailMemberTier />} />
 
-            <Route path="/discount-list" element={withLayout(<DiscountList />)} />
-            <Route path="/add-discount" element={withLayout(<AddDiscount />)} />
-            <Route path="/edit-discount" element={withLayout(<EditDiscount />)} />
-            <Route path="/detail-discount" element={withLayout(<DetailDiscount />)} />
+              <Route path="/discount-list" element={<DiscountList />} />
+              <Route path="/add-discount" element={<AddDiscount />} />
+              <Route path="/edit-discount" element={<EditDiscount />} />
+              <Route path="/detail-discount" element={<DetailDiscount />} />
 
-            <Route path="/accounts-receivable" element={withLayout(<AccountsReceivableList />)} />
-            <Route
-              path="/accounts-receivable/detail"
-              element={withLayout(<AccountsReceivableDetail />)}
-            />
-            <Route path="/ar-payment" element={withLayout(<ARPaymentList />)} />
+              <Route path="/accounts-receivable" element={<AccountsReceivableList />} />
+              <Route path="/accounts-receivable/detail" element={<AccountsReceivableDetail />} />
+              <Route path="/ar-payment" element={<ARPaymentList />} />
 
-            <Route path="/type-payment-list" element={withLayout(<TypePaymentList />)} />
-            <Route path="/add-type-payment" element={withLayout(<AddTypePayment />)} />
-            <Route path="/edit-type-payment" element={withLayout(<EditTypePayment />)} />
-            <Route path="/detail-type-payment" element={withLayout(<DetailTypePayment />)} />
+              <Route path="/type-payment-list" element={<TypePaymentList />} />
+              <Route path="/add-type-payment" element={<AddTypePayment />} />
+              <Route path="/edit-type-payment" element={<EditTypePayment />} />
+              <Route path="/detail-type-payment" element={<DetailTypePayment />} />
 
-            <Route path="/shift-list" element={withLayout(<ShiftList />)} />
-            <Route path="/add-shift" element={withLayout(<AddShift />)} />
-            <Route path="/edit-shift" element={withLayout(<EditShift />)} />
+              <Route path="/shift-list" element={<ShiftList />} />
+              <Route path="/add-shift" element={<AddShift />} />
+              <Route path="/edit-shift" element={<EditShift />} />
 
-            <Route path="/user-list" element={withLayout(<AdminList />)} />
-            <Route path="/add-user" element={withLayout(<AddAdmin />)} />
-            <Route path="/add-employee" element={withLayout(<AddEmployee />)} />
-            <Route path="/edit-employee" element={withLayout(<EditEmployee />)} />
-            <Route path="/add-role" element={withLayout(<AddRole />)} />
-            <Route path="/edit-role/:id" element={withLayout(<EditRole />)} />
-            <Route path="/detail-role/:id" element={withLayout(<DetailRole />)} />
-            <Route path="/role-management" element={withLayout(<RoleManagement />)} />
-            <Route path="/employee-list" element={withLayout(<EmployeeList />)} />
-            <Route path="/detail-employee" element={withLayout(<DetailEmployee />)} />
+              <Route path="/user-list" element={<AdminList />} />
+              <Route path="/add-user" element={<AddAdmin />} />
+              <Route path="/add-employee" element={<AddEmployee />} />
+              <Route path="/edit-employee" element={<EditEmployee />} />
+              <Route path="/add-role" element={<AddRole />} />
+              <Route path="/edit-role/:id" element={<EditRole />} />
+              <Route path="/detail-role/:id" element={<DetailRole />} />
+              <Route path="/role-management" element={<RoleManagement />} />
+              <Route path="/employee-list" element={<EmployeeList />} />
+              <Route path="/detail-employee" element={<DetailEmployee />} />
 
-            <Route path="/location-list" element={withLayout(<LocationList />)} />
-            <Route path="/add-location" element={withLayout(<AddLocation />)} />
-            <Route path="/edit-location" element={withLayout(<EditLocation />)} />
-            <Route path="/detail-location" element={withLayout(<LocationDetail />)} />
-            <Route path="/store-geospatial" element={withLayout(<StoreGeospatial />)} />
+              <Route path="/location-list" element={<LocationList />} />
+              <Route path="/add-location" element={<AddLocation />} />
+              <Route path="/edit-location" element={<EditLocation />} />
+              <Route path="/detail-location" element={<LocationDetail />} />
+              <Route path="/store-geospatial" element={<StoreGeospatial />} />
 
-            <Route path="/invoice-page" element={withLayout(<InvoicePage />)} />
+              <Route path="/invoice-page" element={<InvoicePage />} />
 
-            <Route path="/position-list" element={withLayout(<PositionList />)} />
-            <Route path="/add-position" element={withLayout(<AddPosition />)} />
-            <Route path="/edit-position" element={withLayout(<EditPosition />)} />
-            <Route path="/detail-position" element={withLayout(<DetailPosition />)} />
-            <Route path="/department-list" element={withLayout(<DepartmentList />)} />
-            <Route path="/add-department" element={withLayout(<AddDepartment />)} />
-            <Route path="/edit-department" element={withLayout(<EditDepartment />)} />
-            <Route path="/detail-department" element={withLayout(<DetailDepartment />)} />
+              <Route path="/position-list" element={<PositionList />} />
+              <Route path="/add-position" element={<AddPosition />} />
+              <Route path="/edit-position" element={<EditPosition />} />
+              <Route path="/detail-position" element={<DetailPosition />} />
+              <Route path="/department-list" element={<DepartmentList />} />
+              <Route path="/add-department" element={<AddDepartment />} />
+              <Route path="/edit-department" element={<EditDepartment />} />
+              <Route path="/detail-department" element={<DetailDepartment />} />
 
-            {/* Table Routes */}
-            <Route path="/table-list" element={withLayout(<TableList />)} />
+              <Route path="/table-list" element={<TableList />} />
 
-            <Route path="/supplier" element={withLayout(<SupplierList />)} />
-            <Route path="/add-supplier" element={withLayout(<AddSupplier />)} />
-            <Route path="/edit-supplier" element={withLayout(<EditSupplier />)} />
-            <Route path="/detail-supplier" element={withLayout(<DetailSupplier />)} />
+              <Route path="/supplier" element={<SupplierList />} />
+              <Route path="/add-supplier" element={<AddSupplier />} />
+              <Route path="/edit-supplier" element={<EditSupplier />} />
+              <Route path="/detail-supplier" element={<DetailSupplier />} />
 
-            <Route path="/ingredient" element={withLayout(<IngredientList />)} />
-            <Route path="/add-ingredient" element={withLayout(<AddIngredient />)} />
-            <Route path="/edit-ingredient" element={withLayout(<EditIngredient />)} />
-            <Route path="/detail-ingredient" element={withLayout(<DetailIngredient />)} />
+              <Route path="/ingredient" element={<IngredientList />} />
+              <Route path="/add-ingredient" element={<AddIngredient />} />
+              <Route path="/edit-ingredient" element={<EditIngredient />} />
+              <Route path="/detail-ingredient" element={<DetailIngredient />} />
 
-            <Route path="/ingredient-category" element={withLayout(<IngredientCategoryList />)} />
-            <Route
-              path="/add-ingredient-category"
-              element={withLayout(<AddIngredientCategory />)}
-            />
-            <Route
-              path="/edit-ingredient-category"
-              element={withLayout(<EditIngredientCategory />)}
-            />
+              <Route path="/ingredient-category" element={<IngredientCategoryList />} />
+              <Route path="/add-ingredient-category" element={<AddIngredientCategory />} />
+              <Route path="/edit-ingredient-category" element={<EditIngredientCategory />} />
 
-            <Route path="/tax-list" element={withLayout(<TaxConfigList />)} />
-            <Route path="/add-tax" element={withLayout(<AddTaxConfig />)} />
-            <Route path="/edit-tax" element={withLayout(<EditTaxConfig />)} />
+              <Route path="/tax-list" element={<TaxConfigList />} />
+              <Route path="/add-tax" element={<AddTaxConfig />} />
+              <Route path="/edit-tax" element={<EditTaxConfig />} />
 
-            <Route path="/purchase-order" element={withLayout(<PurchaseOrderList />)} />
-            <Route path="/add-purchase-order" element={withLayout(<AddPurchaseOrder />)} />
-            <Route path="/purchase-order/detail" element={withLayout(<DetailPurchaseOrder />)} />
-            <Route path="/edit-purchase-order" element={withLayout(<EditPurchaseOrder />)} />
-            <Route path="/purchase-payment" element={withLayout(<PurchasePaymentList />)} />
-            <Route
-              path="/purchase-payment-detail"
-              element={withLayout(<PurchasePaymentDetail />)}
-            />
-            <Route path="/ap-dashboard" element={withLayout(<DashboardUtang />)} />
+              <Route path="/purchase-order" element={<PurchaseOrderList />} />
+              <Route path="/add-purchase-order" element={<AddPurchaseOrder />} />
+              <Route path="/purchase-order/detail" element={<DetailPurchaseOrder />} />
+              <Route path="/edit-purchase-order" element={<EditPurchaseOrder />} />
+              <Route path="/purchase-payment" element={<PurchasePaymentList />} />
+              <Route path="/purchase-payment-detail" element={<PurchasePaymentDetail />} />
+              <Route path="/ap-dashboard" element={<DashboardUtang />} />
 
-            <Route path="/production-order" element={withLayout(<ProductionOrderList />)} />
-            <Route path="/add-production-order" element={withLayout(<AddProductionOrder />)} />
-            <Route
-              path="/production-order/detail"
-              element={withLayout(<DetailProductionOrder />)}
-            />
+              <Route path="/production-order" element={<ProductionOrderList />} />
+              <Route path="/add-production-order" element={<AddProductionOrder />} />
+              <Route path="/production-order/detail" element={<DetailProductionOrder />} />
 
-            <Route path="/goods-receipt" element={withLayout(<GoodsReceiptList />)} />
-            <Route path="/add-goods-receipt" element={withLayout(<AddGoodsReceipt />)} />
-            <Route path="/goods-receipt/detail" element={withLayout(<DetailGoodsReceipt />)} />
-            <Route path="/edit-goods-receipt" element={withLayout(<EditGoodsReceipt />)} />
+              <Route path="/goods-receipt" element={<GoodsReceiptList />} />
+              <Route path="/add-goods-receipt" element={<AddGoodsReceipt />} />
+              <Route path="/goods-receipt/detail" element={<DetailGoodsReceipt />} />
+              <Route path="/edit-goods-receipt" element={<EditGoodsReceipt />} />
 
-            <Route path="/sales-return" element={withLayout(<SalesReturnList />)} />
-            <Route path="/sales-return/detail" element={withLayout(<DetailSalesReturn />)} />
+              <Route path="/sales-return" element={<SalesReturnList />} />
+              <Route path="/sales-return/detail" element={<DetailSalesReturn />} />
 
-            <Route path="/purchase-return" element={withLayout(<PurchaseReturnList />)} />
-            <Route path="/purchase-return/detail" element={withLayout(<DetailPurchaseReturn />)} />
+              <Route path="/purchase-return" element={<PurchaseReturnList />} />
+              <Route path="/purchase-return/detail" element={<DetailPurchaseReturn />} />
 
-            <Route path="/stock-transfer" element={withLayout(<StockTransferList />)} />
-            <Route path="/add-stock-transfer" element={withLayout(<AddStockTransfer />)} />
-            <Route path="/stock-transfer/detail" element={withLayout(<DetailStockTransfer />)} />
+              <Route path="/stock-transfer" element={<StockTransferList />} />
+              <Route path="/add-stock-transfer" element={<AddStockTransfer />} />
+              <Route path="/stock-transfer/detail" element={<DetailStockTransfer />} />
 
-            <Route
-              path="/cash-register/open-close"
-              element={withLayout(<CashRegisterOpenClose />)}
-            />
-            <Route path="/cash-register/current" element={withLayout(<CashRegisterCurrent />)} />
-            <Route path="/cash-register/history" element={withLayout(<CashRegisterHistory />)} />
-            <Route
-              path="/cash-register/history/detail"
-              element={withLayout(<CashRegisterDetail />)}
-            />
+              <Route path="/cash-register/open-close" element={<CashRegisterOpenClose />} />
+              <Route path="/cash-register/current" element={<CashRegisterCurrent />} />
+              <Route path="/cash-register/history" element={<CashRegisterHistory />} />
+              <Route path="/cash-register/history/detail" element={<CashRegisterDetail />} />
 
-            <Route path="/price-list-template" element={withLayout(<PriceStoreList />)} />
+              <Route path="/price-list-template" element={<PriceStoreList />} />
 
-            <Route path="/bom" element={withLayout(<BomList />)} />
-            <Route path="/bom/add" element={withLayout(<AddBom />)} />
-            <Route path="/bom/detail" element={withLayout(<DetailBom />)} />
+              <Route path="/bom" element={<BomList />} />
+              <Route path="/bom/add" element={<AddBom />} />
+              <Route path="/bom/detail" element={<DetailBom />} />
 
-            <Route path="/stock-opname" element={withLayout(<StockOpnameList />)} />
-            <Route path="/stock-opname/detail" element={withLayout(<DetailStockOpname />)} />
-            <Route path="/add-stock-opname" element={withLayout(<AddStockOpname />)} />
+              <Route path="/stock-opname" element={<StockOpnameList />} />
+              <Route path="/stock-opname/detail" element={<DetailStockOpname />} />
+              <Route path="/add-stock-opname" element={<AddStockOpname />} />
 
-            <Route path="/stock-history" element={withLayout(<StockHistory />)} />
-            <Route path="/low-stock" element={withLayout(<LowStock />)} />
-            <Route path="/low-stock-all" element={withLayout(<LowStockAll />)} />
-            <Route path="/stock-adjustment" element={withLayout(<StockAdjustment />)} />
-            <Route path="/notification" element={withLayout(<NotificationPage />)} />
+              <Route path="/stock-history" element={<StockHistory />} />
+              <Route path="/low-stock" element={<LowStock />} />
+              <Route path="/low-stock-all" element={<LowStockAll />} />
+              <Route path="/stock-adjustment" element={<StockAdjustment />} />
+              <Route path="/notification" element={<NotificationPage />} />
 
-            <Route path="/expense-category" element={withLayout(<ExpenseCategoryList />)} />
-            <Route path="/add-expense-category" element={withLayout(<AddExpenseCategory />)} />
-            <Route path="/edit-expense-category" element={withLayout(<EditExpenseCategory />)} />
-            <Route
-              path="/detail-expense-category"
-              element={withLayout(<ExpenseCategoryDetail />)}
-            />
+              <Route path="/expense-category" element={<ExpenseCategoryList />} />
+              <Route path="/add-expense-category" element={<AddExpenseCategory />} />
+              <Route path="/edit-expense-category" element={<EditExpenseCategory />} />
+              <Route path="/detail-expense-category" element={<ExpenseCategoryDetail />} />
 
-            <Route path="/expense" element={withLayout(<ExpenseList />)} />
-            <Route path="/add-expense" element={withLayout(<AddExpense />)} />
-            <Route path="/edit-expense" element={withLayout(<EditExpense />)} />
-            <Route path="/detail-expense" element={withLayout(<DetailExpense />)} />
+              <Route path="/expense" element={<ExpenseList />} />
+              <Route path="/add-expense" element={<AddExpense />} />
+              <Route path="/edit-expense" element={<EditExpense />} />
+              <Route path="/detail-expense" element={<DetailExpense />} />
 
-            <Route path="/backup" element={withLayout(<BackupPage />)} />
-            <Route path="/support" element={withLayout(<Support />)} />
-            <Route path="/profile" element={withLayout(<ProfilePage />)} />
+              <Route path="/backup" element={<BackupPage />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/profile" element={<ProfilePage />} />
 
-            <Route path="/report/sales" element={withLayout(<SalesReportPage />)} />
-            <Route path="/best-selling" element={withLayout(<BestSellingReportPage />)} />
-            <Route path="/report/daily" element={withLayout(<DailyReport />)} />
-            <Route path="/report/profit-loss" element={withLayout(<ProfitLossReport />)} />
-            <Route path="/report/cash-flow" element={withLayout(<CashFlowReport />)} />
+              <Route path="/report/sales" element={<SalesReportPage />} />
+              <Route path="/best-selling" element={<BestSellingReportPage />} />
+              <Route path="/report/daily" element={<DailyReport />} />
+              <Route path="/report/profit-loss" element={<ProfitLossReport />} />
+              <Route path="/report/cash-flow" element={<CashFlowReport />} />
+            </Route>
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </AnimatedRoutes>
+          </Routes>
         </Suspense>
       </BrowserRouter>
 

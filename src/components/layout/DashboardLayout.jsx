@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, createContext, useContext } from "react";
-export const SidebarContext = createContext(false);
-export const useSidebar = () => useContext(SidebarContext);
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
+export const SidebarContext = createContext(false);
+export const useSidebar = () => useContext(SidebarContext);
 import { useTranslation } from "react-i18next";
 import { getAllLocation } from "@/services/location";
 import Sidebar from "./Sidebar";
@@ -131,7 +131,7 @@ const tipsKeys = {
   "/detail-role": ["tips.role", "tips.role2"]
 };
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = () => {
   const { t } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -216,7 +216,9 @@ const DashboardLayout = ({ children }) => {
         <main className="p-4 lg:p-6 flex flex-col">
           <div className="flex-1 min-h-0">
             <SidebarContext.Provider value={sidebarCollapsed}>
-              {children}
+              <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Outlet />
+              </div>
             </SidebarContext.Provider>
           </div>
           {tips && (
