@@ -141,7 +141,7 @@ const DashboardLayout = () => {
   const location = useLocation();
 
   const user = cookie?.user;
-  const role = user?.role || user?.roleType || "";
+  const role = user?.roleType || "";
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: role === "super_admin" && !cookie?.activeStore

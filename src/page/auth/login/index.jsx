@@ -103,7 +103,7 @@ const LoginPage = () => {
         });
       }, 1000);
       setTimeout(() => {
-        const role = success.user?.roleType || success.user?.userType;
+        const role = success.user?.roleType;
         if (role === "super_admin") navigate("/dashboard-super-admin");
         else if (role === "admin") navigate("/dashboard-admin");
         else navigate("/home");

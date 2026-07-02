@@ -40,7 +40,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
 
   const ref = useRef(null);
   const user = cookie?.user;
-  const role = user?.role || user?.roleType || "";
+  const role = user?.roleType || "";
 
   const userAccessMenu = parseAccessMenu(user?.accessMenu);
   const hasCashierMenu =
@@ -150,7 +150,7 @@ export const UserDropdown = () => {
 
   const user = cookie?.user;
   const userName = user?.userName || user?.name || "Admin";
-  const userRole = user?.role || user?.roleType || "admin";
+  const userRole = user?.roleType || "admin";
   const userImage = user?.image || null;
   const userFullName = user?.fullName || userName;
   const userRoleName = user?.roleName || userRole.replace("_", " ");

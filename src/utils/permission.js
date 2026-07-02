@@ -113,7 +113,7 @@ export const normalizePermissionActions = (perm) => {
 
 export const canAccess = (user, menuKey, action) => {
   if (!user) return false;
-  const role = user.role || user.roleType || user.type || user.userType;
+  const role = user.roleType;
   if (role === "super_admin") return true;
   const accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) return false;
@@ -134,7 +134,7 @@ export const canAccess = (user, menuKey, action) => {
 
 export const filterMenuByPermission = (menuItems, user) => {
   if (!user) return [];
-  const role = user.role || user.roleType || user.type || user.userType;
+  const role = user.roleType;
   if (role === "super_admin") return menuItems;
   const accessMenu = parseAccessMenu(user.accessMenu);
   if (!accessMenu || accessMenu.length === 0) return [];

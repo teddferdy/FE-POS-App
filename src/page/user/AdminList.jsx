@@ -280,7 +280,7 @@ const AdminList = () => {
                       ) : (
                         users.map((user) => {
                           const status = getStatus(user, t);
-                          const role = user.role || user.type || "admin";
+                          const role = user.roleType || "admin";
                           return (
                             <tr
                               key={user.id || user._id}

@@ -98,7 +98,7 @@ const SuperAdminTour = () => {
   const [cookie] = useCookies();
   const navigate = useNavigate();
   const user = cookie?.user;
-  const role = user?.role || user?.roleType || user?.type || user?.userType;
+  const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
 
   const [showMenu, setShowMenu] = useState(false);

@@ -26,7 +26,7 @@ const LowStock = () => {
   const { t } = useTranslation();
   const [cookie] = useCookies();
   const user = cookie?.user;
-  const role = user?.role || user?.type || "";
+  const role = user?.roleType || "";
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock"],

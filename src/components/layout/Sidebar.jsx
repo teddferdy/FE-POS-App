@@ -108,7 +108,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     }
     return cookie?.user;
   }, [cookie?.user]);
-  const role = user?.role || user?.roleType || user?.type || user?.userType || "user";
+  const role = user?.roleType || "user";
   const hasAccessMenu =
     user?.accessMenu && Array.isArray(user.accessMenu) && user.accessMenu.length > 0;
 

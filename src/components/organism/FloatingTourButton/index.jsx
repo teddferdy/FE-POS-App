@@ -15,7 +15,7 @@ const FloatingTourButton = () => {
   });
 
   const user = cookie?.user;
-  const role = user?.role || user?.roleType || "";
+  const role = user?.roleType || "";
   if (role !== "super_admin") return null;
   if (dismissed) return null;
   if (isActive) return null;

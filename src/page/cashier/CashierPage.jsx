@@ -39,7 +39,7 @@ const CashierPage = () => {
     }
     return cookie?.user;
   }, [cookie?.user]);
-  const role = user?.role || user?.roleType || user?.type || user?.userType;
+  const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
   const store = isSuperAdmin
     ? cookie?.activeStore
