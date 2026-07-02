@@ -1,37 +1,28 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  Search,
   ShoppingCart,
   Plus,
-  Minus,
-  Send,
-  QrCode,
   Store,
-  X,
-  CheckCircle,
-  Search,
-  Star,
-  MessageSquare
+  QrCode,
+  UtensilsCrossed,
+  ArrowRight,
+  Menu,
+  FileText,
+  ShoppingBag
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
-} from "@/components/ui/dialog";
 import { axiosInstance } from "@/services";
-
-const VAR_SEPARATOR = " • ";
+import { loadCart } from "./cartStore";
 
 const CustomerOrder = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table");
   const storeId = searchParams.get("store");
@@ -40,15 +31,8 @@ const CustomerOrder = () => {
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState([]);
-  const [customerName, setCustomerName] = useState("");
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [successOrder, setSuccessOrder] = useState(null);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [variantProduct, setVariantProduct] = useState(null);
-  const [variantSelections, setVariantSelections] = useState({});
-  const [variantMods, setVariantMods] = useState([]);
+  const [cart, setCart] = useState(loadCart);
 
   useEffect(() => {
     if (!storeId) {
@@ -72,6 +56,12 @@ const CustomerOrder = () => {
       .finally(() => setLoading(false));
   }, [storeId]);
 
+  useEffect(() => {
+    const onStorage = () => setCart(loadCart());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const filteredProducts = useMemo(() => {
     let result = products;
     if (activeCategory !== "all") {
@@ -81,7 +71,7 @@ const CustomerOrder = () => {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (p) =>
-          prodName(p).toLowerCase().includes(q) ||
+          (p.name || p.nameProduct || "").toLowerCase().includes(q) ||
           (p.description && p.description.toLowerCase().includes(q))
       );
     }
@@ -89,599 +79,209 @@ const CustomerOrder = () => {
   }, [activeCategory, searchQuery, products]);
 
   const prodName = (p) => p.name || p.nameProduct || "-";
-  const prodPrice = (p) => (p ? Number(p.sellingPrice || p.price || 0) : 0);
+  const prodPrice = (p) => Number(p.sellingPrice || p.price || 0);
   const prodId = (p) => p.id || p.productId;
+  const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+  const totalPrice = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-  const hasVariants = (p) =>
-    p.isOption || p.hasModifiers || p.options?.length || p.modifiers?.length;
-
-  const openVariant = (product) => {
-    setVariantProduct(product);
-    setVariantSelections({});
-    setVariantMods([]);
-  };
-
-  const selectOption = (groupId, optionName) => {
-    setVariantSelections((prev) => ({ ...prev, [groupId]: optionName }));
-  };
-
-  const toggleMod = (modId) => {
-    setVariantMods((prev) =>
-      prev.includes(modId) ? prev.filter((id) => id !== modId) : [...prev, modId]
-    );
-  };
-
-  const variantExtraPrice = useMemo(() => {
-    if (!variantProduct) return 0;
-    let extra = 0;
-    const opts = variantProduct.options || [];
-    for (const group of opts) {
-      const sel = variantSelections[group.id];
-      if (sel) {
-        const found = (group.options || []).find((o) => o.name === sel);
-        extra += Number(found.price || 0);
-      }
-    }
-    const mods = variantProduct.modifiers || [];
-    for (const m of mods) {
-      if (variantMods.includes(m.id)) extra += Number(m.price || 0);
-    }
-    return extra;
-  }, [variantProduct, variantSelections, variantMods]);
-
-  const variantLabel = useMemo(() => {
-    if (!variantProduct) return "";
-    const parts = [];
-    const opts = variantProduct.options || [];
-    for (const group of opts) {
-      const sel = variantSelections[group.id];
-      if (sel) parts.push(sel);
-    }
-    for (const m of variantProduct.modifiers || []) {
-      if (variantMods.includes(m.id)) parts.push(m.name);
-    }
-    return parts.join(VAR_SEPARATOR);
-  }, [variantProduct, variantSelections, variantMods]);
-
-  const addToCart = (product, label, extra, options = [], modifiers = []) => {
-    const pid = prodId(product);
-    const basePrice = prodPrice(product);
-    const finalPrice = basePrice + extra;
-    const displayName = label ? `${prodName(product)} (${label})` : prodName(product);
-    setCart((prev) => {
-      const existing = prev.find((item) => item.productId === pid && item.variantLabel === label);
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === pid && item.variantLabel === label
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [
-        ...prev,
-        {
-          productId: pid,
-          productName: displayName,
-          price: finalPrice,
-          quantity: 1,
-          notes: "",
-          variantLabel: label,
-          options,
-          modifiers
-        }
-      ];
-    });
-  };
-
-  const handleAddClick = (product) => {
-    if (hasVariants(product)) {
-      openVariant(product);
-    } else {
-      addToCart(product, "", 0, [], []);
-    }
-  };
-
-  const confirmVariant = () => {
-    if (!variantProduct) return;
-
-    // Construct structured options
-    const selectedOptions = [];
-    const opts = variantProduct.options || [];
-    for (const group of opts) {
-      const sel = variantSelections[group.id];
-      if (sel) {
-        const found = (group.options || []).find((o) => o.name === sel);
-        selectedOptions.push({
-          id: group.id,
-          name: group.name,
-          value: sel,
-          price: found ? Number(found.price || 0) : 0
-        });
-      }
-    }
-
-    // Construct structured modifiers
-    const selectedModifiers = [];
-    const mods = variantProduct.modifiers || [];
-    for (const m of mods) {
-      if (variantMods.includes(m.id)) {
-        selectedModifiers.push({
-          id: m.id,
-          name: m.name,
-          price: Number(m.price || 0)
-        });
-      }
-    }
-
-    addToCart(variantProduct, variantLabel, variantExtraPrice, selectedOptions, selectedModifiers);
-    setVariantProduct(null);
-  };
-
-  const updateQty = (productId, variantLabel, delta) => {
-    setCart((prev) =>
-      prev
-        .map((item) =>
-          item.productId === productId && item.variantLabel === variantLabel
-            ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
-
-  const removeItem = (productId, variantLabel) => {
-    setCart((prev) =>
-      prev.filter((item) => !(item.productId === productId && item.variantLabel === variantLabel))
-    );
-  };
-
-  const updateItemNotes = (productId, variantLabel, note) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.productId === productId && item.variantLabel === variantLabel
-          ? { ...item, notes: note }
-          : item
-      )
-    );
-  };
-
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const placeOrder = async () => {
-    if (!storeId || cart.length === 0) return;
-    setSubmitting(true);
-    try {
-      const res = await axiosInstance.post("/order/customer-create", {
-        store: Number(storeId),
-        tableId: tableId ? Number(tableId) : null,
-        items: cart.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          price: item.price,
-          quantity: item.quantity,
-          notes: item.notes || null,
-          options: item.options || [],
-          modifiers: item.modifiers || []
-        })),
-        customerName: customerName || null
-      });
-      const no = res.data?.data?.orderNumber || res.data?.orderNumber;
-      setSuccessOrder(no);
-      setCart([]);
-      setCustomerName("");
-    } catch (e) {
-      toast.error(t("page.customerOrder.fail"), {
-        description: e?.response?.data?.message || e.message || t("page.customerOrder.failDesc")
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const refreshCart = useCallback(() => setCart(loadCart()), []);
 
   if (!storeId) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
-        <Card className="p-8 text-center max-w-sm bg-neutral-900 border-neutral-800 text-neutral-100">
-          <QrCode size={48} className="mx-auto text-orange-500 mb-4" />
-          <h1 className="text-xl font-bold mb-2">{t("page.customerOrder.invalidQr")}</h1>
-          <p className="text-sm text-neutral-400 mb-4">{t("page.customerOrder.scanQrToOrder")}</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-sm">
+          <QrCode size={48} className="mx-auto text-primary mb-4" />
+          <h1 className="text-xl font-bold mb-2 text-on-surface">
+            {t("page.customerOrder.invalidQr")}
+          </h1>
+          <p className="text-sm text-on-surface-variant mb-4">
+            {t("page.customerOrder.scanQrToOrder")}
+          </p>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 pb-24 font-sans antialiased">
-      <div className="max-w-md mx-auto bg-neutral-900 min-h-screen shadow-2xl relative border-x border-neutral-800">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-              <Store size={18} />
-            </div>
-            <div>
-              <h1 className="font-bold text-sm text-neutral-100">
-                {t("page.customerOrder.title")}
-              </h1>
-              {tableId && (
-                <p className="text-xs font-semibold text-orange-500 mt-0.5">
-                  {t("page.customerOrder.tableNumber", { number: tableId })}
-                </p>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => setCartOpen(true)}
-            className="relative w-10 h-10 rounded-xl bg-neutral-800 hover:bg-neutral-700 transition-colors flex items-center justify-center text-neutral-300">
-            <ShoppingCart size={18} />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold border-2 border-neutral-900 animate-bounce">
-                {totalItems}
-              </span>
-            )}
-          </button>
-        </header>
+    <div className="min-h-screen bg-background text-on-background font-sans antialiased pb-48">
+      {/* Header */}
+      <header className="fixed top-0 w-full z-50 bg-surface border-b border-outline-variant flex items-center justify-between px-4 h-14">
+        <div className="flex items-center gap-3">
+          <UtensilsCrossed size={20} className="text-primary" />
+          <h1 className="font-bold text-sm text-on-surface">{t("page.customerOrder.title")}</h1>
+          {tableId && (
+            <span className="text-xs font-semibold text-primary ml-1 px-2 py-0.5 bg-primary-container/20 rounded-md">
+              {t("page.customerOrder.tableNumber", { number: tableId })}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => navigate(`/customer-order/cart?store=${storeId}&table=${tableId || ""}`)}
+          className="relative w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low rounded-xl transition-colors">
+          <ShoppingCart size={20} />
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-surface">
+              {totalItems}
+            </span>
+          )}
+        </button>
+      </header>
 
-        {/* Search Bar */}
-        <div className="px-4 pt-4">
+      <main className="pt-14">
+        {/* Search */}
+        <section className="px-4 pt-4 pb-2">
           <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
-              size={16}
-            />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
             <Input
-              type="text"
-              placeholder="Cari makanan atau minuman..."
+              placeholder={t("page.customerOrder.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500 pl-9 rounded-xl text-sm focus-visible:ring-orange-500"
+              className="w-full h-11 pl-10 bg-surface-container-lowest border-outline-variant rounded-xl text-sm focus-visible:ring-primary"
             />
           </div>
-        </div>
+        </section>
 
-        {/* Category tabs */}
-        <div className="px-4 py-3 overflow-x-auto no-scrollbar">
-          <div className="flex gap-2">
+        {/* Categories */}
+        <nav className="sticky top-14 z-40 bg-surface/95 backdrop-blur-md py-3 overflow-x-auto no-scrollbar flex items-center gap-2 px-4 border-b border-surface-container">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
+              activeCategory === "all"
+                ? "bg-primary text-on-primary border-primary"
+                : "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:border-primary"
+            }`}>
+            {t("page.customerOrder.allCategory")}
+          </button>
+          {categories.map((cat) => (
             <button
-              onClick={() => setActiveCategory("all")}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-                activeCategory === "all"
-                  ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20"
-                  : "bg-neutral-850 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-white"
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
+                activeCategory === cat.id
+                  ? "bg-primary text-on-primary border-primary"
+                  : "bg-surface-container-lowest text-on-surface-variant border-outline-variant hover:border-primary"
               }`}>
-              {t("page.customerOrder.allCategory")}
+              {cat.name}
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
-                  activeCategory === cat.id
-                    ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20"
-                    : "bg-neutral-850 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-white"
-                }`}>
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
+          ))}
+        </nav>
 
-        {/* Menu List */}
-        <main className="px-4 space-y-3 pb-8">
+        {/* Products */}
+        <section className="px-4 pt-4 pb-8 space-y-3">
           {loading ? (
-            <div className="space-y-3 py-8">
+            <div className="space-y-3">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="w-full h-24 rounded-2xl bg-neutral-800 animate-pulse" />
+                <div
+                  key={n}
+                  className="w-full h-24 rounded-xl bg-surface-container-high animate-pulse"
+                />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-neutral-500 text-sm">{t("page.customerOrder.noProducts")}</p>
+              <p className="text-on-surface-variant text-sm">
+                {t("page.customerOrder.noProducts")}
+              </p>
             </div>
           ) : (
             filteredProducts.map((product) => {
-              const rating = (4.5 + (prodId(product) % 5) * 0.1).toFixed(1);
+              const pid = prodId(product);
               return (
-                <Card
-                  key={prodId(product)}
-                  className="bg-neutral-850 border-neutral-800/80 p-3 flex gap-3 items-center rounded-2xl hover:border-neutral-700 transition-all duration-300 relative group overflow-hidden">
-                  {/* Image or Placeholder */}
+                <div
+                  key={pid}
+                  onClick={() =>
+                    navigate(`/customer-order/menu/${pid}?store=${storeId}&table=${tableId || ""}`)
+                  }
+                  className="flex items-center gap-3 p-2 bg-surface-container-lowest rounded-xl border border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer active:scale-[0.99]">
                   {product.image ? (
                     <img
                       src={product.image}
                       alt={prodName(product)}
-                      className="w-20 h-20 rounded-xl object-cover bg-neutral-800 flex-shrink-0"
+                      className="w-20 h-20 rounded-lg object-cover bg-surface-container flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 font-extrabold text-2xl flex-shrink-0 border border-orange-500/20">
-                      {prodName(product).charAt(0).toUpperCase()}
+                    <div className="w-20 h-20 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary font-bold text-xl flex-shrink-0">
+                      {prodName(product).charAt(0)}
                     </div>
                   )}
-
-                  {/* Rating Badge */}
-                  <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm text-yellow-500 text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 z-1">
-                    <Star size={10} fill="currentColor" />
-                    <span>{rating}</span>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-bold text-neutral-100 text-sm truncate group-hover:text-orange-500 transition-colors">
+                  <div className="flex-1 min-w-0 pr-1">
+                    <h3 className="font-bold text-sm text-on-surface truncate">
                       {prodName(product)}
                     </h3>
                     {product.description && (
-                      <p className="text-xs text-neutral-400 line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-xs text-on-surface-variant line-clamp-1 mt-0.5">
                         {product.description}
                       </p>
                     )}
-                    <p className="text-orange-500 font-extrabold text-sm mt-2">
+                    <p className="font-bold text-sm text-primary mt-1.5">
                       Rp{prodPrice(product).toLocaleString("id-ID")}
                     </p>
                   </div>
-
-                  {/* Add Button */}
                   <Button
                     size="sm"
-                    className="shrink-0 bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-9 w-9 p-0 flex items-center justify-center shadow-lg shadow-orange-500/25 transition-transform active:scale-95"
-                    onClick={() => handleAddClick(product)}>
-                    <Plus size={16} />
+                    className="shrink-0 bg-primary hover:bg-primary-container text-on-primary rounded-xl h-10 w-10 p-0 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(
+                        `/customer-order/menu/${pid}?store=${storeId}&table=${tableId || ""}`
+                      );
+                    }}>
+                    <Plus size={18} />
                   </Button>
-                </Card>
+                </div>
               );
             })
           )}
-        </main>
+        </section>
+      </main>
 
-        {/* Floating Cart Bottom Bar */}
-        {cart.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-neutral-900 via-neutral-900 to-transparent pointer-events-none z-10">
-            <button
-              onClick={() => setCartOpen(true)}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/30 p-3 rounded-2xl flex items-center justify-between pointer-events-auto transition-transform active:scale-98">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <ShoppingCart size={18} />
-                <span>
+      {/* Floating cart bar */}
+      {totalItems > 0 && (
+        <div className="fixed bottom-0 left-0 w-full p-4 z-50 pointer-events-none">
+          <div
+            onClick={() => navigate(`/customer-order/cart?store=${storeId}&table=${tableId || ""}`)}
+            className="max-w-lg mx-auto w-full bg-primary text-on-primary h-14 rounded-2xl flex items-center justify-between px-5 shadow-lg pointer-events-auto cursor-pointer active:scale-[0.98] transition-transform">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <ShoppingCart size={20} />
+                <span className="absolute -top-2 -right-2 bg-error text-on-error text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-primary">
+                  {totalItems}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-sm">
                   {totalItems} {t("page.customerOrder.items")}
                 </span>
-                <span className="opacity-50">|</span>
-                <span>Rp{totalPrice.toLocaleString("id-ID")}</span>
+                <span className="text-[10px] uppercase tracking-wider opacity-80">
+                  {t("page.customerOrder.viewCart")}
+                </span>
               </div>
-              <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-xl">
-                {t("page.customerOrder.viewCart")}
-              </span>
-            </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-base">Rp{totalPrice.toLocaleString("id-ID")}</span>
+              <ArrowRight size={18} />
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Cart Dialog */}
-        <Dialog open={cartOpen} onOpenChange={setCartOpen}>
-          <DialogContent className="sm:max-w-sm max-h-[85vh] flex flex-col bg-neutral-900 border-neutral-800 text-neutral-100 rounded-3xl p-6">
-            <DialogHeader className="pb-3 border-b border-neutral-800">
-              <DialogTitle className="text-lg font-bold text-neutral-100 flex items-center gap-2">
-                <ShoppingCart size={18} className="text-orange-500" />
-                {t("page.customerOrder.cartTitle")}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-1 scrollbar-thin">
-              <div>
-                <label className="text-xs font-semibold text-neutral-400 mb-1.5 block">
-                  Identitas Pemesan
-                </label>
-                <Input
-                  placeholder={t("page.customerOrder.namePlaceholder")}
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500 rounded-xl text-sm focus-visible:ring-orange-500"
-                />
-              </div>
-
-              {cart.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-neutral-500 text-sm">{t("page.customerOrder.emptyCart")}</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cart.map((item) => (
-                    <div
-                      key={item.productId + (item.variantLabel || "")}
-                      className="bg-neutral-850 border border-neutral-800/80 p-3 rounded-2xl space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate font-bold text-sm text-neutral-100">
-                            {item.productName}
-                          </p>
-                          <p className="text-xs text-orange-500 font-extrabold mt-0.5">
-                            Rp{item.price.toLocaleString("id-ID")}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-neutral-500 hover:text-red-400 hover:bg-neutral-800 rounded-lg"
-                          onClick={() => removeItem(item.productId, item.variantLabel)}>
-                          <X size={14} />
-                        </Button>
-                      </div>
-
-                      {/* Item Notes Input */}
-                      <div className="relative">
-                        <MessageSquare
-                          size={12}
-                          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500"
-                        />
-                        <Input
-                          type="text"
-                          placeholder="Tambahkan catatan (kurang es, pedas)..."
-                          value={item.notes || ""}
-                          onChange={(e) =>
-                            updateItemNotes(item.productId, item.variantLabel, e.target.value)
-                          }
-                          className="h-7 bg-neutral-800 border-neutral-750 text-neutral-300 placeholder-neutral-500 pl-7 text-[10px] rounded-lg focus-visible:ring-orange-500"
-                        />
-                      </div>
-
-                      {/* Quantity Controller */}
-                      <div className="flex items-center justify-end gap-1.5 pt-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 rounded-lg"
-                          onClick={() => updateQty(item.productId, item.variantLabel, -1)}>
-                          <Minus size={12} />
-                        </Button>
-                        <span className="w-8 text-center text-xs font-bold text-neutral-100">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700 rounded-lg"
-                          onClick={() => updateQty(item.productId, item.variantLabel, 1)}>
-                          <Plus size={12} />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Separator className="bg-neutral-800" />
-
-            <div className="pt-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
-                  {t("page.customerOrder.total")}
-                </p>
-                <p className="font-extrabold text-orange-500 text-xl mt-0.5">
-                  Rp{totalPrice.toLocaleString("id-ID")}
-                </p>
-              </div>
-              <Button
-                onClick={placeOrder}
-                disabled={submitting || cart.length === 0}
-                className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl px-5 h-12 shadow-lg shadow-orange-500/20 font-bold gap-1.5">
-                <Send size={16} />
-                {submitting ? t("page.customerOrder.submitting") : t("page.customerOrder.order")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Variant modal */}
-        <Dialog open={!!variantProduct} onOpenChange={(o) => !o && setVariantProduct(null)}>
-          <DialogContent className="sm:max-w-sm bg-neutral-900 border-neutral-800 text-neutral-100 rounded-3xl p-6">
-            <DialogHeader className="pb-3 border-b border-neutral-800">
-              <DialogTitle className="text-base font-bold text-neutral-100">
-                {variantProduct ? prodName(variantProduct) : ""}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-neutral-400">
-                {t("page.customerOrder.chooseVariant")}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4 max-h-[50vh] overflow-y-auto pr-1">
-              {(variantProduct?.options || []).map((group) => (
-                <div key={group.id} className="space-y-1.5">
-                  <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                    {group.name}
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {(group.options || []).map((opt) => {
-                      const active = variantSelections[group.id] === opt.name;
-                      return (
-                        <button
-                          key={opt.name}
-                          onClick={() => selectOption(group.id, opt.name)}
-                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                            active
-                              ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-md shadow-orange-500/5"
-                              : "border-neutral-800 bg-neutral-850 hover:bg-neutral-800 text-neutral-350"
-                          }`}>
-                          <span>{opt.name}</span>
-                          {Number(opt.price) > 0 && (
-                            <span className="text-[10px] opacity-70">
-                              +Rp{Number(opt.price).toLocaleString("id-ID")}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              {(variantProduct?.modifiers || []).length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                    {t("page.customerOrder.addOns")}
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {(variantProduct.modifiers || []).map((mod) => {
-                      const active = variantMods.includes(mod.id);
-                      return (
-                        <button
-                          key={mod.id}
-                          onClick={() => toggleMod(mod.id)}
-                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                            active
-                              ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-md shadow-orange-500/5"
-                              : "border-neutral-800 bg-neutral-850 hover:bg-neutral-800 text-neutral-350"
-                          }`}>
-                          <span>{mod.name}</span>
-                          <span className="text-[10px] opacity-70">
-                            +Rp{Number(mod.price).toLocaleString("id-ID")}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
-              <div>
-                <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
-                  Harga Kustom
-                </p>
-                <p className="font-extrabold text-orange-500 text-lg mt-0.5">
-                  Rp{(prodPrice(variantProduct) + variantExtraPrice).toLocaleString("id-ID")}
-                </p>
-              </div>
-              <Button
-                onClick={confirmVariant}
-                className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-bold h-11 px-5 shadow-lg shadow-orange-500/20">
-                {t("page.customerOrder.addToCart")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Success dialog */}
-        <Dialog open={!!successOrder} onOpenChange={(o) => !o && setSuccessOrder(null)}>
-          <DialogContent className="sm:max-w-sm text-center bg-neutral-900 border-neutral-800 text-neutral-100 rounded-3xl p-6">
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500">
-                <CheckCircle size={36} />
-              </div>
-              <DialogTitle className="text-xl font-bold text-neutral-100">
-                {t("page.customerOrder.successModalTitle")}
-              </DialogTitle>
-              <DialogDescription className="text-sm text-neutral-400">
-                {t("page.customerOrder.successModalDesc", { orderNumber: successOrder })}
-              </DialogDescription>
-              <Button
-                className="mt-2 bg-green-600 hover:bg-green-700 text-white rounded-2xl w-full font-bold h-11 shadow-lg shadow-green-500/10"
-                onClick={() => setSuccessOrder(null)}>
-                {t("page.customerOrder.successModalConfirm")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Bottom nav */}
+      <nav className="fixed bottom-0 w-full z-40 bg-surface shadow-[0_-4px_12px_0_rgba(0,0,0,0.08)] flex justify-around items-center h-14 px-4">
+        <button className="flex flex-col items-center gap-0.5 text-primary font-bold transition-colors">
+          <Menu size={20} />
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.menu")}</span>
+        </button>
+        <button
+          onClick={() => navigate(`/customer-order/cart?store=${storeId}&table=${tableId || ""}`)}
+          className="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition-colors">
+          <ShoppingBag size={20} />
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.cart")}</span>
+        </button>
+        <button className="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition-colors">
+          <FileText size={20} />
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.orders")}</span>
+        </button>
+      </nav>
     </div>
   );
 };

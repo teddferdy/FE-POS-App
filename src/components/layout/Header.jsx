@@ -341,7 +341,10 @@ const globalPages = [
   "/price-list-template",
   "/product-list",
   "/add-product",
-  "/edit-product"
+  "/discount-list",
+  "/edit-product",
+  "/add-discount",
+  "/edit-discount"
 ];
 
 const Header = ({ onMenuToggle, onOpenPalette }) => {

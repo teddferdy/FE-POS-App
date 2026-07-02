@@ -112,7 +112,7 @@ const DetailBom = () => {
                   {bom.lines?.length > 0 ? (
                     bom.lines.map((line, i) => (
                       <tr key={i} className="border-b border-muted/20">
-                        <td className="py-2">{line.ingredientData?.nameProduct || "-"}</td>
+                        <td className="py-2">{line.ingredientData?.name || "-"}</td>
                         <td className="py-2 text-right font-mono">{line.qty}</td>
                         <td className="py-2 text-center">
                           {line.unit || t("page.bom.detail.pcs")}

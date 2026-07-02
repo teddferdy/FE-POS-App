@@ -42,8 +42,9 @@ const DiscountList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/discount";
-  const locationParam = user?.store || "";
+  const locationParam = isSuperAdmin ? "" : user?.store;
 
   const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000
@@ -248,7 +249,7 @@ const DiscountList = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label={t("page.discount.list.total")}
           value={statsTotal}

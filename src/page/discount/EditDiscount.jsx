@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useForm } from "react-hook-form";
@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
-import { getAllDiscount, editDiscount } from "@/services/discount";
+import { getDiscountById, editDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Button } from "@/components/ui/button";
@@ -101,15 +101,12 @@ const EditDiscount = () => {
   const locationParam = user?.store || "";
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["discounts-all"],
-    () => getAllDiscount({ location: locationParam, page: 1, limit: 9999, statusDiscount: "" }),
+    ["discount", id],
+    () => getDiscountById(id),
     { enabled: !!id }
   );
 
-  const discountItem = useMemo(() => {
-    if (!data?.data) return {};
-    return data.data.find((item) => Number(item.id) === Number(id) || item._id === id) || {};
-  }, [data, id]);
+  const discountItem = data?.data || {};
 
   // const cond = useMemo(() => discountItem?.conditions || {}, [discountItem]);
   // const promoType = useMemo(() => cond?.promoType || "standard", [cond]);

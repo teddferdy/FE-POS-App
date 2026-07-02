@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -128,8 +128,11 @@ const AddDiscount = () => {
 
   const promoType = form.watch("promoType");
 
+  const queryClient = useQueryClient();
+
   const createMutation = useMutation(addDiscount, {
     onSuccess: () => {
+      queryClient.invalidateQueries(["discounts"]);
       setSuccessModal(true);
     },
     onError: (err) => {

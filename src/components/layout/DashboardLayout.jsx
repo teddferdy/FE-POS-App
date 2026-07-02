@@ -61,6 +61,7 @@ const tipsKeys = {
 
   "/add-discount": ["tips.discount", "tips.discount2"],
   "/edit-discount": ["tips.discount", "tips.discount2"],
+  "/detail-discount": ["tips.discount", "tips.discount2"],
 
   "/add-type-payment": ["tips.payment", "tips.payment2"],
   "/edit-type-payment": ["tips.payment", "tips.payment2"],
@@ -216,7 +217,9 @@ const DashboardLayout = () => {
         <main className="p-4 lg:p-6 flex flex-col">
           <div className="flex-1 min-h-0">
             <SidebarContext.Provider value={sidebarCollapsed}>
-              <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div
+                key={location.pathname}
+                className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <Outlet />
               </div>
             </SidebarContext.Provider>

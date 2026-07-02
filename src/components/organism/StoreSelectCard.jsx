@@ -21,15 +21,28 @@ const StoreSelectCard = ({
   mandatory
 }) => {
   if (!isSuperAdmin) {
-    if (selectedStores.length > 0 || user?.store) {
+    if (allStores) {
       return (
         <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Store size={16} className="shrink-0" />
           <span>
             {storeInfoLabel}{" "}
-            <strong className="text-foreground">
-              {user?.storeName || `Toko #${selectedStores[0] || user?.store || ""}`}
-            </strong>
+            <strong className="text-foreground">{t("page.category.form.storeSection.allStores")}</strong>
+          </span>
+        </div>
+      );
+    }
+    if (selectedStores.length > 0 || user?.store) {
+      const storeName =
+        locations.find((l) => l.id === selectedStores[0])?.name ||
+        user?.storeName ||
+        `Toko #${selectedStores[0] || user?.store || ""}`;
+      return (
+        <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Store size={16} className="shrink-0" />
+          <span>
+            {storeInfoLabel}{" "}
+            <strong className="text-foreground">{storeName}</strong>
           </span>
         </div>
       );

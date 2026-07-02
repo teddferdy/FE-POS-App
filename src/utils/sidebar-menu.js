@@ -28,7 +28,8 @@ import {
   BadgePercent,
   ChefHat,
   Wallet,
-  Database
+  Database,
+  QrCode
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -66,6 +67,13 @@ export const sidebarMenuSuperAdmin = [
         i18nKey: "sidebar.kitchenDisplay",
         href: "/kitchen-display",
         icon: ChefHat,
+        actions: ["view"]
+      },
+      {
+        title: "QR Orders",
+        i18nKey: "sidebar.qrOrders",
+        href: "/qr-order-management",
+        icon: QrCode,
         actions: ["view"]
       }
     ]
@@ -471,6 +479,13 @@ export const sidebarMenuAdmin = [
         i18nKey: "sidebar.kitchenDisplay",
         href: "/kitchen-display",
         icon: ChefHat,
+        actions: ["view"]
+      },
+      {
+        title: "QR Orders",
+        i18nKey: "sidebar.qrOrders",
+        href: "/qr-order-management",
+        icon: QrCode,
         actions: ["view"]
       }
     ]

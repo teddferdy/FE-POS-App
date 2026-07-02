@@ -178,6 +178,10 @@ const KitchenDisplay = React.lazy(() => import("./page/kitchen-display"));
 
 // Customer Order
 const CustomerOrder = React.lazy(() => import("./page/customer-order"));
+const CustomerOrderDetail = React.lazy(() => import("./page/customer-order/detail"));
+const CustomerOrderCart = React.lazy(() => import("./page/customer-order/cart"));
+const CustomerOrderTracking = React.lazy(() => import("./page/customer-order/tracking"));
+const CustomerOrderManagement = React.lazy(() => import("./page/customer-order/management"));
 
 // Customer Display
 const CustomerDisplay = React.lazy(() => import("./page/customer-display"));
@@ -286,6 +290,9 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/home" element={<CashierPage />} />
             <Route path="/customer-order" element={<CustomerOrder />} />
+            <Route path="/customer-order/menu/:id" element={<CustomerOrderDetail />} />
+            <Route path="/customer-order/cart" element={<CustomerOrderCart />} />
+            <Route path="/customer-order/tracking/:id" element={<CustomerOrderTracking />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
 
             {/* App layout: sidebar & header persist across route changes */}
@@ -293,6 +300,7 @@ function App() {
               <Route path="/dashboard-super-admin" element={<Dashboard />} />
               <Route path="/dashboard-admin" element={<Dashboard />} />
               <Route path="/kitchen-display" element={<KitchenDisplay />} />
+              <Route path="/qr-order-management" element={<CustomerOrderManagement />} />
 
               <Route path="/reservation" element={<ReservationList />} />
               <Route path="/add-reservation" element={<AddReservation />} />

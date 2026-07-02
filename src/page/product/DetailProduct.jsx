@@ -17,7 +17,8 @@ import {
   // Star,
   // BadgePercent,
   // Repeat,
-  Scale
+  Scale,
+  Info
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -275,7 +276,7 @@ const DetailProduct = () => {
             <div className="border-t border-border/50 mt-5 pt-4">
               <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 {product.isOption
-                  ? t("page.product.form.option")
+                    ? t("page.product.detail.form.option")
                   : t("page.product.detail.variants")}
               </p>
               <div className="space-y-2">
@@ -341,6 +342,40 @@ const DetailProduct = () => {
                   <p>{t("page.product.detail.margin")}</p>
                   <p className="font-semibold text-foreground">{product.marginPersen || "0"}%</p>
                 </div>
+              </div>
+              <div className="mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 text-xs text-blue-700 dark:text-blue-300 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <Info size={13} />
+                  {t("page.product.detail.marginTips.title")}
+                </div>
+                <p>{t("page.product.detail.marginTips.hpp")} <strong>Rp {formatPrice(product.hppPerPorsi || 0)}</strong></p>
+                <p>{t("page.product.detail.marginTips.foodCost", { sellingPrice: formatPrice(product.price || 0), hpp: formatPrice(product.hppPerPorsi || 0) })}</p>
+                <p>{t("page.product.detail.marginTips.margin", { foodCost: product.foodCostPersen || "0" })}</p>
+              </div>
+            </div>
+          )}
+
+          {!hasComposition && (
+            <div className="border-t border-border/50 mt-5 pt-4">
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                {t("page.product.detail.composition")}
+              </p>
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {t("page.product.detail.noComposition")}
+                </p>
+                <Button onClick={() => navigate(`/bom/add?productId=${id}`)}>
+                  {t("page.product.detail.addComposition")}
+                </Button>
+              </div>
+              <div className="mt-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-700 dark:text-amber-300 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <Info size={13} />
+                  {t("page.product.detail.noCompositionTips.title")}
+                </div>
+                <p>{t("page.product.detail.noCompositionTips.desc")}</p>
+                <p>{t("page.product.detail.noCompositionTips.benefit1")}</p>
+                <p>{t("page.product.detail.noCompositionTips.benefit2")}</p>
               </div>
             </div>
           )}

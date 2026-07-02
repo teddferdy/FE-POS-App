@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Save, X, Plus, Trash2 } from "lucide-react";
 import { addBom } from "@/services/bom";
 import { getAllProduct } from "@/services/product";
+import { getAllIngredients } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +17,15 @@ import { Loading } from "@/components/ui/loading";
 
 const AddBom = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [cookies] = useCookies();
   const user = cookies?.user;
+  const preselectedId = searchParams.get("productId");
 
-  const [productId, setProductId] = useState("");
+  const [productId, setProductId] = useState(preselectedId || "");
+  const [disabledProduct] = useState(!!preselectedId);
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState([{ ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
@@ -33,6 +37,13 @@ const AddBom = () => {
     staleTime: 60000
   });
   const products = prodData?.data || [];
+
+  const { data: ingData } = useQuery(
+    ["ingredients-for-bom", user?.store],
+    () => getAllIngredients({ store: user?.store, limit: 999 }),
+    { staleTime: 60000 }
+  );
+  const ingredients = (ingData?.data || []).filter((i) => i.status === "active");
 
   const addLine = () =>
     setLines((prev) => [...prev, { ingredientId: "", qty: "", unit: "pcs", notes: "" }]);
@@ -122,8 +133,9 @@ const AddBom = () => {
               </Label>
               <select
                 value={productId}
+                disabled={disabledProduct}
                 onChange={(e) => setProductId(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm disabled:opacity-60 disabled:cursor-not-allowed">
                 <option value="">{t("page.bom.add.form.selectProduct")}</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -172,9 +184,10 @@ const AddBom = () => {
                           onChange={(e) => updateLine(idx, "ingredientId", e.target.value)}
                           className="w-full h-8 px-2 rounded border border-input bg-background text-xs">
                           <option value="">{t("page.bom.add.form.selectIngredient")}</option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.nameProduct}
+                          {ingredients.map((ing) => (
+                            <option key={ing.id} value={ing.id} disabled={ing.stock === 0}>
+                              {ing.name}
+                              {ing.stock === 0 ? " (kosong)" : ""}
                             </option>
                           ))}
                         </select>

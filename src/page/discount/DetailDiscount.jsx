@@ -1,12 +1,13 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Tags, Edit3, Calendar, User } from "lucide-react";
+import { ArrowLeft, Tags, Edit3, Calendar, User, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { getDiscountById } from "@/services/discount";
+import { getAllLocation } from "@/services/location";
 
 const statusBadge = (status, t) => {
   if (status === "active")
@@ -44,6 +45,15 @@ const DetailDiscount = () => {
   );
 
   const discount = data?.data || data;
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000
+  });
+  const locations = locData?.data || [];
+
+  const storeName = discount?.store
+    ? locations.find((l) => l.id === discount.store)?.name || `Toko #${discount.store}`
+    : t("page.category.form.storeSection.allStores");
 
   if (!id)
     return (
@@ -121,8 +131,15 @@ const DetailDiscount = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.name")}</p>
-              <p className="font-medium">{discount.name || "-"}</p>
+              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.status")}</p>
+              {statusBadge(discount.status, t)}
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.store")}</p>
+              <p className="font-medium flex items-center gap-1.5">
+                <Store size={14} className="text-muted-foreground" />
+                {storeName}
+              </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.type")}</p>
@@ -142,13 +159,7 @@ const DetailDiscount = () => {
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.table.status")}
-              </p>
-              {statusBadge(discount.status, t)}
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.code")}</p>
+              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.promoCode")}</p>
               <p className="font-mono text-sm">{discount.code || "-"}</p>
             </div>
             <div>
@@ -178,7 +189,7 @@ const DetailDiscount = () => {
               </p>
             </div>
             <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">Description</p>
+              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.description")}</p>
               <p className="font-medium">{discount.description || "-"}</p>
             </div>
           </div>
