@@ -57,6 +57,8 @@ const ProductList = () => {
   );
 
   const locations = locationsData?.data || [];
+  const noStore = role === "super_admin" && !isLoadingLocations && locations.length === 0;
+  const noLocation = role === "super_admin" && !isLoadingLocations && !locationParam && !storeFilter && locations.length > 0;
 
   useEffect(() => {
     if (role !== "super_admin" || isLoadingLocations) return;
@@ -64,14 +66,6 @@ const ProductList = () => {
       navigate("/location-list", { replace: true });
     }
   }, [role, locations, locationParam, storeFilter, isLoadingLocations, navigate]);
-
-  if (role === "super_admin" && !isLoadingLocations && locations.length === 0) {
-    return <NoStore />;
-  }
-
-  if (role === "super_admin" && !isLoadingLocations && !locationParam && !storeFilter && locations.length > 0) {
-    return null;
-  }
 
   const { data, isLoading } = useQuery(
     ["products", page, limit, storeFilter],
@@ -402,7 +396,9 @@ const ProductList = () => {
   ];
 
   return (
-    <div data-tour="page-products" className="space-y-6">
+    <>
+      {noStore ? <NoStore /> : noLocation ? null : (
+      <div data-tour="page-products" className="space-y-6">
       <div>
         <div>
           <PageHeader
@@ -617,8 +613,10 @@ const ProductList = () => {
         uploadService={uploadProductExcel}
         queryKey={["products"]}
         title={t("page.product.upload.title")}
+        subtitle={t("page.product.upload.subtitle") || ""}
       />
-    </div>
+      </div>)}
+    </>
   );
 };
 
