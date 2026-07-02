@@ -20,6 +20,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import StatCard from "@/components/ui/StatCard";
+import StoreFilter from "@/components/ui/StoreFilter";
+import { getAllLocation } from "@/services/location";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -63,6 +65,7 @@ const CategoryList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/category-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -72,15 +75,21 @@ const CategoryList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
+
+  const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading } = useQuery(
-    ["categories", page, limit, search, statusFilter],
+    ["categories", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllCategoryTable({
         page,
         limit,
         statusCategory: statusFilter || "all",
-        location: locationParam || ""
+        location: locationParam || (isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store || "")
       }),
     { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
@@ -434,6 +443,13 @@ const CategoryList = () => {
                     {t("page.category.list.sectionTitle")}
                   </h4>
                   <div className="flex items-center gap-3 w-full md:w-auto">
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
                     <div className="relative flex-1 md:w-64">
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
                         search

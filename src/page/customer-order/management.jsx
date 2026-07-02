@@ -22,29 +22,40 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { axiosInstance } from "@/services";
+import { useQuery } from "react-query";
+import StoreFilter from "@/components/ui/StoreFilter";
+import { getAllLocation } from "@/services/location";
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const store = cookie?.activeStore || cookie.user?.store;
+  const [storeFilter, setStoreFilter] = useState(isSuperAdmin ? store : "");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000
+  });
+
   const fetchOrders = useCallback(() => {
-    if (!store) {
+    const effectiveStore = isSuperAdmin ? (storeFilter || store) : store;
+    if (!effectiveStore) {
       setLoading(false);
       return;
     }
     setLoading(true);
     axiosInstance
-      .get(`/order/get-orders?store=${store}&source=qr&status=pending&limit=100`)
+      .get(`/order/get-orders?store=${effectiveStore}&source=qr&status=pending&limit=100`)
       .then((res) => setOrders(res.data?.data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [store]);
+  }, [store, storeFilter, isSuperAdmin]);
 
   useEffect(() => {
     fetchOrders();
@@ -92,10 +103,19 @@ const CustomerOrderManagement = () => {
             send to kitchen
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
-          {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <StoreFilter
+            locations={locData?.data || []}
+            value={storeFilter}
+            onChange={(v) => setStoreFilter(v)}
+            isSuperAdmin={isSuperAdmin}
+            t={t}
+          />
+          <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
+            {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Input

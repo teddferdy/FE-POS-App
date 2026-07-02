@@ -19,8 +19,10 @@ import DataTable from "@/components/ui/DataTable";
 import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
+import StoreFilter from "@/components/ui/StoreFilter";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientExcel } from "@/services/ingredient";
+import { getAllLocation } from "@/services/location";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -38,13 +40,19 @@ const IngredientList = () => {
   const [importModal, setImportModal] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [downloadingData, setDownloadingData] = useState(false);
+  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/ingredient";
 
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000
+  });
+
   const { data, isLoading } = useQuery(
-    ["ingredients", search],
-    () => getAllIngredients({ store: user?.store, search }),
+    ["ingredients", search, storeFilter],
+    () => getAllIngredients({ store: isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store, search }),
     { keepPreviousData: true }
   );
 
@@ -236,6 +244,13 @@ const IngredientList = () => {
         ]}
         title={t("page.ingredient.list.title")}
         description={t("page.ingredient.list.subtitle")}>
+        <StoreFilter
+          locations={locData?.data || []}
+          value={storeFilter}
+          onChange={(v) => setStoreFilter(v)}
+          isSuperAdmin={isSuperAdmin}
+          t={t}
+        />
         {canAccess(user, MENU_KEY, "export") && (
           <Button
             variant="outline"

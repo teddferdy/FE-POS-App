@@ -8,6 +8,7 @@ import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import StoreFilter from "@/components/ui/StoreFilter";
 import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
@@ -40,11 +41,12 @@ const DiscountList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/discount";
-  const locationParam = isSuperAdmin ? "" : user?.store;
+  const locationParam = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store;
 
   const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000
@@ -59,7 +61,7 @@ const DiscountList = () => {
   }, [locData]);
 
   const { data, isLoading } = useQuery(
-    ["discounts", page, limit, search],
+    ["discounts", page, limit, search, storeFilter],
     () => getAllDiscount({ location: locationParam, page, limit, statusDiscount: "" }),
     { keepPreviousData: true }
   );
@@ -280,7 +282,7 @@ const DiscountList = () => {
         />
       </div>
 
-      <div>
+      <div className="flex items-center gap-3">
         <div className="relative w-full sm:w-72">
           <Search
             size={16}
@@ -296,6 +298,13 @@ const DiscountList = () => {
             className="pl-9 h-10"
           />
         </div>
+        <StoreFilter
+          locations={locData?.data || []}
+          value={storeFilter}
+          onChange={(v) => { setStoreFilter(v); setPage(1); }}
+          isSuperAdmin={isSuperAdmin}
+          t={t}
+        />
       </div>
 
       <div>

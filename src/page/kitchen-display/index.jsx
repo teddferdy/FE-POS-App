@@ -1,9 +1,10 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useSocket } from "@/services/socket";
 import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +20,7 @@ import {
   Store
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
+import StoreFilter from "@/components/ui/StoreFilter";
 
 const statusConfig = {
   pending: {
@@ -69,6 +71,15 @@ const KitchenDisplay = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const { socket } = useSocket();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
+  const storeId = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : (cookie?.activeStore || cookie?.user?.store);
+
+  const { data: locData } = useQuery(["locations-kitchen"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const storeId = cookie?.activeStore || cookie?.user?.store;
 
@@ -168,13 +179,22 @@ const KitchenDisplay = () => {
   return (
     <div className="h-full flex flex-col">
         <div className="flex items-center justify-between mb-6 shrink-0">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.kitchenDisplay.subtitle")}
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("page.kitchenDisplay.subtitle")}
+              </p>
+            </div>
+            <StoreFilter
+              locations={locData?.data || []}
+              value={storeFilter}
+              onChange={(v) => setStoreFilter(v)}
+              isSuperAdmin={isSuperAdmin}
+              t={t}
+            />
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Bell size={16} />

@@ -15,6 +15,7 @@ import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -40,11 +41,14 @@ const ProductList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [storeFilter, setStoreFilter] = useState("");
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
   const role = user?.role || user?.type || "";
+  const isSuperAdmin = role === "super_admin";
   const locationParam = searchParams.get("location");
+  const effectiveLocation = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : locationParam || "";
 
   const { data: locationsData, isLoading: isLoadingLocations } = useQuery(
     ["locations-all"],
@@ -58,25 +62,25 @@ const ProductList = () => {
     if (role !== "super_admin" || isLoadingLocations) return;
     if (locations.length === 0) {
       setNoStoreModal(true);
-    } else if (!locationParam) {
+    } else if (!locationParam && !storeFilter) {
       navigate("/location-list", { replace: true });
     }
-  }, [role, locations, locationParam, isLoadingLocations, navigate]);
+  }, [role, locations, locationParam, storeFilter, isLoadingLocations, navigate]);
 
-  if (role === "super_admin" && !isLoadingLocations && !locationParam && locations.length > 0) {
+  if (role === "super_admin" && !isLoadingLocations && !locationParam && !storeFilter && locations.length > 0) {
     return null;
   }
 
   const { data, isLoading } = useQuery(
-    ["products", page, limit, locationParam],
-    () => getAllProductTable({ location: locationParam || "", page, limit, statusProduct: "all" }),
+    ["products", page, limit, storeFilter],
+    () => getAllProductTable({ location: effectiveLocation, page, limit, statusProduct: "all" }),
     { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
 
   const { data: categoriesData } = useQuery(
-    ["categories-active", locationParam],
-    () => getAllCategoryActive({ location: locationParam || "" }),
-    { enabled: !!locationParam || role !== "super_admin", staleTime: 3 * 60 * 1000 }
+    ["categories-active", storeFilter],
+    () => getAllCategoryActive({ location: effectiveLocation }),
+    { enabled: !!effectiveLocation || role !== "super_admin", staleTime: 3 * 60 * 1000 }
   );
 
   const categories = categoriesData?.data || [];
@@ -544,6 +548,13 @@ const ProductList = () => {
                 className="pl-9 h-10"
               />
             </div>
+            <StoreFilter
+              locations={locations}
+              value={storeFilter}
+              onChange={(v) => { setStoreFilter(v); setPage(1); }}
+              isSuperAdmin={isSuperAdmin}
+              t={t}
+            />
             <div className="flex items-center gap-2 w-full md:w-auto">
               <select
                 value={categoryFilter}
