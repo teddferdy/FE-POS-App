@@ -89,7 +89,7 @@ const EditDiscount = () => {
   const [successModal, setSuccessModal] = useState(false);
 
   const user = cookie?.user;
-  const isSuperAdmin = user?.role === "super_admin";
+  const isSuperAdmin = user?.roleType === "super_admin";
 
   const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000

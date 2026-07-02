@@ -45,7 +45,7 @@ const ProductList = () => {
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
-  const role = user?.role || user?.type || "";
+  const role = user?.roleType || user?.role || user?.type || "";
   const isSuperAdmin = role === "super_admin";
   const locationParam = searchParams.get("location");
   const effectiveLocation = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : locationParam || "";
