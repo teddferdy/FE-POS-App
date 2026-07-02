@@ -12,6 +12,7 @@ import {
   exportGoodsReceipt
 } from "@/services/goods-receipt";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
@@ -257,9 +258,10 @@ const GoodsReceiptList = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label={t("page.goodsReceipt.list.stats.total")}
+          {locations && (locations?.data || []).length === 0 && <NoStore />}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard
+              label={t("page.goodsReceipt.list.stats.total")}
           value={stats.total ?? total}
           icon="inventory"
           variant="default"

@@ -13,6 +13,8 @@ import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const ShiftList = () => {
   const { t } = useTranslation();
@@ -27,6 +29,8 @@ const ShiftList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
@@ -216,6 +220,7 @@ const ShiftList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
+          {locData && (locData?.data || []).length === 0 && <NoStore />}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.shift.table.name")}

@@ -13,6 +13,7 @@ import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
+import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
 const PROMO_TYPE_LABELS = {
@@ -251,6 +252,7 @@ const DiscountList = () => {
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 && <NoStore />}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label={t("page.discount.list.total")}

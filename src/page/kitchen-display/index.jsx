@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { useSocket } from "@/services/socket";
 import { getKitchenOrders, updateOrderItemStatus } from "@/services/kitchen";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,8 +17,7 @@ import {
   Bell,
   CookingPot,
   Utensils,
-  ListOrdered,
-  Store
+  ListOrdered
 } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -151,25 +151,7 @@ const KitchenDisplay = () => {
     orders.filter((o) => o.items?.some((i) => i.status === status));
 
   if (!storeId) {
-    return (
-      <div className="flex items-center justify-center h-[80vh]">
-        <div className="text-center space-y-4 max-w-sm">
-          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-            <Store size={32} className="text-muted-foreground" />
-          </div>
-          <h2 className="text-xl font-semibold text-foreground">
-            {t("page.kitchenDisplay.noStore.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t("page.kitchenDisplay.noStore.description")}
-          </p>
-          <Button onClick={() => navigate("/add-location")} className="gap-2">
-            <Store size={16} />
-            {t("page.kitchenDisplay.noStore.action")}
-          </Button>
-        </div>
-      </div>
-    );
+    return <NoStore />;
   }
 
   if (isError) return <AbortController refetch={refetch} />;

@@ -22,6 +22,7 @@ import { canAccess } from "@/utils/permission";
 import StatCard from "@/components/ui/StatCard";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const categoryIcon = {
   "makanan utama": "restaurant",
@@ -400,6 +401,7 @@ const CategoryList = () => {
 
       <div>
         <div>
+          {locData && (locData?.data || []).length === 0 && <NoStore />}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <StatCard
               label={t("page.category.list.statsTotal")}

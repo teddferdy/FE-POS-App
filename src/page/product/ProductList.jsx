@@ -13,6 +13,7 @@ import {
 } from "@/services/product";
 import { getAllCategoryActive } from "@/services/category";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -37,7 +38,6 @@ const ProductList = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortFilter, setSortFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [noStoreModal, setNoStoreModal] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
@@ -60,12 +60,14 @@ const ProductList = () => {
 
   useEffect(() => {
     if (role !== "super_admin" || isLoadingLocations) return;
-    if (locations.length === 0) {
-      setNoStoreModal(true);
-    } else if (!locationParam && !storeFilter) {
+    if (!locationParam && !storeFilter) {
       navigate("/location-list", { replace: true });
     }
   }, [role, locations, locationParam, storeFilter, isLoadingLocations, navigate]);
+
+  if (role === "super_admin" && !isLoadingLocations && locations.length === 0) {
+    return <NoStore />;
+  }
 
   if (role === "super_admin" && !isLoadingLocations && !locationParam && !storeFilter && locations.length > 0) {
     return null;
@@ -609,16 +611,6 @@ const ProductList = () => {
         loading={deleteMutation?.isLoading}
         onConfirm={confirmDelete}
       />
-      <Modal
-        type="confirm"
-        open={noStoreModal}
-        onOpenChange={setNoStoreModal}
-        title={t("page.product.noStore.title")}
-        description={t("page.product.noStore.description")}
-        confirmText={t("page.product.noStore.button")}
-        onConfirm={() => navigate("/add-location")}
-      />
-
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

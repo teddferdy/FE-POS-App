@@ -10,6 +10,7 @@ import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
 import { getAllLocationTable } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
 import StatCard from "@/components/ui/StatCard";
@@ -290,6 +291,7 @@ const EmployeeList = () => {
 
       <div>
         <div>
+          {locationData && locationData.length === 0 && <NoStore />}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <StatCard
               label={t("page.employee.table.total")}

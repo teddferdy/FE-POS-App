@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa, QrCode, Store, RotateCcw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Sofa, QrCode, RotateCcw } from "lucide-react";
 import {
   getTablesByStore,
   addTable,
@@ -12,9 +12,10 @@ import {
   updateTableStatus
 } from "@/services/table";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+
 import {
   Select,
   SelectContent,
@@ -253,26 +254,7 @@ const TableList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locations.length === 0 ? (
-            <Card className="p-12">
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <Store size={32} className="text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-foreground">
-                    {t("page.table.noStore.title")}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t("page.table.noStore.description")}
-                  </p>
-                </div>
-                <Button onClick={() => navigate("/add-location")}>
-                  {t("page.table.noStore.action")}
-                </Button>
-              </div>
-            </Card>
-          ) : (
+          {locations.length === 0 ? <NoStore /> : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard

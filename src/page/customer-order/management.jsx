@@ -25,6 +25,7 @@ import { axiosInstance } from "@/services";
 import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
@@ -92,6 +93,7 @@ const CustomerOrderManagement = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
+      {locData && (locData?.data || []).length === 0 && <NoStore />}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2">

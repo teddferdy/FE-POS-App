@@ -20,6 +20,8 @@ import { uploadTaxConfigExcel } from "@/services/tax-config";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const typeColors = {
   PPN: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
@@ -50,6 +52,8 @@ const TaxConfigList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search],
@@ -305,6 +309,7 @@ const TaxConfigList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
+          {locData && (locData?.data || []).length === 0 && <NoStore />}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.taxConfig.stats.total")}

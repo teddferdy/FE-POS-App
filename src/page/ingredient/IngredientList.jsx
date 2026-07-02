@@ -23,6 +23,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientExcel } from "@/services/ingredient";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const statusBadge = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -317,6 +318,7 @@ const IngredientList = () => {
         )}
       </PageHeader>
 
+      {locData && (locData?.data || []).length === 0 && <NoStore />}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <StatCard
           label={t("page.ingredient.list.statTotal")}

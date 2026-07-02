@@ -12,10 +12,12 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
 
 const ReservationList = () => {
   const { t } = useTranslation();
+  const [storesLoaded, setStoresLoaded] = useState(false);
 
   const STATUS_MAP = {
     pending: {
@@ -52,8 +54,8 @@ const ReservationList = () => {
 
   useEffect(() => {
     getAllLocation()
-      .then((res) => setStores(res.data || []))
-      .catch(() => {});
+      .then((res) => { setStores(res.data || []); setStoresLoaded(true); })
+      .catch(() => setStoresLoaded(true));
   }, []);
 
   const statusMutation = useMutation(({ id, status }) => updateReservation({ id, status }), {
@@ -262,6 +264,7 @@ const ReservationList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
+          {storesLoaded && stores.length === 0 && <NoStore />}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.reservation.stats.total")}

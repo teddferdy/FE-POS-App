@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import StatCard from "@/components/ui/StatCard";
+import NoStore from "@/components/ui/NoStore";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
@@ -74,7 +75,7 @@ const PriceStoreList = () => {
 
   return (
     <div className="space-y-6">
-      {!selectedStore ? (
+      {locData && stores.length === 0 ? <NoStore /> : !selectedStore ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <Store size={40} className="text-primary" />

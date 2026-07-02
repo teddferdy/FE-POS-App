@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import AbortController from "@/components/organism/abort-controller";
+import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 
 const statusCfg = {
   sent: {
@@ -50,6 +52,8 @@ const StockTransferList = () => {
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfers", page, limit, statusFilter],
@@ -179,6 +183,7 @@ const StockTransferList = () => {
 
   return (
     <div className="space-y-6">
+      {locData && (locData?.data || []).length === 0 && <NoStore />}
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button

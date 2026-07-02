@@ -30,6 +30,7 @@ import {
   downloadPurchaseOrderExcel
 } from "@/services/purchase-order";
 import { getAllLocation } from "@/services/location";
+import NoStore from "@/components/ui/NoStore";
 import { recordPayment } from "@/services/purchase-payment";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -527,7 +528,8 @@ const PurchaseOrderList = () => {
       </div>
 
       <div className="space-y-6">
-        <h3>Status Order :</h3>
+          {locations && (locations?.data || []).length === 0 && <NoStore />}
+          <h3>Status Order :</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
             label={t("page.purchaseOrder.list.title")}

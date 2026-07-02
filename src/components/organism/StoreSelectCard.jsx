@@ -27,7 +27,9 @@ const StoreSelectCard = ({
           <Store size={16} className="shrink-0" />
           <span>
             {storeInfoLabel}{" "}
-            <strong className="text-foreground">{t("page.category.form.storeSection.allStores")}</strong>
+            <strong className="text-foreground">
+              {t("page.category.form.storeSection.allStores")}
+            </strong>
           </span>
         </div>
       );
@@ -41,8 +43,7 @@ const StoreSelectCard = ({
         <div className="bg-muted/30 rounded-lg p-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Store size={16} className="shrink-0" />
           <span>
-            {storeInfoLabel}{" "}
-            <strong className="text-foreground">{storeName}</strong>
+            {storeInfoLabel} <strong className="text-foreground">{storeName}</strong>
           </span>
         </div>
       );
