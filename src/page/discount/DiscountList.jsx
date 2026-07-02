@@ -49,8 +49,9 @@ const DiscountList = () => {
   const MENU_KEY = "/discount";
   const locationParam = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store;
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
+  const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
   });
   const locationMap = React.useMemo(() => {
     const map = {};
@@ -252,8 +253,8 @@ const DiscountList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 && <NoStore />}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label={t("page.discount.list.total")}
           value={statsTotal}
@@ -319,6 +320,8 @@ const DiscountList = () => {
           pagination={{ page, totalPages, total, onPageChange: setPage }}
         />
       </div>
+        </>
+      )}
 
       <Modal
         type="confirm"

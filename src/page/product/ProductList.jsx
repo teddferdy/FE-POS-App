@@ -50,22 +50,18 @@ const ProductList = () => {
   const locationParam = searchParams.get("location");
   const effectiveLocation = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : locationParam || "";
 
-  const { data: locationsData, isLoading: isLoadingLocations } = useQuery(
-    ["locations-all"],
-    getAllLocation,
-    { enabled: role === "super_admin" }
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(
+    ["locations-products"],
+    () => getAllLocation(),
+    { staleTime: 5 * 60 * 1000, enabled: role === "super_admin" }
   );
-
-  const locations = locationsData?.data || [];
-  const noStore = role === "super_admin" && !isLoadingLocations && locations.length === 0;
-  const noLocation = role === "super_admin" && !isLoadingLocations && !locationParam && !storeFilter && locations.length > 0;
 
   useEffect(() => {
     if (role !== "super_admin" || isLoadingLocations) return;
     if (!locationParam && !storeFilter) {
       navigate("/location-list", { replace: true });
     }
-  }, [role, locations, locationParam, storeFilter, isLoadingLocations, navigate]);
+  }, [role, locData, locationParam, storeFilter, isLoadingLocations, navigate]);
 
   const { data, isLoading } = useQuery(
     ["products", page, limit, storeFilter],
@@ -397,7 +393,7 @@ const ProductList = () => {
 
   return (
     <>
-      {noStore ? <NoStore /> : noLocation ? null : (
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
       <div data-tour="page-products" className="space-y-6">
       <div>
         <div>
@@ -547,7 +543,7 @@ const ProductList = () => {
               />
             </div>
             <StoreFilter
-              locations={locations}
+              locations={locData?.data || []}
               value={storeFilter}
               onChange={(v) => { setStoreFilter(v); setPage(1); }}
               isSuperAdmin={isSuperAdmin}

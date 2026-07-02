@@ -47,8 +47,9 @@ const IngredientList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/ingredient";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
+  const { data: locData } = useQuery(["locations-ingredients"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
   });
 
   const { data, isLoading } = useQuery(
@@ -318,7 +319,8 @@ const IngredientList = () => {
         )}
       </PageHeader>
 
-      {locData && (locData?.data || []).length === 0 && <NoStore />}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <StatCard
           label={t("page.ingredient.list.statTotal")}
@@ -385,6 +387,8 @@ const IngredientList = () => {
           ]}
         />
       </div>
+        </>
+      )}
 
       <Modal
         type="confirm"

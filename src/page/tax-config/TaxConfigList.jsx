@@ -50,10 +50,11 @@ const TaxConfigList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search],
@@ -309,7 +310,8 @@ const TaxConfigList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 && <NoStore />}
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+            <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.taxConfig.stats.total")}
@@ -364,6 +366,8 @@ const TaxConfigList = () => {
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
           </div>
+        </>
+      )}
         </>
       )}
 

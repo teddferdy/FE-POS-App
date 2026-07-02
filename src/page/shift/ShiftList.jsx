@@ -27,10 +27,11 @@ const ShiftList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations-shift"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
@@ -220,7 +221,8 @@ const ShiftList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 && <NoStore />}
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+            <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.shift.table.name")}
@@ -273,6 +275,8 @@ const ShiftList = () => {
               pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
             />
           </div>
+        </>
+      )}
         </>
       )}
       <Modal

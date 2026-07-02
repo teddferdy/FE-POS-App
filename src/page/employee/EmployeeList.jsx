@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
-import { getAllLocationTable } from "@/services/location";
+import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
@@ -34,6 +34,7 @@ const EmployeeList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/employee-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -50,11 +51,10 @@ const EmployeeList = () => {
     { keepPreviousData: true }
   );
 
-  const { data: locationData } = useQuery(
-    ["all-locations"],
-    () => getAllLocationTable({ page: 1, limit: 100, statusLocation: "all" }),
-    { select: (res) => res?.data?.filter((loc) => loc.isActive) || [] }
-  );
+  const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const deleteMutation = useMutation(deleteEmployee, {
     onSuccess: () => {
@@ -290,8 +290,9 @@ const EmployeeList = () => {
       </div>
 
       <div>
+        {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+          <>
         <div>
-          {locationData && locationData.length === 0 && <NoStore />}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <StatCard
               label={t("page.employee.table.total")}
@@ -354,8 +355,8 @@ const EmployeeList = () => {
                         }}
                         className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
                         <option value="">{t("page.employee.list.allStores")}</option>
-                        {locationData?.map((loc) => (
-                          <option key={loc.id} value={loc.id.replace("loc-", "")}>
+                        {(locData?.data || []).map((loc) => (
+                          <option key={loc.id} value={loc.id}>
                             {loc.name}
                           </option>
                         ))}
@@ -414,6 +415,8 @@ const EmployeeList = () => {
             </ul>
           </div>
         </div>
+        </>
+      )}
       </div>
 
       <Modal

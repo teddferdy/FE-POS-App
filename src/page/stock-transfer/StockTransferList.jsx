@@ -46,6 +46,7 @@ const StockTransferList = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const store = user?.store || "";
   const MENU_KEY = "/stock-transfer";
   const [page, setPage] = useState(1);
@@ -53,7 +54,7 @@ const StockTransferList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfers", page, limit, statusFilter],
@@ -183,7 +184,8 @@ const StockTransferList = () => {
 
   return (
     <div className="space-y-6">
-      {locData && (locData?.data || []).length === 0 && <NoStore />}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
@@ -251,6 +253,8 @@ const StockTransferList = () => {
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
         </div>
+      )}
+        </>
       )}
     </div>
   );

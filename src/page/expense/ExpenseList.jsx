@@ -25,10 +25,11 @@ const ExpenseList = () => {
   const [search, setSearch] = useState("");
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/expense";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["expenses", page, limit],
@@ -288,8 +289,8 @@ const ExpenseList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 && <NoStore />}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+            <><div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.expense.list.total")}
               value={total}
@@ -344,6 +345,8 @@ const ExpenseList = () => {
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
           </div>
+        </>
+      )}
         </>
       )}
     </div>

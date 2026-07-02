@@ -49,8 +49,8 @@ const GoodsReceiptList = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locations } = useQuery(["locations-gr"], () => getAllLocation(), {
-    staleTime: 60000,
+  const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
 
@@ -258,8 +258,8 @@ const GoodsReceiptList = () => {
         )}
       </div>
 
-          {locations && (locations?.data || []).length === 0 && <NoStore />}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+            <><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatCard
               label={t("page.goodsReceipt.list.stats.total")}
           value={stats.total ?? total}
@@ -308,7 +308,7 @@ const GoodsReceiptList = () => {
                       }}
                       className="h-9 px-3 rounded-md border border-input bg-background text-sm">
                       <option value="all">{t("page.goodsReceipt.list.filter.allStores")}</option>
-                      {(locations?.data || []).map((loc) => (
+                      {(locData?.data || []).map((loc) => (
                         <option key={loc.id} value={loc.id}>
                           {loc.name}
                         </option>
@@ -366,6 +366,8 @@ const GoodsReceiptList = () => {
             loading={deleteMutation.isLoading}
             onConfirm={() => deleteMutation.mutate(deleteTarget)}
           />
+        </>
+      )}
         </>
       )}
     </div>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Building2, DollarSign, X, Wallet, Coins } from "lucide-react";
+import { DollarSign, X, Wallet, Coins } from "lucide-react";
 import { getCurrentCashRegister, closeCashRegister } from "@/services/cash-register";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
+
+{
+  /* <NoStore /> */
+}
+
 const formatIDR = (num) => {
   if (!num && num !== 0) return "";
   return "Rp " + Number(num).toLocaleString("id-ID");
@@ -59,19 +65,8 @@ const CashRegisterCurrent = () => {
             {t("page.cashRegister.current.breadcrumb")}
           </span>
         </nav>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md">
-            <Building2 size={64} className="mx-auto text-muted-foreground/40 mb-6" />
-            <h1 className="text-2xl font-bold mb-2">
-              {t("page.cashRegister.current.storeNotAvailable")}
-            </h1>
-            <p className="text-muted-foreground mb-6">
-              {t("page.cashRegister.current.storeNotAvailableDesc")}
-            </p>
-            <Button onClick={() => navigate("/add-location")}>
-              <Building2 size={16} className="mr-2" /> {t("page.cashRegister.current.createStore")}
-            </Button>
-          </div>
+        <div className="flex min-h-full w-full">
+          <NoStore />
         </div>
       </div>
     );

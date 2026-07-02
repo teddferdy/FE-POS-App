@@ -8,8 +8,8 @@ const NoStore = () => {
   const navigate = useNavigate();
 
   return (
-    <Card className="p-12">
-      <div className="flex flex-col items-center text-center gap-4">
+    <Card className="p-12 w-full">
+      <div className="flex flex-col items-center justify-between text-center gap-4">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <Store size={32} className="text-muted-foreground" />
         </div>

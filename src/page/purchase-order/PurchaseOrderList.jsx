@@ -140,8 +140,8 @@ const PurchaseOrderList = () => {
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locations } = useQuery(["locations-po"], () => getAllLocation(), {
-    staleTime: 60000,
+  const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
 
@@ -527,8 +527,9 @@ const PurchaseOrderList = () => {
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="space-y-6">
-          {locations && (locations?.data || []).length === 0 && <NoStore />}
           <h3>Status Order :</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
@@ -608,7 +609,7 @@ const PurchaseOrderList = () => {
                 }}
                 className="h-10 px-3 rounded-md border border-input bg-background text-sm">
                 <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
-                {(locations?.data || []).map((loc) => (
+                {(locData?.data || []).map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name}
                   </option>
@@ -667,6 +668,8 @@ const PurchaseOrderList = () => {
           ]}
         />
       </div>
+        </>
+      )}
 
       {returModal &&
         returPo &&

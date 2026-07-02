@@ -90,7 +90,13 @@ const CategoryList = () => {
         page,
         limit,
         statusCategory: statusFilter || "all",
-        location: locationParam || (isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store || "")
+        location:
+          locationParam ||
+          (isSuperAdmin
+            ? storeFilter && storeFilter !== "all"
+              ? storeFilter
+              : ""
+            : user?.store || "")
       }),
     { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
@@ -401,124 +407,132 @@ const CategoryList = () => {
 
       <div>
         <div>
-          {locData && (locData?.data || []).length === 0 && <NoStore />}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.category.list.statsTotal")}
-              value={statsTotal}
-              icon="category"
-              variant="default"
-              subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })}
-            />
-            <StatCard
-              label={t("page.category.list.statsActive")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-              subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
-            />
-            <StatCard
-              label={t("page.category.list.statsInactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-              subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-              subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
-            />
-          </div>
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <StatCard
+                  label={t("page.category.list.statsTotal")}
+                  value={statsTotal}
+                  icon="category"
+                  variant="default"
+                  subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })}
+                />
+                <StatCard
+                  label={t("page.category.list.statsActive")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                  subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+                />
+                <StatCard
+                  label={t("page.category.list.statsInactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                  subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                  subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+                />
+              </div>
 
-          <div data-tour="category-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={filtered}
-              isLoading={isLoading}
-              emptyMessage={t("page.category.list.empty")}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.category.list.sectionTitle")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <StoreFilter
-                      locations={locData?.data || []}
-                      value={storeFilter}
-                      onChange={(v) => { setStoreFilter(v); setPage(1); }}
-                      isSuperAdmin={isSuperAdmin}
-                      t={t}
-                    />
-                    <div className="relative flex-1 md:w-64">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                        search
-                      </span>
-                      <Input
-                        placeholder={t("page.category.list.search")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 text-sm"
-                      />
+              <div data-tour="category-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={filtered}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.category.list.empty")}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.category.list.sectionTitle")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                        <div className="relative flex-1 md:w-64">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                            search
+                          </span>
+                          <Input
+                            placeholder={t("page.category.list.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                          <option value="">{t("page.category.list.statusAll")}</option>
+                          <option value="active">{t("common.active")}</option>
+                          <option value="inactive">{t("common.inactive")}</option>
+                        </select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9"
+                          onClick={() => setStatusFilter("")}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {t("page.category.button.filter")}
+                        </Button>
+                      </div>
                     </div>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                      <option value="">{t("page.category.list.statusAll")}</option>
-                      <option value="active">{t("common.active")}</option>
-                      <option value="inactive">{t("common.inactive")}</option>
-                    </select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 h-9"
-                      onClick={() => setStatusFilter("")}>
-                      <span className="material-symbols-outlined text-base">filter_list</span>
-                      {t("page.category.button.filter")}
-                    </Button>
-                  </div>
-                </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-              rowClassName={() => ""}
-            />
-          </div>
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  rowClassName={() => ""}
+                />
+              </div>
 
-          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
-              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-                {t("page.category.tips.title")}
-              </h4>
-            </div>
-            <ul className="space-y-2">
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.category.tips.1")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.category.tips.2")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.category.tips.3")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.category.tips.4")}</span>
-              </li>
-            </ul>
-          </div>
+              <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                    {t("page.category.tips.title")}
+                  </h4>
+                </div>
+                <ul className="space-y-2">
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.category.tips.1")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.category.tips.2")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.category.tips.3")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.category.tips.4")}</span>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

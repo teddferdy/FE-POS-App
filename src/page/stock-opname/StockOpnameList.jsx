@@ -50,6 +50,7 @@ const StockOpnameList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/stock-opname";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -60,7 +61,7 @@ const StockOpnameList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), { staleTime: 5 * 60 * 1000 });
+  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stockOpname", page, limit, warehouseFilter, statusFilter],
@@ -377,7 +378,8 @@ const StockOpnameList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 && <NoStore />}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label={t("page.stockOpname.stats.totalAudit")}
@@ -515,6 +517,8 @@ const StockOpnameList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      </>
+      )}
     </div>
   );
 };

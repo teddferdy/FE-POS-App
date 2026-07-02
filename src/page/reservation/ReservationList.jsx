@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X, Eye } from "lucide-react";
 import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
@@ -17,7 +18,9 @@ import StatCard from "@/components/ui/StatCard";
 
 const ReservationList = () => {
   const { t } = useTranslation();
-  const [storesLoaded, setStoresLoaded] = useState(false);
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
 
   const STATUS_MAP = {
     pending: {
@@ -49,14 +52,12 @@ const ReservationList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null);
-  const [stores, setStores] = useState([]);
-  const storeMap = Object.fromEntries(stores.map((s) => [String(s.id), s.name]));
 
-  useEffect(() => {
-    getAllLocation()
-      .then((res) => { setStores(res.data || []); setStoresLoaded(true); })
-      .catch(() => setStoresLoaded(true));
-  }, []);
+  const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
+  const storeMap = Object.fromEntries((locData?.data || []).map((s) => [String(s.id), s.name]));
 
   const statusMutation = useMutation(({ id, status }) => updateReservation({ id, status }), {
     onSuccess: () => {
@@ -264,8 +265,8 @@ const ReservationList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {storesLoaded && stores.length === 0 && <NoStore />}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+            <><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatCard
               label={t("page.reservation.stats.total")}
               value={stats.total ?? total}
@@ -327,6 +328,8 @@ const ReservationList = () => {
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
           </div>
+        </>
+      )}
         </>
       )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
 import { Store, ArrowLeft, Pencil } from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import { getProductByOutlet } from "@/services/product";
@@ -15,12 +16,15 @@ import NoStore from "@/components/ui/NoStore";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
 
   const [selectedStore, setSelectedStore] = useState("");
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
 
-  const { data: locData } = useQuery(["locations-for-price"], getAllLocation, { staleTime: 60000 });
+  const { data: locData } = useQuery(["locations-price-store"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);
   const storeName = useMemo(
     () => stores.find((s) => String(s.id) === selectedStore)?.name || "",
@@ -75,7 +79,7 @@ const PriceStoreList = () => {
 
   return (
     <div className="space-y-6">
-      {locData && stores.length === 0 ? <NoStore /> : !selectedStore ? (
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : !selectedStore ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <Store size={40} className="text-primary" />

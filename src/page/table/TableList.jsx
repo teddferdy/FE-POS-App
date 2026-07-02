@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -59,11 +59,10 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const { data: locationsRaw } = useQuery(["allLocations"], getAllLocation);
-  const locations = useMemo(() => {
-    const raw = locationsRaw?.data || locationsRaw || [];
-    return Array.isArray(raw) ? raw : [];
-  }, [locationsRaw]);
+  const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
@@ -146,7 +145,7 @@ const TableList = () => {
     {
       header: t("page.table.form.store"),
       render: (row) => {
-        const loc = locations.find((l) => l.id === row.store || l.store === row.store);
+        const loc = (locData?.data || []).find((l) => l.id === row.store || l.store === row.store);
         return loc?.name || row.store || "-";
       }
     },
@@ -234,7 +233,7 @@ const TableList = () => {
           <h1 className="text-2xl font-bold text-foreground">{t("page.table.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.table.list.description")}</p>
         </div>
-        {canAccess(user, MENU_KEY, "add") && locations.length > 0 && (
+        {canAccess(user, MENU_KEY, "add") && isSuperAdmin && (locData?.data || []).length > 0 && (
           <Button
             onClick={() => {
               setShowAddModal(true);
@@ -254,7 +253,7 @@ const TableList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locations.length === 0 ? <NoStore /> : (
+          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard
@@ -355,7 +354,7 @@ const TableList = () => {
                     <SelectValue placeholder={t("page.table.form.storePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations.map((loc) => (
+                    {(locData?.data || []).map((loc) => (
                       <SelectItem key={loc.id} value={loc.id.toString()}>
                         {loc.name}
                       </SelectItem>
