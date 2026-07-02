@@ -360,8 +360,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
   const userHeader = cookie?.user;
   const roleHeader = userHeader?.role || userHeader?.roleType || "";
   const isGlobalPage = globalPages.some((p) => location.pathname.startsWith(p));
-  const showStoreSelector = !isGlobalPage;
-
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -406,8 +404,6 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
 
         {/* Right */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {showStoreSelector && <StoreSelector cookie={cookie} setCookie={setCookie} />}
-
           {/* Mobile Search */}
           <button
             onClick={onOpenPalette}
