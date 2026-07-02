@@ -434,56 +434,61 @@ const StockOpnameList = () => {
               return classes.join(" ");
             }}
             toolbar={
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="relative">
-                    <select
-                      value={warehouseFilter}
-                      onChange={(e) => {
-                        setWarehouseFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                      <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
-                      <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
-                      <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
-                      <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
-                    </select>
-                    <ChevronLeft
-                      size={14}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                <h4 className="text-base font-semibold text-foreground">
+                  {t("page.stockOpname.list.title")}
+                </h4>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="relative">
+                      <select
+                        value={warehouseFilter}
+                        onChange={(e) => {
+                          setWarehouseFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                        <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
+                        <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
+                        <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
+                        <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
+                      </select>
+                      <ChevronLeft
+                        size={14}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                      />
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                        <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                        <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                        <option value="completed">{t("page.stockOpname.status.completed")}</option>
+                        <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
+                      </select>
+                      <ChevronLeft
+                        size={14}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                      />
+                    </div>
+                  </div>
+                  <div className="relative flex-1 md:w-64">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
                     />
                   </div>
-                  <div className="relative">
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                      <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                      <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                      <option value="completed">{t("page.stockOpname.status.completed")}</option>
-                      <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
-                    </select>
-                    <ChevronLeft
-                      size={14}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                    />
-                  </div>
-                </div>
-                <div className="relative w-full sm:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 h-9 text-sm"
-                  />
                 </div>
               </div>
             }

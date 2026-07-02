@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
-import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import StoreFilter from "@/components/ui/StoreFilter";
@@ -41,7 +40,7 @@ const IngredientList = () => {
   const [importModal, setImportModal] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [downloadingData, setDownloadingData] = useState(false);
-  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
+  const [storeFilter, setStoreFilter] = useState("all");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -54,7 +53,15 @@ const IngredientList = () => {
 
   const { data, isLoading } = useQuery(
     ["ingredients", search, storeFilter],
-    () => getAllIngredients({ store: isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store, search }),
+    () =>
+      getAllIngredients({
+        store: isSuperAdmin
+          ? storeFilter && storeFilter !== "all"
+            ? storeFilter
+            : ""
+          : user?.store,
+        search
+      }),
     { keepPreviousData: true }
   );
 
@@ -232,161 +239,185 @@ const IngredientList = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href: "/dashboard-super-admin",
-            i18nKey: "breadcrumb.home"
-          },
-          {
-            label: t("page.ingredient.list.title"),
-            i18nKey: "page.ingredient.list.breadcrumbIngredient"
-          }
-        ]}
-        title={t("page.ingredient.list.title")}
-        description={t("page.ingredient.list.subtitle")}>
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            variant="outline"
-            disabled={downloadingTemplate}
-            onClick={async () => {
-              setDownloadingTemplate(true);
-              try {
-                await downloadIngredientTemplate();
-                toast.success(t("common.success"), {
-                  description: t("page.ingredient.list.toastTemplateDesc")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.ingredient.list.toastError")
-                });
-              } finally {
-                setDownloadingTemplate(false);
-              }
-            }}>
-            {downloadingTemplate ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <Download size={16} className="mr-1" />
-            )}
-            {t("page.ingredient.list.btnTemplate")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "export") && (
-          <Button
-            variant="outline"
-            disabled={downloadingData}
-            onClick={async () => {
-              setDownloadingData(true);
-              try {
-                await downloadIngredientExcel();
-                toast.success(t("common.success"), {
-                  description: t("page.ingredient.list.toastExportDesc")
-                });
-              } catch (err) {
-                toast.error(t("common.error"), {
-                  description:
-                    err?.response?.data?.message ||
-                    err.message ||
-                    t("page.ingredient.list.toastError")
-                });
-              } finally {
-                setDownloadingData(false);
-              }
-            }}>
-            {downloadingData ? (
-              <Loader2 size={16} className="mr-1 animate-spin" />
-            ) : (
-              <Download size={16} className="mr-1" />
-            )}
-            {t("page.ingredient.list.btnExport")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "import") && (
-          <Button variant="outline" onClick={() => setImportModal(true)}>
-            <Upload size={16} className="mr-1" />
-            {t("page.ingredient.list.btnImport")}
-          </Button>
-        )}
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
-            <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
-          </Button>
-        )}
-      </PageHeader>
-
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StatCard
-          label={t("page.ingredient.list.statTotal")}
-          value={total}
-          icon="nutrition"
-          variant="default"
-        />
-        <StatCard
-          label={t("common.active")}
-          value={activeCount}
-          icon="check_circle"
-          variant="active"
-        />
-        <StatCard label={t("common.draft")} value={draftCount} icon="edit_note" variant="draft" />
-        <StatCard
-          label={t("common.inactive")}
-          value={inactiveCount}
-          icon="cancel"
-          variant="inactive"
-        />
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {isSuperAdmin && (
-            <StoreFilter
-              locations={locData?.data || []}
-              value={storeFilter}
-              onChange={(v) => setStoreFilter(v)}
-              isSuperAdmin={isSuperAdmin}
-              t={t}
-            />
-          )}
-          <div className="relative w-full sm:w-72">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={t("page.ingredient.list.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
-          />
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={ingredients}
-          isLoading={isLoading}
-          emptyMessage={t("page.ingredient.list.emptyMessage")}
-          emptyIcon={Package}
-        />
-      </div>
+      <div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.ingredient.list.title")}</span>
+        </nav>
       </div>
 
       <div>
-        <TipsCard
-          tips={[
-            t("page.ingredient.list.tips.1"),
-            t("page.ingredient.list.tips.2"),
-            t("page.ingredient.list.tips.3"),
-            t("page.ingredient.list.tips.4")
-          ]}
-        />
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.ingredient.list.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.ingredient.list.subtitle")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={downloadingTemplate}
+                onClick={async () => {
+                  setDownloadingTemplate(true);
+                  try {
+                    await downloadIngredientTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.ingredient.list.toastTemplateDesc")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.ingredient.list.toastError")
+                    });
+                  } finally {
+                    setDownloadingTemplate(false);
+                  }
+                }}>
+                {downloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <Download size={16} className="mr-1" />
+                )}
+                {t("page.ingredient.list.btnTemplate")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={downloadingData}
+                onClick={async () => {
+                  setDownloadingData(true);
+                  try {
+                    await downloadIngredientExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.ingredient.list.toastExportDesc")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.ingredient.list.toastError")
+                    });
+                  } finally {
+                    setDownloadingData(false);
+                  }
+                }}>
+                {downloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <Download size={16} className="mr-1" />
+                )}
+                {t("page.ingredient.list.btnExport")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button variant="outline" onClick={() => setImportModal(true)}>
+                <Upload size={16} className="mr-1" />
+                {t("page.ingredient.list.btnImport")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
+                <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
+
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatCard
+              label={t("page.ingredient.list.statTotal")}
+              value={total}
+              icon="nutrition"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+            />
+          </div>
+
+          <div data-tour="ingredient-table" className="mt-6">
+            <DataTable
+              columns={columns}
+              data={ingredients}
+              isLoading={isLoading}
+              emptyMessage={t("page.ingredient.list.emptyMessage")}
+              emptyIcon={Package}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.ingredient.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    {isSuperAdmin && (
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => setStoreFilter(v)}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                    )}
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.ingredient.list.searchPlaceholder")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
+            />
+          </div>
+
+          <div>
+            <TipsCard
+              tips={[
+                t("page.ingredient.list.tips.1"),
+                t("page.ingredient.list.tips.2"),
+                t("page.ingredient.list.tips.3"),
+                t("page.ingredient.list.tips.4")
+              ]}
+            />
+          </div>
         </>
       )}
 

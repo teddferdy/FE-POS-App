@@ -73,7 +73,7 @@ const KitchenDisplay = () => {
   const { socket } = useSocket();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
+  const [storeFilter, setStoreFilter] = useState("all");
   const storeId = isSuperAdmin
     ? storeFilter && storeFilter !== "all"
       ? storeFilter
@@ -154,8 +154,6 @@ const KitchenDisplay = () => {
   const getOrdersByStatus = (status) =>
     orders.filter((o) => o.items?.some((i) => i.status === status));
 
-  if (isError) return <AbortController refetch={refetch} />;
-
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6 shrink-0">
@@ -185,7 +183,9 @@ const KitchenDisplay = () => {
 
       {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
         <>
-      {isLoading ? (
+      {isError ? (
+        <AbortController refetch={refetch} />
+      ) : isLoading ? (
         <div className="grid grid-cols-3 gap-4 shrink-0">
           {[1, 2, 3].map((i) => (
             <div key={i} className="space-y-3">

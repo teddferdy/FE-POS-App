@@ -7,11 +7,13 @@ import { useTranslation } from "react-i18next";
 import { Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import { getAllBom, deleteBom } from "@/services/bom";
+import { getAllLocation } from "@/services/location";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
+import NoStore from "@/components/ui/NoStore";
 
 const BomList = () => {
   const { t } = useTranslation();
@@ -19,11 +21,17 @@ const BomList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/bom";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const { data: locData } = useQuery(["locations-bom"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["bom-list", page, limit, search],
@@ -124,8 +132,8 @@ const BomList = () => {
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("breadcrumb.dashboard")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">{t("breadcrumb.bom")}</span>
@@ -143,35 +151,44 @@ const BomList = () => {
         )}
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={items}
-            isLoading={isLoading}
-            emptyMessage={t("page.bom.list.empty")}
-            toolbar={
-              <div className="relative w-full sm:w-64">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  placeholder={t("page.bom.list.searchPlaceholder")}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-9 h-9 text-sm"
-                />
-              </div>
-            }
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
-          />
-        </div>
+          <div data-tour="bom-table" className="mt-6">
+            <DataTable
+              columns={columns}
+              data={items}
+              isLoading={isLoading}
+              emptyMessage={t("page.bom.list.empty")}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.bom.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.bom.list.searchPlaceholder")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
+              pagination={{ page, totalPages, total, onPageChange: setPage }}
+            />
+          </div>
       )}
       <Modal
         type="confirm"
@@ -183,6 +200,8 @@ const BomList = () => {
         loading={deleteMut.isLoading}
         onConfirm={() => deleteMut.mutate()}
       />
+        </>
+      )}
     </div>
   );
 };

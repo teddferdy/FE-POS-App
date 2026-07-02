@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { Store, ArrowLeft, Pencil } from "lucide-react";
 import { getAllLocation } from "@/services/location";
@@ -16,6 +17,7 @@ import NoStore from "@/components/ui/NoStore";
 
 const PriceStoreList = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -79,6 +81,14 @@ const PriceStoreList = () => {
 
   return (
     <div className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          {t("breadcrumb.home")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">{t("page.priceStore.list.title")}</span>
+      </nav>
+
       {locData && (locData?.data || []).length === 0 ? <NoStore /> : !selectedStore ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">

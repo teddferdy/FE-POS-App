@@ -13,7 +13,9 @@ import {
 } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
+import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
@@ -36,6 +38,7 @@ const PurchaseReturnList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/purchase-return";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -43,6 +46,11 @@ const PurchaseReturnList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
+
+  const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-returns", page, limit, statusFilter],
@@ -199,6 +207,8 @@ const PurchaseReturnList = () => {
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard
           label={t("page.purchaseReturn.list.title")}
@@ -295,6 +305,8 @@ const PurchaseReturnList = () => {
           else rejectMut.mutate(actionTarget);
         }}
       />
+        </>
+      )}
     </div>
   );
 };

@@ -76,7 +76,7 @@ const CategoryList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
-  const [storeFilter, setStoreFilter] = useState(cookie?.activeStore || "");
+  const [storeFilter, setStoreFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,

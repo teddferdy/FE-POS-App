@@ -1,11 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 const NoStore = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <Card className="p-12 w-full">
@@ -14,12 +16,12 @@ const NoStore = () => {
           <Store size={32} className="text-muted-foreground" />
         </div>
         <div>
-          <p className="text-lg font-semibold text-foreground">Toko Tidak Tersedia</p>
+          <p className="text-lg font-semibold text-foreground">{t("page.noStore.title")}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Silakan buat toko terlebih dahulu sebelum membuka halaman ini
+            {t("page.noStore.description")}
           </p>
         </div>
-        <Button onClick={() => navigate("/add-location")}>Tambah Toko</Button>
+        <Button onClick={() => navigate("/add-location")}>{t("page.noStore.action")}</Button>
       </div>
     </Card>
   );

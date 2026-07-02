@@ -41,14 +41,18 @@ const ProductList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
-  const [storeFilter, setStoreFilter] = useState("");
+  const [storeFilter, setStoreFilter] = useState("all");
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
   const locationParam = searchParams.get("location");
-  const effectiveLocation = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : locationParam || "";
+  const effectiveLocation = isSuperAdmin
+    ? storeFilter && storeFilter !== "all"
+      ? storeFilter
+      : ""
+    : locationParam || "";
 
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-products"],
@@ -58,9 +62,9 @@ const ProductList = () => {
 
   useEffect(() => {
     if (role !== "super_admin" || isLoadingLocations) return;
-    if (!locationParam && !storeFilter) {
-      navigate("/location-list", { replace: true });
-    }
+    // if (!locationParam && !storeFilter) {
+    //   navigate("/location-list", { replace: true });
+    // }
   }, [role, locData, locationParam, storeFilter, isLoadingLocations, navigate]);
 
   const { data, isLoading } = useQuery(
@@ -393,10 +397,8 @@ const ProductList = () => {
 
   return (
     <>
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-      <div data-tour="page-products" className="space-y-6">
-      <div>
-        <div>
+      {locData && (locData?.data || []).length === 0 ? (
+        <div className="space-y-6">
           <PageHeader
             breadcrumbs={[
               {
@@ -495,84 +497,141 @@ const ProductList = () => {
               </Button>
             )}
           </PageHeader>
+
+          <NoStore />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t("page.product.stats.total")}
-          value={stats.total}
-          icon="inventory_2"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.product.stats.active")}
-          value={stats.active}
-          icon="check_circle"
-          variant="active"
-        />
-        <StatCard
-          label={t("page.product.stats.nonActive")}
-          value={stats.nonActive}
-          icon="cancel"
-          variant="inactive"
-        />
-        <StatCard
-          label={t("page.product.stats.draft")}
-          value={stats.draft}
-          icon="edit_note"
-          variant="draft"
-        />
-      </div>
-
-      <div>
-        <div>
-          <div
-            data-tour="product-search"
-            className="bg-card rounded-xl border border-border p-4 flex flex-col md:flex-row gap-3 items-center">
-            <div className="flex-1 w-full relative">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.product.list.searchSku")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10"
-              />
+      ) : (
+        <div data-tour="page-products" className="space-y-6">
+          <div>
+            <div>
+              <PageHeader
+                breadcrumbs={[
+                  {
+                    href:
+                      role === "super_admin"
+                        ? "/dashboard-super-admin"
+                        : role === "admin"
+                          ? "/dashboard-admin"
+                          : "/home",
+                    i18nKey: "breadcrumb.home"
+                  },
+                  ...(role === "super_admin" && locationParam
+                    ? [{ href: "/location-list", i18nKey: "sidebar.kelolaToko" }]
+                    : []),
+                  { i18nKey: "breadcrumb.product" }
+                ]}
+                title={t("page.product.list.title")}
+                description={t("page.product.list.description")}>
+                {canAccess(user, MENU_KEY, "export") && (
+                  <Button
+                    variant="outline"
+                    disabled={isDownloadingTemplate}
+                    onClick={async () => {
+                      setIsDownloadingTemplate(true);
+                      try {
+                        await downloadProductTemplate();
+                        toast.success(t("common.success"), {
+                          description: t("page.product.toast.templateSuccess")
+                        });
+                      } catch (err) {
+                        toast.error(t("common.error"), {
+                          description:
+                            err?.response?.data?.message ||
+                            err.message ||
+                            t("page.product.toast.templateError")
+                        });
+                      } finally {
+                        setIsDownloadingTemplate(false);
+                      }
+                    }}>
+                    {isDownloadingTemplate ? (
+                      <Loader2 size={16} className="mr-1 animate-spin" />
+                    ) : (
+                      <Download size={16} className="mr-1" />
+                    )}
+                    {t("page.product.button.downloadTemplate")}
+                  </Button>
+                )}
+                {canAccess(user, MENU_KEY, "export") && (
+                  <Button
+                    variant="outline"
+                    disabled={isDownloadingData}
+                    onClick={async () => {
+                      setIsDownloadingData(true);
+                      try {
+                        await downloadProductExcel();
+                        toast.success(t("common.success"), {
+                          description: t("page.product.toast.dataSuccess")
+                        });
+                      } catch (err) {
+                        toast.error(t("common.error"), {
+                          description:
+                            err?.response?.data?.message ||
+                            err.message ||
+                            t("page.product.toast.dataError")
+                        });
+                      } finally {
+                        setIsDownloadingData(false);
+                      }
+                    }}>
+                    {isDownloadingData ? (
+                      <Loader2 size={16} className="mr-1 animate-spin" />
+                    ) : (
+                      <Download size={16} className="mr-1" />
+                    )}
+                    {t("page.product.button.export")}
+                  </Button>
+                )}
+                {canAccess(user, MENU_KEY, "import") && (
+                  <span className="w-px h-7 bg-border mx-1" />
+                )}
+                {canAccess(user, MENU_KEY, "import") && (
+                  <Button
+                    data-tour="product-import"
+                    variant="default"
+                    onClick={() => setUploadModalOpen(true)}>
+                    <Upload size={16} className="mr-1" />
+                    {t("page.product.button.import")}
+                  </Button>
+                )}
+                {canAccess(user, MENU_KEY, "add") && (
+                  <Button
+                    data-tour="product-add"
+                    onClick={() => navigate("/add-product")}
+                    className="shadow-md">
+                    <Plus size={16} className="mr-1" />
+                    {t("page.product.button.add")}
+                  </Button>
+                )}
+              </PageHeader>
             </div>
-            <StoreFilter
-              locations={locData?.data || []}
-              value={storeFilter}
-              onChange={(v) => { setStoreFilter(v); setPage(1); }}
-              isSuperAdmin={isSuperAdmin}
-              t={t}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label={t("page.product.stats.total")}
+              value={stats.total}
+              icon="inventory_2"
+              variant="default"
             />
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">
-                  {t("common.all")} {t("page.product.table.category")}
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={sortFilter}
-                onChange={(e) => setSortFilter(e.target.value)}
-                className="flex-1 md:w-44 h-10 px-3 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                <option value="">{t("page.product.list.filter.newest")}</option>
-                <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
-                <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
-                <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
-              </select>
-            </div>
+            <StatCard
+              label={t("page.product.stats.active")}
+              value={stats.active}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("page.product.stats.nonActive")}
+              value={stats.nonActive}
+              icon="cancel"
+              variant="inactive"
+            />
+            <StatCard
+              label={t("page.product.stats.draft")}
+              value={stats.draft}
+              icon="edit_note"
+              variant="draft"
+            />
           </div>
 
           <div data-tour="product-table" className="mt-6">
@@ -582,6 +641,61 @@ const ProductList = () => {
               isLoading={isLoading}
               emptyMessage={t("page.product.list.empty")}
               emptyIcon={Package}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.product.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.product.list.searchSku")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">
+                          {t("common.all")} {t("page.product.table.category")}
+                        </option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={sortFilter}
+                        onChange={(e) => setSortFilter(e.target.value)}
+                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                        <option value="">{t("page.product.list.filter.newest")}</option>
+                        <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
+                        <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
+                        <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              }
               pagination={{
                 page,
                 totalPages,
@@ -590,28 +704,27 @@ const ProductList = () => {
               }}
             />
           </div>
-        </div>
-      </div>
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.product.modal.deleteTitle")}
-        description={t("page.product.modal.deleteDesc")}
-        confirmText={t("page.product.modal.deleteConfirm")}
-        loading={deleteMutation?.isLoading}
-        onConfirm={confirmDelete}
-      />
-      <UploadExcelModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        uploadService={uploadProductExcel}
-        queryKey={["products"]}
-        title={t("page.product.upload.title")}
-        subtitle={t("page.product.upload.subtitle") || ""}
-      />
-      </div>)}
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+            title={t("page.product.modal.deleteTitle")}
+            description={t("page.product.modal.deleteDesc")}
+            confirmText={t("page.product.modal.deleteConfirm")}
+            loading={deleteMutation?.isLoading}
+            onConfirm={confirmDelete}
+          />
+          <UploadExcelModal
+            open={uploadModalOpen}
+            onOpenChange={setUploadModalOpen}
+            uploadService={uploadProductExcel}
+            queryKey={["products"]}
+            title={t("page.product.upload.title")}
+            subtitle={t("page.product.upload.subtitle") || ""}
+          />
+        </div>
+      )}
     </>
   );
 };

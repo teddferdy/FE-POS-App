@@ -9,7 +9,9 @@ import { canAccess } from "@/utils/permission";
 import { getAllSalesReturn, approveSalesReturn, rejectSalesReturn } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
+import { getAllLocation } from "@/services/location";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -34,6 +36,7 @@ const SalesReturnList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/sales-return";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -41,6 +44,11 @@ const SalesReturnList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
+
+  const { data: locData } = useQuery(["locations-sales-return"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["sales-returns", page, limit, statusFilter],
@@ -195,6 +203,8 @@ const SalesReturnList = () => {
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
@@ -264,6 +274,8 @@ const SalesReturnList = () => {
           else rejectMut.mutate(actionTarget);
         }}
       />
+        </>
+      )}
     </div>
   );
 };

@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import StoreFilter from "@/components/ui/StoreFilter";
 import {
   Select,
   SelectContent,
@@ -598,61 +599,60 @@ const PurchaseOrderList = () => {
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {isSuperAdmin && (
-              <select
-                value={storeFilter}
-                onChange={(e) => {
-                  setStoreFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-                <option value="all">{t("page.purchaseOrder.add.allStore")}</option>
-                {(locData?.data || []).map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-            )}
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 px-3 rounded-md border border-input bg-background text-sm">
-              <option value="all">{t("common.all")}</option>
-              <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
-              <option value="pending">{t("page.purchaseOrder.status.pending")}</option>
-              <option value="ordered">{t("page.purchaseOrder.status.ordered")}</option>
-              <option value="received">{t("page.purchaseOrder.status.received")}</option>
-              <option value="cancelled">{t("page.purchaseOrder.status.cancelled")}</option>
-            </select>
-            <div className="relative w-full sm:w-72">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 h-10"
-              />
-            </div>
-          </div>
-
+        <div data-tour="purchase-order-table" className="mt-6">
           <DataTable
             columns={columns}
             data={orders}
             isLoading={isLoading}
             emptyMessage={t("page.purchaseOrder.list.empty")}
             emptyIcon={Package}
+            toolbar={
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                <h4 className="text-base font-semibold text-foreground">
+                  {t("page.purchaseOrder.list.title")}
+                </h4>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  {isSuperAdmin && (
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                  )}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                    <option value="all">{t("common.all")}</option>
+                    <option value="draft">{t("page.purchaseOrder.status.draft")}</option>
+                    <option value="pending">{t("page.purchaseOrder.status.pending")}</option>
+                    <option value="ordered">{t("page.purchaseOrder.status.ordered")}</option>
+                    <option value="received">{t("page.purchaseOrder.status.received")}</option>
+                    <option value="cancelled">{t("page.purchaseOrder.status.cancelled")}</option>
+                  </select>
+                  <div className="relative flex-1 md:w-64">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder={t("page.purchaseOrder.list.searchPlaceholder")}
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                      }}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            }
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />
         </div>

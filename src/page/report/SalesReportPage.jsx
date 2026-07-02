@@ -1,18 +1,28 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { Loading } from "@/components/ui/loading";
 import { getSalesSummary } from "@/services/report";
+import { getAllLocation } from "@/services/location";
 import { getDateRangeForPeriod, formatCurrency, formatNumber } from "@/utils/reportUtils";
 import GlobalSalesTab from "./GlobalSalesTab";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
 
 const SalesReportPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const [salesPeriod, setSalesPeriod] = useState("Today");
   const [exportLoading, setExportLoading] = useState(false);
+
+  const { data: locData } = useQuery(["locations-sales-report"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const dateRange = getDateRangeForPeriod(salesPeriod);
 
@@ -59,7 +69,15 @@ const SalesReportPage = () => {
   };
 
   return (
-    <div data-tour="page-reports" className="space-y-8">
+    <div data-tour="page-reports" className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          {t("breadcrumb.home")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">{t("page.report.sales.title")}</span>
+      </nav>
+
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
@@ -76,22 +94,26 @@ const SalesReportPage = () => {
         </button>
       </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <div className="relative min-h-[300px]">
-          {!salesData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div className="relative min-h-[300px]">
+              {!salesData?.data && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
-          {salesData?.data && (
-            <GlobalSalesTab
-              t={t}
-              period={salesPeriod}
-              setPeriod={setSalesPeriod}
-              data={salesData?.data}
-              isLoading={salesLoading}
-            />
+              {salesData?.data && (
+                <GlobalSalesTab
+                  t={t}
+                  period={salesPeriod}
+                  setPeriod={setSalesPeriod}
+                  data={salesData?.data}
+                  isLoading={salesLoading}
+                />
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Tag, Eye } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
@@ -14,6 +15,7 @@ import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
 
 const ExpenseCategoryList = () => {
   const { t } = useTranslation();
@@ -21,7 +23,13 @@ const ExpenseCategoryList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/expense-category";
+
+  const { data: locData } = useQuery(["locations-expense-category"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -214,6 +222,8 @@ const ExpenseCategoryList = () => {
         )}
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
@@ -284,6 +294,8 @@ const ExpenseCategoryList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+        </>
+      )}
     </div>
   );
 };

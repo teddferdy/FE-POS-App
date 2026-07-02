@@ -23,12 +23,14 @@ import {
   startProduction,
   completeProduction
 } from "@/services/production-order";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import NoStore from "@/components/ui/NoStore";
 
 const ProductionOrderList = () => {
   const { t } = useTranslation();
@@ -63,6 +65,7 @@ const ProductionOrderList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/production-order";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -72,6 +75,11 @@ const ProductionOrderList = () => {
   const [startTarget, setStartTarget] = useState(null);
   const [completeTarget, setCompleteTarget] = useState(null);
   const [completeQty, setCompleteQty] = useState("");
+
+  const { data: locData } = useQuery(["locations-production-order"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["production-orders", page, limit, statusFilter],
@@ -251,12 +259,12 @@ const ProductionOrderList = () => {
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
             onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.productionOrder.list.breadcrumbDashboard")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
           <span className="text-primary font-semibold">
-            {t("page.productionOrder.list.breadcrumbPO")}
+            {t("page.productionOrder.list.title")}
           </span>
         </nav>
       </div>
@@ -277,6 +285,8 @@ const ProductionOrderList = () => {
         )}
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="grid grid-cols-2 gap-4">
         <StatCard
           label={t("page.productionOrder.list.statTotal")}
@@ -419,6 +429,8 @@ const ProductionOrderList = () => {
               </Button>
             </div>
           </Modal>
+        </>
+      )}
         </>
       )}
     </div>

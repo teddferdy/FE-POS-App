@@ -12,6 +12,7 @@ import {
   downloadTypePaymentTemplate,
   downloadTypePaymentExcel
 } from "@/services/type-payment";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
@@ -21,6 +22,7 @@ import { uploadTypePaymentExcel } from "@/services/type-payment";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -58,7 +60,10 @@ const TypePaymentList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/type-payment-list";
+
+  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["type-payments", page, limit, search],
@@ -310,66 +315,75 @@ const TypePaymentList = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.typePayment.stats.total")}
-              value={stats.total ?? total}
-              icon="credit_card"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.typePayment.stats.total")}
+                  value={stats.total ?? total}
+                  icon="credit_card"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
 
-          {/* Search */}
-          <div className="relative w-full sm:w-72">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              placeholder={t("page.typePayment.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-10"
-            />
-          </div>
-
-          {/* Table */}
-          <div>
-            <DataTable
-              columns={columns}
-              data={payments}
-              isLoading={isLoading}
-              emptyIcon={CreditCard}
-              emptyMessage={t("page.typePayment.list.empty")}
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-            />
-          </div>
+              <div data-tour="type-payment-table">
+                <DataTable
+                  columns={columns}
+                  data={payments}
+                  isLoading={isLoading}
+                  emptyIcon={CreditCard}
+                  emptyMessage={t("page.typePayment.list.empty")}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.typePayment.list.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                          <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            placeholder={t("page.typePayment.list.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 

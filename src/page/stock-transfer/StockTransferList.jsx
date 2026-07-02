@@ -6,7 +6,11 @@ import { Plus, Search, Eye, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
-import { getTransferHistory, receiveStockTransfer, cancelStockTransfer } from "@/services/stock-transfer";
+import {
+  getTransferHistory,
+  receiveStockTransfer,
+  cancelStockTransfer
+} from "@/services/stock-transfer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
@@ -54,7 +58,10 @@ const StockTransferList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-transfers", page, limit, statusFilter],
@@ -184,76 +191,104 @@ const StockTransferList = () => {
 
   return (
     <div className="space-y-6">
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div>
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("page.stockTransfer.list.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.stockTransfer.list.title")}</span>
-        </nav>
-      </div>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.stockTransfer.list.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.stockTransfer.list.subtitle")}
-          </p>
+      {locData && (locData?.data || []).length === 0 ? (
+        <div className="space-y-6">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <button
+              onClick={() => navigate("/dashboard-super-admin")}
+              className="hover:text-foreground transition-colors">
+              {t("breadcrumb.home")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">{t("page.stockTransfer.list.title")}</span>
+          </nav>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">{t("page.stockTransfer.list.title")}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("page.stockTransfer.list.subtitle")}
+              </p>
+            </div>
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
+                <Plus size={16} /> {t("page.stockTransfer.list.addButton")}
+              </Button>
+            )}
+          </div>
+          <NoStore />
         </div>
-        {canAccess(user, MENU_KEY, "add") && (
-          <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
-            <Plus size={16} /> {t("page.stockTransfer.list.addButton")}
-          </Button>
-        )}
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            isLoading={isLoading}
-            emptyMessage={t("page.stockTransfer.list.emptyMessage")}
-            toolbar={
-              <div className="flex items-center gap-3">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
-                  {Object.entries(statusCfg).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="relative w-full sm:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.stockTransfer.list.placeholder.search")}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-              </div>
-            }
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
-          />
-        </div>
-      )}
+        <>
+          <div>
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+              <button
+                onClick={() => navigate("/dashboard-super-admin")}
+                className="hover:text-foreground transition-colors">
+                {t("breadcrumb.home")}
+              </button>
+              <span className="text-xs">/</span>
+              <span className="text-primary font-semibold">
+                {t("page.stockTransfer.list.title")}
+              </span>
+            </nav>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">{t("page.stockTransfer.list.title")}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("page.stockTransfer.list.subtitle")}
+              </p>
+            </div>
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button onClick={() => navigate("/add-stock-transfer")} className="shrink-0 gap-2">
+                <Plus size={16} /> {t("page.stockTransfer.list.addButton")}
+              </Button>
+            )}
+          </div>
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div>
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+                isLoading={isLoading}
+                emptyMessage={t("page.stockTransfer.list.emptyMessage")}
+                toolbar={
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                      <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
+                      {Object.entries(statusCfg).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative w-full sm:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.stockTransfer.list.placeholder.search")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                }
+                pagination={{ page, totalPages, total, onPageChange: setPage }}
+              />
+            </div>
+          )}
         </>
       )}
     </div>

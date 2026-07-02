@@ -292,39 +292,45 @@ const ReservationList = () => {
               variant="inactive"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full sm:w-60">
-              <DatePicker
-                date={dateFilter}
-                setDate={(date) => {
-                  setDateFilter(date);
-                  setPage(1);
-                }}
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm">
-              <option value="all">{t("page.reservation.filter.allStatus")}</option>
-              <option value="pending">{t("page.reservation.status.pending")}</option>
-              <option value="confirmed">{t("page.reservation.status.confirmed")}</option>
-              <option value="cancelled">{t("page.reservation.status.cancelled")}</option>
-              <option value="completed">{t("page.reservation.status.completed")}</option>
-              <option value="no_show">{t("page.reservation.status.noShow")}</option>
-            </select>
-          </div>
-
-          <div>
+          <div data-tour="reservation-table" className="mt-6">
             <DataTable
               columns={columns}
               data={reservations}
               isLoading={isLoading}
               emptyMessage={t("page.reservation.empty")}
               emptyIcon={Calendar}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.reservation.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="w-full sm:w-60">
+                      <DatePicker
+                        date={dateFilter}
+                        setDate={(date) => {
+                          setDateFilter(date);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
+                      <option value="all">{t("page.reservation.filter.allStatus")}</option>
+                      <option value="pending">{t("page.reservation.status.pending")}</option>
+                      <option value="confirmed">{t("page.reservation.status.confirmed")}</option>
+                      <option value="cancelled">{t("page.reservation.status.cancelled")}</option>
+                      <option value="completed">{t("page.reservation.status.completed")}</option>
+                      <option value="no_show">{t("page.reservation.status.noShow")}</option>
+                    </select>
+                  </div>
+                </div>
+              }
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
           </div>

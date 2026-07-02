@@ -250,21 +250,6 @@ const ShiftList = () => {
             />
           </div>
 
-          <div>
-            <div className="relative w-full sm:w-72">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.shift.list.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
-            </div>
-          </div>
-
           <div data-tour="shift-table">
             <DataTable
               columns={columns}
@@ -272,6 +257,27 @@ const ShiftList = () => {
               isLoading={isLoading}
               emptyIcon={Clock}
               emptyMessage={t("page.shift.list.empty")}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.shift.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.shift.list.search")}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
               pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
             />
           </div>

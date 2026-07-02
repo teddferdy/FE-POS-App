@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
 import { Wallet, Building2, Clock, Eye } from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
+import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
-import PageHeader from "@/components/ui/PageHeader";
 import { Loading } from "@/components/ui/loading";
+import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import {
   Dialog,
@@ -28,7 +30,11 @@ const statusStyles = {
 const DashboardUtang = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [cookie] = useCookies(["user"]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const { data: locData } = useQuery(["locations-ap-dashboard"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard);
 
@@ -36,8 +42,6 @@ const DashboardUtang = () => {
   const supplierPOs = selectedSupplier
     ? outstandingPOs.filter((po) => po.supplierId === selectedSupplier.supplierId)
     : [];
-
-  if (isError) return <AbortController refetch={refetch} />;
 
   const supplierColumns = [
     {
@@ -155,20 +159,24 @@ const DashboardUtang = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      <PageHeader
-        breadcrumbs={[
-          {
-            label: t("breadcrumb.home"),
-            href: "/dashboard-super-admin",
-            i18nKey: "breadcrumb.home"
-          },
-          { label: t("page.apDashboard.title"), i18nKey: "page.apDashboard.title" }
-        ]}
-        title={t("page.apDashboard.title")}
-        description={t("page.apDashboard.subtitle")}
-      />
+      <div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.apDashboard.title")}</span>
+        </nav>
+      </div>
 
-      {isLoading ? (
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t("page.apDashboard.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.apDashboard.subtitle")}</p>
+      </div>
+
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
+      {isError ? <AbortController refetch={refetch} /> : isLoading ? (
         <Loading fullscreen size="lg" label={t("page.apDashboard.loading")} />
       ) : (
         <>
@@ -243,6 +251,8 @@ const DashboardUtang = () => {
           />
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   );
 };

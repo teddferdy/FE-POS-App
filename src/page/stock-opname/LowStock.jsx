@@ -13,9 +13,11 @@ import {
   TableRow,
   TableCell
 } from "@/components/ui/table";
-import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
+import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
+import { useNavigate } from "react-router-dom";
+import { getAllLocation } from "@/services/location";
 
 const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -24,9 +26,16 @@ const formatNumber = (num) => {
 
 const LowStock = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const role = user?.roleType || "";
+
+  const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock"],
@@ -55,27 +64,34 @@ const LowStock = () => {
   return (
     <div className="space-y-6">
       <div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate(
+              role === "super_admin"
+                ? "/dashboard-super-admin"
+                : role === "admin"
+                  ? "/dashboard-admin"
+                  : "/home"
+            )}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-muted-foreground">{t("breadcrumb.inventory")}</span>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.lowStock")}</span>
+        </nav>
+      </div>
+
+      <div>
         <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href:
-                  role === "super_admin"
-                    ? "/dashboard-super-admin"
-                    : role === "admin"
-                      ? "/dashboard-admin"
-                      : "/home"
-              },
-              { label: t("breadcrumb.inventory") },
-              { label: t("breadcrumb.lowStock") }
-            ]}
-            title={t("page.lowStock.title")}
-            description={t("page.lowStock.description")}
-          />
+          <h1 className="text-2xl font-bold text-foreground">{t("page.lowStock.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.lowStock.description")}</p>
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       {isError ? (
         <AbortController refetch={refetch} />
       ) : (
@@ -277,6 +293,8 @@ const LowStock = () => {
             )}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

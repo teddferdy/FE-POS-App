@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import NoStore from "@/components/ui/NoStore";
+import { getAllLocation } from "@/services/location";
 import { Receipt, Wallet } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,9 @@ const statusLabelKeys = { UNPAID: "unpaid", PARTIAL: "partial", PAID: "paid", OV
 const AccountsReceivableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [statusFilter, setStatusFilter] = useState("");
@@ -37,6 +43,11 @@ const AccountsReceivableList = () => {
     () => getARList({ page, limit, status: statusFilter || undefined }),
     { keepPreviousData: true }
   );
+
+  const { data: locData } = useQuery(["locations-ar"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data: agingData } = useQuery(["ar-aging"], () => getARAging(), {
     refetchInterval: 60000
@@ -163,6 +174,8 @@ const AccountsReceivableList = () => {
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="grid grid-cols-1">
         <StatCard
           label={t("page.accountsReceivable.list.totalPiutang")}
@@ -291,6 +304,8 @@ const AccountsReceivableList = () => {
           ]}
         />
       </div>
+        </>
+      )}
     </div>
   );
 };

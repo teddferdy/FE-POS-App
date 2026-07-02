@@ -104,6 +104,24 @@ const tipsKeys = {
   "/goods-receipt": ["tips.goodsReceipt", "tips.goodsReceipt2"],
   "/add-goods-receipt": ["tips.goodsReceipt", "tips.goodsReceipt2"],
 
+  "/accounts-receivable": ["tips.accountReceivable", "tips.accountReceivable2"],
+
+  "/ingredient": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+
+  "/qr-order-management": [
+    "tips.qrOrderManagement",
+    "tips.qrOrderManagement2",
+    "tips.qrOrderManagement3"
+  ],
+
+  "/purchase-payment": ["tips.purchasePayment", "tips.purchasePayment2", "tips.purchasePayment3"],
+
+  "/stock-adjustment": ["tips.stockAdjustment", "tips.stockAdjustment2", "tips.stockAdjustment3"],
+
+  "/ingredient-category": ["tips.ingredient", "tips.ingredient2", "tips.ingredient3"],
+
+  "/ap-dashboard": ["tips.apDashboard", "tips.apDashboard2", "tips.apDashboard3"],
+
   "/sales-return": ["tips.salesReturn", "tips.salesReturn2"],
   "/purchase-return": ["tips.purchaseReturn", "tips.purchaseReturn2"],
 

@@ -1,17 +1,27 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { Loading } from "@/components/ui/loading";
 import { getBestSellerReport } from "@/services/report";
+import { getAllLocation } from "@/services/location";
 import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import BestSellerTab from "./BestSellerTab";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
 
 const BestSellingReportPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const [exportLoading, setExportLoading] = useState(false);
+
+  const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const {
     data: bestSellerData,
@@ -48,7 +58,15 @@ const BestSellingReportPage = () => {
   };
 
   return (
-    <div data-tour="page-reports" className="space-y-8">
+    <div data-tour="page-reports" className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          {t("breadcrumb.home")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">{t("page.report.bestSeller.title")}</span>
+      </nav>
+
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
@@ -67,18 +85,22 @@ const BestSellingReportPage = () => {
         </button>
       </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <div className="relative min-h-[300px]">
-          {!bestSellerData?.data && (
-            <Loading fullscreen size="lg" label={t("common.loadingData")} />
-          )}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div className="relative min-h-[300px]">
+              {!bestSellerData?.data && (
+                <Loading fullscreen size="lg" label={t("common.loadingData")} />
+              )}
 
-          {bestSellerData?.data && (
-            <BestSellerTab t={t} data={bestSellerData?.data} isLoading={bestLoading} />
+              {bestSellerData?.data && (
+                <BestSellerTab t={t} data={bestSellerData?.data} isLoading={bestLoading} />
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

@@ -339,23 +339,6 @@ const TaxConfigList = () => {
             />
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              data-tour="tax-search"
-              placeholder={t("page.taxConfig.list.search")}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 h-10"
-            />
-          </div>
-
           <div data-tour="tax-table">
             <DataTable
               columns={columns}
@@ -363,6 +346,31 @@ const TaxConfigList = () => {
               isLoading={isLoading}
               emptyMessage={t("page.taxConfig.list.empty")}
               emptyIcon={Percent}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.taxConfig.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        data-tour="tax-search"
+                        placeholder={t("page.taxConfig.list.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
               pagination={{ page, totalPages, total, onPageChange: setPage }}
             />
           </div>

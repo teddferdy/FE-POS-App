@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Search, Edit, Trash2, Sofa, QrCode, RotateCcw } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 } from "@/services/table";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -41,12 +42,14 @@ const TableList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
   const MENU_KEY = "/table";
   const isSuperAdmin = user?.roleType === "super_admin";
-  const locationParam = isSuperAdmin ? searchParams.get("location") : user?.store?.toString() || "";
+  const [storeFilter, setStoreFilter] = useState("all");
+  const locationParam = isSuperAdmin
+    ? (storeFilter === "all" ? "" : storeFilter)
+    : user?.store?.toString() || "";
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -282,29 +285,47 @@ const TableList = () => {
                 />
               </div>
 
-              <div className="relative w-full sm:w-72">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  placeholder={t("page.table.list.search")}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                  className="pl-9 h-10"
-                />
-              </div>
-
-              <div>
+              <div data-tour="table-list-table">
                 <DataTable
                   columns={columns}
                   data={tables}
                   isLoading={isLoading}
                   emptyIcon={Sofa}
                   emptyMessage={t("page.table.list.empty")}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.table.list.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(val) => {
+                            setStoreFilter(val);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                        <div className="relative flex-1 md:w-64">
+                          <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            placeholder={t("page.table.list.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  }
                   pagination={{ page, totalPages, total, onPageChange: setPage }}
                 />
               </div>

@@ -350,7 +350,7 @@ const Dashboard = () => {
               </div>
               <div className="divide-y divide-border">
                 {bestSelling.length === 0 ? (
-                  <div className="p-5 text-sm text-muted-foreground text-center">
+                  <div className="p-5 text-sm text-muted-foreground text-center h-[44vh] flex items-center justify-center">
                     {t("page.dashboard.noData")}
                   </div>
                 ) : (

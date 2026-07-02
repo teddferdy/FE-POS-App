@@ -2,6 +2,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useQuery, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -46,6 +47,7 @@ import {
 } from "@/services/general";
 import { printViaBrowser } from "@/utils/thermalPrint";
 import AbortController from "@/components/organism/abort-controller";
+import NoStore from "@/components/ui/NoStore";
 
 const DEFAULT_INVOICE_TEMPLATE = {
   showStoreName: true,
@@ -188,7 +190,7 @@ const InvoicePreview = ({
 
       <div className="space-y-1 border-t-2 border-gray-300 pt-2 mb-3">
         <div className="flex justify-between text-[11px]">
-          <span className="text-gray-500">Subtotal</span>
+          <span className="text-gray-500">{t("page.invoice.subtotal")}</span>
           <span className="text-gray-700">{formatPrice(subtotal)}</span>
         </div>
         <div className="flex justify-between text-[11px]">
@@ -210,6 +212,7 @@ const InvoicePreview = ({
 
 const InvoicePage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [cookie] = useCookies();
   const queryClient = useQueryClient();
   const logoInputRef = useRef(null);
@@ -443,14 +446,23 @@ const InvoicePage = () => {
     });
   };
 
-  if (storeError) return <AbortController refetch={refetchStore} />;
-
   return (
     <div data-tour="page-settings" className="space-y-6">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          {t("breadcrumb.home")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">{t("page.invoice.title")}</span>
+      </nav>
+
       <div>
         <h2 className="text-2xl font-bold">{t("page.invoice.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("page.invoice.description")}</p>
       </div>
+
+      {storeError ? <AbortController refetch={refetchStore} /> : (
+        <>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
@@ -710,6 +722,8 @@ const InvoicePage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   );
 };

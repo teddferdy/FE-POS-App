@@ -270,8 +270,7 @@ const AddLocation = () => {
 
   const addMutation = useMutation(addLocation, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      queryClient.invalidateQueries(["allLocations"]);
+      queryClient.invalidateQueries();
       setIsSubmitting(false);
       setSuccessModal(true);
     },
@@ -285,8 +284,7 @@ const AddLocation = () => {
 
   const editMutation = useMutation(editLocation, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["locations"]);
-      queryClient.invalidateQueries(["allLocations"]);
+      queryClient.invalidateQueries();
       setIsSubmitting(false);
       setSuccessModal(true);
     },

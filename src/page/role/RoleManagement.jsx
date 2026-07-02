@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -12,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import NoStore from "@/components/ui/NoStore";
 
 const RoleManagement = () => {
   const { t } = useTranslation();
@@ -19,7 +21,10 @@ const RoleManagement = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/role-management";
+
+  const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -64,15 +69,16 @@ const RoleManagement = () => {
 
   return (
     <div data-tour="page-roles" className="space-y-8">
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          {t("breadcrumb.home")}
+        </button>
+        <span className="text-xs">/</span>
+        <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
+      </nav>
+
       <div className="flex justify-between items-end">
         <div>
-          <nav className="flex gap-2 mb-2 text-sm text-muted-foreground" aria-label="breadcrumb">
-            <span>{t("breadcrumb.home")}</span>
-            <span>/</span>
-            <span className="text-primary font-semibold">{t("breadcrumb.management")}</span>
-            <span>/</span>
-            <span className="text-primary font-semibold">Manajemen Role & Izin</span>
-          </nav>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
             Manajemen Role & Izin
           </h2>
@@ -91,9 +97,11 @@ const RoleManagement = () => {
         )}
       </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <StatCard
@@ -328,6 +336,8 @@ const RoleManagement = () => {
               </div>
             </div>
           </div>
+          </>
+        )}
         </>
       )}
       <Modal

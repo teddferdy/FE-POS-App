@@ -11,14 +11,15 @@ import {
   downloadPositionExcel
 } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
+import { getAllLocation } from "@/services/location";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadPositionExcel } from "@/services/position";
 import StatCard from "@/components/ui/StatCard";
-import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
+import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 
 const formatDate = (dateStr) => {
@@ -49,6 +50,7 @@ const PositionList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/position-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -58,6 +60,11 @@ const PositionList = () => {
   const [noDepartmentModal, setNoDepartmentModal] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+
+  const { data: locData } = useQuery(["locations-positions"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data: departmentData } = useQuery(["departments-all"], getAllDepartment, {
     staleTime: 5 * 60 * 1000
@@ -252,14 +259,26 @@ const PositionList = () => {
   return (
     <div className="space-y-6">
       <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { label: t("breadcrumb.adminConsole") },
-              { label: t("breadcrumb.position") }
-            ]}
-            title={t("page.position.list.title")}
-            description={t("page.position.list.description")}>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.position.list.title")}</span>
+        </nav>
+      </div>
+
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.position.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.position.list.description")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
             {canAccess(user, MENU_KEY, "export") && (
               <Button
                 data-tour="position-download-template"
@@ -330,7 +349,6 @@ const PositionList = () => {
                   : t("page.position.button.downloadData")}
               </Button>
             )}
-            {canAccess(user, MENU_KEY, "import") && <span className="w-px h-7 bg-border mx-1" />}
             {canAccess(user, MENU_KEY, "import") && (
               <Button
                 data-tour="position-upload"
@@ -350,113 +368,115 @@ const PositionList = () => {
                 {t("page.position.button.add")}
               </Button>
             )}
-          </PageHeader>
+          </div>
         </div>
       </div>
 
-      <div>
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            <StatCard
-              label={t("page.position.stats.total")}
-              value={total.toLocaleString()}
-              icon="work"
-              variant="default"
-              subtitle={t("page.position.stats.totalSub")}
-            />
-            <StatCard
-              label={t("page.position.stats.active")}
-              value={activeCount.toLocaleString()}
-              icon="check_circle"
-              variant="active"
-              subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`}
-            />
-            <StatCard
-              label={t("page.position.stats.draft")}
-              value={draftCount.toLocaleString()}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.position.stats.inactive")}
-              value={inactiveCount.toLocaleString()}
-              icon="cancel"
-              variant="inactive"
-              subtitle={t("page.position.stats.inactiveSub")}
-            />
-          </div>
-
-          <div data-tour="position-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={positions}
-              isLoading={isLoading}
-              emptyMessage={t("page.position.list.empty")}
-              toolbar={
-                <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-muted-foreground">
-                      {t("page.position.list.show")}:
-                    </span>
-                    <select
-                      value={limit}
-                      className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                      <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
-                      <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
-                      <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
-                    </select>
-                  </div>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                      search
-                    </span>
-                    <input
-                      data-tour="position-search"
-                      placeholder={t("page.position.list.search")}
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                      }}
-                      className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    />
-                  </div>
-                </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-              rowClassName={() => "group"}
-              onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
-            />
-          </div>
-
-          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
-              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-                {t("page.position.list.tips")}
-              </h4>
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <><div>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              <StatCard
+                label={t("page.position.stats.total")}
+                value={total.toLocaleString()}
+                icon="work"
+                variant="default"
+                subtitle={t("page.position.stats.totalSub")}
+              />
+              <StatCard
+                label={t("page.position.stats.active")}
+                value={activeCount.toLocaleString()}
+                icon="check_circle"
+                variant="active"
+                subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`}
+              />
+              <StatCard
+                label={t("page.position.stats.draft")}
+                value={draftCount.toLocaleString()}
+                icon="edit_note"
+                variant="draft"
+              />
+              <StatCard
+                label={t("page.position.stats.inactive")}
+                value={inactiveCount.toLocaleString()}
+                icon="cancel"
+                variant="inactive"
+                subtitle={t("page.position.stats.inactiveSub")}
+              />
             </div>
-            <ul className="space-y-2">
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip1")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip2")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip3")}</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>{t("page.position.list.tip4")}</span>
-              </li>
-            </ul>
+
+            <div data-tour="position-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={positions}
+                isLoading={isLoading}
+                emptyMessage={t("page.position.list.empty")}
+                toolbar={
+                  <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        {t("page.position.list.show")}:
+                      </span>
+                      <select
+                        value={limit}
+                        className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                        <option value={10}>{t("page.position.list.rows", { count: 10 })}</option>
+                        <option value={25}>{t("page.position.list.rows", { count: 25 })}</option>
+                        <option value={50}>{t("page.position.list.rows", { count: 50 })}</option>
+                      </select>
+                    </div>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                        search
+                      </span>
+                      <input
+                        data-tour="position-search"
+                        placeholder={t("page.position.list.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                      />
+                    </div>
+                  </div>
+                }
+                pagination={{ page, totalPages, total, onPageChange: setPage }}
+                rowClassName={() => "group"}
+                onRowClick={(position) => navigate(`/detail-position?positionID=${position.id}`)}
+              />
+            </div>
+
+            <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                  {t("page.position.list.tips")}
+                </h4>
+              </div>
+              <ul className="space-y-2">
+                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                  <span className="text-primary-foreground/60 mt-0.5">•</span>
+                  <span>{t("page.position.list.tip1")}</span>
+                </li>
+                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                  <span className="text-primary-foreground/60 mt-0.5">•</span>
+                  <span>{t("page.position.list.tip2")}</span>
+                </li>
+                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                  <span className="text-primary-foreground/60 mt-0.5">•</span>
+                  <span>{t("page.position.list.tip3")}</span>
+                </li>
+                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                  <span className="text-primary-foreground/60 mt-0.5">•</span>
+                  <span>{t("page.position.list.tip4")}</span>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </div>
+        </div></>
+      )}
 
       <Modal
         type="confirm"

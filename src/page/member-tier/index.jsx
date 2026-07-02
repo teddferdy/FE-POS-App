@@ -4,14 +4,15 @@ import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
 import { getAllMemberTier, deleteMemberTier } from "@/services/member-tier";
+import { getAllLocation } from "@/services/location";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import NoStore from "@/components/ui/NoStore";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -21,11 +22,18 @@ const MemberTier = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/member-tier";
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
   const itemsPerPage = 5;
+
+  const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
+
   const {
     data: tiersData,
     isLoading,
@@ -247,111 +255,122 @@ const MemberTier = () => {
   return (
     <div data-tour="page-member-tier" className="space-y-6">
       <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { i18nKey: "breadcrumb.home" },
-              { i18nKey: "breadcrumb.management" },
-              { i18nKey: "page.memberTier.list.title" }
-            ]}
-            title={t("page.memberTier.list.title")}
-            description={t("page.memberTier.list.description")}>
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button onClick={() => navigate("/add-member-tier")} className="gap-2">
-                <Plus size={18} />
-                {t("page.memberTier.list.addTier")}
-              </Button>
-            )}
-          </PageHeader>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.memberTier.list.title")}</span>
+        </nav>
+      </div>
+
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.memberTier.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.memberTier.list.description")}
+            </p>
+          </div>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button onClick={() => navigate("/add-member-tier")} className="gap-2">
+              <Plus size={18} />
+              {t("page.memberTier.list.addTier")}
+            </Button>
+          )}
         </div>
       </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <div>
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>{isError ? (
+          <AbortController refetch={refetch} />
+        ) : (
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <StatCard
-                label={t("page.memberTier.list.totalTiers")}
-                value={tiers.length}
-                icon="workspace_premium"
-                variant="default"
-              />
-              <StatCard
-                label={t("common.active")}
-                value={activeTierCount}
-                icon="check_circle"
-                variant="active"
-              />
-              <StatCard
-                label={t("common.draft")}
-                value={draftTierCount}
-                icon="edit_note"
-                variant="draft"
-              />
-              <StatCard
-                label={t("common.inactive")}
-                value={inactiveTierCount}
-                icon="cancel"
-                variant="red"
-              />
-            </div>
-
-            {tiers.length === 0 ? (
-              <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
-                <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
-                <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
-                  <Plus size={16} className="mr-2" />
-                  {t("page.memberTier.list.addTier")}
-                </Button>
-              </div>
-            ) : (
-              <div data-tour="tier-table" className="mt-6">
-                <DataTable
-                  columns={columns}
-                  data={paginatedTiers}
-                  isLoading={isLoading}
-                  rowClassName={() => "group"}
-                  toolbar={
-                    <div className="flex items-center justify-between w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.memberTier.list.tableTitle")}
-                      </h4>
-                      <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                          search
-                        </span>
-                        <Input
-                          data-tour="tier-search"
-                          placeholder={t("common.search")}
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setCurrentPage(1);
-                          }}
-                          className="pl-9 h-9 w-72 text-sm"
-                        />
-                      </div>
-                    </div>
-                  }
-                  pagination={{
-                    page: currentPage,
-                    totalPages,
-                    total: filteredTiers.length,
-                    onPageChange: setCurrentPage,
-                    showingText: `${t("common.showing", {
-                      start: (currentPage - 1) * itemsPerPage + 1,
-                      end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
-                      total: filteredTiers.length
-                    })}`
-                  }}
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.memberTier.list.totalTiers")}
+                  value={tiers.length}
+                  icon="workspace_premium"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeTierCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftTierCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveTierCount}
+                  icon="cancel"
+                  variant="red"
                 />
               </div>
-            )}
+
+              {tiers.length === 0 ? (
+                <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
+                  <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
+                  <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
+                    <Plus size={16} className="mr-2" />
+                    {t("page.memberTier.list.addTier")}
+                  </Button>
+                </div>
+              ) : (
+                <div data-tour="tier-table" className="mt-6">
+                  <DataTable
+                    columns={columns}
+                    data={paginatedTiers}
+                    isLoading={isLoading}
+                    rowClassName={() => "group"}
+                    toolbar={
+                      <div className="flex items-center justify-between w-full">
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.memberTier.list.tableTitle")}
+                        </h4>
+                        <div className="relative">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                            search
+                          </span>
+                          <Input
+                            data-tour="tier-search"
+                            placeholder={t("common.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setCurrentPage(1);
+                            }}
+                            className="pl-9 h-9 w-72 text-sm"
+                          />
+                        </div>
+                      </div>
+                    }
+                    pagination={{
+                      page: currentPage,
+                      totalPages,
+                      total: filteredTiers.length,
+                      onPageChange: setCurrentPage,
+                      showingText: `${t("common.showing", {
+                        start: (currentPage - 1) * itemsPerPage + 1,
+                        end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
+                        total: filteredTiers.length
+                      })}`
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}</>
       )}
 
       <Modal

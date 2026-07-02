@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 import { Clock, ChefHat, User, Store, QrCode, Loader2, Utensils } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import NoStore from "@/components/ui/NoStore";
 
 const CustomerOrderManagement = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [cookie] = useCookies();
   const user = cookie?.user;
@@ -26,8 +28,9 @@ const CustomerOrderManagement = () => {
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
+  const { data: locData } = useQuery(["locations-customer-orders"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
   });
 
   const fetchOrders = useCallback(() => {
@@ -78,32 +81,39 @@ const CustomerOrderManagement = () => {
   });
 
   return (
-    <div className="space-y-4 mx-auto">
-      {locData && (locData?.data || []).length === 0 ? (
-        <NoStore />
-      ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <QrCode className="text-primary" size={24} />
-                {t("sidebar.customerOrder")}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {orders.length} pending {orders.length === 1 ? "order" : "orders"} — review & accept
-                to send to kitchen
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
-                {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-                Refresh
-              </Button>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("sidebar.customerOrder")}</span>
+        </nav>
+      </div>
 
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("sidebar.customerOrder")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {orders.length} pending {orders.length === 1 ? "order" : "orders"} — review & accept
+              to send to kitchen
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
+            {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
           {isSuperAdmin && (
-            <div className="mb-2">
+            <div>
               <StoreFilter
                 locations={locData?.data || []}
                 value={storeFilter}

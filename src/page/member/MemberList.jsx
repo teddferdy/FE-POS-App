@@ -8,13 +8,14 @@ import { Plus, PackageOpen } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
+import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 
@@ -56,6 +57,7 @@ const MemberList = () => {
   const [searchParams] = useSearchParams();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/member-list";
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -64,6 +66,11 @@ const MemberList = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const container = {
     hidden: {},
@@ -334,202 +341,217 @@ const MemberList = () => {
   return (
     <div data-tour="page-member" className="space-y-6">
       <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[{ i18nKey: "breadcrumb.home" }, { i18nKey: "page.member.list.title" }]}
-            title={t("page.member.list.title")}
-            description={t("page.member.list.description")}>
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="member-add"
-                onClick={() => navigate("/add-member")}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
-                <span className="material-symbols-outlined text-lg">person_add</span>
-                {t("breadcrumb.add")}
-              </Button>
-            )}
-          </PageHeader>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.member.list.title")}</span>
+        </nav>
+      </div>
+
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.member.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.member.list.description")}
+            </p>
+          </div>
+          {canAccess(user, MENU_KEY, "add") && (
+            <Button
+              data-tour="member-add"
+              onClick={() => navigate("/add-member")}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm">
+              <span className="material-symbols-outlined text-lg">person_add</span>
+              {t("breadcrumb.add")}
+            </Button>
+          )}
         </div>
       </div>
 
-      {!isError && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard
-            label={t("page.member.list.totalMembers")}
-            value={stats.total}
-            icon="group"
-            variant="default"
-          />
-          <StatCard
-            label={t("common.active")}
-            value={stats.active}
-            icon="check_circle"
-            variant="active"
-          />
-          <StatCard
-            label={t("common.draft")}
-            value={stats.draft}
-            icon="edit_note"
-            variant="draft"
-          />
-          <StatCard
-            label={t("common.inactive")}
-            value={stats.inactive}
-            icon="cancel"
-            variant="red"
-          />
-        </div>
-      )}
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>{!isError && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatCard
+              label={t("page.member.list.totalMembers")}
+              value={stats.total}
+              icon="group"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={stats.active}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={stats.draft}
+              icon="edit_note"
+              variant="draft"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={stats.inactive}
+              icon="cancel"
+              variant="red"
+            />
+          </div>
+        )}
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <div>
+        {isError ? (
+          <AbortController refetch={refetch} />
+        ) : (
           <div>
-            <div data-tour="member-search" className="bg-card rounded-xl border border-border p-5">
-              {tiers.length === 0 ? (
-                <div className="flex items-center gap-3 w-full">
-                  <PackageOpen size={20} className="text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground flex-1">
-                    {t("page.member.list.noTier")}
-                  </span>
-                  <Button
-                    onClick={() => navigate("/add-member-tier")}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
-                    <Plus size={16} />
-                    {t("page.member.list.addMemberTier")}
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-primary text-lg">
-                      filter_alt
+            <div>
+              <div data-tour="member-search" className="bg-card rounded-xl border border-border p-5">
+                {tiers.length === 0 ? (
+                  <div className="flex items-center gap-3 w-full">
+                    <PackageOpen size={20} className="text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground flex-1">
+                      {t("page.member.list.noTier")}
                     </span>
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {t("page.member.list.filter")}
-                    </h3>
+                    <Button
+                      onClick={() => navigate("/add-member-tier")}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
+                      <Plus size={16} />
+                      {t("page.member.list.addMemberTier")}
+                    </Button>
                   </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="material-symbols-outlined text-primary text-lg">
+                        filter_alt
+                      </span>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {t("page.member.list.filter")}
+                      </h3>
+                    </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {[
-                      { key: null, label: t("common.all"), icon: "group" },
-                      { key: "draft", label: t("common.draft"), icon: "edit_note" },
-                      { key: "inactive", label: t("common.inactive"), icon: "cancel" }
-                    ].map(({ key, label, icon }) => (
-                      <button
-                        key={key ?? "all"}
-                        onClick={() => {
-                          setStatusFilter(key);
-                          setPage(1);
-                        }}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          statusFilter === key
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                        }`}>
-                        <span className="material-symbols-outlined text-sm">{icon}</span>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {[
+                        { key: null, label: t("common.all"), icon: "group" },
+                        { key: "draft", label: t("common.draft"), icon: "edit_note" },
+                        { key: "inactive", label: t("common.inactive"), icon: "cancel" }
+                      ].map(({ key, label, icon }) => (
+                        <button
+                          key={key ?? "all"}
+                          onClick={() => {
+                            setStatusFilter(key);
+                            setPage(1);
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            statusFilter === key
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                          }`}>
+                          <span className="material-symbols-outlined text-sm">{icon}</span>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
 
-                  {tiers.length > 0 && (
-                    <>
-                      <div className="border-t border-border my-4" />
-                      <div className="flex flex-wrap items-center gap-2">
-                        {tiers.map((tier) => (
-                          <button
-                            key={tier.id || tier._id}
-                            onClick={() => {
-                              setTierFilter(tierFilter === tier.id ? null : tier.id);
-                              setPage(1);
-                            }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                              tierFilter === tier.id
-                                ? "text-white shadow-sm"
-                                : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                            }`}
-                            style={
-                              tierFilter === tier.id
-                                ? { backgroundColor: tier.color || "#6366f1" }
-                                : undefined
-                            }>
-                            <span
-                              className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: tier.color || "#6366f1" }}
-                            />
-                            {tier.name}
-                          </button>
-                        ))}
+                    {tiers.length > 0 && (
+                      <>
+                        <div className="border-t border-border my-4" />
+                        <div className="flex flex-wrap items-center gap-2">
+                          {tiers.map((tier) => (
+                            <button
+                              key={tier.id || tier._id}
+                              onClick={() => {
+                                setTierFilter(tierFilter === tier.id ? null : tier.id);
+                                setPage(1);
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                tierFilter === tier.id
+                                  ? "text-white shadow-sm"
+                                  : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                              }`}
+                              style={
+                                tierFilter === tier.id
+                                  ? { backgroundColor: tier.color || "#6366f1" }
+                                  : undefined
+                              }>
+                              <span
+                                className="w-2 h-2 rounded-full"
+                                style={{ backgroundColor: tier.color || "#6366f1" }}
+                              />
+                              {tier.name}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-muted-foreground text-sm">
+                          sort
+                        </span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">
+                          {t("page.member.list.sort")}
+                        </span>
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                          <option value="terbaru">{t("page.member.list.sortNewest")}</option>
+                          <option value="poin">{t("page.member.list.sortPoints")}</option>
+                          <option value="nama">{t("page.member.list.sortName")}</option>
+                        </select>
                       </div>
-                    </>
-                  )}
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-muted-foreground text-sm">
+                          people
+                        </span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {t("page.member.list.totalMembers")}:{" "}
+                          <strong>{total.toLocaleString()}</strong>
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-muted-foreground text-sm">
-                        sort
-                      </span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {t("page.member.list.sort")}
-                      </span>
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                        <option value="terbaru">{t("page.member.list.sortNewest")}</option>
-                        <option value="poin">{t("page.member.list.sortPoints")}</option>
-                        <option value="nama">{t("page.member.list.sortName")}</option>
-                      </select>
+              <div data-tour="member-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={filteredMembers}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.member.list.empty")}
+                  toolbar={
+                    <div className="flex items-center justify-between w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.member.list.title")}
+                      </h4>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                          search
+                        </span>
+                        <Input
+                          placeholder={t("page.member.list.search")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 w-72 text-sm"
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-muted-foreground text-sm">
-                        people
-                      </span>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {t("page.member.list.totalMembers")}:{" "}
-                        <strong>{total.toLocaleString()}</strong>
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div data-tour="member-table" className="mt-6">
-              <DataTable
-                columns={columns}
-                data={filteredMembers}
-                isLoading={isLoading}
-                emptyMessage={t("page.member.list.empty")}
-                toolbar={
-                  <div className="flex items-center justify-between w-full">
-                    <h4 className="text-base font-semibold text-foreground">
-                      {t("page.member.list.title")}
-                    </h4>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                        search
-                      </span>
-                      <Input
-                        placeholder={t("page.member.list.search")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 w-72 text-sm"
-                      />
-                    </div>
-                  </div>
-                }
-                pagination={{ page, totalPages, total, onPageChange: setPage }}
-                rowClassName={() => "group"}
-              />
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  rowClassName={() => "group"}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}</>
       )}
 
       <Modal

@@ -2,19 +2,26 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
 import { Wallet, Eye } from "lucide-react";
 import { getAllPayments } from "@/services/purchase-payment";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
+import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 
 const PurchasePaymentList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [cookie] = useCookies(["user"]);
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
+  const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-payments", page, limit],
@@ -128,45 +135,49 @@ const PurchasePaymentList = () => {
         </div>
       </div>
 
-      <div>
-        <Card className="p-5">
-          <div className="flex items-center gap-2 text-sm">
-            <Wallet size={16} className="text-muted-foreground" />
-            <span className="text-muted-foreground">
-              {t("page.purchasePayment.list.totalLabel")}:
-            </span>
-            <span className="font-bold text-lg">
-              Rp {Number(totalAmount).toLocaleString("id-ID")}
-            </span>
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
+          <div>
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-sm">
+                <Wallet size={16} className="text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  {t("page.purchasePayment.list.totalLabel")}:
+                </span>
+                <span className="font-bold text-lg">
+                  Rp {Number(totalAmount).toLocaleString("id-ID")}
+                </span>
+              </div>
+            </Card>
           </div>
-        </Card>
-      </div>
 
-      {isError ? (
-        <AbortController refetch={refetch} />
-      ) : (
-        <div className="space-y-4">
-          <DataTable
-            columns={columns}
-            data={payments}
-            isLoading={isLoading}
-            emptyMessage={t("page.purchasePayment.list.empty")}
-            emptyIcon={Wallet}
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
-          />
-        </div>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div className="space-y-4">
+              <DataTable
+                columns={columns}
+                data={payments}
+                isLoading={isLoading}
+                emptyMessage={t("page.purchasePayment.list.empty")}
+                emptyIcon={Wallet}
+                pagination={{ page, totalPages, total, onPageChange: setPage }}
+              />
+            </div>
+          )}
+
+          <div>
+            <TipsCard
+              tips={[
+                t("page.purchasePayment.list.tips.1"),
+                t("page.purchasePayment.list.tips.2"),
+                t("page.purchasePayment.list.tips.3"),
+                t("page.purchasePayment.list.tips.4")
+              ]}
+            />
+          </div>
+        </>
       )}
-
-      <div>
-        <TipsCard
-          tips={[
-            t("page.purchasePayment.list.tips.1"),
-            t("page.purchasePayment.list.tips.2"),
-            t("page.purchasePayment.list.tips.3"),
-            t("page.purchasePayment.list.tips.4")
-          ]}
-        />
-      </div>
     </div>
   );
 };

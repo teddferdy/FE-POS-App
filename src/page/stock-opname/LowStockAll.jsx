@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import NoStore from "@/components/ui/NoStore";
 import { Search, AlertTriangle, Package, ShoppingBasket, Store, Filter } from "lucide-react";
 import { getLowStockAll } from "@/services/stock";
 import { getAllLocation } from "@/services/location";
 import DataTable from "@/components/ui/DataTable";
-import PageHeader from "@/components/ui/PageHeader";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,6 +23,10 @@ import { useSidebar } from "@/components/layout/DashboardLayout";
 
 const LowStockAll = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const sidebarCollapsed = useSidebar();
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -28,10 +34,11 @@ const LowStockAll = () => {
   const [storeFilter, setStoreFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: locationsData } = useQuery(["locations-all"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
+  const { data: locData } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
   });
-  const locations = locationsData?.data || locationsData || [];
+  const locations = locData?.data || [];
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock-all", page, limit, storeFilter, typeFilter, search],
@@ -227,13 +234,26 @@ const LowStockAll = () => {
   return (
     <div className="space-y-6">
       <div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("sidebar.lowStockAll")}</span>
+        </nav>
+      </div>
+
+      <div>
         <div>
-          <PageHeader
-            title={t("sidebar.lowStockAll")}
-            description={t("page.lowStock.description")}></PageHeader>
+          <h1 className="text-2xl font-bold text-foreground">{t("sidebar.lowStockAll")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.lowStock.description")}</p>
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div className="flex flex-wrap gap-4">
         {statCards.map((card, i) => (
           <div
@@ -280,6 +300,8 @@ const LowStockAll = () => {
             />
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

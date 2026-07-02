@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Package, Loader2 } from "lucide-react";
+import { Plus, Search, Package, Loader2 } from "lucide-react";
 import {
   getAllIngredientCategoryTable,
   deleteIngredientCategory,
@@ -17,11 +17,12 @@ import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
 import DataTable from "@/components/ui/DataTable";
-import PageHeader from "@/components/ui/PageHeader";
 import { TipsCard } from "@/components/ui/tips-card";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import NoStore from "@/components/ui/NoStore";
+import { getAllLocation } from "@/services/location";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -44,6 +45,7 @@ const CategoryList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/ingredient-category";
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -52,6 +54,11 @@ const CategoryList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+
+  const { data: locData } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["ingredient-categories", page, search],
@@ -194,14 +201,26 @@ const CategoryList = () => {
   return (
     <div className="space-y-6">
       <div>
-        <div>
-          <PageHeader
-            breadcrumbs={[
-              { i18nKey: "page.ingredientCategory.list.breadcrumbSettings" },
-              { i18nKey: "page.ingredientCategory.list.breadcrumbCategory" }
-            ]}
-            title={t("page.ingredientCategory.list.title")}
-            description={t("page.ingredientCategory.list.subtitle")}>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <span className="text-primary font-semibold">{t("page.ingredientCategory.list.title")}</span>
+        </nav>
+      </div>
+
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{t("page.ingredientCategory.list.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.ingredientCategory.list.subtitle")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             {canAccess(user, MENU_KEY, "export") && (
               <Button
                 variant="outline"
@@ -274,10 +293,12 @@ const CategoryList = () => {
                 {t("page.ingredientCategory.list.addButton")}
               </Button>
             )}
-          </PageHeader>
+          </div>
         </div>
       </div>
 
+      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        <>
       <div>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -319,16 +340,27 @@ const CategoryList = () => {
               emptyMessage={t("page.ingredientCategory.list.emptyText")}
               emptyIcon={Package}
               toolbar={
-                <div className="p-4 pb-0">
-                  <Input
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-                    className="max-w-xs h-10"
-                  />
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.ingredientCategory.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
               }
               pagination={{
@@ -352,6 +384,8 @@ const CategoryList = () => {
           />
         </div>
       </div>
+        </>
+      )}
 
       <Modal
         type="confirm"
