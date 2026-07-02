@@ -244,13 +244,6 @@ const IngredientList = () => {
         ]}
         title={t("page.ingredient.list.title")}
         description={t("page.ingredient.list.subtitle")}>
-        <StoreFilter
-          locations={locData?.data || []}
-          value={storeFilter}
-          onChange={(v) => setStoreFilter(v)}
-          isSuperAdmin={isSuperAdmin}
-          t={t}
-        />
         {canAccess(user, MENU_KEY, "export") && (
           <Button
             variant="outline"
@@ -347,7 +340,17 @@ const IngredientList = () => {
       </div>
 
       <div className="space-y-4">
-        <div className="relative w-full sm:w-72">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {isSuperAdmin && (
+            <StoreFilter
+              locations={locData?.data || []}
+              value={storeFilter}
+              onChange={(v) => setStoreFilter(v)}
+              isSuperAdmin={isSuperAdmin}
+              t={t}
+            />
+          )}
+          <div className="relative w-full sm:w-72">
           <Search
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -367,6 +370,7 @@ const IngredientList = () => {
           emptyMessage={t("page.ingredient.list.emptyMessage")}
           emptyIcon={Package}
         />
+      </div>
       </div>
 
       <div>

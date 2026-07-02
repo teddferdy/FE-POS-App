@@ -104,6 +104,15 @@ const CustomerOrderManagement = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
+            {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {isSuperAdmin && (
+        <div className="mb-2">
           <StoreFilter
             locations={locData?.data || []}
             value={storeFilter}
@@ -111,12 +120,8 @@ const CustomerOrderManagement = () => {
             isSuperAdmin={isSuperAdmin}
             t={t}
           />
-          <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
-            {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-            Refresh
-          </Button>
         </div>
-      </div>
+      )}
 
       <Input
         placeholder="Search by order number, customer name, or item..."

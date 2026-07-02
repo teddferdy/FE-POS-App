@@ -81,8 +81,6 @@ const KitchenDisplay = () => {
     enabled: isSuperAdmin
   });
 
-  const storeId = cookie?.activeStore || cookie?.user?.store;
-
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders({ store: storeId }),
@@ -179,15 +177,22 @@ const KitchenDisplay = () => {
   return (
     <div className="h-full flex flex-col">
         <div className="flex items-center justify-between mb-6 shrink-0">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("page.kitchenDisplay.subtitle")}
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <ChefHat className="text-primary" /> {t("page.kitchenDisplay.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("page.kitchenDisplay.subtitle")}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Bell size={16} />
+            <span>{orders.reduce((s, o) => s + (o.items?.length || 0), 0)} item</span>
+          </div>
+        </div>
+
+        {isSuperAdmin && (
+          <div className="mb-4">
             <StoreFilter
               locations={locData?.data || []}
               value={storeFilter}
@@ -196,11 +201,7 @@ const KitchenDisplay = () => {
               t={t}
             />
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Bell size={16} />
-            <span>{orders.reduce((s, o) => s + (o.items?.length || 0), 0)} item</span>
-          </div>
-        </div>
+        )}
 
         {isLoading ? (
           <div className="grid grid-cols-3 gap-4 shrink-0">
