@@ -36,6 +36,12 @@ const CashRegisterCurrent = () => {
   const user = cookie?.user;
   const storeId = cookie?.activeStore || user?.store;
 
+  React.useEffect(() => {
+    if (user?.roleType === "super_admin") {
+      navigate("/cash-register/history", { replace: true });
+    }
+  }, [user, navigate]);
+
   const [rawClosing, setRawClosing] = React.useState("0");
   const closingBalance = parseIDR(rawClosing);
   const [closeModal, setCloseModal] = React.useState(false);

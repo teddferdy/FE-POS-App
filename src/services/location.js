@@ -1,8 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getAllLocation = async () => {
-  const { data, status } = await axiosInstance.get("/location/get-location-public");
-  if (status !== 200) throw Error(`${data.message}`);
+export const getAllLocation = async (status) => {
+  const params = status ? `?status=${status}` : '';
+  const { data, status: resStatus } = await axiosInstance.get(`/location/get-location-public${params}`);
+  if (resStatus !== 200) throw Error(`${data.message}`);
   return data;
 };
 

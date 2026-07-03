@@ -1,21 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, Eye, Store } from "lucide-react";
+import { Eye, Search, Receipt } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
 import { getAllLocation } from "@/services/location";
 import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
+import StoreFilter from "@/components/ui/StoreFilter";
+import PageHeader from "@/components/ui/PageHeader";
 
 const formatIDR = (num) => {
   if (!num && num !== 0) return "-";
@@ -28,25 +24,42 @@ const CashRegisterHistory = () => {
   const [cookie] = useCookies();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const defaultStoreId = cookie?.activeStore || user?.store;
-  const [selectedStore, setSelectedStore] = useState(defaultStoreId);
+  // const defaultStoreId = cookie?.activeStore || user?.store;
+  const [storeFilter, setStoreFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [search, setSearch] = useState("");
 
-  const { data: stores } = useQuery(["all-stores"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-cat"], () => getAllLocation("all"), {
+    staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
-  const storeList = stores?.data || stores || [];
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["cash-register-history", page, limit, selectedStore],
-    () => getCashRegisterHistory({ page, limit, store: selectedStore }),
-    { keepPreviousData: true, enabled: !!selectedStore }
+    ["cash-register-history", page, limit, storeFilter],
+    () =>
+      getCashRegisterHistory({
+        page,
+        limit,
+        store: storeFilter === "all" ? undefined : storeFilter
+      }),
+    { keepPreviousData: true, enabled: !!storeFilter }
   );
 
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
+
+  const filteredItems = useMemo(() => {
+    if (!search) return items;
+    const q = search.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.storeData?.name?.toLowerCase().includes(q) ||
+        item.userData?.fullName?.toLowerCase().includes(q) ||
+        item.status?.toLowerCase().includes(q)
+    );
+  }, [items, search]);
 
   const statusCfg = {
     open: {
@@ -156,63 +169,33 @@ const CashRegisterHistory = () => {
     }
   ];
 
+  const breadcrumbs = isSuperAdmin
+    ? [
+        {
+          href: "/dashboard-super-admin",
+          i18nKey: "page.cashRegister.history.breadcrumbDashboard"
+        },
+        { i18nKey: "page.cashRegister.history.breadcrumb" }
+      ]
+    : [
+        {
+          href: "/dashboard-super-admin",
+          i18nKey: "page.cashRegister.history.breadcrumbDashboard"
+        },
+        {
+          href: "/cash-register/current",
+          i18nKey: "page.cashRegister.history.breadcrumbCashier"
+        },
+        { i18nKey: "page.cashRegister.history.breadcrumb" }
+      ];
+
   return (
     <div className="space-y-6">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button
-          onClick={() => navigate("/dashboard-super-admin")}
-          className="hover:text-foreground">
-          {t("page.cashRegister.history.breadcrumbDashboard")}
-        </button>
-        <span className="text-xs">/</span>
-        <button
-          onClick={() => navigate("/cash-register/current")}
-          className="hover:text-foreground">
-          {t("page.cashRegister.history.breadcrumbCashier")}
-        </button>
-        <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">
-          {t("page.cashRegister.history.breadcrumb")}
-        </span>
-      </nav>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.cashRegister.history.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.cashRegister.history.desc")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {isSuperAdmin && (
-            <div className="w-56">
-              <Select
-                value={String(selectedStore)}
-                onValueChange={(v) => {
-                  setSelectedStore(Number(v));
-                  setPage(1);
-                }}>
-                <SelectTrigger className="h-9 text-sm">
-                  <Store size={14} className="mr-1" />
-                  <SelectValue placeholder={t("page.cashRegister.history.selectStore")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {storeList.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <Button
-            variant="outline"
-            onClick={() => navigate("/cash-register/current")}
-            className="shrink-0 gap-2">
-            <ArrowLeft size={16} /> {t("page.cashRegister.history.back")}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumbs={breadcrumbs}
+        title={t("page.cashRegister.history.title")}
+        description={t("page.cashRegister.history.desc")}
+      />
 
       {isError ? (
         <AbortController refetch={refetch} />
@@ -220,9 +203,51 @@ const CashRegisterHistory = () => {
         <div>
           <DataTable
             columns={columns}
-            data={items}
+            data={filteredItems}
             isLoading={isLoading}
             emptyMessage={t("page.cashRegister.history.empty")}
+            emptyIcon={Receipt}
+            toolbar={
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                <h4 className="text-base font-semibold text-foreground">
+                  {t("page.cashRegister.history.title")}
+                </h4>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-64">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      placeholder={t("page.cashRegister.history.search")}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                  {isSuperAdmin && (
+                    <div className="w-44">
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setStoreFilter(v);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                    </div>
+                  )}
+                  {/* <Button
+                    variant="outline"
+                    onClick={() => navigate("/cash-register/current")}
+                    className="shrink-0 gap-2">
+                    <ArrowLeft size={16} /> {t("page.cashRegister.history.back")}
+                  </Button> */}
+                </div>
+              </div>
+            }
             onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
             pagination={{ page, totalPages, total, onPageChange: setPage }}
           />

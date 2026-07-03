@@ -225,13 +225,13 @@ const RoleManagement = () => {
                             {role.createdByUser?.fullName ||
                               role.createdByUser?.userName ||
                               role.createdBy ||
-                              "-"}
+                              (isProtected(role) ? "System" : "-")}
                           </td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">
                             {role.modifiedByUser?.fullName ||
                               role.modifiedByUser?.userName ||
                               role.modifiedBy ||
-                              "-"}
+                              (isProtected(role) ? "System" : "-")}
                           </td>
                           <td className="px-6 py-4 text-sm font-mono text-muted-foreground">
                             {role.createdAt

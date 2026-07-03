@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChefHat, User, Store, QrCode, Loader2, Utensils } from "lucide-react";
+import { Clock, ChefHat, User, Store, QrCode, Loader2, Utensils, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,26 +22,32 @@ const CustomerOrderManagement = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const store = cookie?.activeStore || cookie.user?.store;
-  const [storeFilter, setStoreFilter] = useState(isSuperAdmin ? store : "");
+  const [storeFilter, setStoreFilter] = useState("all");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
-  const { data: locData } = useQuery(["locations-customer-orders"], () => getAllLocation(), {
+  const { data: locData } = useQuery(["locations-customer-orders"], () => getAllLocation("all"), {
     staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
 
   const fetchOrders = useCallback(() => {
-    const effectiveStore = isSuperAdmin ? storeFilter || store : store;
-    if (!effectiveStore) {
+    const effectiveStore = isSuperAdmin
+      ? storeFilter === "all"
+        ? ""
+        : storeFilter || store
+      : store;
+    if (!isSuperAdmin && !effectiveStore) {
       setLoading(false);
       return;
     }
     setLoading(true);
+    const params = new URLSearchParams({ source: "qr", status: "pending", limit: "100" });
+    if (effectiveStore) params.set("store", effectiveStore);
     axiosInstance
-      .get(`/order/get-orders?store=${effectiveStore}&source=qr&status=pending&limit=100`)
+      .get(`/order/get-orders?${params.toString()}`)
       .then((res) => setOrders(res.data?.data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -112,8 +118,8 @@ const CustomerOrderManagement = () => {
 
       {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
         <>
-          {isSuperAdmin && (
-            <div>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+            {isSuperAdmin && (
               <StoreFilter
                 locations={locData?.data || []}
                 value={storeFilter}
@@ -121,15 +127,17 @@ const CustomerOrderManagement = () => {
                 isSuperAdmin={isSuperAdmin}
                 t={t}
               />
+            )}
+            <div className="relative flex-1 md:w-64 w-full">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by order number, customer name, or item..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-9 text-sm w-full"
+              />
             </div>
-          )}
-
-          <Input
-            placeholder="Search by order number, customer name, or item..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-md"
-          />
+          </div>
 
           {loading ? (
             <div className="space-y-3">

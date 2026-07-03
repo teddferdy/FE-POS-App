@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import { buildAccessMenuPayload, parseAccessMenuToPermissions } from "@/utils/permission";
+import { buildAccessMenuPayload, parseAccessMenuToPermissions, normalizePermissionActions, findMenuPermission } from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -86,12 +86,13 @@ const allActionTypes = [
   "update-status"
 ];
 
-const buildInitialPermissions = (groups, existingAccessMenu = {}) => {
+const buildInitialPermissions = (groups, existingAccessMenu = {}, roleType = "") => {
   const perms = {};
   groups.forEach((g) => {
     g.items.forEach((item) => {
       const key = item.href;
-      const existing = existingAccessMenu[key] || {};
+      const existing = normalizePermissionActions(findMenuPermission(existingAccessMenu, key)) || {};
+      const allGranted = roleType === "super_admin" || (Object.values(existing).length > 0 && Object.values(existing).every(Boolean));
       perms[key] = {};
       allActionTypes.forEach((a) => {
         if (!item.actions?.includes(a)) {
@@ -99,7 +100,7 @@ const buildInitialPermissions = (groups, existingAccessMenu = {}) => {
         } else if (existing[a] !== undefined) {
           perms[key][a] = !!existing[a];
         } else {
-          perms[key][a] = false;
+          perms[key][a] = allGranted;
         }
       });
     });
@@ -137,7 +138,7 @@ const EditRole = () => {
         setName(role.name || "");
         setDescription(role.description || "");
         const existingPerms = parseAccessMenuToPermissions(role.accessMenu);
-        setPermissions(buildInitialPermissions(groups, existingPerms));
+        setPermissions(buildInitialPermissions(groups, existingPerms, role.roleType));
       }
     }
   });

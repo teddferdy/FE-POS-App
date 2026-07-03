@@ -3104,6 +3104,7 @@
   "page.cashRegister.history.openedBy": "Opened By",
   "page.cashRegister.history.openingBalance": "Opening Balance",
   "page.cashRegister.history.sales": "Sales",
+  "page.cashRegister.history.search": "Search...",
   "page.cashRegister.history.selectStore": "Select Store",
   "page.cashRegister.history.status": "Status",
   "page.cashRegister.history.statusClosed": "Closed",

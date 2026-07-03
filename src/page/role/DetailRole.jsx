@@ -362,8 +362,9 @@ const DetailRole = () => {
                                       </div>
                                     </td>
                                     {itemActions.map((action) => {
-                                      const val = perm[action];
-                                      const isDisabled = val === undefined || val === null;
+                                      const isSuperAdmin = role?.roleType === "super_admin";
+                                      const val = isSuperAdmin ? true : perm[action];
+                                      const isDisabled = !isSuperAdmin && (val === undefined || val === null);
                                       return (
                                         <td key={action} className="px-2 py-3 text-center">
                                           {isDisabled ? (

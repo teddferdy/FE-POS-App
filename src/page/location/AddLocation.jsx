@@ -307,7 +307,7 @@ const AddLocation = () => {
       storeId: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
-      status: values.isActive === false ? "inactive" : saveAsDraft ? "draft" : "active",
+      status: saveAsDraft ? "draft" : values.isActive === false ? "inactive" : "active",
       coordinates: {
         lat: latitude,
         lng: longitude
