@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Edit, Trash2, Eye, Store, Map } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Store, Map, Target } from "lucide-react";
 import { toast } from "sonner";
-import { getAllLocationTable, deleteLocation } from "@/services/location";
+import { getAllLocationTable, deleteLocation, editLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
@@ -28,6 +28,7 @@ const LocationList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["locations", page, limit, statusFilter, categoryFilter],
@@ -51,6 +52,18 @@ const LocationList = () => {
       toast.error(t("common.error"), { description: err.message });
     }
   });
+
+  const targetMutation = useMutation(
+    ({ id, dailyTarget }) => editLocation({ id, dailyTarget }),
+    {
+      onSuccess: () => {
+        toast.success(t("common.success"), { description: "Target updated" });
+        setTargetModal({ open: false, location: null, value: 0 });
+        queryClient.invalidateQueries(["locations"]);
+      },
+      onError: (err) => toast.error(t("common.error"), { description: err.message })
+    }
+  );
 
   const locations = data?.data || data?.locations || [];
   const total = data?.total || data?.pagination?.total || 0;
@@ -244,6 +257,16 @@ const LocationList = () => {
               className="h-8 w-8 text-primary"
               onClick={() => navigate(`/detail-location?id=${loc.id || loc._id}`)}>
               <Eye size={15} />
+            </Button>
+          )}
+          {canAccess(user, MENU_KEY, "edit") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary"
+              title={t("page.location.setTarget") || "Set Target"}
+              onClick={() => setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 })}>
+              <Target size={15} />
             </Button>
           )}
           {canAccess(user, MENU_KEY, "edit") && (
@@ -457,6 +480,38 @@ const LocationList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+
+      <Modal
+        type="confirm"
+        open={targetModal.open}
+        onOpenChange={(open) => !open && setTargetModal({ open: false, location: null, value: 0 })}
+        title={t("page.location.setTarget") || "Set Daily Target"}
+        description={
+          targetModal.location
+            ? `${targetModal.location.name}: ${(targetModal.value || 0).toLocaleString("id-ID")}`
+            : ""
+        }
+        loading={targetMutation.isLoading}
+        confirmText={t("common.save")}
+        onConfirm={() =>
+          targetMutation.mutate({
+            id: targetModal.location?.id || targetModal.location?._id,
+            dailyTarget: Number(targetModal.value) || 0
+          })
+        }>
+        <div className="px-6 pb-4">
+          <label className="text-sm font-medium text-foreground mb-1 block">
+            {t("page.dashboard.targetAmount") || "Target per Hari (Rp)"}
+          </label>
+          <Input
+            type="number"
+            min={0}
+            value={targetModal.value}
+            onChange={(e) => setTargetModal({ ...targetModal, value: e.target.value })}
+            className="h-10"
+          />
+        </div>
+      </Modal>
     </div>
   );
 };

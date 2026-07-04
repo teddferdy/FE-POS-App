@@ -14,7 +14,8 @@ import {
   Users,
   AlertTriangle,
   ShoppingCart,
-  DollarSign
+  DollarSign,
+  Target
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -75,6 +76,8 @@ const Dashboard = () => {
   const d = dashData?.data || dashData || {};
 
   const totalSales = d.totalSales || 0;
+  const dailyTarget = d.dailyTarget || 0;
+  const targetPercent = dailyTarget > 0 ? Math.min(Math.round((totalSales / dailyTarget) * 100), 999) : 0;
   const totalOrders = d.totalOrders || 0;
   const totalProducts = d.totalProducts || 0;
   const totalMembers = d.totalMembers || 0;
@@ -87,6 +90,18 @@ const Dashboard = () => {
       icon: DollarSign,
       color: "text-primary"
     },
+    ...(dailyTarget > 0
+      ? [
+          {
+            label: t("page.dashboard.target") || "Target Harian",
+            value: `${targetPercent}%`,
+            trend: `${formatCurrencyRupiah(totalSales)} / ${formatCurrencyRupiah(dailyTarget)}`,
+            trendUp: totalSales >= dailyTarget,
+            icon: Target,
+            color: "text-emerald-600"
+          }
+        ]
+      : []),
     {
       label: t("page.dashboard.orderCount"),
       value: String(totalOrders),
