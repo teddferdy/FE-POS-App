@@ -15,6 +15,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StatCard from "@/components/ui/StatCard";
+import StoreFilter from "@/components/ui/StoreFilter";
 
 const ReservationList = () => {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ const ReservationList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null);
+  const [storeFilter, setStoreFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -71,13 +73,14 @@ const ReservationList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["reservations", page, limit, dateFilter, statusFilter],
+    ["reservations", page, limit, dateFilter, statusFilter, storeFilter],
     () =>
       getReservations({
         page,
         limit,
         date: dateFilter ? format(dateFilter, "yyyy-MM-dd") : undefined,
-        status: statusFilter !== "all" ? statusFilter : undefined
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        store: storeFilter !== "all" ? storeFilter : undefined
       }),
     { keepPreviousData: true }
   );
@@ -251,7 +254,7 @@ const ReservationList = () => {
         <span className="text-primary font-semibold">{t("page.reservation.title")}</span>
       </nav>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t("page.reservation.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("page.reservation.description")}</p>
@@ -265,77 +268,96 @@ const ReservationList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-            <><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.reservation.stats.total")}
-              value={stats.total ?? total}
-              icon="calendar_month"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.reservation.status.confirmed")}
-              value={stats.confirmed ?? 0}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.reservation.status.pending")}
-              value={stats.pending ?? 0}
-              icon="pending"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.reservation.status.cancelled")}
-              value={stats.cancelled ?? 0}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
-          <div data-tour="reservation-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={reservations}
-              isLoading={isLoading}
-              emptyMessage={t("page.reservation.empty")}
-              emptyIcon={Calendar}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.reservation.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="w-full sm:w-60">
-                      <DatePicker
-                        date={dateFilter}
-                        setDate={(date) => {
-                          setDateFilter(date);
-                          setPage(1);
-                        }}
-                      />
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.reservation.stats.total")}
+                  value={stats.total ?? total}
+                  icon="calendar_month"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.reservation.status.confirmed")}
+                  value={stats.confirmed ?? 0}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.reservation.status.pending")}
+                  value={stats.pending ?? 0}
+                  icon="pending"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("page.reservation.status.cancelled")}
+                  value={stats.cancelled ?? 0}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
+              <div data-tour="reservation-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={reservations}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.reservation.empty")}
+                  emptyIcon={Calendar}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.reservation.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                        <div className="w-full sm:w-60">
+                          <DatePicker
+                            date={dateFilter}
+                            setDate={(date) => {
+                              setDateFilter(date);
+                              setPage(1);
+                            }}
+                          />
+                        </div>
+                        <select
+                          value={statusFilter}
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                          }}
+                          className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
+                          <option value="all">{t("page.reservation.filter.allStatus")}</option>
+                          <option value="pending">{t("page.reservation.status.pending")}</option>
+                          <option value="confirmed">
+                            {t("page.reservation.status.confirmed")}
+                          </option>
+                          <option value="cancelled">
+                            {t("page.reservation.status.cancelled")}
+                          </option>
+                          <option value="completed">
+                            {t("page.reservation.status.completed")}
+                          </option>
+                          <option value="no_show">{t("page.reservation.status.noShow")}</option>
+                        </select>
+                      </div>
                     </div>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
-                      <option value="all">{t("page.reservation.filter.allStatus")}</option>
-                      <option value="pending">{t("page.reservation.status.pending")}</option>
-                      <option value="confirmed">{t("page.reservation.status.confirmed")}</option>
-                      <option value="cancelled">{t("page.reservation.status.cancelled")}</option>
-                      <option value="completed">{t("page.reservation.status.completed")}</option>
-                      <option value="no_show">{t("page.reservation.status.noShow")}</option>
-                    </select>
-                  </div>
-                </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-            />
-          </div>
-        </>
-      )}
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 

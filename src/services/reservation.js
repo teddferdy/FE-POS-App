@@ -1,9 +1,10 @@
 import { axiosInstance } from ".";
 
-export const getReservations = async ({ page = 1, limit = 10, date, status } = {}) => {
+export const getReservations = async ({ page = 1, limit = 10, date, status, store } = {}) => {
   const params = new URLSearchParams({ page, limit });
   if (date) params.set("date", date);
   if (status) params.set("status", status);
+  if (store) params.set("store", store);
   const { data } = await axiosInstance.get(`/reservation?${params}`);
   return data;
 };

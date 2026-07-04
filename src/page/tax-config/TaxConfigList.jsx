@@ -54,7 +54,10 @@ const TaxConfigList = () => {
   const MENU_KEY = "/tax-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search],
@@ -220,89 +223,93 @@ const TaxConfigList = () => {
         <span className="text-primary font-semibold">{t("page.taxConfig.list.title")}</span>
       </nav>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t("page.taxConfig.list.description")}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingTemplate}
-              onClick={async () => {
-                setIsDownloadingTemplate(true);
-                try {
-                  await downloadTaxConfigTemplate();
-                  toast.success(t("common.success"), {
-                    description: t("page.taxConfig.toast.templateSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description:
-                      err?.response?.data?.message ||
-                      err.message ||
-                      t("page.taxConfig.toast.templateError")
-                  });
-                } finally {
-                  setIsDownloadingTemplate(false);
-                }
-              }}>
-              {isDownloadingTemplate ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-              )}
-              {t("page.taxConfig.button.downloadTemplate")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "export") && (
-            <Button
-              variant="outline"
-              disabled={isDownloadingData}
-              onClick={async () => {
-                setIsDownloadingData(true);
-                try {
-                  await downloadTaxConfigExcel();
-                  toast.success(t("common.success"), {
-                    description: t("page.taxConfig.toast.dataSuccess")
-                  });
-                } catch (err) {
-                  toast.error(t("common.error"), {
-                    description:
-                      err?.response?.data?.message ||
-                      err.message ||
-                      t("page.taxConfig.toast.dataError")
-                  });
-                } finally {
-                  setIsDownloadingData(false);
-                }
-              }}>
-              {isDownloadingData ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
-              ) : (
-                <span className="material-symbols-outlined text-lg mr-1">download</span>
-              )}
-              {t("page.taxConfig.button.downloadData")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "import") && (
-            <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-              <span className="material-symbols-outlined text-lg mr-1">upload</span>
-              {t("page.taxConfig.button.upload")}
-            </Button>
-          )}
-          {canAccess(user, MENU_KEY, "add") && (
-            <Button
-              data-tour="tax-add"
-              onClick={() => navigate("/add-tax")}
-              className="gap-2 shadow-md">
-              <Plus size={18} />
-              {t("page.taxConfig.button.add")}
-            </Button>
-          )}
+        <div
+          className="overflow-x-auto shrink-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex items-center gap-2 flex-nowrap">
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingTemplate}
+                onClick={async () => {
+                  setIsDownloadingTemplate(true);
+                  try {
+                    await downloadTaxConfigTemplate();
+                    toast.success(t("common.success"), {
+                      description: t("page.taxConfig.toast.templateSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.taxConfig.toast.templateError")
+                    });
+                  } finally {
+                    setIsDownloadingTemplate(false);
+                  }
+                }}>
+                {isDownloadingTemplate ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                )}
+                {t("page.taxConfig.button.downloadTemplate")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "export") && (
+              <Button
+                variant="outline"
+                disabled={isDownloadingData}
+                onClick={async () => {
+                  setIsDownloadingData(true);
+                  try {
+                    await downloadTaxConfigExcel();
+                    toast.success(t("common.success"), {
+                      description: t("page.taxConfig.toast.dataSuccess")
+                    });
+                  } catch (err) {
+                    toast.error(t("common.error"), {
+                      description:
+                        err?.response?.data?.message ||
+                        err.message ||
+                        t("page.taxConfig.toast.dataError")
+                    });
+                  } finally {
+                    setIsDownloadingData(false);
+                  }
+                }}>
+                {isDownloadingData ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg mr-1">download</span>
+                )}
+                {t("page.taxConfig.button.downloadData")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "import") && (
+              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                {t("page.taxConfig.button.upload")}
+              </Button>
+            )}
+            {canAccess(user, MENU_KEY, "add") && (
+              <Button
+                data-tour="tax-add"
+                onClick={() => navigate("/add-tax")}
+                className="gap-2 shadow-md">
+                <Plus size={18} />
+                {t("page.taxConfig.button.add")}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -310,72 +317,74 @@ const TaxConfigList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
             <>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.taxConfig.stats.total")}
-              value={stats.total ?? total}
-              icon="receipt"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.taxConfig.stats.total")}
+                  value={stats.total ?? total}
+                  icon="receipt"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
 
-          <div data-tour="tax-table">
-            <DataTable
-              columns={columns}
-              data={items}
-              isLoading={isLoading}
-              emptyMessage={t("page.taxConfig.list.empty")}
-              emptyIcon={Percent}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.taxConfig.list.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        data-tour="tax-search"
-                        placeholder={t("page.taxConfig.list.search")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 text-sm"
-                      />
+              <div data-tour="tax-table">
+                <DataTable
+                  columns={columns}
+                  data={items}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.taxConfig.list.empty")}
+                  emptyIcon={Percent}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.taxConfig.list.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                          <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            data-tour="tax-search"
+                            placeholder={t("page.taxConfig.list.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
-            />
-          </div>
-        </>
-      )}
+                  }
+                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 

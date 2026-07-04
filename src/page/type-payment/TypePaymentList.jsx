@@ -24,30 +24,31 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "-";
-    return (
-      d.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      }) +
-      " " +
-      d.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    );
-  } catch {
-    return "-";
-  }
-};
-
 const TypePaymentList = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "-";
+      const locale = i18n.language === "id" ? "id-ID" : "en-US";
+      return (
+        d.toLocaleDateString(locale, {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }) +
+        " " +
+        d.toLocaleTimeString(locale, {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      );
+    } catch {
+      return "-";
+    }
+  };
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
@@ -63,7 +64,10 @@ const TypePaymentList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/type-payment-list";
 
-  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["type-payments", page, limit, search],
@@ -191,6 +195,7 @@ const TypePaymentList = () => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-primary"
+              title={t("common.view")}
               onClick={() => navigate(`/detail-type-payment?id=${row.id || row._id}`)}>
               <Eye size={15} />
             </Button>
@@ -200,6 +205,7 @@ const TypePaymentList = () => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-primary"
+              title={t("common.edit")}
               onClick={() => navigate(`/edit-type-payment?id=${row.id || row._id}`)}>
               <Edit size={15} />
             </Button>
@@ -209,6 +215,7 @@ const TypePaymentList = () => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive"
+              title={t("common.delete")}
               onClick={() => handleDelete(row)}>
               <Trash2 size={15} />
             </Button>
@@ -232,14 +239,17 @@ const TypePaymentList = () => {
       </nav>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">{t("page.typePayment.list.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {t("page.typePayment.list.description")}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div
+          className="overflow-x-auto shrink-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex items-center gap-2 flex-nowrap">
           {canAccess(user, MENU_KEY, "export") && (
             <Button
               variant="outline"
@@ -312,16 +322,19 @@ const TypePaymentList = () => {
               {t("page.typePayment.button.add")}
             </Button>
           )}
+          </div>
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                   label={t("page.typePayment.stats.total")}
                   value={stats.total ?? total}

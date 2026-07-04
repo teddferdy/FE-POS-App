@@ -688,8 +688,12 @@ const ProductList = () => {
                         onChange={(e) => setSortFilter(e.target.value)}
                         className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
                         <option value="">{t("page.product.list.filter.newest")}</option>
-                        <option value="price-asc">{t("page.product.list.filter.priceLowHigh")}</option>
-                        <option value="price-desc">{t("page.product.list.filter.priceHighLow")}</option>
+                        <option value="price-asc">
+                          {t("page.product.list.filter.priceLowHigh")}
+                        </option>
+                        <option value="price-desc">
+                          {t("page.product.list.filter.priceHighLow")}
+                        </option>
                         <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
                       </select>
                     </div>
