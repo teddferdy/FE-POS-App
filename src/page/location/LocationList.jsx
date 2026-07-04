@@ -482,13 +482,13 @@ const LocationList = () => {
       />
 
       <Modal
-        type="confirm"
+        type="form"
         open={targetModal.open}
         onOpenChange={(open) => !open && setTargetModal({ open: false, location: null, value: 0 })}
         title={t("page.location.setTarget") || "Set Daily Target"}
         description={
           targetModal.location
-            ? `${targetModal.location.name}: ${(targetModal.value || 0).toLocaleString("id-ID")}`
+            ? `${targetModal.location.name}`
             : ""
         }
         loading={targetMutation.isLoading}
@@ -499,7 +499,7 @@ const LocationList = () => {
             dailyTarget: Number(targetModal.value) || 0
           })
         }>
-        <div className="px-6 pb-4">
+        <div className="py-2">
           <label className="text-sm font-medium text-foreground mb-1 block">
             {t("page.dashboard.targetAmount") || "Target per Hari (Rp)"}
           </label>
