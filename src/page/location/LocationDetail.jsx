@@ -607,6 +607,16 @@ const LocationDetail = () => {
                           {location.mainBranch ? t("common.yes") : t("common.no")}
                         </span>
                       </div>
+                      <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {t("page.location.detail.dailyTarget")}
+                        </span>
+                        <span className="text-xs font-semibold text-foreground">
+                          {location.dailyTarget
+                            ? `Rp ${Number(location.dailyTarget).toLocaleString("id-ID")}`
+                            : "-"}
+                        </span>
+                      </div>
                       {location.managerName && (
                         <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                           <span className="text-xs font-medium text-muted-foreground">

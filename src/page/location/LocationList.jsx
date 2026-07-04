@@ -245,6 +245,16 @@ const LocationList = () => {
       )
     },
     {
+      header: t("page.location.table.dailyTarget"),
+      render: (loc) => (
+        <span className="text-xs font-semibold text-foreground">
+          {loc.dailyTarget
+            ? `Rp ${Number(loc.dailyTarget).toLocaleString("id-ID")}`
+            : "-"}
+        </span>
+      )
+    },
+    {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
