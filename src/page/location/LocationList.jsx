@@ -500,16 +500,19 @@ const LocationList = () => {
           })
         }>
         <div className="py-2">
-          <label className="text-sm font-medium text-foreground mb-1 block">
+          <label className="text-sm font-medium text-muted-foreground mb-1 block">
             {t("page.dashboard.targetAmount") || "Target per Hari (Rp)"}
           </label>
-          <Input
-            type="number"
-            min={0}
-            value={targetModal.value}
-            onChange={(e) => setTargetModal({ ...targetModal, value: e.target.value })}
-            className="h-10"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={targetModal.value ? `Rp ${Number(targetModal.value).toLocaleString("id-ID")}` : ""}
+              onChange={(e) => setTargetModal({ ...targetModal, value: e.target.value.replace(/[^0-9]/g, "") })}
+              placeholder="Rp 0"
+              className="w-full h-12 px-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors text-right"
+              inputMode="numeric"
+            />
+          </div>
         </div>
       </Modal>
     </div>
