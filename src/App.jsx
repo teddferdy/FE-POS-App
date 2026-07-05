@@ -256,6 +256,8 @@ const ShortcutHandler = () => {
 
 const Support = React.lazy(() => import("./page/support"));
 
+const SentryInitializer = React.lazy(() => import("./components/organism/SentryInitializer"));
+
 function App() {
   const { i18n } = useTranslation();
   const { translation } = translationSelect();
@@ -291,6 +293,7 @@ function App() {
           <SupportComponent />
           <RouteProgress />
           <ShortcutHandler />
+          <SentryInitializer />
           <ErrorBoundary>
             <Routes>
               {/* Auth (no layout) */}
