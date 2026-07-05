@@ -1,8 +1,10 @@
 /* eslint-disable react/prop-types */
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Lightbulb, Info, AlertTriangle } from "lucide-react";
+import { Lightbulb, Info, AlertTriangle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const STORAGE_PREFIX = "tips-dismissed-";
 
 const variantStyles = {
   default: "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground",
@@ -16,12 +18,31 @@ const variantIcons = {
   warning: AlertTriangle
 };
 
-const TipsCard = ({ tips = [], title: titleProp, variant = "default", className }) => {
+const TipsCard = ({ tips = [], title: titleProp, variant = "default", className, dismissKey }) => {
   const { t } = useTranslation();
+  const [dismissed, setDismissed] = useState(() => {
+    if (!dismissKey) return false;
+    try { return localStorage.getItem(STORAGE_PREFIX + dismissKey) === "true"; } catch { return false; }
+  });
+
+  useEffect(() => {
+    if (!dismissKey) return;
+    try { localStorage.setItem(STORAGE_PREFIX + dismissKey, dismissed); } catch { /* noop */ }
+  }, [dismissed, dismissKey]);
+
+  if (dismissed) return null;
+
   const title = titleProp ?? t("common.tips");
   const Icon = variantIcons[variant];
   return (
-    <div className={cn("rounded-xl p-5 flex flex-col", variantStyles[variant], className)}>
+    <div className={cn("rounded-xl p-5 flex flex-col relative group", variantStyles[variant], className)}>
+      {dismissKey && (
+        <button
+          onClick={() => setDismissed(true)}
+          className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-black/10 transition-opacity">
+          <X size={14} />
+        </button>
+      )}
       <div className="flex items-center gap-2 mb-3">
         <Icon size={20} className="opacity-80" />
         <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">{title}</h4>

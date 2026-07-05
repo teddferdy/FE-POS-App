@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Download, Upload, Database, FileSpreadsheet, RefreshCw, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/ui/PageHeader";
 import { downloadMasterDataBackup } from "@/services/backup";
 
 const BackupPage = () => {
@@ -23,10 +24,11 @@ const BackupPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">{t("page.backup.title")}</h2>
-        <p className="text-sm text-muted-foreground">{t("page.backup.description")}</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[{ i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" }, { i18nKey: "sidebar.backup" }]}
+        title={t("page.backup.title")}
+        description={t("page.backup.description")}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card rounded-xl border border-border p-6">

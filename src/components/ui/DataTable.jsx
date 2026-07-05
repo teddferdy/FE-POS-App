@@ -21,7 +21,10 @@ const DataTable = ({
   selectedIds = [],
   onSelectionChange = () => {},
   isSelectable,
-  rowKey
+  rowKey,
+  // ponytail: single prop for bulk action bar, called with (selectedIds, clearSelection)
+  // e.g. bulkActions={(ids, clear) => <button onClick={() => { deleteItems(ids); clear(); }}>Delete</button>}
+  bulkActions
 }) => {
   const { t } = useTranslation();
   const emptyMessage = emptyMessageProp ?? t("common.noData");
@@ -348,6 +351,15 @@ const DataTable = ({
         </div>
       ) : (
         renderTable()
+      )}
+
+      {selectedIds.length > 0 && bulkActions && (
+        <div className="flex items-center justify-between px-4 py-3 bg-primary/5 border-t border-border">
+          <span className="text-sm font-medium">{selectedIds.length} selected</span>
+          <div className="flex items-center gap-2">
+            {bulkActions(selectedIds, () => onSelectionChange([]))}
+          </div>
+        </div>
       )}
 
       {pagination && renderPagination()}

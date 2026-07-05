@@ -19,20 +19,7 @@ const OfflineIndicator = () => {
   if (online) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-        background: "#ef4444",
-        color: "#fff",
-        textAlign: "center",
-        padding: "8px 16px",
-        fontSize: 14,
-        fontWeight: 600
-      }}>
+    <div className="fixed top-0 inset-x-0 z-[9999] bg-destructive text-destructive-foreground text-center py-2 px-4 text-sm font-semibold">
       {t("offline.message")}
     </div>
   );

@@ -244,7 +244,7 @@ const DashboardLayout = () => {
           </div>
           {tips && (
             <div className="mt-6 shrink-0">
-              <TipsCard title={t("common.tips")} variant="default" tips={tips} />
+              <TipsCard title={t("common.tips")} variant="default" tips={tips} dismissKey={location.pathname} />
             </div>
           )}
         </main>

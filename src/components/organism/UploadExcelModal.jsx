@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { X, Upload, FileSpreadsheet, AlertCircle, Loader2, ArrowUpToLine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Toast } from "@/components/organism/toast";
+import { toast } from "sonner";
 import PropTypes from "prop-types";
 
 const UploadExcelModal = ({
@@ -36,10 +36,7 @@ const UploadExcelModal = ({
       if (onSuccess) {
         onSuccess(res);
       } else {
-        Toast.fire({
-          icon: "success",
-          title: res?.data?.message || t("page.category.upload.successMsg")
-        });
+        toast.success(res?.data?.message || t("page.category.upload.successMsg"));
       }
       handleClose();
     },
@@ -47,10 +44,7 @@ const UploadExcelModal = ({
       if (onError) {
         onError(err);
       } else {
-        Toast.fire({
-          icon: "error",
-          title: err?.response?.data?.message || t("page.category.upload.errorMsg")
-        });
+        toast.error(err?.response?.data?.message || t("page.category.upload.errorMsg"));
       }
     }
   });
@@ -84,7 +78,7 @@ const UploadExcelModal = ({
 
   const handleUpload = () => {
     if (!file) {
-      Toast.fire({ icon: "warning", title: t("page.category.selectFileFirst") });
+      toast.warning(t("page.category.selectFileFirst"));
       return;
     }
     mutation.mutate(file);

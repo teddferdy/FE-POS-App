@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Navigate, Route } from "react-router-dom";
 import RouteProgress from "@/components/ui/route-progress";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
+import useKeyboardShortcuts from "@/hooks/useKeyboardShortcuts";
 
 // Offline
 import OfflineIndicator from "./components/organism/OfflineIndicator";
@@ -10,9 +11,10 @@ import { setupAutoSync } from "@/services/offline";
 
 // Layout
 import DashboardLayout from "./components/layout/DashboardLayout";
+import NotFoundPage from "@/components/ui/NotFoundPage";
 
 import Modal from "@/components/organism/modal";
-
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { Loading } from "@/components/ui/loading";
 
 // Auth
@@ -247,6 +249,8 @@ const DetailExpense = React.lazy(() => import("./page/expense/DetailExpense"));
 // FAQ
 const SupportComponent = React.lazy(() => import("@/components/organism/Support"));
 
+const ShortcutHandler = () => { useKeyboardShortcuts(); return null; };
+
 const Support = React.lazy(() => import("./page/support"));
 
 function App() {
@@ -283,6 +287,8 @@ function App() {
           }>
           <SupportComponent />
           <RouteProgress />
+          <ShortcutHandler />
+          <ErrorBoundary>
           <Routes>
             {/* Auth (no layout) */}
             <Route path="/" element={<LoginPage />} />
@@ -461,11 +467,10 @@ function App() {
               <Route path="/report/daily" element={<DailyReport />} />
               <Route path="/report/profit-loss" element={<ProfitLossReport />} />
               <Route path="/report/cash-flow" element={<CashFlowReport />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
-
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </ErrorBoundary>
         </Suspense>
       </BrowserRouter>
 

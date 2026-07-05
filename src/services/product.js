@@ -25,10 +25,12 @@ export const getProductByOutlet = async ({ location }) => {
   return data;
 };
 
-export const getAllProductTable = async ({ location, limit, page, statusProduct }) => {
-  const { data, status } = await axiosInstance.get(
-    `/product/get-product-all?store=${location}&page=${page}&limit=${limit}&status=${statusProduct}`
-  );
+export const getAllProductTable = async ({ location, limit, page, statusProduct, search, category, sort }) => {
+  let url = `/product/get-product-all?store=${location}&page=${page}&limit=${limit}&status=${statusProduct}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (category) url += `&category=${encodeURIComponent(category)}`;
+  if (sort) url += `&sort=${sort}`;
+  const { data, status } = await axiosInstance.get(url);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

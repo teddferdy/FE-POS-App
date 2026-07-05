@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Mail,
   Phone,
   MapPin,
@@ -14,6 +13,7 @@ import {
   XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/ui/PageHeader";
 
 const ProfilePage = () => {
   const { t } = useTranslation();
@@ -52,16 +52,13 @@ const ProfilePage = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate(-1)}
-            className="font-medium hover:text-primary transition-colors flex items-center gap-1">
-            <ArrowLeft size={16} />
-            {t("common.back")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="font-semibold text-foreground">{t("page.profile.title")}</span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            { i18nKey: "breadcrumb.home", href: "/" },
+            { i18nKey: "page.profile.title" }
+          ]}
+          title={t("page.profile.title")}
+        />
 
         <div className="bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32" />

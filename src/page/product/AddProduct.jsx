@@ -53,6 +53,7 @@ import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -187,6 +188,8 @@ const AddProduct = () => {
       store: ""
     }
   });
+
+  useUnsavedChanges(form.formState.isDirty);
 
   const isOption = form.watch("isOption");
   const hasModifiers = form.watch("hasModifiers");
