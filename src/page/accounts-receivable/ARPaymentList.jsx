@@ -25,7 +25,7 @@ const ARPaymentList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit, setLimit] = useState(20);
   const [statusFilter, setStatusFilter] = useState("UNPAID");
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
@@ -208,7 +208,9 @@ const ARPaymentList = () => {
             page,
             totalPages: pagination.totalPages || 1,
             total: pagination.total || 0,
-            onPageChange: setPage
+            onPageChange: setPage,
+            pageSize: limit,
+            onPageSizeChange: (v) => { setLimit(v); setPage(1); }
           }}
         />
       )}

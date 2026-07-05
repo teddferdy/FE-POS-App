@@ -22,7 +22,7 @@ const ShiftList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -271,14 +271,21 @@ const ShiftList = () => {
                       <Input
                         placeholder={t("page.shift.list.search")}
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                         className="pl-9 h-9 text-sm"
                       />
                     </div>
                   </div>
                 </div>
               }
-              pagination={{ page, totalPages, total, onPageChange: (p) => setPage(p) }}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: (p) => setPage(p),
+                pageSize: limit,
+                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+              }}
             />
           </div>
         </>

@@ -27,7 +27,7 @@ const MemberTier = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
-  const itemsPerPage = 5;
+  const [limit, setLimit] = useState(5);
 
   const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -51,10 +51,10 @@ const MemberTier = () => {
   const filteredTiers = tiers.filter((tier) =>
     tier.name?.toLowerCase().includes(search.toLowerCase())
   );
-  const totalPages = Math.ceil(filteredTiers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTiers.length / limit);
   const paginatedTiers = filteredTiers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    (currentPage - 1) * limit,
+    currentPage * limit
   );
 
   const deleteMutation = useMutation(deleteMemberTier, {
@@ -96,7 +96,7 @@ const MemberTier = () => {
       header: "#",
       render: (tier, idx) => (
         <span className="font-mono text-sm text-muted-foreground">
-          {(currentPage - 1) * itemsPerPage + idx + 1}
+          {(currentPage - 1) * limit + idx + 1}
         </span>
       )
     },
@@ -359,9 +359,11 @@ const MemberTier = () => {
                       totalPages,
                       total: filteredTiers.length,
                       onPageChange: setCurrentPage,
+                      pageSize: limit,
+                      onPageSizeChange: (v) => { setLimit(v); setCurrentPage(1); },
                       showingText: `${t("common.showing", {
-                        start: (currentPage - 1) * itemsPerPage + 1,
-                        end: Math.min(currentPage * itemsPerPage, filteredTiers.length),
+                        start: (currentPage - 1) * limit + 1,
+                        end: Math.min(currentPage * limit, filteredTiers.length),
                         total: filteredTiers.length
                       })}`
                     }}

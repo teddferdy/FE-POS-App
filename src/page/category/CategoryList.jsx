@@ -69,7 +69,7 @@ const CategoryList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/category-list";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -77,6 +77,7 @@ const CategoryList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [storeFilter, setStoreFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -242,12 +243,14 @@ const CategoryList = () => {
     },
     {
       header: t("page.category.table.updatedDate"),
+      hideOn: 'lg',
       render: (cat) => (
         <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
       )
     },
     {
       header: t("common.createdBy"),
+      hideOn: 'lg',
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.createdByUser?.fullName || cat.createdByUser?.userName || cat.createdBy || "-"}
@@ -256,6 +259,7 @@ const CategoryList = () => {
     },
     {
       header: t("common.modifiedBy"),
+      hideOn: 'lg',
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
@@ -449,22 +453,34 @@ const CategoryList = () => {
                   isLoading={isLoading}
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.category.list.sectionTitle")}
-                      </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                        <div className="relative flex-1 md:w-64">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.category.list.sectionTitle")}
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9 lg:hidden"
+                          onClick={() => setShowFilters(!showFilters)}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {showFilters ? "Tutup" : "Filter"}
+                        </Button>
+                      </div>
+                      <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-2`}>
+                        {isSuperAdmin && (
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(v) => {
+                              setStoreFilter(v);
+                              setPage(1);
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
+                          />
+                        )}
+                        <div className="relative min-w-0 flex-[1_1_180px]">
                           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
                             search
                           </span>
@@ -489,18 +505,17 @@ const CategoryList = () => {
                           <option value="active">{t("common.active")}</option>
                           <option value="inactive">{t("common.inactive")}</option>
                         </select>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9"
-                          onClick={() => setStatusFilter("")}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {t("page.category.button.filter")}
-                        </Button>
                       </div>
                     </div>
                   }
-                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                  }}
                   rowClassName={() => ""}
                 />
               </div>

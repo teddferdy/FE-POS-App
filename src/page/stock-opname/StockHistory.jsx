@@ -1,20 +1,12 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { getAllStockHistory } from "@/services/stock";
 import { getAllProductTable } from "@/services/product";
 import { Combobox } from "@/components/ui/combobox";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell
-} from "@/components/ui/table";
+import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -59,7 +51,7 @@ const StockHistory = () => {
   const role = user?.roleType || "";
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [productFilter, setProductFilter] = useState("");
   const [referenceFilter, setReferenceFilter] = useState("");
   const [startDate, setStartDate] = useState(undefined);
@@ -72,11 +64,11 @@ const StockHistory = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stock-history", page, limit, productFilter, referenceFilter, startDate, endDate],
+    ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate],
     () =>
       getAllStockHistory({
         page,
-        limit,
+        limit: pageSize,
         product: productFilter || undefined,
         referenceType: referenceFilter || undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
@@ -103,7 +95,13 @@ const StockHistory = () => {
     { value: "sale", label: t("page.stockHistory.reference.sale") },
     { value: "adjustment", label: t("page.stockHistory.reference.adjustment") },
     { value: "opname", label: t("page.stockHistory.reference.opname") },
-    { value: "return", label: t("page.stockHistory.reference.return") }
+    { value: "purchase_return", label: t("page.stockHistory.reference.purchaseReturn") },
+    { value: "sale_return", label: t("page.stockHistory.reference.saleReturn") },
+    { value: "transfer", label: t("page.stockHistory.reference.transfer") },
+    { value: "production", label: t("page.stockHistory.reference.production") },
+    { value: "sale_return_reversal", label: t("page.stockHistory.reference.saleReturnReversal") },
+    { value: "sale_reversal", label: t("page.stockHistory.reference.saleReversal") },
+    { value: "production_reversal", label: t("page.stockHistory.reference.productionReversal") }
   ];
 
   const getChangeDisplay = (change) => {
@@ -124,14 +122,26 @@ const StockHistory = () => {
       sale: "bg-purple-100 text-purple-700",
       adjustment: "bg-amber-100 text-amber-700",
       opname: "bg-cyan-100 text-cyan-700",
-      return: "bg-rose-100 text-rose-700"
+      purchase_return: "bg-rose-100 text-rose-700",
+      sale_return: "bg-pink-100 text-pink-700",
+      transfer: "bg-teal-100 text-teal-700",
+      production: "bg-green-100 text-green-700",
+      sale_return_reversal: "bg-orange-100 text-orange-700",
+      sale_reversal: "bg-red-100 text-red-700",
+      production_reversal: "bg-yellow-100 text-yellow-700"
     };
     const labels = {
       purchase: t("page.stockHistory.reference.purchase"),
       sale: t("page.stockHistory.reference.sale"),
       adjustment: t("page.stockHistory.reference.adjustment"),
       opname: t("page.stockHistory.reference.opname"),
-      return: t("page.stockHistory.reference.return")
+      purchase_return: t("page.stockHistory.reference.purchaseReturn"),
+      sale_return: t("page.stockHistory.reference.saleReturn"),
+      transfer: t("page.stockHistory.reference.transfer"),
+      production: t("page.stockHistory.reference.production"),
+      sale_return_reversal: t("page.stockHistory.reference.saleReturnReversal"),
+      sale_reversal: t("page.stockHistory.reference.saleReversal"),
+      production_reversal: t("page.stockHistory.reference.productionReversal")
     };
     return (
       <span
@@ -141,18 +151,62 @@ const StockHistory = () => {
     );
   };
 
+  const columns = [
+    {
+      header: t("page.stockHistory.table.time"),
+      render: (h) => <span className="text-xs whitespace-nowrap">{formatDate(h.createdAt)}</span>
+    },
+    {
+      header: t("page.stockHistory.table.product"),
+      render: (h) => (
+        <span className="font-medium text-sm">
+          {h.productData?.nameProduct || h.ingredientName || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.stockHistory.table.before"),
+      align: "right",
+      render: (h) => <span className="text-sm">{formatNumber(h.quantityBefore)}</span>
+    },
+    {
+      header: t("page.stockHistory.table.change"),
+      align: "right",
+      render: (h) => getChangeDisplay(h.quantityChange)
+    },
+    {
+      header: t("page.stockHistory.table.after"),
+      align: "right",
+      render: (h) => <span className="text-sm font-semibold">{formatNumber(h.quantityAfter)}</span>
+    },
+    {
+      header: t("page.stockHistory.table.type"),
+      render: (h) => getReferenceBadge(h.referenceType)
+    },
+    {
+      header: t("page.stockHistory.table.notes"),
+      render: (h) => (
+        <span className="text-xs text-muted-foreground max-w-[200px] block truncate">
+          {h.notes || "-"}
+        </span>
+      )
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <button
-            onClick={() => navigate(
-              role === "super_admin"
-                ? "/dashboard-super-admin"
-                : role === "admin"
-                  ? "/dashboard-admin"
-                  : "/home"
-            )}
+            onClick={() =>
+              navigate(
+                role === "super_admin"
+                  ? "/dashboard-super-admin"
+                  : role === "admin"
+                    ? "/dashboard-admin"
+                    : "/home"
+              )
+            }
             className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>
@@ -170,236 +224,98 @@ const StockHistory = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <div>
-            <Card className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    {t("page.stockHistory.filter.product")}
-                  </label>
-                  <Combobox
-                    options={[
-                      { value: "", label: t("page.stockHistory.filter.allProducts") },
-                      ...products.map((p) => ({
-                        value: String(p.id || p._id),
-                        label: p.name || p.nameProduct
-                      }))
-                    ]}
-                    value={productFilter}
-                    onChange={(v) => {
-                      setProductFilter(v);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.stockHistory.filter.allProducts")}
-                    searchPlaceholder={t("common.search")}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    {t("page.stockHistory.filter.referenceType")}
-                  </label>
-                  <Combobox
-                    options={referenceTypeOptions}
-                    value={referenceFilter}
-                    onChange={(v) => {
-                      setReferenceFilter(v);
-                      setPage(1);
-                    }}
-                    placeholder={t("page.stockHistory.filter.allTypes")}
-                    searchPlaceholder={t("common.search")}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    {t("page.stockHistory.filter.startDate")}
-                  </label>
-                  <DatePicker
-                    date={startDate}
-                    setDate={(date) => {
-                      setStartDate(date);
-                      setPage(1);
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    {t("page.stockHistory.filter.endDate")}
-                  </label>
-                  <DatePicker
-                    date={endDate}
-                    setDate={(date) => {
-                      setEndDate(date);
-                      setPage(1);
-                    }}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            {isLoading ? (
-              <Card className="overflow-hidden mt-6">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>
-                          <Skeleton className="h-3 w-24" />
-                        </TableHead>
-                        <TableHead>
-                          <Skeleton className="h-3 w-20" />
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <Skeleton className="h-3 w-12 ml-auto" />
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <Skeleton className="h-3 w-16 ml-auto" />
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <Skeleton className="h-3 w-12 ml-auto" />
-                        </TableHead>
-                        <TableHead>
-                          <Skeleton className="h-3 w-14" />
-                        </TableHead>
-                        <TableHead>
-                          <Skeleton className="h-3 w-16" />
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[...Array(8)].map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell>
-                            <Skeleton className="h-4 w-28" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-32" />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Skeleton className="h-4 w-12 ml-auto" />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Skeleton className="h-4 w-12 ml-auto" />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Skeleton className="h-4 w-12 ml-auto" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-5 w-20 rounded" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-24" />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </Card>
-            ) : histories.length === 0 ? (
-              <Card className="p-12 text-center text-muted-foreground mt-6">
-                <Calendar size={48} className="mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">{t("page.stockHistory.empty")}</p>
-                <p className="text-sm mt-1">{t("page.stockHistory.emptyDetail")}</p>
-              </Card>
-            ) : (
-              <Card className="overflow-hidden mt-6">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("page.stockHistory.table.time")}</TableHead>
-                        <TableHead>{t("page.stockHistory.table.product")}</TableHead>
-                        <TableHead className="text-right">
-                          {t("page.stockHistory.table.before")}
-                        </TableHead>
-                        <TableHead className="text-right">
-                          {t("page.stockHistory.table.change")}
-                        </TableHead>
-                        <TableHead className="text-right">
-                          {t("page.stockHistory.table.after")}
-                        </TableHead>
-                        <TableHead>{t("page.stockHistory.table.type")}</TableHead>
-                        <TableHead>{t("page.stockHistory.table.notes")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {histories.map((h) => (
-                        <TableRow key={h.id}>
-                          <TableCell className="text-xs whitespace-nowrap">
-                            {formatDate(h.createdAt)}
-                          </TableCell>
-                          <TableCell className="font-medium text-sm">
-                            {h.productData?.nameProduct || h.ingredientName || "-"}
-                          </TableCell>
-                          <TableCell className="text-right text-sm">
-                            {formatNumber(h.quantityBefore)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {getChangeDisplay(h.quantityChange)}
-                          </TableCell>
-                          <TableCell className="text-right text-sm font-semibold">
-                            {formatNumber(h.quantityAfter)}
-                          </TableCell>
-                          <TableCell>{getReferenceBadge(h.referenceType)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                            {h.notes || "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </Card>
-            )}
-
-            {totalPages > 1 && (
-              <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-                <p className="text-xs text-muted-foreground">
-                  {t("page.stockHistory.showing", {
-                    count: Math.min(limit, histories.length),
-                    total
-                  })}
-                </p>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page <= 1}
-                    className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-                    <ChevronLeft size={16} />
-                  </button>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium border transition-colors ${
-                          page === pageNum
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "border-border text-muted-foreground hover:bg-accent"
-                        }`}>
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  <button
-                    onClick={() => setPage(Math.min(totalPages, page + 1))}
-                    disabled={page >= totalPages}
-                    className="w-9 h-9 flex items-center justify-center border border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <DataTable
+              columns={columns}
+              data={histories}
+              isLoading={isLoading}
+              emptyMessage={t("page.stockHistory.empty")}
+              emptyIcon={Calendar}
+              toolbar={
+                <Card className="p-4 border-0 shadow-none bg-transparent">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                        {t("page.stockHistory.filter.product")}
+                      </label>
+                      <Combobox
+                        options={[
+                          { value: "", label: t("page.stockHistory.filter.allProducts") },
+                          ...products.map((p) => ({
+                            value: String(p.id || p._id),
+                            label: p.name || p.nameProduct
+                          }))
+                        ]}
+                        value={productFilter}
+                        onChange={(v) => {
+                          setProductFilter(v);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockHistory.filter.allProducts")}
+                        searchPlaceholder={t("common.search")}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                        {t("page.stockHistory.filter.referenceType")}
+                      </label>
+                      <Combobox
+                        options={referenceTypeOptions}
+                        value={referenceFilter}
+                        onChange={(v) => {
+                          setReferenceFilter(v);
+                          setPage(1);
+                        }}
+                        placeholder={t("page.stockHistory.filter.allTypes")}
+                        searchPlaceholder={t("common.search")}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                        {t("page.stockHistory.filter.startDate")}
+                      </label>
+                      <DatePicker
+                        date={startDate}
+                        setDate={(date) => {
+                          setStartDate(date);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                        {t("page.stockHistory.filter.endDate")}
+                      </label>
+                      <DatePicker
+                        date={endDate}
+                        setDate={(date) => {
+                          setEndDate(date);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              }
+              pagination={{
+                page,
+                pageSize,
+                totalPages,
+                total,
+                onPageChange: setPage,
+                onPageSizeChange: (size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }
+              }}
+            />
+          )}
         </>
       )}
     </div>

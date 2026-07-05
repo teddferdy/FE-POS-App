@@ -60,7 +60,7 @@ const MemberList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/member-list";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
@@ -497,7 +497,7 @@ const MemberList = () => {
                         </span>
                         <select
                           value={sortBy}
-                          onChange={(e) => setSortBy(e.target.value)}
+                          onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
                           className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
                           <option value="terbaru">{t("page.member.list.sortNewest")}</option>
                           <option value="poin">{t("page.member.list.sortPoints")}</option>
@@ -545,7 +545,14 @@ const MemberList = () => {
                       </div>
                     </div>
                   }
-                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                  }}
                   rowClassName={() => "group"}
                 />
               </div>

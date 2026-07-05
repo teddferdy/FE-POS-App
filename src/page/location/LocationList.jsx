@@ -23,7 +23,7 @@ const LocationList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/location-list";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -53,17 +53,14 @@ const LocationList = () => {
     }
   });
 
-  const targetMutation = useMutation(
-    ({ id, dailyTarget }) => editLocation({ id, dailyTarget }),
-    {
-      onSuccess: () => {
-        toast.success(t("common.success"), { description: "Target updated" });
-        setTargetModal({ open: false, location: null, value: 0 });
-        queryClient.invalidateQueries(["locations"]);
-      },
-      onError: (err) => toast.error(t("common.error"), { description: err.message })
-    }
-  );
+  const targetMutation = useMutation(({ id, dailyTarget }) => editLocation({ id, dailyTarget }), {
+    onSuccess: () => {
+      toast.success(t("common.success"), { description: "Target updated" });
+      setTargetModal({ open: false, location: null, value: 0 });
+      queryClient.invalidateQueries(["locations"]);
+    },
+    onError: (err) => toast.error(t("common.error"), { description: err.message })
+  });
 
   const locations = data?.data || data?.locations || [];
   const total = data?.total || data?.pagination?.total || 0;
@@ -197,6 +194,14 @@ const LocationList = () => {
       }
     },
     {
+      header: t("page.location.table.dailyTarget"),
+      render: (loc) => (
+        <span className="text-xs font-semibold text-foreground">
+          {loc.dailyTarget ? `Rp ${Number(loc.dailyTarget).toLocaleString("id-ID")}` : "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.location.table.createdAt"),
       render: (loc) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -245,16 +250,6 @@ const LocationList = () => {
       )
     },
     {
-      header: t("page.location.table.dailyTarget"),
-      render: (loc) => (
-        <span className="text-xs font-semibold text-foreground">
-          {loc.dailyTarget
-            ? `Rp ${Number(loc.dailyTarget).toLocaleString("id-ID")}`
-            : "-"}
-        </span>
-      )
-    },
-    {
       header: t("common.actions"),
       align: "center",
       stickyRight: true,
@@ -275,7 +270,9 @@ const LocationList = () => {
               size="icon"
               className="h-8 w-8 text-primary"
               title={t("page.location.setTarget") || "Set Target"}
-              onClick={() => setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 })}>
+              onClick={() =>
+                setTargetModal({ open: true, location: loc, value: loc.dailyTarget || 0 })
+              }>
               <Target size={15} />
             </Button>
           )}
@@ -449,7 +446,12 @@ const LocationList = () => {
                   page,
                   totalPages,
                   total,
-                  onPageChange: setPage
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
                 }}
               />
             </div>
@@ -496,11 +498,7 @@ const LocationList = () => {
         open={targetModal.open}
         onOpenChange={(open) => !open && setTargetModal({ open: false, location: null, value: 0 })}
         title={t("page.location.setTarget") || "Set Daily Target"}
-        description={
-          targetModal.location
-            ? `${targetModal.location.name}`
-            : ""
-        }
+        description={targetModal.location ? `${targetModal.location.name}` : ""}
         loading={targetMutation.isLoading}
         confirmText={t("common.save")}
         onConfirm={() =>
@@ -516,8 +514,12 @@ const LocationList = () => {
           <div className="relative">
             <input
               type="text"
-              value={targetModal.value ? `Rp ${Number(targetModal.value).toLocaleString("id-ID")}` : ""}
-              onChange={(e) => setTargetModal({ ...targetModal, value: e.target.value.replace(/[^0-9]/g, "") })}
+              value={
+                targetModal.value ? `Rp ${Number(targetModal.value).toLocaleString("id-ID")}` : ""
+              }
+              onChange={(e) =>
+                setTargetModal({ ...targetModal, value: e.target.value.replace(/[^0-9]/g, "") })
+              }
               placeholder="Rp 0"
               className="w-full h-12 px-4 text-lg font-bold rounded-xl bg-accent/50 border border-border/60 outline-none focus:border-primary/50 transition-colors text-right"
               inputMode="numeric"

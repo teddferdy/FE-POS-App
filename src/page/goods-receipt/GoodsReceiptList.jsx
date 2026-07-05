@@ -41,7 +41,7 @@ const GoodsReceiptList = () => {
   const user = cookie?.user;
   const MENU_KEY = "/goods-receipt";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [storeFilter, setStoreFilter] = useState("all");
@@ -337,7 +337,7 @@ const GoodsReceiptList = () => {
                     <Input
                       placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                       className="pl-9 h-9 text-sm"
                     />
                   </div>
@@ -352,7 +352,14 @@ const GoodsReceiptList = () => {
                   </Button>
                 </div>
               }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: setPage,
+                pageSize: limit,
+                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+              }}
             />
           </div>
 

@@ -274,7 +274,11 @@ const DetailPurchaseReturn = () => {
                     {t("page.purchaseReturn.detail.field.poNumber")}
                   </td>
                   <td className="py-2 text-right font-medium">
-                    {ret.purchaseOrder ? `PO-${ret.purchaseOrder}` : "-"}
+                    {ret.purchaseOrder?.orderNumber
+                      ? ret.purchaseOrder.orderNumber
+                      : ret.purchaseOrder
+                        ? `PO-${ret.purchaseOrder}`
+                        : "-"}
                   </td>
                 </tr>
               </tbody>

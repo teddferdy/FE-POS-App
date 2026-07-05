@@ -27,7 +27,7 @@ const CashRegisterHistory = () => {
   // const defaultStoreId = cookie?.activeStore || user?.store;
   const [storeFilter, setStoreFilter] = useState("all");
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation("all"), {
@@ -43,7 +43,7 @@ const CashRegisterHistory = () => {
         limit,
         store: storeFilter === "all" ? undefined : storeFilter
       }),
-    { keepPreviousData: true, enabled: !!storeFilter }
+    { keepPreviousData: true }
   );
 
   const items = data?.data || [];
@@ -221,7 +221,10 @@ const CashRegisterHistory = () => {
                     <Input
                       placeholder={t("page.cashRegister.history.search")}
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                      }}
                       className="pl-9 h-9 text-sm"
                     />
                   </div>
@@ -249,7 +252,17 @@ const CashRegisterHistory = () => {
               </div>
             }
             onRowClick={(item) => navigate("/cash-register/history/detail", { state: { item } })}
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
+            pagination={{
+              page,
+              totalPages,
+              total,
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (v) => {
+                setLimit(v);
+                setPage(1);
+              }
+            }}
           />
         </div>
       )}

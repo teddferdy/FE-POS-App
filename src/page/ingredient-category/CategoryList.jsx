@@ -49,7 +49,7 @@ const CategoryList = () => {
   const MENU_KEY = "/ingredient-category";
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
@@ -371,7 +371,9 @@ const CategoryList = () => {
                 page,
                 totalPages,
                 total: statsTotal,
-                onPageChange: setPage
+                onPageChange: setPage,
+                pageSize: limit,
+                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
               }}
             />
           </div>

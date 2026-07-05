@@ -39,7 +39,7 @@ const DiscountList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [storeFilter, setStoreFilter] = useState("all");
@@ -323,7 +323,14 @@ const DiscountList = () => {
               </div>
             </div>
           }
-          pagination={{ page, totalPages, total, onPageChange: setPage }}
+          pagination={{
+            page,
+            totalPages,
+            total,
+            onPageChange: setPage,
+            pageSize: limit,
+            onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+          }}
         />
       </div>
         </>

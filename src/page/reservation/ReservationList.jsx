@@ -48,12 +48,13 @@ const ReservationList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [dateFilter, setDateFilter] = useState(undefined);
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [storeFilter, setStoreFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -306,11 +307,22 @@ const ReservationList = () => {
                   emptyMessage={t("page.reservation.empty")}
                   emptyIcon={Calendar}
                   toolbar={
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.reservation.title")}
-                      </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                        <h4 className="text-base font-semibold text-foreground shrink-0">
+                          {t("page.reservation.title")}
+                        </h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 h-9 lg:hidden"
+                          onClick={() => setShowFilters(!showFilters)}>
+                          <span className="material-symbols-outlined text-base">filter_list</span>
+                          {showFilters ? "Tutup" : "Filter"}
+                        </Button>
+                      </div>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
                         <StoreFilter
                           locations={locData?.data || []}
                           value={storeFilter}
@@ -353,7 +365,17 @@ const ReservationList = () => {
                       </div>
                     </div>
                   }
-                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
                 />
               </div>
             </>

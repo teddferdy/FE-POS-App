@@ -18,7 +18,7 @@ const PurchasePaymentList = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies(["user"]);
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit, setLimit] = useState(20);
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
@@ -161,7 +161,14 @@ const PurchasePaymentList = () => {
                 isLoading={isLoading}
                 emptyMessage={t("page.purchasePayment.list.empty")}
                 emptyIcon={Wallet}
-                pagination={{ page, totalPages, total, onPageChange: setPage }}
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                }}
               />
             </div>
           )}

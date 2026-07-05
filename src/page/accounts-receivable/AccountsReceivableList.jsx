@@ -33,7 +33,7 @@ const AccountsReceivableList = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit, setLimit] = useState(20);
   const [statusFilter, setStatusFilter] = useState("");
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
@@ -250,7 +250,9 @@ const AccountsReceivableList = () => {
               page,
               totalPages: pagination.totalPages || 1,
               total: pagination.total || 0,
-              onPageChange: setPage
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
             }}
           />
         </div>

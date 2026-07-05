@@ -53,13 +53,14 @@ const StockOpnameList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/stock-opname";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [warehouseFilter, setWarehouseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [noDataModal, setNoDataModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
 
@@ -434,11 +435,17 @@ const StockOpnameList = () => {
               return classes.join(" ");
             }}
             toolbar={
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                <h4 className="text-base font-semibold text-foreground">
-                  {t("page.stockOpname.list.title")}
-                </h4>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                  <h4 className="text-base font-semibold text-foreground shrink-0">
+                    {t("page.stockOpname.list.title")}
+                  </h4>
+                  <Button variant="outline" size="sm" className="gap-2 h-9 lg:hidden" onClick={() => setShowFilters(!showFilters)}>
+                    <span className="material-symbols-outlined text-base">filter_list</span>
+                    {showFilters ? "Tutup" : "Filter"}
+                  </Button>
+                </div>
+                <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-2`}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="relative">
                       <select
@@ -485,7 +492,7 @@ const StockOpnameList = () => {
                     <Input
                       placeholder={t("page.stockOpname.list.searchPlaceholder")}
                       value={search}
-                      onChange={(e) => setSearch(e.target.value)}
+                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                       className="pl-9 h-9 text-sm"
                     />
                   </div>
@@ -496,7 +503,9 @@ const StockOpnameList = () => {
               page,
               totalPages,
               total,
-              onPageChange: setPage
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
             }}
           />
         </div>

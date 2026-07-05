@@ -29,7 +29,7 @@ const LowStockAll = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const sidebarCollapsed = useSidebar();
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit, setLimit] = useState(20);
   const [search, setSearch] = useState("");
   const [storeFilter, setStoreFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -295,7 +295,9 @@ const LowStockAll = () => {
                 totalPages,
                 total,
                 onPageChange: setPage,
-                showingText: `Menampilkan ${items.length} dari ${total} data`
+                showingText: `Menampilkan ${items.length} dari ${total} data`,
+                pageSize: limit,
+                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
               }}
             />
           </div>

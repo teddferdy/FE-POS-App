@@ -54,7 +54,7 @@ const StockTransferList = () => {
   const store = user?.store || "";
   const MENU_KEY = "/stock-transfer";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -279,13 +279,20 @@ const StockTransferList = () => {
                       <Input
                         placeholder={t("page.stockTransfer.list.placeholder.search")}
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-9 text-sm"
+                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                      className="pl-9 h-9 text-sm"
                       />
                     </div>
                   </div>
                 }
-                pagination={{ page, totalPages, total, onPageChange: setPage }}
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                }}
               />
             </div>
           )}

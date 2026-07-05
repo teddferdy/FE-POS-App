@@ -8,23 +8,34 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
+const stripLoc = (v) => (v ? String(v).replace(/^loc-0*/, "") : v);
+
 const StoreFilter = ({ locations = [], value = "", onChange, isSuperAdmin, t }) => {
   if (!isSuperAdmin || locations.length === 0) return null;
+
+  const currentValue = value === "all" ? "all" : stripLoc(value);
+
+  const handleChange = (val) => {
+    onChange(val === "all" ? "all" : stripLoc(val));
+  };
 
   return (
     <div className="flex items-center gap-2">
       <Store size={16} className="text-muted-foreground shrink-0" />
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-[180px]">
+      <Select value={currentValue} onValueChange={handleChange}>
+        <SelectTrigger className="w-[180px] max-w-full">
           <SelectValue placeholder={t?.("header.selectStore") || "Pilih Toko"} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">{t?.("page.category.form.storeSection.allStores") || "Semua Toko"}</SelectItem>
-          {locations.map((loc) => (
-            <SelectItem key={loc.id} value={String(loc.id)}>
-              {loc.name || loc.storeName || `Toko #${loc.id}`}
-            </SelectItem>
-          ))}
+          {locations.map((loc) => {
+            const numId = stripLoc(loc.id);
+            return (
+              <SelectItem key={loc.id} value={numId}>
+                {loc.name || loc.storeName || `Toko #${numId}`}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

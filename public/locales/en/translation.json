@@ -3801,6 +3801,7 @@
   "page.invoice.storeName": "Store Name",
   "page.invoice.totalPoints": "Total Points",
   "page.invoice.village": "Village",
+  "page.invoice.selectStore": "Select a store to manage invoice",
   "page.invoice.yesReset": "Yes Reset",
   "page.kitchenDisplay.nextLabel.pending": "Take",
   "page.kitchenDisplay.nextLabel.preparing": "Done",

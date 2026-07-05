@@ -78,10 +78,11 @@ const PurchaseOrderList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [storeFilter, setStoreFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
   const [returModal, setReturModal] = useState(false);
   const [returPo, setReturPo] = useState(null);
   const [returReason, setReturReason] = useState("");
@@ -607,11 +608,17 @@ const PurchaseOrderList = () => {
             emptyMessage={t("page.purchaseOrder.list.empty")}
             emptyIcon={Package}
             toolbar={
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                <h4 className="text-base font-semibold text-foreground">
-                  {t("page.purchaseOrder.list.title")}
-                </h4>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                  <h4 className="text-base font-semibold text-foreground shrink-0">
+                    {t("page.purchaseOrder.list.title")}
+                  </h4>
+                  <Button variant="outline" size="sm" className="gap-2 h-9 lg:hidden" onClick={() => setShowFilters(!showFilters)}>
+                    <span className="material-symbols-outlined text-base">filter_list</span>
+                    {showFilters ? "Tutup" : "Filter"}
+                  </Button>
+                </div>
+                <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-2`}>
                   {isSuperAdmin && (
                     <StoreFilter
                       locations={locData?.data || []}
@@ -635,7 +642,7 @@ const PurchaseOrderList = () => {
                     <option value="received">{t("page.purchaseOrder.status.received")}</option>
                     <option value="cancelled">{t("page.purchaseOrder.status.cancelled")}</option>
                   </select>
-                  <div className="relative flex-1 md:w-64">
+                  <div className="relative min-w-0 flex-[1_1_180px]">
                     <Search
                       size={16}
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -653,7 +660,14 @@ const PurchaseOrderList = () => {
                 </div>
               </div>
             }
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
+            pagination={{
+              page,
+              totalPages,
+              total,
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+            }}
           />
         </div>
       )}

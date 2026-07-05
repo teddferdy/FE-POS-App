@@ -37,7 +37,7 @@ const EmployeeList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/employee-list";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
@@ -383,7 +383,14 @@ const EmployeeList = () => {
                   </Button>
                 </div>
               }
-              pagination={{ page, totalPages, total, onPageChange: setPage }}
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: setPage,
+                pageSize: limit,
+                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+              }}
               rowClassName={() => "group"}
             />
           </div>

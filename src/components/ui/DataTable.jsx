@@ -101,6 +101,7 @@ const DataTable = ({
                     col.align === "center" && "text-center",
                     col.stickyRight &&
                       "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                    col.hideOn && `hidden ${col.hideOn}:table-cell`,
                     col.className
                   )}>
                   {col.header}
@@ -136,6 +137,7 @@ const DataTable = ({
                     col.align === "center" && "text-center",
                     col.stickyRight &&
                       "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                    col.hideOn && `hidden ${col.hideOn}:table-cell`,
                     col.className
                   )}>
                   {col.header}
@@ -166,6 +168,7 @@ const DataTable = ({
                           col.align === "right" && "text-right",
                           col.stickyRight &&
                             "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                          col.hideOn && `hidden ${col.hideOn}:table-cell`,
                           col.className
                         )}>
                         {col.render
@@ -186,7 +189,8 @@ const DataTable = ({
   };
 
   const renderPagination = () => {
-    const { page, totalPages, total, onPageChange, showingText } = pagination;
+    const { page, totalPages, total, pageSize, onPageChange, onPageSizeChange, showingText } =
+      pagination;
     const tp = totalPages || 1;
     const maxVisible = 5;
     let start = Math.max(1, page - Math.floor(maxVisible / 2));
@@ -199,11 +203,31 @@ const DataTable = ({
     const showStartEllipsis = start > 1;
     const showEndEllipsis = end < tp;
 
+    const pageSizeOptions = [5, 10, 15, 20, 25, 50, 100];
+
     return (
       <div className="px-4 py-3 border-t border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <span className="text-sm text-muted-foreground">
-          {showingText || `Menampilkan 1-${data.length} dari ${total || data.length}`}
-        </span>
+        <div className="flex items-center gap-3">
+          {onPageSizeChange && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Show</span>
+              <select
+                value={pageSize || 10}
+                onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                className="h-8 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary">
+                {pageSizeOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+              <span>entries</span>
+            </div>
+          )}
+          <span className="text-sm text-muted-foreground">
+            {showingText || `Menampilkan 1-${data.length} dari ${total || data.length}`}
+          </span>
+        </div>
         <div className="flex gap-1">
           <button
             onClick={() => onPageChange(1)}
@@ -292,7 +316,8 @@ const DataTable = ({
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
                       col.stickyRight &&
-                        "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]"
+                        "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                      col.hideOn && `hidden ${col.hideOn}:table-cell`
                     )}>
                     {col.header}
                   </th>
@@ -310,6 +335,7 @@ const DataTable = ({
                         col.align === "right" && "text-right",
                         col.stickyRight &&
                           "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                        col.hideOn && `hidden ${col.hideOn}:table-cell`,
                         col.className
                       )}>
                       <Skeleton className={cn("h-4", colIdx === 0 ? "w-24" : "w-32")} />

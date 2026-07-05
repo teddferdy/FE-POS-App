@@ -41,7 +41,7 @@ const PurchaseReturnList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/purchase-return";
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
@@ -269,13 +269,20 @@ const PurchaseReturnList = () => {
                   <Input
                     placeholder={t("page.purchaseReturn.list.placeholder.search")}
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                     className="pl-9 h-9 text-sm"
                   />
                 </div>
               </div>
             }
-            pagination={{ page, totalPages, total, onPageChange: setPage }}
+            pagination={{
+              page,
+              totalPages,
+              total,
+              onPageChange: setPage,
+              pageSize: limit,
+              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+            }}
           />
         </div>
       )}

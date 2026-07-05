@@ -52,7 +52,7 @@ const TableList = () => {
     : user?.store?.toString() || "";
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
@@ -122,7 +122,7 @@ const TableList = () => {
     setEditTarget(table);
     setFormName(table.name || "");
     setFormCapacity(table.capacity || 4);
-    setFormStore(table.store?.toString() || "");
+    setFormStore(table.store?.id ? String(table.store.id) : table.store?.toString() || "");
   };
 
   const handleSave = () => {
@@ -148,8 +148,11 @@ const TableList = () => {
     {
       header: t("page.table.form.store"),
       render: (row) => {
-        const loc = (locData?.data || []).find((l) => l.id === row.store || l.store === row.store);
-        return loc?.name || row.store || "-";
+        if (typeof row.store === 'object' && row.store !== null) {
+          return row.store.name || '-'
+        }
+        const loc = (locData?.data || []).find((l) => l.id === row.store)
+        return loc?.name || row.store || '-'
       }
     },
     {
@@ -326,7 +329,14 @@ const TableList = () => {
                       </div>
                     </div>
                   }
-                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                  }}
                 />
               </div>
             </>

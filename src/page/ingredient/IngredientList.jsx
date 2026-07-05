@@ -389,7 +389,7 @@ const IngredientList = () => {
                       <StoreFilter
                         locations={locData?.data || []}
                         value={storeFilter}
-                        onChange={(v) => setStoreFilter(v)}
+                        onChange={(v) => { setStoreFilter(v); setPage(1); }}
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
@@ -402,7 +402,7 @@ const IngredientList = () => {
                       <Input
                         placeholder={t("page.ingredient.list.searchPlaceholder")}
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                         className="pl-9 h-9 text-sm"
                       />
                     </div>

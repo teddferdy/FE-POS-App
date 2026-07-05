@@ -20,7 +20,8 @@ import {
   Coins,
   ImagePlus,
   X,
-  RotateCcw
+  RotateCcw,
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,8 +97,12 @@ const InvoicePreview = ({
   showLogo = true,
   showStoreName = true,
   showAddress = true,
-  showMemberInfo = true
+  showMemberInfo = true,
+  showSocialMedia = true,
+  socialMedia = [],
+  socialMediaVisible = {}
 }) => {
+  const { t } = useTranslation()
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
   const tax = Math.round(subtotal * 0.1);
   const total = subtotal + tax;
@@ -206,6 +211,19 @@ const InvoicePreview = ({
       <div className="text-center text-gray-400 text-[10px] mt-2 pt-2 border-t border-dashed border-gray-200 italic">
         Terima kasih atas kunjungan Anda
       </div>
+
+      {showSocialMedia && socialMedia.filter((_, i) => socialMediaVisible[i]).length > 0 && (
+        <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+          <div className="space-y-1">
+            {socialMedia.filter((_, i) => socialMediaVisible[i]).map((sm, i) => (
+              <div key={i} className="flex items-center justify-center gap-2 text-gray-400 text-[10px]">
+                <Globe size={12} />
+                <span>{sm.platform}: {sm.account}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -218,26 +236,22 @@ const InvoicePage = () => {
   const logoInputRef = useRef(null);
 
   const user = cookie?.user;
-  const store = user?.store || "";
+  const [selectedStore, setSelectedStore] = useState("");
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
-  const [showStoreName, setShowStoreName] = useState(true);
-  const [showAddress, setShowAddress] = useState(true);
-  const [showMemberInfo, setShowMemberInfo] = useState(true);
-  const [showLogo, setShowLogo] = useState(true);
-  const [logoUrl, setLogoUrl] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [resetModalOpen, setResetModalOpen] = useState(false);
-  const [selectedStores, setSelectedStores] = useState([]);
+  const { data: locData } = useQuery(
+    ["active-locations"],
+    () => getAllLocation("active"),
+    { staleTime: 5 * 60 * 1000 }
+  );
+  const locationList = locData?.data || locData || [];
 
   const {
     data: storeData,
     isError: storeError,
     refetch: refetchStore
-  } = useQuery(["store-detail", store], () => getLocationById({ id: store }), {
-    enabled: !!store,
+  } = useQuery(["store-detail", selectedStore], () => getLocationById({ id: selectedStore }), {
+    enabled: !!selectedStore,
     staleTime: 60 * 1000
   });
   const locationDetail = (storeData?.data || storeData) ?? null;
@@ -245,6 +259,19 @@ const InvoicePage = () => {
   const storeName = hasStore ? locationDetail?.name || locationDetail?.storeName : "Nama Toko";
   const storePhone = hasStore ? locationDetail?.phoneNumber || "" : "";
   const storeEmail = hasStore ? locationDetail?.email || "" : "";
+
+  const [showStoreName, setShowStoreName] = useState(true);
+  const [showAddress, setShowAddress] = useState(true);
+  const [showMemberInfo, setShowMemberInfo] = useState(true);
+  const [showLogo, setShowLogo] = useState(true);
+  const [showSocialMedia, setShowSocialMedia] = useState(true);
+  const [socialMediaVisible, setSocialMediaVisible] = useState({});
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [selectedStores, setSelectedStores] = useState([]);
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
     enabled: hasStore && !!locationDetail?.province,
@@ -289,28 +316,11 @@ const InvoicePage = () => {
     "";
   const postalCodeValue = postalCodes?.[0]?.kode_pos || locationDetail?.postalCode || "";
 
-  const { data: allLocations } = useQuery(["allLocations"], getAllLocation, {
-    enabled: !!user && user?.roleType === "super_admin",
-    staleTime: 60 * 1000
-  });
-  const locations = allLocations?.data || allLocations || [];
-  const allSelected = locations.length > 0 && selectedStores.length === locations.length;
-
-  const fullAddress = [
-    locationDetail?.address,
-    locationDetail?.detailLocation,
-    cityName,
-    provinceName,
-    postalCodeValue
-  ]
-    .filter(Boolean)
-    .join(", ");
-
   const { data: invoiceSettings } = useQuery(
-    ["invoice-settings", store],
-    () => getInvoiceSetting(store),
+    ["invoice-settings", selectedStore],
+    () => getInvoiceSetting(selectedStore),
     {
-      enabled: !!store,
+      enabled: !!selectedStore,
       staleTime: 5 * 60 * 1000
     }
   );
@@ -323,12 +333,45 @@ const InvoicePage = () => {
       if (settingsData.showAddress !== undefined) setShowAddress(settingsData.showAddress);
       if (settingsData.showMemberInfo !== undefined) setShowMemberInfo(settingsData.showMemberInfo);
       if (settingsData.showLogo !== undefined) setShowLogo(settingsData.showLogo);
+      if (settingsData.showSocialMedia !== undefined) setShowSocialMedia(settingsData.showSocialMedia);
+      if (settingsData.socialMediaVisibility) {
+        try {
+          const v = typeof settingsData.socialMediaVisibility === 'string'
+            ? JSON.parse(settingsData.socialMediaVisibility)
+            : settingsData.socialMediaVisibility
+          setSocialMediaVisible(v)
+        } catch {}
+      }
       if (settingsData.logo) {
         setLogoUrl(settingsData.logo);
         setLogoPreview(settingsData.logo);
       }
     }
   }, [settingsData]);
+
+  useEffect(() => {
+    if (locationDetail?.socialMedia?.length) {
+      const init = {}
+      locationDetail.socialMedia.forEach((_, i) => { init[i] = true })
+      setSocialMediaVisible((prev) => {
+        const merged = { ...init }
+        Object.keys(prev).forEach((k) => { if (init[k] !== undefined) merged[k] = prev[k] })
+        return merged
+      })
+    }
+  }, [locationDetail?.socialMedia])
+
+  const allSelected = locationList.length > 0 && selectedStores.length === locationList.length;
+
+  const fullAddress = [
+    locationDetail?.address,
+    locationDetail?.detailLocation,
+    cityName,
+    provinceName,
+    postalCodeValue
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
@@ -354,7 +397,7 @@ const InvoicePage = () => {
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedStores(checked ? locations.map((l) => l.id) : []);
+    setSelectedStores(checked ? locationList.map((l) => l.id) : []);
   };
 
   const handleConfirmReset = async () => {
@@ -384,11 +427,13 @@ const InvoicePage = () => {
     setIsSaving(true);
     try {
       const payload = new FormData();
-      payload.append("store", store);
+      payload.append("store", selectedStore);
       payload.append("showStoreName", showStoreName);
       payload.append("showAddress", showAddress);
       payload.append("showMemberInfo", showMemberInfo);
       payload.append("showLogo", showLogo);
+      payload.append("showSocialMedia", showSocialMedia);
+      payload.append("socialMediaVisibility", JSON.stringify(socialMediaVisible));
       if (logoFile) {
         payload.append("logo", logoFile);
       }
@@ -461,8 +506,47 @@ const InvoicePage = () => {
         <p className="text-sm text-muted-foreground">{t("page.invoice.description")}</p>
       </div>
 
-      {storeError ? <AbortController refetch={refetchStore} /> : (
+      {!selectedStore ? (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+            <Store size={40} className="text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t("page.invoice.title")}</h1>
+          <p className="text-muted-foreground text-lg mb-10 max-w-md">{t("page.invoice.selectStore")}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-3xl">
+            {locationList.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedStore(String(s.id))}
+                className="group relative flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                  <Store size={28} className="text-primary" />
+                </div>
+                <span className="text-lg font-semibold text-foreground">{s.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("page.priceStore.list.selectStore")}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : storeError ? (
+        <AbortController refetch={refetchStore} />
+      ) : (
         <>
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => setSelectedStore("")}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft size={18} />
+            {t("common.back")}
+          </button>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-2">
+            <Store size={18} className="text-primary" />
+            <span className="font-semibold text-lg">{storeName}</span>
+          </div>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
@@ -607,6 +691,34 @@ const InvoicePage = () => {
             </div>
           </div>
 
+          <div data-tour="invoice-social" className="bg-card rounded-xl border border-border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Globe size={18} className="text-primary" />
+                <h3 className="text-base font-semibold">{t("page.invoice.socialMedia")}</h3>
+              </div>
+              <Switch checked={showSocialMedia} onCheckedChange={setShowSocialMedia} />
+            </div>
+            {locationDetail?.socialMedia?.length ? (
+              <div className="space-y-3">
+                {locationDetail.socialMedia.map((sm, i) => (
+                  <label key={i} className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Globe size={16} className="text-muted-foreground shrink-0" />
+                      <span className="text-sm font-medium">{sm.platform}: {sm.account}</span>
+                    </div>
+                    <Switch
+                      checked={socialMediaVisible[i] ?? true}
+                      onCheckedChange={(v) => setSocialMediaVisible((prev) => ({ ...prev, [i]: v }))}
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">{t("page.invoice.noStoreAvailable")}</p>
+            )}
+          </div>
+
           <div className="flex gap-3">
             <Button
               variant="outline"
@@ -667,6 +779,9 @@ const InvoicePage = () => {
               showStoreName={showStoreName}
               showAddress={showAddress}
               showMemberInfo={showMemberInfo}
+              showSocialMedia={showSocialMedia}
+              socialMedia={locationDetail?.socialMedia || []}
+              socialMediaVisible={socialMediaVisible}
             />
           </div>
         </div>
@@ -680,7 +795,7 @@ const InvoicePage = () => {
           </DialogHeader>
 
           <div className="py-2">
-            {user?.roleType === "super_admin" && locations.length > 0 && (
+            {user?.roleType === "super_admin" && locationList.length > 0 && (
               <label className="flex items-center gap-2 pb-3 mb-3 border-b border-border cursor-pointer">
                 <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
                 <span className="text-sm font-medium">{t("common.selectAll")}</span>
@@ -689,7 +804,7 @@ const InvoicePage = () => {
 
             <ScrollArea className="max-h-[300px]">
               <div className="space-y-3">
-                {(user?.roleType === "super_admin" ? locations : [locationDetail])
+                {(user?.roleType === "super_admin" ? locationList : [locationDetail])
                   .filter(Boolean)
                   .map((loc) => (
                     <label

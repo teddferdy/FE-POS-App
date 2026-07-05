@@ -87,8 +87,8 @@ const KitchenDisplay = () => {
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
-    () => getKitchenOrders({ store: storeId }),
-    { enabled: !!storeId, refetchInterval: 15000 }
+    () => getKitchenOrders(storeId ? { store: storeId } : {}),
+    { enabled: !!storeId || storeId === "", refetchInterval: 15000 }
   );
   const orders = data?.data || [];
 
@@ -96,6 +96,9 @@ const KitchenDisplay = () => {
     if (socket && storeId) {
       socket.emit("join-kitchen", storeId);
       return () => socket.emit("leave-kitchen", storeId);
+    } else if (socket && storeId === "") {
+      socket.emit("join-kitchen", "all");
+      return () => socket.emit("leave-kitchen", "all");
     }
   }, [socket, storeId]);
 

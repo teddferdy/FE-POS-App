@@ -42,7 +42,7 @@ const TaxConfigList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -380,7 +380,17 @@ const TaxConfigList = () => {
                       </div>
                     </div>
                   }
-                  pagination={{ page, totalPages, total, onPageChange: setPage }}
+                  pagination={{
+                    page,
+                    pageSize: limit,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
                 />
               </div>
             </>

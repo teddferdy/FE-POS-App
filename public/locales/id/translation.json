@@ -3751,6 +3751,7 @@
   "page.invoice.storeName": "Store Name",
   "page.invoice.totalPoints": "Total Points",
   "page.invoice.village": "Village",
+  "page.invoice.selectStore": "Pilih toko untuk mengatur invoice",
   "page.invoice.yesReset": "Yes Reset",
   "page.kitchenDisplay.nextLabel.pending": "Ambil",
   "page.kitchenDisplay.nextLabel.preparing": "Selesai",

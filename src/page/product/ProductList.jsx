@@ -3,7 +3,18 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Edit, Trash2, Upload, Download, Package, Loader2, Eye } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Upload,
+  Download,
+  Package,
+  Loader2,
+  Eye,
+  Filter
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   getAllProductTable,
@@ -33,7 +44,7 @@ const ProductList = () => {
   const [cookie] = useCookies();
   const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
-  const [limit] = useState(12);
+  const [limit, setLimit] = useState(12);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortFilter, setSortFilter] = useState("");
@@ -42,6 +53,7 @@ const ProductList = () => {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
   const [storeFilter, setStoreFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const user = cookie?.user;
   const MENU_KEY = "/product-list";
@@ -75,8 +87,11 @@ const ProductList = () => {
 
   const { data: categoriesData } = useQuery(
     ["categories-active", storeFilter],
-    () => getAllCategoryActive({ location: effectiveLocation }),
-    { enabled: !!effectiveLocation || role !== "super_admin", staleTime: 3 * 60 * 1000 }
+    () => {
+      const loc = isSuperAdmin ? (storeFilter === "all" ? "" : storeFilter) : effectiveLocation;
+      return getAllCategoryActive({ location: loc });
+    },
+    { staleTime: 3 * 60 * 1000 }
   );
 
   const categories = categoriesData?.data || [];
@@ -642,23 +657,22 @@ const ProductList = () => {
               emptyMessage={t("page.product.list.empty")}
               emptyIcon={Package}
               toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.product.list.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder={t("page.product.list.searchSku")}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-9 text-sm"
-                      />
-                    </div>
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                  <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                    <h4 className="text-base font-semibold text-foreground shrink-0">
+                      {t("page.product.list.title")}
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 h-9 lg:hidden"
+                      onClick={() => setShowFilters(!showFilters)}>
+                      <Filter size={15} />
+                      {showFilters ? "Tutup" : "Filter"}
+                    </Button>
+                  </div>
+                  <div
+                    className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
                     <StoreFilter
                       locations={locData?.data || []}
                       value={storeFilter}
@@ -669,34 +683,53 @@ const ProductList = () => {
                       isSuperAdmin={isSuperAdmin}
                       t={t}
                     />
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="">
-                          {t("common.all")} {t("page.product.table.category")}
-                        </option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.name}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={sortFilter}
-                        onChange={(e) => setSortFilter(e.target.value)}
-                        className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                        <option value="">{t("page.product.list.filter.newest")}</option>
-                        <option value="price-asc">
-                          {t("page.product.list.filter.priceLowHigh")}
-                        </option>
-                        <option value="price-desc">
-                          {t("page.product.list.filter.priceHighLow")}
-                        </option>
-                        <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
-                      </select>
+                    <div className="relative min-w-0 flex-[1_1_180px]">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.product.list.searchSku")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
                     </div>
+                    <select
+                      value={categoryFilter}
+                      onChange={(e) => {
+                        setCategoryFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                      <option value="">
+                        {t("common.all")} {t("page.product.table.category")}
+                      </option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={sortFilter}
+                      onChange={(e) => {
+                        setSortFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                      <option value="">{t("page.product.list.filter.newest")}</option>
+                      <option value="price-asc">
+                        {t("page.product.list.filter.priceLowHigh")}
+                      </option>
+                      <option value="price-desc">
+                        {t("page.product.list.filter.priceHighLow")}
+                      </option>
+                      <option value="stock-asc">{t("page.product.list.filter.stockLow")}</option>
+                    </select>
                   </div>
                 </div>
               }
@@ -704,7 +737,12 @@ const ProductList = () => {
                 page,
                 totalPages,
                 total,
-                onPageChange: setPage
+                onPageChange: setPage,
+                pageSize: limit,
+                onPageSizeChange: (v) => {
+                  setLimit(v);
+                  setPage(1);
+                }
               }}
             />
           </div>
