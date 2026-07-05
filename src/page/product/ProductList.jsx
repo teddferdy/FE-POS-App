@@ -81,15 +81,16 @@ const ProductList = () => {
 
   const { data, isLoading } = useQuery(
     ["products", page, limit, storeFilter, search, categoryFilter, sortFilter],
-    () => getAllProductTable({
-      location: effectiveLocation,
-      page,
-      limit,
-      statusProduct: "all",
-      search,
-      category: categoryFilter,
-      sort: sortFilter
-    }),
+    () =>
+      getAllProductTable({
+        location: effectiveLocation,
+        page,
+        limit,
+        statusProduct: "all",
+        search,
+        category: categoryFilter,
+        sort: sortFilter
+      }),
     { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
 
@@ -446,9 +447,7 @@ const ProductList = () => {
             } catch (err) {
               toast.error(t("common.error"), {
                 description:
-                  err?.response?.data?.message ||
-                  err.message ||
-                  t("page.product.toast.dataError")
+                  err?.response?.data?.message || err.message || t("page.product.toast.dataError")
               });
             } finally {
               setIsDownloadingData(false);
@@ -511,7 +510,6 @@ const ProductList = () => {
         <NoStore />
       ) : (
         <div data-tour="page-products">
-
           <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label={t("page.product.stats.total")}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { BrowserRouter, Routes, Navigate, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RouteProgress from "@/components/ui/route-progress";
 import { useTranslation } from "react-i18next";
 import { translationSelect } from "@/state/translation";
@@ -249,7 +249,10 @@ const DetailExpense = React.lazy(() => import("./page/expense/DetailExpense"));
 // FAQ
 const SupportComponent = React.lazy(() => import("@/components/organism/Support"));
 
-const ShortcutHandler = () => { useKeyboardShortcuts(); return null; };
+const ShortcutHandler = () => {
+  useKeyboardShortcuts();
+  return null;
+};
 
 const Support = React.lazy(() => import("./page/support"));
 
@@ -289,187 +292,190 @@ function App() {
           <RouteProgress />
           <ShortcutHandler />
           <ErrorBoundary>
-          <Routes>
-            {/* Auth (no layout) */}
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/home" element={<CashierPage />} />
-            <Route path="/customer-order" element={<CustomerOrder />} />
-            <Route path="/customer-order/menu/:id" element={<CustomerOrderDetail />} />
-            <Route path="/customer-order/cart" element={<CustomerOrderCart />} />
-            <Route path="/customer-order/tracking/:id" element={<CustomerOrderTracking />} />
-            <Route path="/customer-display" element={<CustomerDisplay />} />
+            <Routes>
+              {/* Auth (no layout) */}
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/home" element={<CashierPage />} />
+              <Route path="/customer-order" element={<CustomerOrder />} />
+              <Route path="/customer-order/menu/:id" element={<CustomerOrderDetail />} />
+              <Route path="/customer-order/cart" element={<CustomerOrderCart />} />
+              <Route path="/customer-order/tracking/:id" element={<CustomerOrderTracking />} />
+              <Route path="/customer-display" element={<CustomerDisplay />} />
 
-            {/* App layout: sidebar & header persist across route changes */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard-super-admin" element={<Dashboard />} />
-              <Route path="/dashboard-admin" element={<Dashboard />} />
-              <Route path="/kitchen-display" element={<KitchenDisplay />} />
-              <Route path="/qr-order-management" element={<CustomerOrderManagement />} />
+              {/* App layout: sidebar & header persist across route changes */}
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard-super-admin" element={<Dashboard />} />
+                <Route path="/dashboard-admin" element={<Dashboard />} />
+                <Route path="/kitchen-display" element={<KitchenDisplay />} />
+                <Route path="/qr-order-management" element={<CustomerOrderManagement />} />
 
-              <Route path="/reservation" element={<ReservationList />} />
-              <Route path="/add-reservation" element={<AddReservation />} />
-              <Route path="/edit-reservation" element={<EditReservation />} />
-              <Route path="/reservation/:id" element={<DetailReservation />} />
+                <Route path="/reservation" element={<ReservationList />} />
+                <Route path="/add-reservation" element={<AddReservation />} />
+                <Route path="/edit-reservation" element={<EditReservation />} />
+                <Route path="/reservation/:id" element={<DetailReservation />} />
 
-              <Route path="/product-list" element={<ProductList />} />
-              <Route path="/add-product" element={<AddProduct />} />
-              <Route path="/edit-product" element={<EditProduct />} />
-              <Route path="/detail-product/:id" element={<DetailProduct />} />
+                <Route path="/product-list" element={<ProductList />} />
+                <Route path="/add-product" element={<AddProduct />} />
+                <Route path="/edit-product" element={<EditProduct />} />
+                <Route path="/detail-product/:id" element={<DetailProduct />} />
 
-              <Route path="/category-list" element={<CategoryList />} />
-              <Route path="/add-category" element={<AddCategory />} />
-              <Route path="/edit-category" element={<EditCategory />} />
-              <Route path="/detail-category" element={<DetailCategory />} />
+                <Route path="/category-list" element={<CategoryList />} />
+                <Route path="/add-category" element={<AddCategory />} />
+                <Route path="/edit-category" element={<EditCategory />} />
+                <Route path="/detail-category" element={<DetailCategory />} />
 
-              <Route path="/member-list" element={<MemberList />} />
-              <Route path="/add-member" element={<AddMember />} />
-              <Route path="/edit-member" element={<EditMember />} />
-              <Route path="/detail-member" element={<MemberDetail />} />
-              <Route path="/member-point-history" element={<MemberPointHistory />} />
+                <Route path="/member-list" element={<MemberList />} />
+                <Route path="/add-member" element={<AddMember />} />
+                <Route path="/edit-member" element={<EditMember />} />
+                <Route path="/detail-member" element={<MemberDetail />} />
+                <Route path="/member-point-history" element={<MemberPointHistory />} />
 
-              <Route path="/member-tier" element={<MemberTier />} />
-              <Route path="/add-member-tier" element={<AddMemberTier title="Add Member Tier" />} />
-              <Route path="/edit-member-tier/:id" element={<EditMemberTier />} />
-              <Route path="/detail-member-tier" element={<DetailMemberTier />} />
+                <Route path="/member-tier" element={<MemberTier />} />
+                <Route
+                  path="/add-member-tier"
+                  element={<AddMemberTier title="Add Member Tier" />}
+                />
+                <Route path="/edit-member-tier/:id" element={<EditMemberTier />} />
+                <Route path="/detail-member-tier" element={<DetailMemberTier />} />
 
-              <Route path="/discount-list" element={<DiscountList />} />
-              <Route path="/add-discount" element={<AddDiscount />} />
-              <Route path="/edit-discount" element={<EditDiscount />} />
-              <Route path="/detail-discount" element={<DetailDiscount />} />
+                <Route path="/discount-list" element={<DiscountList />} />
+                <Route path="/add-discount" element={<AddDiscount />} />
+                <Route path="/edit-discount" element={<EditDiscount />} />
+                <Route path="/detail-discount" element={<DetailDiscount />} />
 
-              <Route path="/accounts-receivable" element={<AccountsReceivableList />} />
-              <Route path="/accounts-receivable/detail" element={<AccountsReceivableDetail />} />
-              <Route path="/ar-payment" element={<ARPaymentList />} />
+                <Route path="/accounts-receivable" element={<AccountsReceivableList />} />
+                <Route path="/accounts-receivable/detail" element={<AccountsReceivableDetail />} />
+                <Route path="/ar-payment" element={<ARPaymentList />} />
 
-              <Route path="/type-payment-list" element={<TypePaymentList />} />
-              <Route path="/add-type-payment" element={<AddTypePayment />} />
-              <Route path="/edit-type-payment" element={<EditTypePayment />} />
-              <Route path="/detail-type-payment" element={<DetailTypePayment />} />
+                <Route path="/type-payment-list" element={<TypePaymentList />} />
+                <Route path="/add-type-payment" element={<AddTypePayment />} />
+                <Route path="/edit-type-payment" element={<EditTypePayment />} />
+                <Route path="/detail-type-payment" element={<DetailTypePayment />} />
 
-              <Route path="/shift-list" element={<ShiftList />} />
-              <Route path="/add-shift" element={<AddShift />} />
-              <Route path="/edit-shift" element={<EditShift />} />
+                <Route path="/shift-list" element={<ShiftList />} />
+                <Route path="/add-shift" element={<AddShift />} />
+                <Route path="/edit-shift" element={<EditShift />} />
 
-              <Route path="/user-list" element={<AdminList />} />
-              <Route path="/add-user" element={<AddAdmin />} />
-              <Route path="/add-employee" element={<AddEmployee />} />
-              <Route path="/edit-employee" element={<EditEmployee />} />
-              <Route path="/add-role" element={<AddRole />} />
-              <Route path="/edit-role/:id" element={<EditRole />} />
-              <Route path="/detail-role/:id" element={<DetailRole />} />
-              <Route path="/role-management" element={<RoleManagement />} />
-              <Route path="/employee-list" element={<EmployeeList />} />
-              <Route path="/detail-employee" element={<DetailEmployee />} />
+                <Route path="/user-list" element={<AdminList />} />
+                <Route path="/add-user" element={<AddAdmin />} />
+                <Route path="/add-employee" element={<AddEmployee />} />
+                <Route path="/edit-employee" element={<EditEmployee />} />
+                <Route path="/add-role" element={<AddRole />} />
+                <Route path="/edit-role/:id" element={<EditRole />} />
+                <Route path="/detail-role/:id" element={<DetailRole />} />
+                <Route path="/role-management" element={<RoleManagement />} />
+                <Route path="/employee-list" element={<EmployeeList />} />
+                <Route path="/detail-employee" element={<DetailEmployee />} />
 
-              <Route path="/location-list" element={<LocationList />} />
-              <Route path="/add-location" element={<AddLocation />} />
-              <Route path="/edit-location" element={<EditLocation />} />
-              <Route path="/detail-location" element={<LocationDetail />} />
-              <Route path="/store-geospatial" element={<StoreGeospatial />} />
+                <Route path="/location-list" element={<LocationList />} />
+                <Route path="/add-location" element={<AddLocation />} />
+                <Route path="/edit-location" element={<EditLocation />} />
+                <Route path="/detail-location" element={<LocationDetail />} />
+                <Route path="/store-geospatial" element={<StoreGeospatial />} />
 
-              <Route path="/invoice-page" element={<InvoicePage />} />
+                <Route path="/invoice-page" element={<InvoicePage />} />
 
-              <Route path="/position-list" element={<PositionList />} />
-              <Route path="/add-position" element={<AddPosition />} />
-              <Route path="/edit-position" element={<EditPosition />} />
-              <Route path="/detail-position" element={<DetailPosition />} />
-              <Route path="/department-list" element={<DepartmentList />} />
-              <Route path="/add-department" element={<AddDepartment />} />
-              <Route path="/edit-department" element={<EditDepartment />} />
-              <Route path="/detail-department" element={<DetailDepartment />} />
+                <Route path="/position-list" element={<PositionList />} />
+                <Route path="/add-position" element={<AddPosition />} />
+                <Route path="/edit-position" element={<EditPosition />} />
+                <Route path="/detail-position" element={<DetailPosition />} />
+                <Route path="/department-list" element={<DepartmentList />} />
+                <Route path="/add-department" element={<AddDepartment />} />
+                <Route path="/edit-department" element={<EditDepartment />} />
+                <Route path="/detail-department" element={<DetailDepartment />} />
 
-              <Route path="/table-list" element={<TableList />} />
+                <Route path="/table-list" element={<TableList />} />
 
-              <Route path="/supplier" element={<SupplierList />} />
-              <Route path="/add-supplier" element={<AddSupplier />} />
-              <Route path="/edit-supplier" element={<EditSupplier />} />
-              <Route path="/detail-supplier" element={<DetailSupplier />} />
+                <Route path="/supplier" element={<SupplierList />} />
+                <Route path="/add-supplier" element={<AddSupplier />} />
+                <Route path="/edit-supplier" element={<EditSupplier />} />
+                <Route path="/detail-supplier" element={<DetailSupplier />} />
 
-              <Route path="/ingredient" element={<IngredientList />} />
-              <Route path="/add-ingredient" element={<AddIngredient />} />
-              <Route path="/edit-ingredient" element={<EditIngredient />} />
-              <Route path="/detail-ingredient" element={<DetailIngredient />} />
+                <Route path="/ingredient" element={<IngredientList />} />
+                <Route path="/add-ingredient" element={<AddIngredient />} />
+                <Route path="/edit-ingredient" element={<EditIngredient />} />
+                <Route path="/detail-ingredient" element={<DetailIngredient />} />
 
-              <Route path="/ingredient-category" element={<IngredientCategoryList />} />
-              <Route path="/add-ingredient-category" element={<AddIngredientCategory />} />
-              <Route path="/edit-ingredient-category" element={<EditIngredientCategory />} />
+                <Route path="/ingredient-category" element={<IngredientCategoryList />} />
+                <Route path="/add-ingredient-category" element={<AddIngredientCategory />} />
+                <Route path="/edit-ingredient-category" element={<EditIngredientCategory />} />
 
-              <Route path="/tax-list" element={<TaxConfigList />} />
-              <Route path="/add-tax" element={<AddTaxConfig />} />
-              <Route path="/edit-tax" element={<EditTaxConfig />} />
+                <Route path="/tax-list" element={<TaxConfigList />} />
+                <Route path="/add-tax" element={<AddTaxConfig />} />
+                <Route path="/edit-tax" element={<EditTaxConfig />} />
 
-              <Route path="/purchase-order" element={<PurchaseOrderList />} />
-              <Route path="/add-purchase-order" element={<AddPurchaseOrder />} />
-              <Route path="/purchase-order/detail" element={<DetailPurchaseOrder />} />
-              <Route path="/edit-purchase-order" element={<EditPurchaseOrder />} />
-              <Route path="/purchase-payment" element={<PurchasePaymentList />} />
-              <Route path="/purchase-payment-detail" element={<PurchasePaymentDetail />} />
-              <Route path="/ap-dashboard" element={<DashboardUtang />} />
+                <Route path="/purchase-order" element={<PurchaseOrderList />} />
+                <Route path="/add-purchase-order" element={<AddPurchaseOrder />} />
+                <Route path="/purchase-order/detail" element={<DetailPurchaseOrder />} />
+                <Route path="/edit-purchase-order" element={<EditPurchaseOrder />} />
+                <Route path="/purchase-payment" element={<PurchasePaymentList />} />
+                <Route path="/purchase-payment-detail" element={<PurchasePaymentDetail />} />
+                <Route path="/ap-dashboard" element={<DashboardUtang />} />
 
-              <Route path="/production-order" element={<ProductionOrderList />} />
-              <Route path="/add-production-order" element={<AddProductionOrder />} />
-              <Route path="/production-order/detail" element={<DetailProductionOrder />} />
+                <Route path="/production-order" element={<ProductionOrderList />} />
+                <Route path="/add-production-order" element={<AddProductionOrder />} />
+                <Route path="/production-order/detail" element={<DetailProductionOrder />} />
 
-              <Route path="/goods-receipt" element={<GoodsReceiptList />} />
-              <Route path="/add-goods-receipt" element={<AddGoodsReceipt />} />
-              <Route path="/goods-receipt/detail" element={<DetailGoodsReceipt />} />
-              <Route path="/edit-goods-receipt" element={<EditGoodsReceipt />} />
+                <Route path="/goods-receipt" element={<GoodsReceiptList />} />
+                <Route path="/add-goods-receipt" element={<AddGoodsReceipt />} />
+                <Route path="/goods-receipt/detail" element={<DetailGoodsReceipt />} />
+                <Route path="/edit-goods-receipt" element={<EditGoodsReceipt />} />
 
-              <Route path="/sales-return" element={<SalesReturnList />} />
-              <Route path="/sales-return/detail" element={<DetailSalesReturn />} />
+                <Route path="/sales-return" element={<SalesReturnList />} />
+                <Route path="/sales-return/detail" element={<DetailSalesReturn />} />
 
-              <Route path="/purchase-return" element={<PurchaseReturnList />} />
-              <Route path="/purchase-return/detail" element={<DetailPurchaseReturn />} />
+                <Route path="/purchase-return" element={<PurchaseReturnList />} />
+                <Route path="/purchase-return/detail" element={<DetailPurchaseReturn />} />
 
-              <Route path="/stock-transfer" element={<StockTransferList />} />
-              <Route path="/add-stock-transfer" element={<AddStockTransfer />} />
-              <Route path="/stock-transfer/detail" element={<DetailStockTransfer />} />
+                <Route path="/stock-transfer" element={<StockTransferList />} />
+                <Route path="/add-stock-transfer" element={<AddStockTransfer />} />
+                <Route path="/stock-transfer/detail" element={<DetailStockTransfer />} />
 
-              <Route path="/cash-register/open-close" element={<CashRegisterOpenClose />} />
-              <Route path="/cash-register/current" element={<CashRegisterCurrent />} />
-              <Route path="/cash-register/history" element={<CashRegisterHistory />} />
-              <Route path="/cash-register/history/detail" element={<CashRegisterDetail />} />
+                <Route path="/cash-register/open-close" element={<CashRegisterOpenClose />} />
+                <Route path="/cash-register/current" element={<CashRegisterCurrent />} />
+                <Route path="/cash-register/history" element={<CashRegisterHistory />} />
+                <Route path="/cash-register/history/detail" element={<CashRegisterDetail />} />
 
-              <Route path="/price-list-template" element={<PriceStoreList />} />
+                <Route path="/price-list-template" element={<PriceStoreList />} />
 
-              <Route path="/bom" element={<BomList />} />
-              <Route path="/bom/add" element={<AddBom />} />
-              <Route path="/bom/detail" element={<DetailBom />} />
+                <Route path="/bom" element={<BomList />} />
+                <Route path="/bom/add" element={<AddBom />} />
+                <Route path="/bom/detail" element={<DetailBom />} />
 
-              <Route path="/stock-opname" element={<StockOpnameList />} />
-              <Route path="/stock-opname/detail" element={<DetailStockOpname />} />
-              <Route path="/add-stock-opname" element={<AddStockOpname />} />
+                <Route path="/stock-opname" element={<StockOpnameList />} />
+                <Route path="/stock-opname/detail" element={<DetailStockOpname />} />
+                <Route path="/add-stock-opname" element={<AddStockOpname />} />
 
-              <Route path="/stock-history" element={<StockHistory />} />
-              <Route path="/low-stock" element={<LowStock />} />
-              <Route path="/low-stock-all" element={<LowStockAll />} />
-              <Route path="/stock-adjustment" element={<StockAdjustment />} />
-              <Route path="/notification" element={<NotificationPage />} />
+                <Route path="/stock-history" element={<StockHistory />} />
+                <Route path="/low-stock" element={<LowStock />} />
+                <Route path="/low-stock-all" element={<LowStockAll />} />
+                <Route path="/stock-adjustment" element={<StockAdjustment />} />
+                <Route path="/notification" element={<NotificationPage />} />
 
-              <Route path="/expense-category" element={<ExpenseCategoryList />} />
-              <Route path="/add-expense-category" element={<AddExpenseCategory />} />
-              <Route path="/edit-expense-category" element={<EditExpenseCategory />} />
-              <Route path="/detail-expense-category" element={<ExpenseCategoryDetail />} />
+                <Route path="/expense-category" element={<ExpenseCategoryList />} />
+                <Route path="/add-expense-category" element={<AddExpenseCategory />} />
+                <Route path="/edit-expense-category" element={<EditExpenseCategory />} />
+                <Route path="/detail-expense-category" element={<ExpenseCategoryDetail />} />
 
-              <Route path="/expense" element={<ExpenseList />} />
-              <Route path="/add-expense" element={<AddExpense />} />
-              <Route path="/edit-expense" element={<EditExpense />} />
-              <Route path="/detail-expense" element={<DetailExpense />} />
+                <Route path="/expense" element={<ExpenseList />} />
+                <Route path="/add-expense" element={<AddExpense />} />
+                <Route path="/edit-expense" element={<EditExpense />} />
+                <Route path="/detail-expense" element={<DetailExpense />} />
 
-              <Route path="/backup" element={<BackupPage />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/backup" element={<BackupPage />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/profile" element={<ProfilePage />} />
 
-              <Route path="/report/sales" element={<SalesReportPage />} />
-              <Route path="/best-selling" element={<BestSellingReportPage />} />
-              <Route path="/report/daily" element={<DailyReport />} />
-              <Route path="/report/profit-loss" element={<ProfitLossReport />} />
-              <Route path="/report/cash-flow" element={<CashFlowReport />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-          </Routes>
+                <Route path="/report/sales" element={<SalesReportPage />} />
+                <Route path="/best-selling" element={<BestSellingReportPage />} />
+                <Route path="/report/daily" element={<DailyReport />} />
+                <Route path="/report/profit-loss" element={<ProfitLossReport />} />
+                <Route path="/report/cash-flow" element={<CashFlowReport />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
           </ErrorBoundary>
         </Suspense>
       </BrowserRouter>

@@ -21,7 +21,8 @@ export default defineConfig({
             "react-query",
             "zustand",
             "i18next",
-            "react-i18next"
+            "react-i18next",
+            "lucide-react"
           ],
           ui: [
             "@radix-ui/react-accordion",

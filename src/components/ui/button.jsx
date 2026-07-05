@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -31,9 +32,14 @@ const buttonVariants = cva(
   }
 );
 
-const Button = React.forwardRef(({ className, variant, size, asChild = false, loading, ...props }, ref) => {
+const Button = React.forwardRef(({ className, variant, size, asChild = false, loading, children, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} disabled={props.disabled || loading} {...props} />;
+  return (
+    <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} disabled={props.disabled || loading} {...props}>
+      {loading && <Loader2 size={16} className="mr-2 animate-spin" />}
+      {children}
+    </Comp>
+  );
 });
 Button.displayName = "Button";
 
