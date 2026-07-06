@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { ShoppingCart, X, Package, Menu, Sun, Moon } from "lucide-react";
+import { ShoppingCart, X, Package, Menu, Sun, Moon, Store, ChevronRight } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getProductByOutlet } from "@/services/product";
+import { getAllLocation } from "@/services/location";
 import { orderList } from "@/state/order-list";
 import { Button } from "@/components/ui/button";
 import ProductGrid from "./components/ProductGrid";
@@ -79,6 +80,12 @@ const CashierPage = () => {
   const handleMobileMenuToggle = () => setMobileSidebarOpen((prev) => !prev);
 
   const cart = orderList();
+
+  const { data: locsData } = useQuery(["cashier-locations"], getAllLocation, {
+    enabled: !store && isSuperAdmin,
+    staleTime: 60 * 1000
+  });
+  const locationList = locsData?.data || locsData || [];
 
   const {
     data: productsData,
@@ -222,7 +229,38 @@ const CashierPage = () => {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          {isError ? (
+          {!store ? (
+            <div className="flex-1 flex items-center justify-center p-6">
+              <div className="text-center max-w-lg">
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                  <Store size={40} className="text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{t("page.cashier.storeName")}</h2>
+                <p className="text-muted-foreground mb-8">Pilih toko</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {locationList.map((loc) => (
+                    <button
+                      key={loc.id}
+                      onClick={() => {
+                        setCookie("activeStore", loc.id, { path: "/" });
+                        setCookie("activeStoreName", loc.name, { path: "/" });
+                        window.location.reload();
+                      }}
+                      className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
+                        <Store size={24} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">{loc.name}</p>
+                        <p className="text-sm text-muted-foreground">Pilih toko</p>
+                      </div>
+                      <ChevronRight size={20} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : isError ? (
             <div className="flex-1 flex items-center justify-center">
               <AbortController refetch={refetch} />
             </div>
