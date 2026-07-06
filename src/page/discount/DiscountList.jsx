@@ -47,7 +47,11 @@ const DiscountList = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/discount";
-  const locationParam = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store;
+  const locationParam = isSuperAdmin
+    ? storeFilter && storeFilter !== "all"
+      ? storeFilter
+      : ""
+    : user?.store;
 
   const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -253,86 +257,95 @@ const DiscountList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label={t("page.discount.list.total")}
-          value={statsTotal}
-          icon="local_offer"
-          variant="default"
-          subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
-        />
-        <StatCard
-          label={t("page.discount.list.active")}
-          value={activeCount}
-          icon="check_circle"
-          variant="active"
-          subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
-        />
-        <StatCard
-          label={t("common.draft")}
-          value={draftCount}
-          icon="edit_note"
-          variant="draft"
-          subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
-        />
-        <StatCard
-          label={t("page.discount.list.inactive")}
-          value={inactiveCount}
-          icon="cancel"
-          variant="inactive"
-          subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
-        />
-      </div>
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              label={t("page.discount.list.total")}
+              value={statsTotal}
+              icon="local_offer"
+              variant="default"
+              subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
+            />
+            <StatCard
+              label={t("page.discount.list.active")}
+              value={activeCount}
+              icon="check_circle"
+              variant="active"
+              subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={draftCount}
+              icon="edit_note"
+              variant="draft"
+              subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+            />
+            <StatCard
+              label={t("page.discount.list.inactive")}
+              value={inactiveCount}
+              icon="cancel"
+              variant="inactive"
+              subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+            />
+          </div>
 
-      <div data-tour="discount-table" className="mt-6">
-        <DataTable
-          columns={columns}
-          data={discounts}
-          isLoading={isLoading}
-          emptyMessage={t("page.discount.list.empty")}
-          emptyIcon={Gift}
-          toolbar={
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-              <h4 className="text-base font-semibold text-foreground">
-                {t("page.discount.list.title")}
-              </h4>
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <StoreFilter
-                  locations={locData?.data || []}
-                  value={storeFilter}
-                  onChange={(v) => { setStoreFilter(v); setPage(1); }}
-                  isSuperAdmin={isSuperAdmin}
-                  t={t}
-                />
-                <div className="relative flex-1 md:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.discount.list.search")}
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-9 h-9 text-sm"
-                  />
+          <div data-tour="discount-table" className="mt-6">
+            <DataTable
+              columns={columns}
+              data={discounts}
+              isLoading={isLoading}
+              emptyMessage={t("page.discount.list.empty")}
+              emptyIcon={Gift}
+              toolbar={
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                  <h4 className="text-base font-semibold text-foreground">
+                    {t("page.discount.list.title")}
+                  </h4>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <StoreFilter
+                      locations={locData?.data || []}
+                      value={storeFilter}
+                      onChange={(v) => {
+                        setStoreFilter(v);
+                        setPage(1);
+                      }}
+                      isSuperAdmin={isSuperAdmin}
+                      t={t}
+                    />
+                    <div className="relative flex-1 md:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.discount.list.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          }
-          pagination={{
-            page,
-            totalPages,
-            total,
-            onPageChange: setPage,
-            pageSize: limit,
-            onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-          }}
-        />
-      </div>
+              }
+              pagination={{
+                page,
+                totalPages,
+                total,
+                onPageChange: setPage,
+                pageSize: limit,
+                onPageSizeChange: (v) => {
+                  setLimit(v);
+                  setPage(1);
+                }
+              }}
+            />
+          </div>
         </>
       )}
 

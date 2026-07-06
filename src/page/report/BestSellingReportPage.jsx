@@ -21,7 +21,10 @@ const BestSellingReportPage = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const [exportLoading, setExportLoading] = useState(false);
 
-  const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const {
     data: bestSellerData,
@@ -60,7 +63,9 @@ const BestSellingReportPage = () => {
   return (
     <div data-tour="page-reports" className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
@@ -85,7 +90,9 @@ const BestSellingReportPage = () => {
         </button>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           {isError ? (
             <AbortController refetch={refetch} />

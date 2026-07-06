@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
   ShoppingCart,
   Plus,
-  Store,
   QrCode,
   UtensilsCrossed,
   ArrowRight,
@@ -84,7 +83,7 @@ const CustomerOrder = () => {
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
   const totalPrice = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-  const refreshCart = useCallback(() => setCart(loadCart()), []);
+  // const refreshCart = useCallback(() => setCart(loadCart()), []);
 
   if (!storeId) {
     return (

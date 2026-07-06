@@ -263,9 +263,7 @@ const ProductionOrderList = () => {
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">
-            {t("page.productionOrder.list.title")}
-          </span>
+          <span className="text-primary font-semibold">{t("page.productionOrder.list.title")}</span>
         </nav>
       </div>
 
@@ -285,159 +283,167 @@ const ProductionOrderList = () => {
         )}
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard
-          label={t("page.productionOrder.list.statTotal")}
-          value={stats.total ?? total}
-          icon="factory"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.productionOrder.list.statCompleted")}
-          value={stats.completed ?? 0}
-          icon="check_circle"
-          variant="active"
-        />
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard
-          label={t("page.productionOrder.list.statInProgress")}
-          value={stats.inProgress ?? 0}
-          icon="play_circle"
-          variant="yellow"
-        />
-        <StatCard
-          label={t("page.productionOrder.list.statPlanned")}
-          value={stats.planned ?? 0}
-          icon="schedule"
-          variant="blue"
-        />
-        <StatCard
-          label={t("page.productionOrder.list.statDraft")}
-          value={stats.draft ?? 0}
-          icon="edit_note"
-          variant="gray"
-        />
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
         <>
-          <div>
-            <DataTable
-              columns={columns}
-              data={filteredItems}
-              isLoading={isLoading}
-              emptyMessage={t("page.productionOrder.list.emptyMessage")}
-              emptyIcon={ClipboardList}
-              toolbar={
-                <div className="flex items-center gap-3">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => {
-                      setStatusFilter(e.target.value);
-                      setPage(1);
-                    }}
-                    className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                    <option value="all">{t("page.productionOrder.list.filterAll")}</option>
-                    {Object.entries(statusConfig).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="relative w-full sm:w-64">
-                    <Search
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    />
-                    <Input
-                      placeholder={t("page.productionOrder.list.searchPlaceholder")}
-                      value={search}
-                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                      className="pl-9 h-9 text-sm"
-                    />
-                  </div>
-                </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              label={t("page.productionOrder.list.statTotal")}
+              value={stats.total ?? total}
+              icon="factory"
+              variant="default"
+            />
+            <StatCard
+              label={t("page.productionOrder.list.statCompleted")}
+              value={stats.completed ?? 0}
+              icon="check_circle"
+              variant="active"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <StatCard
+              label={t("page.productionOrder.list.statInProgress")}
+              value={stats.inProgress ?? 0}
+              icon="play_circle"
+              variant="yellow"
+            />
+            <StatCard
+              label={t("page.productionOrder.list.statPlanned")}
+              value={stats.planned ?? 0}
+              icon="schedule"
+              variant="blue"
+            />
+            <StatCard
+              label={t("page.productionOrder.list.statDraft")}
+              value={stats.draft ?? 0}
+              icon="edit_note"
+              variant="gray"
             />
           </div>
 
-          <Modal
-            type="confirm"
-            open={!!deleteTarget}
-            onOpenChange={(o) => !o && setDeleteTarget(null)}
-            title={t("page.productionOrder.list.modalDeleteTitle")}
-            description={t("page.productionOrder.list.modalDeleteDesc")}
-            confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
-            loading={deleteMutation.isLoading}
-            onConfirm={() => deleteMutation.mutate(deleteTarget)}
-          />
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <>
+              <div>
+                <DataTable
+                  columns={columns}
+                  data={filteredItems}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.productionOrder.list.emptyMessage")}
+                  emptyIcon={ClipboardList}
+                  toolbar={
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                        <option value="all">{t("page.productionOrder.list.filterAll")}</option>
+                        {Object.entries(statusConfig).map(([k, v]) => (
+                          <option key={k} value={k}>
+                            {v.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="relative w-full sm:w-64">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.productionOrder.list.searchPlaceholder")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
+                    </div>
+                  }
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                />
+              </div>
 
-          <Modal
-            type="confirm"
-            open={!!startTarget}
-            onOpenChange={(o) => !o && setStartTarget(null)}
-            title={t("page.productionOrder.list.modalStartTitle")}
-            description={t("page.productionOrder.list.modalStartDesc")}
-            confirmText={t("page.productionOrder.list.modalStartConfirm")}
-            loading={startMutation.isLoading}
-            onConfirm={() => startMutation.mutate(startTarget)}
-          />
-
-          <Modal
-            type="form"
-            open={!!completeTarget}
-            onOpenChange={(o) => {
-              if (!o) {
-                setCompleteTarget(null);
-                setCompleteQty("");
-              }
-            }}
-            title={t("page.productionOrder.list.modalCompleteTitle")}
-            description={t("page.productionOrder.list.modalCompleteDesc")}>
-            <div className="space-y-3">
-              <label className="text-sm font-medium">
-                {t("page.productionOrder.list.modalCompleteLabel")}
-              </label>
-              <Input
-                type="number"
-                min="1"
-                value={completeQty}
-                onChange={(e) => setCompleteQty(e.target.value)}
-                placeholder={t("page.productionOrder.list.modalCompletePlaceholder")}
+              <Modal
+                type="confirm"
+                open={!!deleteTarget}
+                onOpenChange={(o) => !o && setDeleteTarget(null)}
+                title={t("page.productionOrder.list.modalDeleteTitle")}
+                description={t("page.productionOrder.list.modalDeleteDesc")}
+                confirmText={t("page.productionOrder.list.modalDeleteConfirm")}
+                loading={deleteMutation.isLoading}
+                onConfirm={() => deleteMutation.mutate(deleteTarget)}
               />
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setCompleteTarget(null);
-                  setCompleteQty("");
-                }}>
-                {t("page.productionOrder.list.modalCompleteCancel")}
-              </Button>
-              <Button
-                onClick={() =>
-                  completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })
-                }>
-                {t("page.productionOrder.list.modalCompleteConfirm")}
-              </Button>
-            </div>
-          </Modal>
-        </>
-      )}
+
+              <Modal
+                type="confirm"
+                open={!!startTarget}
+                onOpenChange={(o) => !o && setStartTarget(null)}
+                title={t("page.productionOrder.list.modalStartTitle")}
+                description={t("page.productionOrder.list.modalStartDesc")}
+                confirmText={t("page.productionOrder.list.modalStartConfirm")}
+                loading={startMutation.isLoading}
+                onConfirm={() => startMutation.mutate(startTarget)}
+              />
+
+              <Modal
+                type="form"
+                open={!!completeTarget}
+                onOpenChange={(o) => {
+                  if (!o) {
+                    setCompleteTarget(null);
+                    setCompleteQty("");
+                  }
+                }}
+                title={t("page.productionOrder.list.modalCompleteTitle")}
+                description={t("page.productionOrder.list.modalCompleteDesc")}>
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">
+                    {t("page.productionOrder.list.modalCompleteLabel")}
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={completeQty}
+                    onChange={(e) => setCompleteQty(e.target.value)}
+                    placeholder={t("page.productionOrder.list.modalCompletePlaceholder")}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setCompleteTarget(null);
+                      setCompleteQty("");
+                    }}>
+                    {t("page.productionOrder.list.modalCompleteCancel")}
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      completeMutation.mutate({ producedQty: parseInt(completeQty) || 0 })
+                    }>
+                    {t("page.productionOrder.list.modalCompleteConfirm")}
+                  </Button>
+                </div>
+              </Modal>
+            </>
+          )}
         </>
       )}
     </div>

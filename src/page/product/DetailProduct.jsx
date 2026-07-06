@@ -276,7 +276,7 @@ const DetailProduct = () => {
             <div className="border-t border-border/50 mt-5 pt-4">
               <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 {product.isOption
-                    ? t("page.product.detail.form.option")
+                  ? t("page.product.detail.form.option")
                   : t("page.product.detail.variants")}
               </p>
               <div className="space-y-2">
@@ -348,9 +348,21 @@ const DetailProduct = () => {
                   <Info size={13} />
                   {t("page.product.detail.marginTips.title")}
                 </div>
-                <p>{t("page.product.detail.marginTips.hpp")} <strong>Rp {formatPrice(product.hppPerPorsi || 0)}</strong></p>
-                <p>{t("page.product.detail.marginTips.foodCost", { sellingPrice: formatPrice(product.price || 0), hpp: formatPrice(product.hppPerPorsi || 0) })}</p>
-                <p>{t("page.product.detail.marginTips.margin", { foodCost: product.foodCostPersen || "0" })}</p>
+                <p>
+                  {t("page.product.detail.marginTips.hpp")}{" "}
+                  <strong>Rp {formatPrice(product.hppPerPorsi || 0)}</strong>
+                </p>
+                <p>
+                  {t("page.product.detail.marginTips.foodCost", {
+                    sellingPrice: formatPrice(product.price || 0),
+                    hpp: formatPrice(product.hppPerPorsi || 0)
+                  })}
+                </p>
+                <p>
+                  {t("page.product.detail.marginTips.margin", {
+                    foodCost: product.foodCostPersen || "0"
+                  })}
+                </p>
               </div>
             </div>
           )}

@@ -25,7 +25,10 @@ const BackupPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" }, { i18nKey: "sidebar.backup" }]}
+        breadcrumbs={[
+          { i18nKey: "breadcrumb.home", href: "/dashboard-super-admin" },
+          { i18nKey: "sidebar.backup" }
+        ]}
         title={t("page.backup.title")}
         description={t("page.backup.description")}
       />

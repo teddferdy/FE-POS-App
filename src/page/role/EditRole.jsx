@@ -7,7 +7,12 @@ import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
-import { buildAccessMenuPayload, parseAccessMenuToPermissions, normalizePermissionActions, findMenuPermission } from "@/utils/permission";
+import {
+  buildAccessMenuPayload,
+  parseAccessMenuToPermissions,
+  normalizePermissionActions,
+  findMenuPermission
+} from "@/utils/permission";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
@@ -91,8 +96,11 @@ const buildInitialPermissions = (groups, existingAccessMenu = {}, roleType = "")
   groups.forEach((g) => {
     g.items.forEach((item) => {
       const key = item.href;
-      const existing = normalizePermissionActions(findMenuPermission(existingAccessMenu, key)) || {};
-      const allGranted = roleType === "super_admin" || (Object.values(existing).length > 0 && Object.values(existing).every(Boolean));
+      const existing =
+        normalizePermissionActions(findMenuPermission(existingAccessMenu, key)) || {};
+      const allGranted =
+        roleType === "super_admin" ||
+        (Object.values(existing).length > 0 && Object.values(existing).every(Boolean));
       perms[key] = {};
       allActionTypes.forEach((a) => {
         if (!item.actions?.includes(a)) {

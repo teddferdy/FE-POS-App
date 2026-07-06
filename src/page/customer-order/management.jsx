@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChefHat, User, Store, QrCode, Loader2, Utensils, Search } from "lucide-react";
+import { Clock, ChefHat, User, Store, Loader2, Utensils, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,7 +116,9 @@ const CustomerOrderManagement = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
             {isSuperAdmin && (
@@ -129,7 +131,10 @@ const CustomerOrderManagement = () => {
               />
             )}
             <div className="relative flex-1 md:w-64 w-full">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
                 placeholder="Search by order number, customer name, or item..."
                 value={search}
@@ -152,7 +157,7 @@ const CustomerOrderManagement = () => {
           ) : (
             <div className="grid gap-3">
               {filtered.map((order) => {
-                const itemCount = order.items?.length || 0;
+                // const itemCount = order.items?.length || 0;
                 return (
                   <Card key={order.id} className="p-4 border-l-4 border-l-primary">
                     <div className="flex items-start justify-between gap-4">

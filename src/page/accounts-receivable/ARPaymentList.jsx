@@ -210,7 +210,10 @@ const ARPaymentList = () => {
             total: pagination.total || 0,
             onPageChange: setPage,
             pageSize: limit,
-            onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+            onPageSizeChange: (v) => {
+              setLimit(v);
+              setPage(1);
+            }
           }}
         />
       )}

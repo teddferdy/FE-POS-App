@@ -34,7 +34,10 @@ const DashboardUtang = () => {
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const { data: locData } = useQuery(["locations-ap-dashboard"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-ap-dashboard"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard);
 
@@ -161,7 +164,9 @@ const DashboardUtang = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <div>
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
@@ -174,83 +179,89 @@ const DashboardUtang = () => {
         <p className="text-sm text-muted-foreground mt-1">{t("page.apDashboard.subtitle")}</p>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {isError ? <AbortController refetch={refetch} /> : isLoading ? (
-        <Loading fullscreen size="lg" label={t("page.apDashboard.loading")} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-            <StatCard
-              label={t("page.apDashboard.card.supplierCount")}
-              value={summary.supplierCount || 0}
-              icon="business"
-            />
-            <StatCard
-              label={t("page.apDashboard.card.totalPaid")}
-              value={`Rp ${(summary.totalPaid || 0).toLocaleString("id-ID")}`}
-              icon="payments"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.apDashboard.card.totalOutstanding")}
-              value={`Rp ${(summary.totalOutstanding || 0).toLocaleString("id-ID")}`}
-              icon="account_balance"
-              variant="inactive"
-            />
-            <StatCard
-              label={t("page.apDashboard.card.outstandingPO")}
-              value={summary.outstandingPOCount || 0}
-              icon="warning"
-              variant={summary.outstandingPOCount > 0 ? "inactive" : "default"}
-            />
-          </div>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : isLoading ? (
+            <Loading fullscreen size="lg" label={t("page.apDashboard.loading")} />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                <StatCard
+                  label={t("page.apDashboard.card.supplierCount")}
+                  value={summary.supplierCount || 0}
+                  icon="business"
+                />
+                <StatCard
+                  label={t("page.apDashboard.card.totalPaid")}
+                  value={`Rp ${(summary.totalPaid || 0).toLocaleString("id-ID")}`}
+                  icon="payments"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.apDashboard.card.totalOutstanding")}
+                  value={`Rp ${(summary.totalOutstanding || 0).toLocaleString("id-ID")}`}
+                  icon="account_balance"
+                  variant="inactive"
+                />
+                <StatCard
+                  label={t("page.apDashboard.card.outstandingPO")}
+                  value={summary.outstandingPOCount || 0}
+                  icon="warning"
+                  variant={summary.outstandingPOCount > 0 ? "inactive" : "default"}
+                />
+              </div>
 
-          <Card className="p-5">
-            <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.supplierTitle")}</h3>
-            <DataTable
-              columns={supplierColumns}
-              data={suppliers}
-              isLoading={false}
-              emptyMessage={t("page.apDashboard.emptySuppliers")}
-              emptyIcon={Building2}
-            />
-          </Card>
+              <Card className="p-5">
+                <h3 className="text-lg font-semibold mb-4">
+                  {t("page.apDashboard.supplierTitle")}
+                </h3>
+                <DataTable
+                  columns={supplierColumns}
+                  data={suppliers}
+                  isLoading={false}
+                  emptyMessage={t("page.apDashboard.emptySuppliers")}
+                  emptyIcon={Building2}
+                />
+              </Card>
 
-          <Card className="p-5">
-            <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.poTitle")}</h3>
-            <DataTable
-              columns={poColumns}
-              data={outstandingPOs}
-              isLoading={false}
-              emptyMessage={t("page.apDashboard.emptyPOs")}
-              emptyIcon={Wallet}
-            />
-          </Card>
-        </>
-      )}
+              <Card className="p-5">
+                <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.poTitle")}</h3>
+                <DataTable
+                  columns={poColumns}
+                  data={outstandingPOs}
+                  isLoading={false}
+                  emptyMessage={t("page.apDashboard.emptyPOs")}
+                  emptyIcon={Wallet}
+                />
+              </Card>
+            </>
+          )}
 
-      <Dialog open={!!selectedSupplier} onOpenChange={() => setSelectedSupplier(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedSupplier?.supplierName} — {t("page.apDashboard.detailTitle")}
-            </DialogTitle>
-            <DialogDescription>
-              {supplierPOs.length} outstanding PO{supplierPOs.length !== 1 ? "s" : ""} — total
-              outstanding:{" "}
-              <strong>Rp {(selectedSupplier?.outstanding || 0).toLocaleString("id-ID")}</strong>
-            </DialogDescription>
-          </DialogHeader>
-          <DataTable
-            columns={poColumns}
-            data={supplierPOs}
-            isLoading={false}
-            emptyMessage={t("page.apDashboard.emptyPOs")}
-            emptyIcon={Wallet}
-          />
-        </DialogContent>
-      </Dialog>
+          <Dialog open={!!selectedSupplier} onOpenChange={() => setSelectedSupplier(null)}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {selectedSupplier?.supplierName} — {t("page.apDashboard.detailTitle")}
+                </DialogTitle>
+                <DialogDescription>
+                  {supplierPOs.length} outstanding PO{supplierPOs.length !== 1 ? "s" : ""} — total
+                  outstanding:{" "}
+                  <strong>Rp {(selectedSupplier?.outstanding || 0).toLocaleString("id-ID")}</strong>
+                </DialogDescription>
+              </DialogHeader>
+              <DataTable
+                columns={poColumns}
+                data={supplierPOs}
+                isLoading={false}
+                emptyMessage={t("page.apDashboard.emptyPOs")}
+                emptyIcon={Wallet}
+              />
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

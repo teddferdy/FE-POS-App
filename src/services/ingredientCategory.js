@@ -6,11 +6,18 @@ export const getAllIngredientCategory = async () => {
   return data;
 };
 
-export const getAllIngredientCategoryTable = async ({ page = 1, limit = 10, search = "", status = "" } = {}) => {
-  const params = new URLSearchParams({ page, limit })
-  if (search) params.append("search", search)
-  if (status) params.append("status", status)
-  const { data, status: httpStatus } = await axiosInstance.get(`/ingredient-category/get-all?${params.toString()}`);
+export const getAllIngredientCategoryTable = async ({
+  page = 1,
+  limit = 10,
+  search = "",
+  status = ""
+} = {}) => {
+  const params = new URLSearchParams({ page, limit });
+  if (search) params.append("search", search);
+  if (status) params.append("status", status);
+  const { data, status: httpStatus } = await axiosInstance.get(
+    `/ingredient-category/get-all?${params.toString()}`
+  );
   if (httpStatus !== 200) throw Error(`${data.message}`);
   return data;
 };

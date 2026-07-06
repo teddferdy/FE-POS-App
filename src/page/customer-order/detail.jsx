@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { axiosInstance } from "@/services";
-import { addItem, loadCart } from "./cartStore";
+import { addItem } from "./cartStore";
 
 const VAR_SEPARATOR = " • ";
 
@@ -41,8 +41,8 @@ const Detail = () => {
   const prodName = (p) => p?.name || p?.nameProduct || "-";
   const prodPrice = (p) => Number(p?.sellingPrice || p?.price || 0);
 
-  const hasVariants = (p) =>
-    p?.options?.length || p?.modifiers?.length || p?.isOption || p?.hasModifiers;
+  // const hasVariants = (p) =>
+  //   p?.options?.length || p?.modifiers?.length || p?.isOption || p?.hasModifiers;
 
   const selectOption = (groupId, optionName) =>
     setVariantSelections((prev) => ({ ...prev, [groupId]: optionName }));

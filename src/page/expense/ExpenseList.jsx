@@ -29,7 +29,10 @@ const ExpenseList = () => {
   const MENU_KEY = "/expense";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["expenses", page, limit],
@@ -289,71 +292,77 @@ const ExpenseList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-            <><div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.expense.list.total")}
-              value={total}
-              icon="money_off"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.expense.list.approved")}
-              value={approvedExpenses}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.expense.list.pending")}
-              value={pendingExpenses}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.expense.list.rejected")}
-              value={rejectedExpenses}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.expense.list.total")}
+                  value={total}
+                  icon="money_off"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.expense.list.approved")}
+                  value={approvedExpenses}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.expense.list.pending")}
+                  value={pendingExpenses}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("page.expense.list.rejected")}
+                  value={rejectedExpenses}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
 
-          <div>
-            <div className="relative w-full sm:w-72">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.expense.list.search")}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9 h-10"
-              />
-            </div>
-          </div>
+              <div>
+                <div className="relative w-full sm:w-72">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.expense.list.search")}
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-9 h-10"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <DataTable
-              columns={columns}
-              data={filtered}
-              isLoading={isLoading}
-              emptyMessage={t("page.expense.list.empty")}
-              emptyIcon={DollarSign}
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-            />
-          </div>
-        </>
-      )}
+              <div>
+                <DataTable
+                  columns={columns}
+                  data={filtered}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.expense.list.empty")}
+                  emptyIcon={DollarSign}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

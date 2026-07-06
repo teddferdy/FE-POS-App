@@ -25,7 +25,15 @@ export const getProductByOutlet = async ({ location }) => {
   return data;
 };
 
-export const getAllProductTable = async ({ location, limit, page, statusProduct, search, category, sort }) => {
+export const getAllProductTable = async ({
+  location,
+  limit,
+  page,
+  statusProduct,
+  search,
+  category,
+  sort
+}) => {
   let url = `/product/get-product-all?store=${location}&page=${page}&limit=${limit}&status=${statusProduct}`;
   if (search) url += `&search=${encodeURIComponent(search)}`;
   if (category) url += `&category=${encodeURIComponent(category)}`;

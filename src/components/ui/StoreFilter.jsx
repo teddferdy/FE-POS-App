@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { Store } from "lucide-react";
 import {
@@ -27,7 +28,9 @@ const StoreFilter = ({ locations = [], value = "", onChange, isSuperAdmin, t }) 
           <SelectValue placeholder={t?.("header.selectStore") || "Pilih Toko"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">{t?.("page.category.form.storeSection.allStores") || "Semua Toko"}</SelectItem>
+          <SelectItem value="all">
+            {t?.("page.category.form.storeSection.allStores") || "Semua Toko"}
+          </SelectItem>
           {locations.map((loc) => {
             const numId = stripLoc(loc.id);
             return (

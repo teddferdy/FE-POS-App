@@ -31,7 +31,10 @@ const ShiftList = () => {
   const MENU_KEY = "/shift-list";
   const locationParam = user?.store || "";
 
-  const { data: locData } = useQuery(["locations-shift"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-shift"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
@@ -221,75 +224,83 @@ const ShiftList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
             <>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.shift.table.name")}
-              value={statsTotal}
-              icon="schedule"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.shift.table.name")}
+                  value={statsTotal}
+                  icon="schedule"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
 
-          <div data-tour="shift-table">
-            <DataTable
-              columns={columns}
-              data={shifts}
-              isLoading={isLoading}
-              emptyIcon={Clock}
-              emptyMessage={t("page.shift.list.empty")}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.shift.list.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder={t("page.shift.list.search")}
-                        value={search}
-                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                        className="pl-9 h-9 text-sm"
-                      />
+              <div data-tour="shift-table">
+                <DataTable
+                  columns={columns}
+                  data={shifts}
+                  isLoading={isLoading}
+                  emptyIcon={Clock}
+                  emptyMessage={t("page.shift.list.empty")}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.shift.list.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                          <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            placeholder={t("page.shift.list.search")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: (p) => setPage(p),
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-            />
-          </div>
-        </>
-      )}
+                  }
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: (p) => setPage(p),
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
       <Modal

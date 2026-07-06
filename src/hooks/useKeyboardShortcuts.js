@@ -15,7 +15,10 @@ const useKeyboardShortcuts = () => {
       if (mod && e.key === "n") {
         e.preventDefault();
         const addBtn = document.querySelector('[href*="/add-"], a[href*="/tambah-"]');
-        if (addBtn) { addBtn.click(); return; }
+        if (addBtn) {
+          addBtn.click();
+          return;
+        }
         const m = window.location.pathname.match(/\/(.+?)(?:\/|$)/);
         if (m) window.location.href = `/add-${m[1].replace(/-list$/, "")}`;
       }

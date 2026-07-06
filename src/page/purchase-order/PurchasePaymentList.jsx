@@ -21,7 +21,10 @@ const PurchasePaymentList = () => {
   const [limit, setLimit] = useState(20);
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-payments", page, limit],
@@ -135,7 +138,9 @@ const PurchasePaymentList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           <div>
             <Card className="p-5">
@@ -167,7 +172,10 @@ const PurchasePaymentList = () => {
                   total,
                   onPageChange: setPage,
                   pageSize: limit,
-                  onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
                 }}
               />
             </div>

@@ -48,7 +48,9 @@ const TableList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
   const [storeFilter, setStoreFilter] = useState("all");
   const locationParam = isSuperAdmin
-    ? (storeFilter === "all" ? "" : storeFilter)
+    ? storeFilter === "all"
+      ? ""
+      : storeFilter
     : user?.store?.toString() || "";
 
   const [page, setPage] = useState(1);
@@ -148,11 +150,11 @@ const TableList = () => {
     {
       header: t("page.table.form.store"),
       render: (row) => {
-        if (typeof row.store === 'object' && row.store !== null) {
-          return row.store.name || '-'
+        if (typeof row.store === "object" && row.store !== null) {
+          return row.store.name || "-";
         }
-        const loc = (locData?.data || []).find((l) => l.id === row.store)
-        return loc?.name || row.store || '-'
+        const loc = (locData?.data || []).find((l) => l.id === row.store);
+        return loc?.name || row.store || "-";
       }
     },
     {
@@ -259,7 +261,9 @@ const TableList = () => {
         <AbortController refetch={refetch} />
       ) : (
         <>
-          {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+          {locData && (locData?.data || []).length === 0 ? (
+            <NoStore />
+          ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard
@@ -335,7 +339,10 @@ const TableList = () => {
                     total,
                     onPageChange: setPage,
                     pageSize: limit,
-                    onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
                   }}
                 />
               </div>

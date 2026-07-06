@@ -98,7 +98,7 @@ const EditDiscount = () => {
 
   const [selectedStores, setSelectedStores] = useState([]);
   const [allStores, setAllStores] = useState(true);
-  const locationParam = user?.store || "";
+  // const locationParam = user?.store || "";
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["discount", id],

@@ -241,7 +241,9 @@ const DepartmentList = () => {
       <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.department.list.title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.department.list.title")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.department.list.description")}
             </p>
@@ -336,145 +338,152 @@ const DepartmentList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <><div>
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
+        <>
           <div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <StatCard
-                label={t("page.department.list.statsTotal")}
-                value={stats?.totalDepartemen ?? total}
-                icon="domain"
-                variant="default"
-                subtitle={t("page.department.list.statsAll")}
-              />
-              <StatCard
-                label={t("page.department.list.statsActive")}
-                value={stats?.totalDepartemenAktif ?? 0}
-                icon="check_circle"
-                variant="active"
-                subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
-              />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <StatCard
-                label={t("page.department.list.statsDraft")}
-                value={stats?.totalDepartemenDraft ?? 0}
-                icon="edit_note"
-                variant="draft"
-                subtitle={
-                  stats?.totalDepartemen
-                    ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%`
-                    : "0%"
-                }
-              />
-              <StatCard
-                label={t("page.department.list.statsInactive")}
-                value={stats?.totalDepartemenNonActive ?? 0}
-                icon="cancel"
-                variant="inactive"
-                subtitle={t("page.department.list.statsAttention")}
-              />
-              <div
-                data-tour="department-stat-nodesc"
-                className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.department.list.statsNoDesc")}
-                  </p>
-                  <h3 className="text-3xl font-bold text-foreground">
-                    {stats?.totalTanpaDeskripsi ?? 0}
-                  </h3>
-                  <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">warning</span>
-                    {stats?.totalDepartemen
-                      ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
-                      : 0}
-                    {t("page.department.list.statsNoDescPercent")}
-                  </p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-3xl">warning</span>
-                </div>
+            <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StatCard
+                  label={t("page.department.list.statsTotal")}
+                  value={stats?.totalDepartemen ?? total}
+                  icon="domain"
+                  variant="default"
+                  subtitle={t("page.department.list.statsAll")}
+                />
+                <StatCard
+                  label={t("page.department.list.statsActive")}
+                  value={stats?.totalDepartemenAktif ?? 0}
+                  icon="check_circle"
+                  variant="active"
+                  subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
+                />
               </div>
-            </div>
-
-            <div data-tour="department-table" className="mt-6">
-              <DataTable
-                columns={columns}
-                data={departments}
-                isLoading={isLoading}
-                emptyMessage={t("page.department.list.empty")}
-                toolbar={
-                  <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {t("page.department.list.showLabel")}
-                      </span>
-                      <select
-                        value={limit}
-                        className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
-                        <option value={10}>{t("page.department.list.show10")}</option>
-                        <option value={25}>{t("page.department.list.show25")}</option>
-                        <option value={50}>{t("page.department.list.show50")}</option>
-                      </select>
-                    </div>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                        search
-                      </span>
-                      <input
-                        data-tour="department-search"
-                        placeholder={t("page.department.list.search")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                      />
-                    </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <StatCard
+                  label={t("page.department.list.statsDraft")}
+                  value={stats?.totalDepartemenDraft ?? 0}
+                  icon="edit_note"
+                  variant="draft"
+                  subtitle={
+                    stats?.totalDepartemen
+                      ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%`
+                      : "0%"
+                  }
+                />
+                <StatCard
+                  label={t("page.department.list.statsInactive")}
+                  value={stats?.totalDepartemenNonActive ?? 0}
+                  icon="cancel"
+                  variant="inactive"
+                  subtitle={t("page.department.list.statsAttention")}
+                />
+                <div
+                  data-tour="department-stat-nodesc"
+                  className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.department.list.statsNoDesc")}
+                    </p>
+                    <h3 className="text-3xl font-bold text-foreground">
+                      {stats?.totalTanpaDeskripsi ?? 0}
+                    </h3>
+                    <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
+                      <span className="material-symbols-outlined text-sm">warning</span>
+                      {stats?.totalDepartemen
+                        ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
+                        : 0}
+                      {t("page.department.list.statsNoDescPercent")}
+                    </p>
                   </div>
-                }
-                pagination={{
-                  page,
-                  totalPages,
-                  total,
-                  onPageChange: setPage,
-                  pageSize: limit,
-                  onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-                }}
-                rowClassName={() => "group"}
-              />
-            </div>
-
-            <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="material-symbols-outlined opacity-80">lightbulb</span>
-                <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
-                  {t("page.department.tips.title")}
-                </h4>
+                  <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-3xl">warning</span>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-2">
-                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                  <span className="text-primary-foreground/60 mt-0.5">•</span>
-                  <span>{t("page.department.tips.1")}</span>
-                </li>
-                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                  <span className="text-primary-foreground/60 mt-0.5">•</span>
-                  <span>{t("page.department.tips.2")}</span>
-                </li>
-                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                  <span className="text-primary-foreground/60 mt-0.5">•</span>
-                  <span>{t("page.department.tips.3")}</span>
-                </li>
-                <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                  <span className="text-primary-foreground/60 mt-0.5">•</span>
-                  <span>{t("page.department.tips.4")}</span>
-                </li>
-              </ul>
+
+              <div data-tour="department-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={departments}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.department.list.empty")}
+                  toolbar={
+                    <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {t("page.department.list.showLabel")}
+                        </span>
+                        <select
+                          value={limit}
+                          className="bg-background border border-border rounded px-2 py-1 text-sm text-foreground focus:ring-primary focus:border-primary">
+                          <option value={10}>{t("page.department.list.show10")}</option>
+                          <option value={25}>{t("page.department.list.show25")}</option>
+                          <option value={50}>{t("page.department.list.show50")}</option>
+                        </select>
+                      </div>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
+                          search
+                        </span>
+                        <input
+                          data-tour="department-search"
+                          placeholder={t("page.department.list.search")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 pr-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        />
+                      </div>
+                    </div>
+                  }
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                  rowClassName={() => "group"}
+                />
+              </div>
+
+              <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">
+                    {t("page.department.tips.title")}
+                  </h4>
+                </div>
+                <ul className="space-y-2">
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.department.tips.1")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.department.tips.2")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.department.tips.3")}</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>{t("page.department.tips.4")}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div></>
+        </>
       )}
 
       <Modal

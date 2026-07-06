@@ -6,13 +6,13 @@ export const sentryReactOptions = {
   dsn: "https://8ef705f2d617308ee20d72e17ec27204@o4508045420421952.ingest.us.sentry.io/4508045432255488",
   integrations: [
     new Sentry.BrowserTracing({
-      tracePropagationTargets: ["localhost", "127.0.0.1", "https://pos-app.duckdns.org"],
+      tracePropagationTargets: ["localhost", "127.0.0.1", "https://pos-app.duckdns.org"]
     }),
-    new Sentry.Replay(),
+    new Sentry.Replay()
   ],
   tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  replaysOnErrorSampleRate: 1.0
 };
 
 const SentryInitializer = () => {
@@ -26,10 +26,8 @@ const SentryInitializer = () => {
     Sentry.setUser({
       segment: isMobile ? "mobile" : isTablet ? "tablet" : "desktop",
       device_name: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
-      browser_name: navigator.userAgentData?.brands?.
-        map((brand) => brand.brand).
-        join(", "),
-      email: "admin@pos-app.duckdns.org",
+      browser_name: navigator.userAgentData?.brands?.map((brand) => brand.brand).join(", "),
+      email: "admin@pos-app.duckdns.org"
     });
   }, [location]);
 

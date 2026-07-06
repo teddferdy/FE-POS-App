@@ -836,7 +836,7 @@ export const sidebarMenuCashier = [
     href: "/member-list",
     icon: BookUser,
     actions: ["view"]
-  },
+  }
   // ponytail: hidden until implemented — dead link confuses users
   // {
   //   title: "My Shift (Coming Soon)",
@@ -1226,10 +1226,25 @@ export const urlWithArrowBack = [
   { url: -1, title: "Support", i18nKey: "sidebar.support", pathName: "/support" },
   { url: -1, title: "Profile", i18nKey: "sidebar.profile", pathName: "/profile" },
   { url: -1, title: "Backup & Restore", i18nKey: "sidebar.backup", pathName: "/backup" },
-  { url: -1, title: "Stock Adjustment", i18nKey: "sidebar.stockAdjustment", pathName: "/stock-adjustment" },
-  { url: -1, title: "Ingredient Category", i18nKey: "sidebar.ingredientCategory", pathName: "/ingredient-category" },
+  {
+    url: -1,
+    title: "Stock Adjustment",
+    i18nKey: "sidebar.stockAdjustment",
+    pathName: "/stock-adjustment"
+  },
+  {
+    url: -1,
+    title: "Ingredient Category",
+    i18nKey: "sidebar.ingredientCategory",
+    pathName: "/ingredient-category"
+  },
   { url: -1, title: "Laporan Harian", i18nKey: "sidebar.laporanHarian", pathName: "/report/daily" },
   { url: -1, title: "Laba / Rugi", i18nKey: "sidebar.labaRugi", pathName: "/report/profit-loss" },
   { url: -1, title: "Arus Kas", i18nKey: "sidebar.arusKas", pathName: "/report/cash-flow" },
-  { url: -1, title: "Store Geospatial", i18nKey: "sidebar.storeGeospatial", pathName: "/store-geospatial" }
+  {
+    url: -1,
+    title: "Store Geospatial",
+    i18nKey: "sidebar.storeGeospatial",
+    pathName: "/store-geospatial"
+  }
 ];

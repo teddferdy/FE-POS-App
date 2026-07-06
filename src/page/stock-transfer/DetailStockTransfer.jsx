@@ -4,7 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { getTransferById, receiveStockTransfer, cancelStockTransfer } from "@/services/stock-transfer";
+import {
+  getTransferById,
+  receiveStockTransfer,
+  cancelStockTransfer
+} from "@/services/stock-transfer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";

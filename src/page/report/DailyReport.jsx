@@ -22,7 +22,10 @@ const DailyReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data: locData } = useQuery(["locations-daily-report"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-daily-report"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["daily-report", startDate, endDate],
@@ -39,7 +42,9 @@ const DailyReport = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
@@ -59,7 +64,9 @@ const DailyReport = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           {isError ? (
             <AbortController refetch={refetch} />

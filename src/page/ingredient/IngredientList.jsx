@@ -36,6 +36,7 @@ const IngredientList = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [importModal, setImportModal] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
@@ -265,77 +266,77 @@ const IngredientList = () => {
             className="overflow-x-auto shrink-0"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={downloadingTemplate}
-                onClick={async () => {
-                  setDownloadingTemplate(true);
-                  try {
-                    await downloadIngredientTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.ingredient.list.toastTemplateDesc")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.ingredient.list.toastError")
-                    });
-                  } finally {
-                    setDownloadingTemplate(false);
-                  }
-                }}>
-                {downloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={16} className="mr-1" />
-                )}
-                {t("page.ingredient.list.btnTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={downloadingData}
-                onClick={async () => {
-                  setDownloadingData(true);
-                  try {
-                    await downloadIngredientExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.ingredient.list.toastExportDesc")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.ingredient.list.toastError")
-                    });
-                  } finally {
-                    setDownloadingData(false);
-                  }
-                }}>
-                {downloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <Download size={16} className="mr-1" />
-                )}
-                {t("page.ingredient.list.btnExport")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="outline" onClick={() => setImportModal(true)}>
-                <Upload size={16} className="mr-1" />
-                {t("page.ingredient.list.btnImport")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
-                <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
-              </Button>
-            )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={downloadingTemplate}
+                  onClick={async () => {
+                    setDownloadingTemplate(true);
+                    try {
+                      await downloadIngredientTemplate();
+                      toast.success(t("common.success"), {
+                        description: t("page.ingredient.list.toastTemplateDesc")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.ingredient.list.toastError")
+                      });
+                    } finally {
+                      setDownloadingTemplate(false);
+                    }
+                  }}>
+                  {downloadingTemplate ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <Download size={16} className="mr-1" />
+                  )}
+                  {t("page.ingredient.list.btnTemplate")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={downloadingData}
+                  onClick={async () => {
+                    setDownloadingData(true);
+                    try {
+                      await downloadIngredientExcel();
+                      toast.success(t("common.success"), {
+                        description: t("page.ingredient.list.toastExportDesc")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.ingredient.list.toastError")
+                      });
+                    } finally {
+                      setDownloadingData(false);
+                    }
+                  }}>
+                  {downloadingData ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <Download size={16} className="mr-1" />
+                  )}
+                  {t("page.ingredient.list.btnExport")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "import") && (
+                <Button variant="outline" onClick={() => setImportModal(true)}>
+                  <Upload size={16} className="mr-1" />
+                  {t("page.ingredient.list.btnImport")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "add") && (
+                <Button onClick={() => navigate("/add-ingredient")} className="gap-2 shadow-md">
+                  <Plus size={18} /> {t("page.ingredient.list.btnAdd")}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -389,7 +390,13 @@ const IngredientList = () => {
                       <StoreFilter
                         locations={locData?.data || []}
                         value={storeFilter}
-                        onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                        onChange={(v) => {
+                          setStoreFilter(v);
+                          setPage(1);
+                        }}
+                        page={page}
+                        totalPages={10}
+                        onPageChange={(p) => setPage(p)}
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
@@ -402,7 +409,13 @@ const IngredientList = () => {
                       <Input
                         placeholder={t("page.ingredient.list.searchPlaceholder")}
                         value={search}
-                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        page={page}
+                        totalPages={10}
+                        onPageChange={(p) => setPage(p)}
                         className="pl-9 h-9 text-sm"
                       />
                     </div>

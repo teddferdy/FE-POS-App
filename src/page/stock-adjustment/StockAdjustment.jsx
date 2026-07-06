@@ -111,18 +111,26 @@ const StockAdjustment = () => {
         <UserGuide guideKey="adjust-stock" />
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <div className="space-y-6">
-          {productsLoading ? <Loading /> : (
+          {productsLoading ? (
+            <Loading />
+          ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <Card className="p-6 shadow-sm border-muted space-y-5">
                 <div className="space-y-2">
                   <Label>
-                    {t("page.stockAdjustment.form.product")} <span className="text-destructive">*</span>
+                    {t("page.stockAdjustment.form.product")}{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Popover open={productOpen} onOpenChange={setProductOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className="w-full justify-between h-9">
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between h-9">
                         {product
                           ? `${product.nameProduct} (${t("page.stockAdjustment.form.stockAvailable")}: ${product.stock || 0})`
                           : t("page.stockAdjustment.form.productPlaceholder")}
@@ -131,7 +139,9 @@ const StockAdjustment = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
-                        <CommandInput placeholder={t("page.stockAdjustment.form.productPlaceholder")} />
+                        <CommandInput
+                          placeholder={t("page.stockAdjustment.form.productPlaceholder")}
+                        />
                         <CommandList>
                           <CommandEmpty>
                             {t("page.stockAdjustment.form.productPlaceholder")}

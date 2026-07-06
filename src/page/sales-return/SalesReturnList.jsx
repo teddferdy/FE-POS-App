@@ -203,84 +203,92 @@ const SalesReturnList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            isLoading={isLoading}
-            emptyMessage={t("page.salesReturn.list.emptyMessage")}
-            toolbar={
-              <div className="flex items-center gap-3">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div>
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+                isLoading={isLoading}
+                emptyMessage={t("page.salesReturn.list.emptyMessage")}
+                toolbar={
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                      <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
+                      {Object.entries(statusCfg).map(([k, v]) => (
+                        <option key={k} value={k}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative w-full sm:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.salesReturn.list.placeholder.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
                     setPage(1);
-                  }}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("page.salesReturn.list.filter.allStatus")}</option>
-                  {Object.entries(statusCfg).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="relative w-full sm:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.salesReturn.list.placeholder.search")}
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-              </div>
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          <Modal
+            type="confirm"
+            open={!!actionTarget}
+            onOpenChange={(o) => !o && setActionTarget(null)}
+            title={
+              actionType === "approve"
+                ? t("page.salesReturn.list.modal.approveTitle")
+                : t("page.salesReturn.list.modal.rejectTitle")
             }
-            pagination={{
-              page,
-              totalPages,
-              total,
-              onPageChange: setPage,
-              pageSize: limit,
-              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+            description={
+              actionType === "approve"
+                ? t("page.salesReturn.list.modal.approveDesc")
+                : t("page.salesReturn.list.modal.rejectDesc")
+            }
+            confirmText={
+              actionType === "approve"
+                ? t("page.salesReturn.list.modal.approveConfirm")
+                : t("page.salesReturn.list.modal.rejectConfirm")
+            }
+            confirmVariant={actionType === "approve" ? "default" : "destructive"}
+            onConfirm={() => {
+              if (actionType === "approve") approveMut.mutate(actionTarget);
+              else rejectMut.mutate(actionTarget);
             }}
           />
-        </div>
-      )}
-
-      <Modal
-        type="confirm"
-        open={!!actionTarget}
-        onOpenChange={(o) => !o && setActionTarget(null)}
-        title={
-          actionType === "approve"
-            ? t("page.salesReturn.list.modal.approveTitle")
-            : t("page.salesReturn.list.modal.rejectTitle")
-        }
-        description={
-          actionType === "approve"
-            ? t("page.salesReturn.list.modal.approveDesc")
-            : t("page.salesReturn.list.modal.rejectDesc")
-        }
-        confirmText={
-          actionType === "approve"
-            ? t("page.salesReturn.list.modal.approveConfirm")
-            : t("page.salesReturn.list.modal.rejectConfirm")
-        }
-        confirmVariant={actionType === "approve" ? "default" : "destructive"}
-        onConfirm={() => {
-          if (actionType === "approve") approveMut.mutate(actionTarget);
-          else rejectMut.mutate(actionTarget);
-        }}
-      />
         </>
       )}
     </div>

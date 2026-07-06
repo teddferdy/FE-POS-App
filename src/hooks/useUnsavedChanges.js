@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useBlocker } from "react-router-dom";
 
 export function useUnsavedChanges(isDirty) {
@@ -6,9 +6,7 @@ export function useUnsavedChanges(isDirty) {
 
   useEffect(() => {
     if (blocker.state === "blocked") {
-      const proceed = window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
-      );
+      const proceed = window.confirm("You have unsaved changes. Are you sure you want to leave?");
       if (proceed) blocker.proceed();
       else blocker.reset();
     }

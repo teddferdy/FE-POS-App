@@ -243,14 +243,14 @@ const CategoryList = () => {
     },
     {
       header: t("page.category.table.updatedDate"),
-      hideOn: 'lg',
+      hideOn: "lg",
       render: (cat) => (
         <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
       )
     },
     {
       header: t("common.createdBy"),
-      hideOn: 'lg',
+      hideOn: "lg",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.createdByUser?.fullName || cat.createdByUser?.userName || cat.createdBy || "-"}
@@ -259,7 +259,7 @@ const CategoryList = () => {
     },
     {
       header: t("common.modifiedBy"),
-      hideOn: 'lg',
+      hideOn: "lg",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
@@ -467,7 +467,8 @@ const CategoryList = () => {
                           {showFilters ? "Tutup" : "Filter"}
                         </Button>
                       </div>
-                      <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-2`}>
+                      <div
+                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
                         {isSuperAdmin && (
                           <StoreFilter
                             locations={locData?.data || []}
@@ -514,7 +515,10 @@ const CategoryList = () => {
                     total,
                     onPageChange: setPage,
                     pageSize: limit,
-                    onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
                   }}
                   rowClassName={() => ""}
                 />

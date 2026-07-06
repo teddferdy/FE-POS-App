@@ -174,138 +174,143 @@ const AccountsReceivableList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="grid grid-cols-1">
-        <StatCard
-          label={t("page.accountsReceivable.list.totalPiutang")}
-          value={formatCurrencyRupiah(grandTotal)}
-          icon="account_balance"
-          variant="default"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {Object.entries(agingBuckets).map(([key, bucket]) => {
-          const lk = key.toLowerCase();
-          const icon = lk.includes("paid")
-            ? "check_circle"
-            : lk.includes("overdue")
-              ? "cancel"
-              : lk.includes("unpaid")
-                ? "edit_note"
-                : lk.includes("partial")
-                  ? "schedule"
-                  : "account_balance";
-          const variant = lk.includes("paid")
-            ? "active"
-            : lk.includes("overdue")
-              ? "inactive"
-              : lk.includes("unpaid")
-                ? "draft"
-                : "default";
-          return (
-            <StatCard
-              key={key}
-              label={bucket.label}
-              value={formatCurrencyRupiah(bucket.total)}
-              icon={icon}
-              variant={variant}
-            />
-          );
-        })}
-      </div>
-
-      <div className="flex items-center gap-2">
-        {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
-          <button
-            key={s}
-            onClick={() => {
-              setStatusFilter(s);
-              setPage(1);
-            }}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-              statusFilter === s
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:bg-accent"
-            }`}>
-            {s
-              ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`)
-              : t("page.accountsReceivable.list.filterAll")}
-          </button>
-        ))}
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={arList}
-            isLoading={isLoading}
-            emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
-            emptyIcon={Receipt}
-            pagination={{
-              page,
-              totalPages: pagination.totalPages || 1,
-              total: pagination.total || 0,
-              onPageChange: setPage,
-              pageSize: limit,
-              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-            }}
-          />
-        </div>
-      )}
+        <>
+          <div className="grid grid-cols-1">
+            <StatCard
+              label={t("page.accountsReceivable.list.totalPiutang")}
+              value={formatCurrencyRupiah(grandTotal)}
+              icon="account_balance"
+              variant="default"
+            />
+          </div>
 
-      {payModal && (
-        <Modal
-          open={!!payModal}
-          onOpenChange={() => {
-            setPayModal(null);
-            setPayAmount("");
-          }}
-          title={t("page.accountsReceivable.list.modal.title")}
-          description={`${t("page.accountsReceivable.list.modal.invoice")}: ${payModal.invoiceNo} | ${t("page.accountsReceivable.list.modal.sisa")}: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
-          confirmText={t("page.accountsReceivable.list.modal.confirm")}
-          onConfirm={() => {
-            if (!payAmount || Number(payAmount) <= 0) {
-              toast.error(t("page.accountsReceivable.list.validation.noAmount"));
-              return;
-            }
-            if (Number(payAmount) > Number(payModal.outstandingAmount)) {
-              toast.error(t("page.accountsReceivable.list.validation.exceedsAmount"));
-              return;
-            }
-            payMutation.mutate({ id: payModal.id, payload: { amount: payAmount } });
-          }}
-          loading={payMutation.isLoading}>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Object.entries(agingBuckets).map(([key, bucket]) => {
+              const lk = key.toLowerCase();
+              const icon = lk.includes("paid")
+                ? "check_circle"
+                : lk.includes("overdue")
+                  ? "cancel"
+                  : lk.includes("unpaid")
+                    ? "edit_note"
+                    : lk.includes("partial")
+                      ? "schedule"
+                      : "account_balance";
+              const variant = lk.includes("paid")
+                ? "active"
+                : lk.includes("overdue")
+                  ? "inactive"
+                  : lk.includes("unpaid")
+                    ? "draft"
+                    : "default";
+              return (
+                <StatCard
+                  key={key}
+                  label={bucket.label}
+                  value={formatCurrencyRupiah(bucket.total)}
+                  icon={icon}
+                  variant={variant}
+                />
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
+              <button
+                key={s}
+                onClick={() => {
+                  setStatusFilter(s);
+                  setPage(1);
+                }}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                  statusFilter === s
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:bg-accent"
+                }`}>
+                {s
+                  ? t(`page.accountsReceivable.list.status.${statusLabelKeys[s] || s}`)
+                  : t("page.accountsReceivable.list.filterAll")}
+              </button>
+            ))}
+          </div>
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
             <div>
-              <label className="text-sm font-medium">
-                {t("page.accountsReceivable.list.modal.amountLabel")}
-              </label>
-              <Input
-                type="number"
-                value={payAmount}
-                onChange={(e) => setPayAmount(e.target.value)}
-                placeholder={t("page.accountsReceivable.list.modal.amountPlaceholder")}
+              <DataTable
+                columns={columns}
+                data={arList}
+                isLoading={isLoading}
+                emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
+                emptyIcon={Receipt}
+                pagination={{
+                  page,
+                  totalPages: pagination.totalPages || 1,
+                  total: pagination.total || 0,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
+                }}
               />
             </div>
-          </div>
-        </Modal>
-      )}
+          )}
 
-      <div>
-        <TipsCard
-          tips={[
-            t("page.accountsReceivable.list.tips.1"),
-            t("page.accountsReceivable.list.tips.2"),
-            t("page.accountsReceivable.list.tips.3"),
-            t("page.accountsReceivable.list.tips.4")
-          ]}
-        />
-      </div>
+          {payModal && (
+            <Modal
+              open={!!payModal}
+              onOpenChange={() => {
+                setPayModal(null);
+                setPayAmount("");
+              }}
+              title={t("page.accountsReceivable.list.modal.title")}
+              description={`${t("page.accountsReceivable.list.modal.invoice")}: ${payModal.invoiceNo} | ${t("page.accountsReceivable.list.modal.sisa")}: ${formatCurrencyRupiah(payModal.outstandingAmount)}`}
+              confirmText={t("page.accountsReceivable.list.modal.confirm")}
+              onConfirm={() => {
+                if (!payAmount || Number(payAmount) <= 0) {
+                  toast.error(t("page.accountsReceivable.list.validation.noAmount"));
+                  return;
+                }
+                if (Number(payAmount) > Number(payModal.outstandingAmount)) {
+                  toast.error(t("page.accountsReceivable.list.validation.exceedsAmount"));
+                  return;
+                }
+                payMutation.mutate({ id: payModal.id, payload: { amount: payAmount } });
+              }}
+              loading={payMutation.isLoading}>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium">
+                    {t("page.accountsReceivable.list.modal.amountLabel")}
+                  </label>
+                  <Input
+                    type="number"
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                    placeholder={t("page.accountsReceivable.list.modal.amountPlaceholder")}
+                  />
+                </div>
+              </div>
+            </Modal>
+          )}
+
+          <div>
+            <TipsCard
+              tips={[
+                t("page.accountsReceivable.list.tips.1"),
+                t("page.accountsReceivable.list.tips.2"),
+                t("page.accountsReceivable.list.tips.3"),
+                t("page.accountsReceivable.list.tips.4")
+              ]}
+            />
+          </div>
         </>
       )}
     </div>

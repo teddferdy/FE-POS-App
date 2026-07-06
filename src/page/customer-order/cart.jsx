@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ShoppingCart,
@@ -78,7 +78,7 @@ const Cart = () => {
   }, []);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+  // const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
 
   const discountPercent = member?.tier?.discountPercent || 0;
   const discountAmount = Math.round(subtotal * (discountPercent / 100));

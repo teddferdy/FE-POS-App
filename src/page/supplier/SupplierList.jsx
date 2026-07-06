@@ -252,161 +252,166 @@ const SupplierList = () => {
             className="overflow-x-auto shrink-0"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadSupplierTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.supplier.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.supplier.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-                )}
-                {t("page.supplier.button.downloadTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadSupplierExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.supplier.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.supplier.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
-                )}
-                {t("page.supplier.button.downloadData")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg mr-1">upload</span>
-                {t("page.supplier.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "add") && (
-              <Button
-                data-tour="supplier-add"
-                onClick={() => navigate("/add-supplier")}
-                className="shadow-md">
-                <Plus size={18} />
-                {t("page.supplier.button.add")}
-              </Button>
-            )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={isDownloadingTemplate}
+                  onClick={async () => {
+                    setIsDownloadingTemplate(true);
+                    try {
+                      await downloadSupplierTemplate();
+                      toast.success(t("common.success"), {
+                        description: t("page.supplier.toast.templateSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.supplier.toast.templateError")
+                      });
+                    } finally {
+                      setIsDownloadingTemplate(false);
+                    }
+                  }}>
+                  {isDownloadingTemplate ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                  )}
+                  {t("page.supplier.button.downloadTemplate")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={isDownloadingData}
+                  onClick={async () => {
+                    setIsDownloadingData(true);
+                    try {
+                      await downloadSupplierExcel();
+                      toast.success(t("common.success"), {
+                        description: t("page.supplier.toast.dataSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.supplier.toast.dataError")
+                      });
+                    } finally {
+                      setIsDownloadingData(false);
+                    }
+                  }}>
+                  {isDownloadingData ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">download</span>
+                  )}
+                  {t("page.supplier.button.downloadData")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "import") && (
+                <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                  <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                  {t("page.supplier.button.upload")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "add") && (
+                <Button
+                  data-tour="supplier-add"
+                  onClick={() => navigate("/add-supplier")}
+                  className="shadow-md">
+                  <Plus size={18} />
+                  {t("page.supplier.button.add")}
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StatCard
-          label={t("page.supplier.stats.total")}
-          value={total}
-          icon="business"
-          variant="default"
-        />
-        <StatCard
-          label={t("common.active")}
-          value={data?.stats?.active ?? 0}
-          icon="check_circle"
-          variant="active"
-        />
-        <StatCard
-          label={t("common.inactive")}
-          value={data?.stats?.inactive ?? 0}
-          icon="cancel"
-          variant="inactive"
-        />
-        <StatCard
-          label={t("common.draft")}
-          value={data?.stats?.draft ?? 0}
-          icon="edit_note"
-          variant="draft"
-        />
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-      <div data-tour="supplier-table">
-        <DataTable
-          columns={columns}
-          data={suppliers}
-          isLoading={isLoading}
-          emptyMessage={t("page.supplier.list.empty")}
-          emptyIcon={Building2}
-          toolbar={
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-              <h4 className="text-base font-semibold text-foreground">
-                {t("page.supplier.list.title")}
-              </h4>
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.supplier.list.search")}
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-              </div>
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatCard
+              label={t("page.supplier.stats.total")}
+              value={total}
+              icon="business"
+              variant="default"
+            />
+            <StatCard
+              label={t("common.active")}
+              value={data?.stats?.active ?? 0}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("common.inactive")}
+              value={data?.stats?.inactive ?? 0}
+              icon="cancel"
+              variant="inactive"
+            />
+            <StatCard
+              label={t("common.draft")}
+              value={data?.stats?.draft ?? 0}
+              icon="edit_note"
+              variant="draft"
+            />
+          </div>
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div data-tour="supplier-table">
+              <DataTable
+                columns={columns}
+                data={suppliers}
+                isLoading={isLoading}
+                emptyMessage={t("page.supplier.list.empty")}
+                emptyIcon={Building2}
+                toolbar={
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                    <h4 className="text-base font-semibold text-foreground">
+                      {t("page.supplier.list.title")}
+                    </h4>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="relative flex-1 md:w-64">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.supplier.list.search")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
+                }}
+              />
             </div>
-          }
-          pagination={{
-            page,
-            totalPages,
-            total,
-            onPageChange: setPage,
-            pageSize: limit,
-            onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-          }}
-        />
-      </div>
-      )}
+          )}
         </>
       )}
 

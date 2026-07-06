@@ -151,62 +151,67 @@ const BomList = () => {
         )}
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-          <div data-tour="bom-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={items}
-              isLoading={isLoading}
-              emptyMessage={t("page.bom.list.empty")}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.bom.list.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder={t("page.bom.list.searchPlaceholder")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 text-sm"
-                      />
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div data-tour="bom-table" className="mt-6">
+              <DataTable
+                columns={columns}
+                data={items}
+                isLoading={isLoading}
+                emptyMessage={t("page.bom.list.empty")}
+                toolbar={
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                    <h4 className="text-base font-semibold text-foreground">
+                      {t("page.bom.list.title")}
+                    </h4>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="relative flex-1 md:w-64">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.bom.list.searchPlaceholder")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-            />
-          </div>
-      )}
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={t("page.bom.list.modal.deleteTitle")}
-        description={t("page.bom.list.modal.deleteDescription")}
-        confirmText={t("page.bom.list.modal.confirmDelete")}
-        loading={deleteMut.isLoading}
-        onConfirm={() => deleteMut.mutate()}
-      />
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
+                }}
+              />
+            </div>
+          )}
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
+            title={t("page.bom.list.modal.deleteTitle")}
+            description={t("page.bom.list.modal.deleteDescription")}
+            confirmText={t("page.bom.list.modal.confirmDelete")}
+            loading={deleteMut.isLoading}
+            onConfirm={() => deleteMut.mutate()}
+          />
         </>
       )}
     </div>

@@ -77,7 +77,8 @@ const Dashboard = () => {
 
   const totalSales = d.totalSales || 0;
   const dailyTarget = d.dailyTarget || 0;
-  const targetPercent = dailyTarget > 0 ? Math.min(Math.round((totalSales / dailyTarget) * 100), 999) : 0;
+  const targetPercent =
+    dailyTarget > 0 ? Math.min(Math.round((totalSales / dailyTarget) * 100), 999) : 0;
   const totalOrders = d.totalOrders || 0;
   const totalProducts = d.totalProducts || 0;
   const totalMembers = d.totalMembers || 0;

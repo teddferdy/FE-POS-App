@@ -62,7 +62,10 @@ const StockOpnameList = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["stockOpname", page, limit, warehouseFilter, statusFilter],
@@ -379,159 +382,178 @@ const StockOpnameList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label={t("page.stockOpname.stats.totalAudit")}
-          value={data?.stats?.total ?? total ?? 0}
-          icon="assignment"
-          variant="default"
-          subtitle={t("page.stockOpname.stats.trend")}
-        />
-        <StatCard
-          label={t("page.stockOpname.status.completed")}
-          value={data?.stats?.completed ?? 0}
-          icon="check_circle"
-          variant="active"
-          subtitle={t("page.stockOpname.stats.completedSub")}
-        />
-        <StatCard
-          label={t("page.stockOpname.status.draft")}
-          value={data?.stats?.draft ?? 0}
-          icon="warning"
-          variant="draft"
-          subtitle={t("page.stockOpname.stats.draftSub")}
-        />
-        <StatCard
-          label={t("page.stockOpname.status.cancelled")}
-          value={data?.stats?.cancelled ?? 0}
-          icon="cancel"
-          variant="inactive"
-          subtitle={t("page.stockOpname.stats.cancelledSub")}
-        />
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            isLoading={isLoading}
-            emptyMessage={t("page.stockOpname.list.empty")}
-            emptyIcon={ClipboardList}
-            selectable
-            selectedIds={selectedItems}
-            onSelectionChange={setSelectedItems}
-            isSelectable={(row) => row.status !== "completed"}
-            rowClassName={(row) => {
-              const status = row.status || "draft";
-              const classes = [];
-              if (selectedItems.includes(row.id || row._id)) classes.push("bg-primary/5");
-              if (status === "completed") classes.push("bg-green-50/50 dark:bg-green-950/10");
-              if (status === "cancelled") classes.push("bg-red-50/50 dark:bg-red-950/10");
-              return classes.join(" ");
-            }}
-            toolbar={
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                  <h4 className="text-base font-semibold text-foreground shrink-0">
-                    {t("page.stockOpname.list.title")}
-                  </h4>
-                  <Button variant="outline" size="sm" className="gap-2 h-9 lg:hidden" onClick={() => setShowFilters(!showFilters)}>
-                    <span className="material-symbols-outlined text-base">filter_list</span>
-                    {showFilters ? "Tutup" : "Filter"}
-                  </Button>
-                </div>
-                <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap items-center gap-2`}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="relative">
-                      <select
-                        value={warehouseFilter}
-                        onChange={(e) => {
-                          setWarehouseFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                        <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
-                        <option value="utama-jkt">{t("page.stockOpname.list.warehouseUtama")}</option>
-                        <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
-                        <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
-                      </select>
-                      <ChevronLeft
-                        size={14}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                      />
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label={t("page.stockOpname.stats.totalAudit")}
+              value={data?.stats?.total ?? total ?? 0}
+              icon="assignment"
+              variant="default"
+              subtitle={t("page.stockOpname.stats.trend")}
+            />
+            <StatCard
+              label={t("page.stockOpname.status.completed")}
+              value={data?.stats?.completed ?? 0}
+              icon="check_circle"
+              variant="active"
+              subtitle={t("page.stockOpname.stats.completedSub")}
+            />
+            <StatCard
+              label={t("page.stockOpname.status.draft")}
+              value={data?.stats?.draft ?? 0}
+              icon="warning"
+              variant="draft"
+              subtitle={t("page.stockOpname.stats.draftSub")}
+            />
+            <StatCard
+              label={t("page.stockOpname.status.cancelled")}
+              value={data?.stats?.cancelled ?? 0}
+              icon="cancel"
+              variant="inactive"
+              subtitle={t("page.stockOpname.stats.cancelledSub")}
+            />
+          </div>
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div>
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+                isLoading={isLoading}
+                emptyMessage={t("page.stockOpname.list.empty")}
+                emptyIcon={ClipboardList}
+                selectable
+                selectedIds={selectedItems}
+                onSelectionChange={setSelectedItems}
+                isSelectable={(row) => row.status !== "completed"}
+                rowClassName={(row) => {
+                  const status = row.status || "draft";
+                  const classes = [];
+                  if (selectedItems.includes(row.id || row._id)) classes.push("bg-primary/5");
+                  if (status === "completed") classes.push("bg-green-50/50 dark:bg-green-950/10");
+                  if (status === "cancelled") classes.push("bg-red-50/50 dark:bg-red-950/10");
+                  return classes.join(" ");
+                }}
+                toolbar={
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
+                    <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                      <h4 className="text-base font-semibold text-foreground shrink-0">
+                        {t("page.stockOpname.list.title")}
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 h-9 lg:hidden"
+                        onClick={() => setShowFilters(!showFilters)}>
+                        <span className="material-symbols-outlined text-base">filter_list</span>
+                        {showFilters ? "Tutup" : "Filter"}
+                      </Button>
                     </div>
-                    <div className="relative">
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                        <option value="all">{t("page.stockOpname.list.allStatus")}</option>
-                        <option value="draft">{t("page.stockOpname.status.draft")}</option>
-                        <option value="completed">{t("page.stockOpname.status.completed")}</option>
-                        <option value="cancelled">{t("page.stockOpname.status.cancelled")}</option>
-                      </select>
-                      <ChevronLeft
-                        size={14}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                      />
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="relative">
+                          <select
+                            value={warehouseFilter}
+                            onChange={(e) => {
+                              setWarehouseFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                            <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
+                            <option value="utama-jkt">
+                              {t("page.stockOpname.list.warehouseUtama")}
+                            </option>
+                            <option value="bsd">{t("page.stockOpname.list.warehouseBsd")}</option>
+                            <option value="dc">{t("page.stockOpname.list.warehouseDc")}</option>
+                          </select>
+                          <ChevronLeft
+                            size={14}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                          />
+                        </div>
+                        <div className="relative">
+                          <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                              setStatusFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
+                            <option value="all">{t("page.stockOpname.list.allStatus")}</option>
+                            <option value="draft">{t("page.stockOpname.status.draft")}</option>
+                            <option value="completed">
+                              {t("page.stockOpname.status.completed")}
+                            </option>
+                            <option value="cancelled">
+                              {t("page.stockOpname.status.cancelled")}
+                            </option>
+                          </select>
+                          <ChevronLeft
+                            size={14}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
+                          />
+                        </div>
+                      </div>
+                      <div className="relative flex-1 md:w-64">
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          placeholder={t("page.stockOpname.list.searchPlaceholder")}
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                          }}
+                          className="pl-9 h-9 text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="relative flex-1 md:w-64">
-                    <Search
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    />
-                    <Input
-                      placeholder={t("page.stockOpname.list.searchPlaceholder")}
-                      value={search}
-                      onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                      className="pl-9 h-9 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            }
-            pagination={{
-              page,
-              totalPages,
-              total,
-              onPageChange: setPage,
-              pageSize: limit,
-              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-            }}
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
+                    setPage(1);
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          <Modal
+            type="confirm"
+            open={noDataModal}
+            onOpenChange={setNoDataModal}
+            title={t("page.stockOpname.list.noDataTitle")}
+            description={t("page.stockOpname.list.noDataDesc")}
+            confirmText={t("page.stockOpname.list.addButton")}
+            onConfirm={() => navigate("/add-stock-opname")}
           />
-        </div>
-      )}
 
-      <Modal
-        type="confirm"
-        open={noDataModal}
-        onOpenChange={setNoDataModal}
-        title={t("page.stockOpname.list.noDataTitle")}
-        description={t("page.stockOpname.list.noDataDesc")}
-        confirmText={t("page.stockOpname.list.addButton")}
-        onConfirm={() => navigate("/add-stock-opname")}
-      />
-
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.stockOpname.modal.deleteTitle")}
-        description={t("page.stockOpname.modal.deleteDesc")}
-        confirmText={t("page.stockOpname.modal.deleteConfirm")}
-        loading={deleteMutation.isLoading}
-        onConfirm={confirmDelete}
-      />
-      </>
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+            title={t("page.stockOpname.modal.deleteTitle")}
+            description={t("page.stockOpname.modal.deleteDesc")}
+            confirmText={t("page.stockOpname.modal.deleteConfirm")}
+            loading={deleteMutation.isLoading}
+            onConfirm={confirmDelete}
+          />
+        </>
       )}
     </div>
   );

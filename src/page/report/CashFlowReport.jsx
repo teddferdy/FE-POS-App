@@ -22,7 +22,10 @@ const CashFlowReport = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data: locData } = useQuery(["locations-cash-flow"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData } = useQuery(["locations-cash-flow"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["cash-flow", startDate, endDate],
@@ -63,7 +66,9 @@ const CashFlowReport = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
@@ -75,7 +80,9 @@ const CashFlowReport = () => {
           <h2 className="text-2xl font-bold text-foreground tracking-tight">
             {t("page.report.cashFlow.title")}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.report.cashFlow.description")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.report.cashFlow.description")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <DatePicker date={startDate} setDate={setStartDate} />
@@ -83,7 +90,9 @@ const CashFlowReport = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
           {isError ? (
             <AbortController refetch={refetch} />

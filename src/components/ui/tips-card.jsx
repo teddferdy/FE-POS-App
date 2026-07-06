@@ -22,12 +22,20 @@ const TipsCard = ({ tips = [], title: titleProp, variant = "default", className,
   const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(() => {
     if (!dismissKey) return false;
-    try { return localStorage.getItem(STORAGE_PREFIX + dismissKey) === "true"; } catch { return false; }
+    try {
+      return localStorage.getItem(STORAGE_PREFIX + dismissKey) === "true";
+    } catch {
+      return false;
+    }
   });
 
   useEffect(() => {
     if (!dismissKey) return;
-    try { localStorage.setItem(STORAGE_PREFIX + dismissKey, dismissed); } catch { /* noop */ }
+    try {
+      localStorage.setItem(STORAGE_PREFIX + dismissKey, dismissed);
+    } catch {
+      /* noop */
+    }
   }, [dismissed, dismissKey]);
 
   if (dismissed) return null;
@@ -35,7 +43,12 @@ const TipsCard = ({ tips = [], title: titleProp, variant = "default", className,
   const title = titleProp ?? t("common.tips");
   const Icon = variantIcons[variant];
   return (
-    <div className={cn("rounded-xl p-5 flex flex-col relative group", variantStyles[variant], className)}>
+    <div
+      className={cn(
+        "rounded-xl p-5 flex flex-col relative group",
+        variantStyles[variant],
+        className
+      )}>
       {dismissKey && (
         <button
           onClick={() => setDismissed(true)}

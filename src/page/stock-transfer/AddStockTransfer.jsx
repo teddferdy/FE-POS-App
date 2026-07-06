@@ -13,11 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -178,7 +174,9 @@ const AddStockTransfer = () => {
           </div>
 
           <div className="space-y-3">
-            <Label className="text-base font-semibold">{t("page.stockTransfer.add.form.items")}</Label>
+            <Label className="text-base font-semibold">
+              {t("page.stockTransfer.add.form.items")}
+            </Label>
             <div className="overflow-x-auto border rounded-xl shadow-sm">
               <table className="w-full text-sm">
                 <thead>
@@ -202,7 +200,9 @@ const AddStockTransfer = () => {
                   {items.map((item, idx) => {
                     const selectedProduct = products.find((p) => String(p.id) === item.productId);
                     return (
-                      <tr key={idx} className="border-b border-muted/10 last:border-b-0 hover:bg-muted/20 transition-colors">
+                      <tr
+                        key={idx}
+                        className="border-b border-muted/10 last:border-b-0 hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3 min-w-[220px]">
                           <div className="flex items-center gap-2">
                             <Popover>
@@ -210,7 +210,10 @@ const AddStockTransfer = () => {
                                 <button
                                   type="button"
                                   className="flex-1 flex items-center gap-2 h-9 px-3 rounded-lg border border-input bg-background text-xs hover:border-primary/50 transition-colors text-left">
-                                  <Package size={14} className="shrink-0 text-muted-foreground/40" />
+                                  <Package
+                                    size={14}
+                                    className="shrink-0 text-muted-foreground/40"
+                                  />
                                   {selectedProduct ? (
                                     <span className="flex-1 truncate font-medium">
                                       {selectedProduct.nameProduct}
@@ -247,7 +250,8 @@ const AddStockTransfer = () => {
                                             )}
                                           </div>
                                           <span className="shrink-0 text-xs font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
-                                            {t("page.stockTransfer.add.table.stock")}: {p.stock ?? 0}
+                                            {t("page.stockTransfer.add.table.stock")}:{" "}
+                                            {p.stock ?? 0}
                                           </span>
                                         </div>
                                       </CommandItem>
@@ -258,7 +262,8 @@ const AddStockTransfer = () => {
                             </Popover>
                             {selectedProduct && (
                               <span className="shrink-0 text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-1 rounded-md border border-border/50">
-                                {t("page.stockTransfer.add.table.stock")}: {selectedProduct.stock ?? 0}
+                                {t("page.stockTransfer.add.table.stock")}:{" "}
+                                {selectedProduct.stock ?? 0}
                               </span>
                             )}
                           </div>

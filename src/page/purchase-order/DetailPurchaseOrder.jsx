@@ -11,7 +11,13 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "../../components/ui/select";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -136,7 +142,9 @@ export default function DetailPurchaseOrder() {
       setPayRef("");
       loadData();
     } catch (err) {
-      toast.error(err.response?.data?.message || t("page.purchaseOrder.detail.toast.paymentRecordFailed"));
+      toast.error(
+        err.response?.data?.message || t("page.purchaseOrder.detail.toast.paymentRecordFailed")
+      );
     } finally {
       setPaySubmitting(false);
     }
@@ -155,15 +163,17 @@ export default function DetailPurchaseOrder() {
   };
 
   const openReturnModal = () => {
-    setReturnItems(po.items.map((item) => ({
-      id: item.ingredient || item.product,
-      ingredient: item.ingredient,
-      product: item.product,
-      name: item.ingredientData?.name || item.productData?.nameProduct || item.ingredientName,
-      maxQty: (item.quantity || 0) - (item.returnedQty || 0),
-      qty: 0,
-      unit: item.unit
-    })));
+    setReturnItems(
+      po.items.map((item) => ({
+        id: item.ingredient || item.product,
+        ingredient: item.ingredient,
+        product: item.product,
+        name: item.ingredientData?.name || item.productData?.nameProduct || item.ingredientName,
+        maxQty: (item.quantity || 0) - (item.returnedQty || 0),
+        qty: 0,
+        unit: item.unit
+      }))
+    );
     setReturnReason("");
     setReturnedByName("");
     setReturnModalOpen(true);
@@ -260,12 +270,16 @@ export default function DetailPurchaseOrder() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-2 text-sm">
                 <Building2 size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.supplier")}:</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.supplier")}:
+                </span>
                 <span className="font-medium">{po.supplierData?.name || "-"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Store size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.store")}:</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.store")}:
+                </span>
                 <span className="font-medium">{po.storeData?.name || "-"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
@@ -275,19 +289,25 @@ export default function DetailPurchaseOrder() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <User size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.createdBy")}:</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.createdBy")}:
+                </span>
                 <span className="font-medium">{po.createdByUser?.fullName || "-"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <CalendarDays size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.poDate")}:</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.poDate")}:
+                </span>
                 <span className="font-medium">
                   {po.orderDate ? format(new Date(po.orderDate), "dd MMM yyyy") : "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <CalendarDays size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.dueDate")}:</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.dueDate")}:
+                </span>
                 <span className="font-medium">
                   {po.dueDate ? format(new Date(po.dueDate), "dd MMM yyyy") : "-"}
                 </span>
@@ -302,7 +322,9 @@ export default function DetailPurchaseOrder() {
               {po.receivedDate && (
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 size={14} className="text-green-500 shrink-0" />
-                  <span className="text-muted-foreground">{t("page.purchaseOrder.detail.date")} Received:</span>
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.date")} Received:
+                  </span>
                   <span className="font-medium">
                     {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", { locale: localeId })}
                   </span>
@@ -311,7 +333,9 @@ export default function DetailPurchaseOrder() {
             </div>
             {po.notes && (
               <div className="mt-4 p-3 bg-muted/30 rounded-lg text-sm">
-                <p className="text-muted-foreground mb-1">{t("page.purchaseOrder.detail.notes")}:</p>
+                <p className="text-muted-foreground mb-1">
+                  {t("page.purchaseOrder.detail.notes")}:
+                </p>
                 <p className="whitespace-pre-wrap">{po.notes}</p>
               </div>
             )}
@@ -327,12 +351,24 @@ export default function DetailPurchaseOrder() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                    <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.product")}</th>
-                    <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.qty")}</th>
-                    <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.price")}</th>
-                    <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.total")}</th>
-                    <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.receivedCol")}</th>
-                    <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.returnedCol")}</th>
+                    <th className="text-left py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.product")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.qty")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.price")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.total")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.receivedCol")}
+                    </th>
+                    <th className="text-right py-3 px-4 font-medium">
+                      {t("page.purchaseOrder.detail.returnedCol")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -340,12 +376,17 @@ export default function DetailPurchaseOrder() {
                     <tr key={item.id} className="hover:bg-muted/30 transition-colors">
                       <td className="py-3 px-4">
                         <p className="font-medium">
-                          {item.ingredientData?.name || item.productData?.nameProduct || item.ingredientName || "-"}
+                          {item.ingredientData?.name ||
+                            item.productData?.nameProduct ||
+                            item.ingredientName ||
+                            "-"}
                         </p>
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
                         {item.quantity || 0}
-                        <span className="text-xs text-muted-foreground ml-1">{item.unit || ""}</span>
+                        <span className="text-xs text-muted-foreground ml-1">
+                          {item.unit || ""}
+                        </span>
                       </td>
                       <td className="py-3 px-4 text-right">
                         Rp {Number(item.price || 0).toLocaleString("id-ID")}
@@ -354,7 +395,12 @@ export default function DetailPurchaseOrder() {
                         Rp {Number(item.total || 0).toLocaleString("id-ID")}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
-                        <span className={item.receivedQuantity >= item.quantity ? "text-green-600" : "text-yellow-600"}>
+                        <span
+                          className={
+                            item.receivedQuantity >= item.quantity
+                              ? "text-green-600"
+                              : "text-yellow-600"
+                          }>
                           {item.receivedQuantity || 0} / {item.quantity || 0}
                         </span>
                       </td>
@@ -395,10 +441,18 @@ export default function DetailPurchaseOrder() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.date")}</th>
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.paymentMethod")}</th>
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.reference")}</th>
-                      <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.amount")}</th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.date")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.paymentMethod")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.reference")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.amount")}
+                      </th>
                       <th className="text-right py-3 px-4 font-medium w-10" />
                     </tr>
                   </thead>
@@ -407,11 +461,15 @@ export default function DetailPurchaseOrder() {
                       <tr key={payment.id} className="hover:bg-muted/30 transition-colors">
                         <td className="py-3 px-4">
                           {payment.paymentDate
-                            ? format(new Date(payment.paymentDate), "dd MMM yyyy, HH:mm", { locale: localeId })
+                            ? format(new Date(payment.paymentDate), "dd MMM yyyy, HH:mm", {
+                                locale: localeId
+                              })
                             : "-"}
                         </td>
                         <td className="py-3 px-4 capitalize">{payment.paymentMethod || "-"}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{payment.reference || "-"}</td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          {payment.reference || "-"}
+                        </td>
                         <td className="py-3 px-4 text-right font-mono font-bold">
                           Rp {Number(payment.amount || 0).toLocaleString("id-ID")}
                         </td>
@@ -443,10 +501,7 @@ export default function DetailPurchaseOrder() {
                 {t("page.purchaseOrder.detail.returns")}
               </h2>
               {po.status === "received" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={openReturnModal}>
+                <Button size="sm" variant="outline" onClick={openReturnModal}>
                   <Plus size={14} className="mr-1" />
                   {t("page.purchaseOrder.detail.addReturn")}
                 </Button>
@@ -461,11 +516,21 @@ export default function DetailPurchaseOrder() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 uppercase text-xs text-muted-foreground">
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.returnNo")}</th>
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.date")}</th>
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.status")}</th>
-                      <th className="text-left py-3 px-4 font-medium">{t("page.purchaseOrder.detail.returnedBy")}</th>
-                      <th className="text-right py-3 px-4 font-medium">{t("page.purchaseOrder.detail.returnAmount")}</th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.returnNo")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.date")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.status")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.returnedBy")}
+                      </th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        {t("page.purchaseOrder.detail.returnAmount")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -477,18 +542,22 @@ export default function DetailPurchaseOrder() {
                         <td className="py-3 px-4 font-medium">{r.returnNumber || "-"}</td>
                         <td className="py-3 px-4">
                           {r.createdAt
-                            ? format(new Date(r.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
+                            ? format(new Date(r.createdAt), "dd MMM yyyy, HH:mm", {
+                                locale: localeId
+                              })
                             : "-"}
                         </td>
                         <td className="py-3 px-4">
                           {(() => {
-                            const cls = r.status === "approved"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                              : r.status === "rejected"
-                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
+                            const cls =
+                              r.status === "approved"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                : r.status === "rejected"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
                             return (
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
                                 {r.status}
                               </span>
                             );
@@ -516,12 +585,18 @@ export default function DetailPurchaseOrder() {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("page.purchaseOrder.detail.total")}</span>
-                <span className="font-medium">Rp {Number(po.totalAmount || 0).toLocaleString("id-ID")}</span>
+                <span className="text-muted-foreground">
+                  {t("page.purchaseOrder.detail.total")}
+                </span>
+                <span className="font-medium">
+                  Rp {Number(po.totalAmount || 0).toLocaleString("id-ID")}
+                </span>
               </div>
               {po.discount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t("page.purchaseOrder.detail.discount")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.discount")}
+                  </span>
                   <span className="font-medium text-red-500">
                     - Rp {Number(po.discount).toLocaleString("id-ID")}
                   </span>
@@ -533,7 +608,9 @@ export default function DetailPurchaseOrder() {
               </div>
               {totalPaid > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t("page.purchaseOrder.detail.paid")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.purchaseOrder.detail.paid")}
+                  </span>
                   <span className="font-medium text-green-600">
                     Rp {Number(totalPaid).toLocaleString("id-ID")}
                   </span>
@@ -541,15 +618,21 @@ export default function DetailPurchaseOrder() {
               )}
               {remaining > 0 ? (
                 <div className="flex justify-between text-sm border-t border-border pt-3">
-                  <span className="text-muted-foreground font-medium">{t("page.purchaseOrder.detail.remaining")}</span>
+                  <span className="text-muted-foreground font-medium">
+                    {t("page.purchaseOrder.detail.remaining")}
+                  </span>
                   <span className="font-bold text-red-500">
                     Rp {Number(remaining).toLocaleString("id-ID")}
                   </span>
                 </div>
               ) : totalPaid > 0 ? (
                 <div className="flex justify-between text-sm border-t border-border pt-3">
-                  <span className="text-muted-foreground font-medium">{t("page.purchaseOrder.detail.paid")}</span>
-                  <span className="font-bold text-green-600">{t("page.purchaseOrder.detail.paid")}</span>
+                  <span className="text-muted-foreground font-medium">
+                    {t("page.purchaseOrder.detail.paid")}
+                  </span>
+                  <span className="font-bold text-green-600">
+                    {t("page.purchaseOrder.detail.paid")}
+                  </span>
                 </div>
               ) : null}
             </div>
@@ -563,7 +646,9 @@ export default function DetailPurchaseOrder() {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-border">
                 <tr>
-                  <td className="py-2 text-muted-foreground">{t("page.purchaseOrder.detail.created")}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchaseOrder.detail.created")}
+                  </td>
                   <td className="py-2 text-right">
                     {po.createdAt
                       ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
@@ -571,7 +656,9 @@ export default function DetailPurchaseOrder() {
                   </td>
                 </tr>
                 <tr>
-                  <td className="py-2 text-muted-foreground">{t("page.purchaseOrder.detail.updated")}</td>
+                  <td className="py-2 text-muted-foreground">
+                    {t("page.purchaseOrder.detail.updated")}
+                  </td>
                   <td className="py-2 text-right">
                     {po.updatedAt
                       ? format(new Date(po.updatedAt), "dd MMM yyyy, HH:mm", { locale: localeId })
@@ -580,9 +667,13 @@ export default function DetailPurchaseOrder() {
                 </tr>
                 {po.receivedDate && (
                   <tr>
-                    <td className="py-2 text-muted-foreground">{t("page.purchaseOrder.detail.receivedCol")}</td>
+                    <td className="py-2 text-muted-foreground">
+                      {t("page.purchaseOrder.detail.receivedCol")}
+                    </td>
                     <td className="py-2 text-right">
-                      {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", { locale: localeId })}
+                      {format(new Date(po.receivedDate), "dd MMM yyyy, HH:mm", {
+                        locale: localeId
+                      })}
                     </td>
                   </tr>
                 )}
@@ -598,7 +689,8 @@ export default function DetailPurchaseOrder() {
           <DialogHeader>
             <DialogTitle>{t("page.purchaseOrder.detail.recordPaymentTitle")}</DialogTitle>
             <DialogDescription>
-              {t("page.purchaseOrder.detail.remainingBill")}: Rp {Number(remaining).toLocaleString("id-ID")}
+              {t("page.purchaseOrder.detail.remainingBill")}: Rp{" "}
+              {Number(remaining).toLocaleString("id-ID")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -681,30 +773,35 @@ export default function DetailPurchaseOrder() {
             <DialogDescription>{t("page.purchaseOrder.detail.returnAmount")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 max-h-96 overflow-y-auto py-2">
-            {returnItems.map((item, idx) => (
-              item.maxQty > 0 && (
-                <div key={item.id || idx} className="flex items-center gap-3 p-3 border border-border rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">Max: {item.maxQty} {item.unit}</p>
+            {returnItems.map(
+              (item, idx) =>
+                item.maxQty > 0 && (
+                  <div
+                    key={item.id || idx}
+                    className="flex items-center gap-3 p-3 border border-border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Max: {item.maxQty} {item.unit}
+                      </p>
+                    </div>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={item.maxQty}
+                      value={item.qty || ""}
+                      onChange={(e) => {
+                        const val = Math.min(Math.max(0, Number(e.target.value)), item.maxQty);
+                        const next = [...returnItems];
+                        next[idx].qty = val;
+                        setReturnItems(next);
+                      }}
+                      className="w-20 text-right"
+                      placeholder="0"
+                    />
                   </div>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={item.maxQty}
-                    value={item.qty || ""}
-                    onChange={(e) => {
-                      const val = Math.min(Math.max(0, Number(e.target.value)), item.maxQty)
-                      const next = [...returnItems]
-                      next[idx].qty = val
-                      setReturnItems(next)
-                    }}
-                    className="w-20 text-right"
-                    placeholder="0"
-                  />
-                </div>
-              )
-            ))}
+                )
+            )}
             {returnItems.every((i) => i.maxQty <= 0) && (
               <p className="text-sm text-muted-foreground text-center py-4">
                 Semua item sudah diretur maksimal

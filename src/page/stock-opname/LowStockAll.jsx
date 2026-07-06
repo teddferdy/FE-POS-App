@@ -252,57 +252,62 @@ const LowStockAll = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="flex flex-wrap gap-4">
-        {statCards.map((card, i) => (
-          <div
-            key={i}
-            style={{
-              width: `calc((100% - ${sidebarCollapsed ? 4 : 2}rem) / ${sidebarCollapsed ? 5 : 3})`,
-              transition: "width 300ms ease"
-            }}>
-            <StatCard {...card} />
-          </div>
-        ))}
-      </div>
-
-      <TipsCard
-        variant="warning"
-        title={t("tips.lowStock")}
-        tips={[
-          t("page.lowStockAll.tip1"),
-          t("page.lowStockAll.tip2"),
-          t("page.lowStockAll.tip3"),
-          t("page.lowStockAll.tip4")
-        ]}
-      />
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <div>
-            <DataTable
-              columns={columns}
-              data={items}
-              isLoading={isLoading}
-              emptyMessage={t("page.lowStock.empty")}
-              emptyIcon={AlertTriangle}
-              toolbar={filters}
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                showingText: `Menampilkan ${items.length} dari ${total} data`,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-            />
+        <>
+          <div className="flex flex-wrap gap-4">
+            {statCards.map((card, i) => (
+              <div
+                key={i}
+                style={{
+                  width: `calc((100% - ${sidebarCollapsed ? 4 : 2}rem) / ${sidebarCollapsed ? 5 : 3})`,
+                  transition: "width 300ms ease"
+                }}>
+                <StatCard {...card} />
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+
+          <TipsCard
+            variant="warning"
+            title={t("tips.lowStock")}
+            tips={[
+              t("page.lowStockAll.tip1"),
+              t("page.lowStockAll.tip2"),
+              t("page.lowStockAll.tip3"),
+              t("page.lowStockAll.tip4")
+            ]}
+          />
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div>
+              <div>
+                <DataTable
+                  columns={columns}
+                  data={items}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.lowStock.empty")}
+                  emptyIcon={AlertTriangle}
+                  toolbar={filters}
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    showingText: `Menampilkan ${items.length} dari ${total} data`,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

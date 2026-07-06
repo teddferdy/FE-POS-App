@@ -17,9 +17,7 @@ const NoStore = () => {
         </div>
         <div>
           <p className="text-lg font-semibold text-foreground">{t("page.noStore.title")}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.noStore.description")}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.noStore.description")}</p>
         </div>
         <Button onClick={() => navigate("/add-location")}>{t("page.noStore.action")}</Button>
       </div>

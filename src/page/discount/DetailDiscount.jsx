@@ -131,7 +131,9 @@ const DetailDiscount = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.status")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.discount.table.status")}
+              </p>
               {statusBadge(discount.status, t)}
             </div>
             <div>
@@ -159,7 +161,9 @@ const DetailDiscount = () => {
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.promoCode")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.discount.form.promoCode")}
+              </p>
               <p className="font-mono text-sm">{discount.code || "-"}</p>
             </div>
             <div>
@@ -189,7 +193,9 @@ const DetailDiscount = () => {
               </p>
             </div>
             <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.description")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {t("page.discount.form.description")}
+              </p>
               <p className="font-medium">{discount.description || "-"}</p>
             </div>
           </div>

@@ -290,140 +290,147 @@ const EmployeeList = () => {
       </div>
 
       <div>
-        {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+        {locData && (locData?.data || []).length === 0 ? (
+          <NoStore />
+        ) : (
           <>
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.employee.table.total")}
-              value={total.toLocaleString() || "0"}
-              icon="groups"
-              variant="default"
-              subtitle="+12% vs bulan lalu"
-            />
-            <StatCard
-              label={t("page.employee.table.active")}
-              value={activeCount.toLocaleString() || "0"}
-              icon="check_circle"
-              variant="active"
-              subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`}
-            />
-            <StatCard
-              label={t("page.employee.table.draft")}
-              value={draftCount.toLocaleString()}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.employee.table.inactive")}
-              value={inactiveCount.toLocaleString()}
-              icon="cancel"
-              variant="inactive"
-              subtitle={t("page.employee.table.attentionNeeded")}
-            />
-          </div>
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <StatCard
+                  label={t("page.employee.table.total")}
+                  value={total.toLocaleString() || "0"}
+                  icon="groups"
+                  variant="default"
+                  subtitle="+12% vs bulan lalu"
+                />
+                <StatCard
+                  label={t("page.employee.table.active")}
+                  value={activeCount.toLocaleString() || "0"}
+                  icon="check_circle"
+                  variant="active"
+                  subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`}
+                />
+                <StatCard
+                  label={t("page.employee.table.draft")}
+                  value={draftCount.toLocaleString()}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("page.employee.table.inactive")}
+                  value={inactiveCount.toLocaleString()}
+                  icon="cancel"
+                  variant="inactive"
+                  subtitle={t("page.employee.table.attentionNeeded")}
+                />
+              </div>
 
-          <div data-tour="employee-table" className="mt-6">
-            <DataTable
-              columns={columns}
-              data={employees}
-              isLoading={isLoading}
-              emptyMessage={t("page.employee.list.empty")}
-              toolbar={
-                <div className="flex flex-wrap gap-4 items-center justify-between">
-                  <div className="flex flex-wrap gap-4 items-center flex-grow">
-                    <div className="relative min-w-[260px]">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                        search
-                      </span>
-                      <Input
-                        placeholder={t("page.employee.list.searchPlaceholder")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 w-full text-sm"
-                      />
+              <div data-tour="employee-table" className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={employees}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.employee.list.empty")}
+                  toolbar={
+                    <div className="flex flex-wrap gap-4 items-center justify-between">
+                      <div className="flex flex-wrap gap-4 items-center flex-grow">
+                        <div className="relative min-w-[260px]">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                            search
+                          </span>
+                          <Input
+                            placeholder={t("page.employee.list.searchPlaceholder")}
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            className="pl-9 h-9 w-full text-sm"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <select
+                            value={locationFilter}
+                            onChange={(e) => {
+                              setLocationFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="">{t("page.employee.list.allStores")}</option>
+                            {(locData?.data || []).map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            value={positionFilter}
+                            onChange={(e) => {
+                              setPositionFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="">{t("page.employee.list.allPositions")}</option>
+                            <option value="manager">{t("page.employee.list.manager")}</option>
+                            <option value="kasir">{t("page.employee.list.kasir")}</option>
+                            <option value="admin">{t("page.employee.list.admin")}</option>
+                            <option value="staff">{t("page.employee.list.staff")}</option>
+                            <option value="supervisor">{t("page.employee.list.supervisor")}</option>
+                          </select>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="gap-2 h-9">
+                        <span className="material-symbols-outlined text-base">tune</span>
+                        Advanced Filters
+                      </Button>
                     </div>
-                    <div className="flex gap-3">
-                      <select
-                        value={locationFilter}
-                        onChange={(e) => {
-                          setLocationFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                        <option value="">{t("page.employee.list.allStores")}</option>
-                        {(locData?.data || []).map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={positionFilter}
-                        onChange={(e) => {
-                          setPositionFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-                        <option value="">{t("page.employee.list.allPositions")}</option>
-                        <option value="manager">{t("page.employee.list.manager")}</option>
-                        <option value="kasir">{t("page.employee.list.kasir")}</option>
-                        <option value="admin">{t("page.employee.list.admin")}</option>
-                        <option value="staff">{t("page.employee.list.staff")}</option>
-                        <option value="supervisor">{t("page.employee.list.supervisor")}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="gap-2 h-9">
-                    <span className="material-symbols-outlined text-base">tune</span>
-                    Advanced Filters
-                  </Button>
+                  }
+                  pagination={{
+                    page,
+                    totalPages,
+                    total,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                  rowClassName={() => "group"}
+                />
+              </div>
+
+              <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined opacity-80">lightbulb</span>
+                  <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
                 </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-              rowClassName={() => "group"}
-            />
-          </div>
-
-          <div className="bg-gradient-to-br from-primary to-primary/90 rounded-xl p-5 flex flex-col text-primary-foreground mt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined opacity-80">lightbulb</span>
-              <h4 className="text-sm font-bold uppercase tracking-wider opacity-80">Tips</h4>
+                <ul className="space-y-2">
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>
+                      Gunakan filter cabang untuk melihat beban kerja per lokasi secara cepat.
+                    </span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>
+                      Unduh laporan karyawan dalam format Excel melalui menu download data.
+                    </span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>Pastikan data karyawan selalu diperbarui untuk akurasi penggajian.</span>
+                  </li>
+                  <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
+                    <span className="text-primary-foreground/60 mt-0.5">•</span>
+                    <span>Gunakan status aktif/nonaktif untuk mengelola akses karyawan.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <ul className="space-y-2">
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>
-                  Gunakan filter cabang untuk melihat beban kerja per lokasi secara cepat.
-                </span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>Unduh laporan karyawan dalam format Excel melalui menu download data.</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>Pastikan data karyawan selalu diperbarui untuk akurasi penggajian.</span>
-              </li>
-              <li className="text-xs leading-relaxed opacity-90 flex items-start gap-2">
-                <span className="text-primary-foreground/60 mt-0.5">•</span>
-                <span>Gunakan status aktif/nonaktif untuk mengelola akses karyawan.</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-        </>
-      )}
+          </>
+        )}
       </div>
 
       <Modal

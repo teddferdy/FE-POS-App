@@ -207,111 +207,119 @@ const PurchaseReturnList = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard
-          label={t("page.purchaseReturn.list.title")}
-          value={total}
-          icon="assignment_return"
-          variant="default"
-        />
-        <StatCard
-          label={t("page.purchaseReturn.status.approved")}
-          value={data?.stats?.approved ?? 0}
-          icon="check_circle"
-          variant="active"
-        />
-        <StatCard
-          label={t("page.purchaseReturn.status.pending")}
-          value={data?.stats?.pending ?? 0}
-          icon="hourglass_empty"
-          variant="draft"
-        />
-        <StatCard
-          label={t("page.purchaseReturn.status.rejected")}
-          value={data?.stats?.rejected ?? 0}
-          icon="cancel"
-          variant="inactive"
-        />
-      </div>
-
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
-        <div>
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            isLoading={isLoading}
-            emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
-            toolbar={
-              <div className="flex items-center gap-3">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <StatCard
+              label={t("page.purchaseReturn.list.title")}
+              value={total}
+              icon="assignment_return"
+              variant="default"
+            />
+            <StatCard
+              label={t("page.purchaseReturn.status.approved")}
+              value={data?.stats?.approved ?? 0}
+              icon="check_circle"
+              variant="active"
+            />
+            <StatCard
+              label={t("page.purchaseReturn.status.pending")}
+              value={data?.stats?.pending ?? 0}
+              icon="hourglass_empty"
+              variant="draft"
+            />
+            <StatCard
+              label={t("page.purchaseReturn.status.rejected")}
+              value={data?.stats?.rejected ?? 0}
+              icon="cancel"
+              variant="inactive"
+            />
+          </div>
+
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <div>
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+                isLoading={isLoading}
+                emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
+                toolbar={
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                      <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
+                      {Object.keys(statusCfg).map((k) => (
+                        <option key={k} value={k}>
+                          {t(`page.purchaseReturn.status.${k}`)}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative w-full sm:w-64">
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+                      <Input
+                        placeholder={t("page.purchaseReturn.list.placeholder.search")}
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setPage(1);
+                        }}
+                        className="pl-9 h-9 text-sm"
+                      />
+                    </div>
+                  </div>
+                }
+                pagination={{
+                  page,
+                  totalPages,
+                  total,
+                  onPageChange: setPage,
+                  pageSize: limit,
+                  onPageSizeChange: (v) => {
+                    setLimit(v);
                     setPage(1);
-                  }}
-                  className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                  <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
-                  {Object.keys(statusCfg).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`page.purchaseReturn.status.${k}`)}
-                    </option>
-                  ))}
-                </select>
-                <div className="relative w-full sm:w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    placeholder={t("page.purchaseReturn.list.placeholder.search")}
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-              </div>
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          <Modal
+            type="confirm"
+            open={!!actionTarget}
+            onOpenChange={(o) => !o && setActionTarget(null)}
+            title={
+              actionType === "approve"
+                ? t("page.purchaseReturn.list.modal.approveTitle")
+                : t("page.purchaseReturn.list.modal.rejectTitle")
             }
-            pagination={{
-              page,
-              totalPages,
-              total,
-              onPageChange: setPage,
-              pageSize: limit,
-              onPageSizeChange: (v) => { setLimit(v); setPage(1); }
+            description={
+              actionType === "approve"
+                ? t("page.purchaseReturn.list.modal.approveDesc")
+                : t("page.purchaseReturn.list.modal.rejectDesc")
+            }
+            confirmText={
+              actionType === "approve"
+                ? t("page.purchaseReturn.list.modal.approveConfirm")
+                : t("page.purchaseReturn.list.modal.rejectConfirm")
+            }
+            confirmVariant={actionType === "approve" ? "default" : "destructive"}
+            onConfirm={() => {
+              if (actionType === "approve") approveMut.mutate(actionTarget);
+              else rejectMut.mutate(actionTarget);
             }}
           />
-        </div>
-      )}
-
-      <Modal
-        type="confirm"
-        open={!!actionTarget}
-        onOpenChange={(o) => !o && setActionTarget(null)}
-        title={
-          actionType === "approve"
-            ? t("page.purchaseReturn.list.modal.approveTitle")
-            : t("page.purchaseReturn.list.modal.rejectTitle")
-        }
-        description={
-          actionType === "approve"
-            ? t("page.purchaseReturn.list.modal.approveDesc")
-            : t("page.purchaseReturn.list.modal.rejectDesc")
-        }
-        confirmText={
-          actionType === "approve"
-            ? t("page.purchaseReturn.list.modal.approveConfirm")
-            : t("page.purchaseReturn.list.modal.rejectConfirm")
-        }
-        confirmVariant={actionType === "approve" ? "default" : "destructive"}
-        onConfirm={() => {
-          if (actionType === "approve") approveMut.mutate(actionTarget);
-          else rejectMut.mutate(actionTarget);
-        }}
-      />
         </>
       )}
     </div>

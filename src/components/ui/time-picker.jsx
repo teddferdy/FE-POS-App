@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React from "react";
 import { Clock, Check, ChevronsUpDown } from "lucide-react";
@@ -35,7 +36,10 @@ const TIME_PRESETS = [
   { label: "Malam", value: "20:00" }
 ];
 
-export const TimePicker = React.forwardRef(function TimePicker({ value, onChange, placeholder = "Pilih jam", disabled = false, slots }, ref) {
+export const TimePicker = React.forwardRef(function TimePicker(
+  { value, onChange, placeholder = "Pilih jam", disabled = false, slots },
+  ref
+) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -65,19 +69,21 @@ export const TimePicker = React.forwardRef(function TimePicker({ value, onChange
             {!value && (
               <CommandGroup heading="Cepat">
                 <div className="grid grid-cols-4 gap-1.5 p-2">
-                  {(slots ? TIME_PRESETS.filter(p => slots.includes(p.value)) : TIME_PRESETS).map((preset) => (
-                    <Button
-                      key={preset.value}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-8"
-                      onClick={() => {
-                        onChange(preset.value);
-                        setOpen(false);
-                      }}>
-                      {preset.label}
-                    </Button>
-                  ))}
+                  {(slots ? TIME_PRESETS.filter((p) => slots.includes(p.value)) : TIME_PRESETS).map(
+                    (preset) => (
+                      <Button
+                        key={preset.value}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={() => {
+                          onChange(preset.value);
+                          setOpen(false);
+                        }}>
+                        {preset.label}
+                      </Button>
+                    )
+                  )}
                 </div>
               </CommandGroup>
             )}

@@ -192,6 +192,8 @@ const DataTable = ({
   };
 
   const renderPagination = () => {
+    if (!pagination) return null;
+
     const { page, totalPages, total, pageSize, onPageChange, onPageSizeChange, showingText } =
       pagination;
     const tp = totalPages || 1;
