@@ -20,6 +20,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import UserGuide from "@/components/organism/UserGuide";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 // const item = {
 //   hidden: { opacity: 0, y: 20 },
 //   show: { opacity: 1, y: 0 }
@@ -120,6 +121,8 @@ const AddIngredient = () => {
     }
   });
 
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
   const watchConversionFactor = form.watch("conversionFactor");
@@ -211,7 +214,7 @@ const AddIngredient = () => {
 
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit}>
               {isSuperAdmin && (
                 <FormField
                   control={form.control}
@@ -641,7 +644,7 @@ const AddIngredient = () => {
                         return;
                       }
                       form.clearErrors("store");
-                      form.handleSubmit((v) => onSubmit(v, false))();
+                      handleSubmit();
                     }}
                     disabled={mutation.isLoading}>
                     <Save size={16} className="mr-1" />{" "}
@@ -684,6 +687,7 @@ const AddIngredient = () => {
             onSubmit(values, true);
           }}
         />
+        <Modal type="confirm" {...confirmModal()} />
       </div>
     </div>
   );

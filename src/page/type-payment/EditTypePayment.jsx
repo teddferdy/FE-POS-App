@@ -23,6 +23,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const formSchema = z.object({
@@ -85,6 +86,8 @@ const EditTypePayment = () => {
       });
     }
   }, [item, form]);
+
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {
@@ -164,7 +167,7 @@ const EditTypePayment = () => {
               Save as Draft
             </Button>
             <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+              onClick={() => onConfirmSubmit()}
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
@@ -175,7 +178,7 @@ const EditTypePayment = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={onConfirmSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -259,12 +262,13 @@ const EditTypePayment = () => {
                 )}
               />
             </form>
-          </Form>
-        </Card>
+            </Form>
+            <Modal type="confirm" {...confirmModal()} />
+          </Card>
 
-        <Modal
-          type="confirm"
-          open={cancelModal}
+          <Modal
+            type="confirm"
+            open={cancelModal}
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}

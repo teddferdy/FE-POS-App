@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
@@ -56,6 +57,8 @@ const EditExpenseCategory = () => {
       isActive: true
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   useEffect(() => {
     if (categoryItem?.id) {
@@ -141,7 +144,7 @@ const EditExpenseCategory = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
@@ -219,8 +222,7 @@ const EditExpenseCategory = () => {
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
                   <Button
-                    type="button"
-                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    type="submit"
                     disabled={updateMutation.isLoading}
                     className="gap-2">
                     <Save size={18} />
@@ -263,6 +265,7 @@ const EditExpenseCategory = () => {
             onSubmit(values, true);
           }}
         />
+        <Modal type="confirm" {...confirmModal()} />
       </div>
     </div>
   );

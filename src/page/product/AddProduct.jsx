@@ -54,6 +54,7 @@ import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const AddProduct = () => {
   const { t } = useTranslation();
@@ -386,7 +387,7 @@ const AddProduct = () => {
     if (!checked) setModifierItems([]);
   };
 
-  const onSubmit = async (values, saveAsDraft = false) => {
+  const handleSave = async (values, saveAsDraft = false) => {
     if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
       form.setError("store", { message: t("page.product.form.selectStoreError") });
       return;
@@ -471,6 +472,9 @@ const AddProduct = () => {
     createMutation.mutate(payload);
   };
 
+  const onSubmit = (values) => handleSave(values, false)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+
   const steps = [
     { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },
     { num: 2, title: t("page.product.step.price"), desc: t("page.product.step.priceDesc") },
@@ -545,7 +549,7 @@ const AddProduct = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
+            <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div className={`${currentStep === 3 ? "" : "lg:col-span-2"} space-y-6`}>
                   {currentStep === 1 && (
@@ -1714,7 +1718,7 @@ const AddProduct = () => {
                             return;
                           }
                           form.clearErrors("store");
-                          form.handleSubmit((values) => onSubmit(values, false))();
+                          handleSubmit();
                         }}
                         disabled={isSubmitting}
                         className="gap-2 shadow-md">
@@ -1730,6 +1734,7 @@ const AddProduct = () => {
         </div>
       </div>
 
+      <Modal type="confirm" {...confirmModal()} />
       <Modal
         type="success"
         open={successModal}
@@ -1760,7 +1765,7 @@ const AddProduct = () => {
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();
-          onSubmit(values, true);
+          handleSave(values, true);
         }}
       />
 

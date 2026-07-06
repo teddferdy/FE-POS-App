@@ -21,6 +21,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const formSchema = z.object({
   nama_shift: z.string().min(1, "Nama shift wajib diisi"),
@@ -113,7 +114,7 @@ const AddShift = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const handleSave = (values, saveAsDraft = false) => {
     const { status, karyawan, ...rest } = values;
     createMutation.mutate({
       ...rest,
@@ -129,6 +130,9 @@ const AddShift = () => {
       status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
   };
+
+  const onSubmit = (values) => handleSave(values, false)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
 
   return (
     <div className="space-y-6">
@@ -151,7 +155,7 @@ const AddShift = () => {
         <div>
           <Card className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Baris 1: Nama Shift & Tipe */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -523,6 +527,7 @@ const AddShift = () => {
                 </div>
               </form>
             </Form>
+            <Modal type="confirm" {...confirmModal()} />
           </Card>
         </div>
       </div>
@@ -555,7 +560,7 @@ const AddShift = () => {
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();
-          onSubmit(values, true);
+          handleSave(values, true);
         }}
       />
     </div>

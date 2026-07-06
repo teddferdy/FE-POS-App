@@ -27,6 +27,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -191,6 +192,8 @@ const EditReservation = () => {
     });
   };
 
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+
   if (isError) return <AbortController refetch={refetch} />;
   if (!id)
     return (
@@ -234,7 +237,7 @@ const EditReservation = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
@@ -453,6 +456,7 @@ const EditReservation = () => {
               </div>
             </form>
           </Form>
+          <Modal type="confirm" {...confirmModal()} />
         </Card>
 
         <Modal

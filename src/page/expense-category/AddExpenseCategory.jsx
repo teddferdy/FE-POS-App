@@ -15,6 +15,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const AddExpenseCategory = () => {
   const { t } = useTranslation();
@@ -38,6 +39,8 @@ const AddExpenseCategory = () => {
       isActive: true
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const createMutation = useMutation(addExpenseCategory, {
     onSuccess: () => {
@@ -92,7 +95,7 @@ const AddExpenseCategory = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
@@ -170,8 +173,7 @@ const AddExpenseCategory = () => {
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
                   <Button
-                    type="button"
-                    onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                    type="submit"
                     disabled={createMutation.isLoading}
                     className="gap-2">
                     <Save size={18} />
@@ -214,6 +216,7 @@ const AddExpenseCategory = () => {
             onSubmit(values, true);
           }}
         />
+        <Modal type="confirm" {...confirmModal()} />
       </div>
     </div>
   );

@@ -36,6 +36,7 @@ import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { useTranslation } from "react-i18next";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
@@ -138,6 +139,8 @@ const EditDiscount = () => {
       store: ""
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   useEffect(() => {
     if (discountItem?.id) {
@@ -321,7 +324,7 @@ const EditDiscount = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-12">
               <div className="col-span-12">
                 <FormField
@@ -825,6 +828,7 @@ const EditDiscount = () => {
           </form>
         </Form>
 
+        <Modal type="confirm" {...confirmModal()} />
         <Modal
           type="confirm"
           open={cancelModal}

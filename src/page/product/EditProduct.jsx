@@ -50,6 +50,7 @@ import { getAllTaxConfig } from "@/services/tax-config";
 import { getAllLocation } from "@/services/location";
 import { getProductPriceByStore, updateProductPriceByStore } from "@/services/price-store";
 import { checkStockOpnameExists, getStockOpnameCompositionItems } from "@/services/stock";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import UserGuide from "@/components/organism/UserGuide";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import AbortController from "@/components/organism/abort-controller";
@@ -541,7 +542,7 @@ const EditProduct = () => {
     );
   };
 
-  const onSubmit = async (values, saveAsDraft = false) => {
+  const handleSave = async (values, saveAsDraft = false) => {
     if (!allStores && selectedStores.length === 0 && !saveAsDraft) {
       form.setError("store", { message: t("page.product.form.selectStoreError") });
       return;
@@ -623,6 +624,9 @@ const EditProduct = () => {
     editMutation.mutate(payload);
   };
 
+  const onSubmit = (values) => handleSave(values, false)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+
   if (isError) return <AbortController refetch={refetch} />;
 
   if (loadingProduct) {
@@ -664,7 +668,7 @@ const EditProduct = () => {
       <div>
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))}>
+            <form onSubmit={handleSubmit}>
               {/* Stepper */}
               <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
                 <div className="flex items-center justify-between max-w-2xl mx-auto">
@@ -1859,7 +1863,7 @@ const EditProduct = () => {
                             return;
                           }
                           form.clearErrors("store");
-                          form.handleSubmit((values) => onSubmit(values, false))();
+                          handleSubmit();
                         }}
                         disabled={isSubmitting}
                         className="gap-2 shadow-md">
@@ -1875,6 +1879,7 @@ const EditProduct = () => {
         </div>
       </div>
 
+      <Modal type="confirm" {...confirmModal()} />
       <Modal
         type="success"
         open={successModal}
@@ -1905,7 +1910,7 @@ const EditProduct = () => {
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();
-          onSubmit(values, true);
+          handleSave(values, true);
         }}
       />
 

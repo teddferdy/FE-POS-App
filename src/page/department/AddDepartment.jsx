@@ -35,6 +35,7 @@ const AddDepartment = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -77,7 +78,7 @@ const AddDepartment = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
+          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <FormField
                 control={form.control}
@@ -89,8 +90,14 @@ const AddDepartment = () => {
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">domain</span>
-                        <Input {...field} placeholder={t("page.department.form.namePlaceholder")} className="pl-9" />
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                          domain
+                        </span>
+                        <Input
+                          {...field}
+                          placeholder={t("page.department.form.namePlaceholder")}
+                          className="pl-9"
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -108,7 +115,12 @@ const AddDepartment = () => {
                     {t("page.department.form.description")}
                   </FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder={t("page.department.form.descPlaceholder")} rows={4} className="resize-none" />
+                    <Textarea
+                      {...field}
+                      placeholder={t("page.department.form.descPlaceholder")}
+                      rows={4}
+                      className="resize-none"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -120,23 +132,33 @@ const AddDepartment = () => {
               name="isActive"
               render={({ field }) => (
                 <FormItem>
-                  <div className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                    field.value
-                      ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                      : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                  }`}>
+                  <div
+                    className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                      field.value
+                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                    }`}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        field.value ? "bg-green-600 text-white" : "bg-destructive/10 text-destructive"
-                      }`}>
-                        <span className="material-symbols-outlined text-lg">{field.value ? "check" : "close"}</span>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          field.value
+                            ? "bg-green-600 text-white"
+                            : "bg-destructive/10 text-destructive"
+                        }`}>
+                        <span className="material-symbols-outlined text-lg">
+                          {field.value ? "check" : "close"}
+                        </span>
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">
-                          {field.value ? t("page.department.form.statusActive") : t("page.department.form.statusInactive")}
+                          {field.value
+                            ? t("page.department.form.statusActive")
+                            : t("page.department.form.statusInactive")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {field.value ? t("page.department.form.activeDesc") : t("page.department.form.inactiveDesc")}
+                          {field.value
+                            ? t("page.department.form.activeDesc")
+                            : t("page.department.form.inactiveDesc")}
                         </p>
                       </div>
                     </div>
@@ -147,15 +169,26 @@ const AddDepartment = () => {
             />
 
             <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
-              <Button type="button" variant="outline" onClick={() => navigate("/department-list")} className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/department-list")}
+                className="gap-2">
                 <span className="material-symbols-outlined text-lg">close</span>
                 {t("common.cancel")}
               </Button>
               <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => setDraftModal(true)} disabled={createMutation.isLoading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDraftModal(true)}
+                  disabled={createMutation.isLoading}>
                   Simpan sebagai Draft
                 </Button>
-                <Button type="submit" disabled={createMutation.isLoading} className="gap-2 shadow-lg shadow-primary/20">
+                <Button
+                  type="submit"
+                  disabled={createMutation.isLoading}
+                  className="gap-2 shadow-lg shadow-primary/20">
                   <span className="material-symbols-outlined text-lg">save</span>
                   {t("page.department.button.save")}
                 </Button>
@@ -169,6 +202,10 @@ const AddDepartment = () => {
         title="Simpan sebagai Draft?" description="Data yang belum lengkap bisa dilengkapi nanti"
         confirmText="Ya, Simpan Draft"
         onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
+      />
+      <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
+        title="Konfirmasi Simpan" description="Apakah data sudah benar dan akan disimpan?"
+        confirmText="Ya, Simpan" onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
       />
     </div>
   );

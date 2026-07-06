@@ -21,6 +21,7 @@ import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
@@ -43,6 +44,8 @@ const AddCategory = () => {
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", isActive: true }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
 
   const {
     isLoading: loadingData,
@@ -134,7 +137,7 @@ const AddCategory = () => {
       </PageHeader>
 
       <Form {...form} className="p-6">
-        <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12">
               <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -315,6 +318,7 @@ const AddCategory = () => {
           onSubmit(values, true);
         }}
       />
+      <Modal type="confirm" {...confirmModal()} />
     </div>
   );
 };

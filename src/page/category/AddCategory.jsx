@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import {
   Form,
   FormField,
@@ -380,6 +381,8 @@ const AddCategory = () => {
     }
   });
 
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+
   const createMutation = useMutation(addCategory, {
     onSuccess: () => {
       setIsSubmitting(false);
@@ -458,7 +461,7 @@ const AddCategory = () => {
       <div>
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))}>
+            <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-8 space-y-6">
                   <FormField
@@ -730,6 +733,8 @@ const AddCategory = () => {
               </div>
             </form>
           </Form>
+
+          <Modal type="confirm" {...confirmModal()} />
 
           {iconPickerOpen && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

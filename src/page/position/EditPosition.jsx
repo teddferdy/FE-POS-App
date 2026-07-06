@@ -47,6 +47,7 @@ const EditPosition = () => {
   const [searchParams] = useSearchParams();
   const positionId = searchParams.get("id");
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
 
   const { data: positionData, isLoading: positionsLoading, isError, refetch } = useQuery(
     ["position", positionId], () => getPositionById({ id: positionId }), { enabled: !!positionId }
@@ -138,7 +139,7 @@ const EditPosition = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="space-y-6">
+          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormField control={form.control} name="name"
                 render={({ field }) => (
@@ -294,6 +295,10 @@ const EditPosition = () => {
         description={t("page.position.edit.draftDescription")}
         confirmText={t("page.position.edit.draftConfirm")}
         onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
+      />
+      <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
+        title="Konfirmasi Simpan" description="Apakah data sudah benar dan akan disimpan?"
+        confirmText="Ya, Simpan" onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
       />
     </div>
   );

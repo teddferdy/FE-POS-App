@@ -17,6 +17,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const EditShift = () => {
@@ -86,7 +87,7 @@ const EditShift = () => {
     }
   });
 
-  const onSubmit = (values, saveAsDraft = false) => {
+  const handleSave = (values, saveAsDraft = false) => {
     const { status, ...rest } = values;
     updateMutation.mutate({
       id: shiftId,
@@ -94,6 +95,9 @@ const EditShift = () => {
       status: saveAsDraft ? "draft" : status ? "active" : "inactive"
     });
   };
+
+  const onSubmit = (values) => handleSave(values, false)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
 
   if (isError) return <AbortController refetch={refetch} />;
   if (!shiftId) {
@@ -146,7 +150,7 @@ const EditShift = () => {
               {t("page.shift.edit.saveDraft")}
             </Button>
             <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+              onClick={() => handleSubmit()}
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
@@ -157,7 +161,7 @@ const EditShift = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -247,6 +251,7 @@ const EditShift = () => {
               />
             </form>
           </Form>
+          <Modal type="confirm" {...confirmModal()} />
         </Card>
 
         <Modal
@@ -277,7 +282,7 @@ const EditShift = () => {
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();
-            onSubmit(values, true);
+            handleSave(values, true);
           }}
         />
       </div>

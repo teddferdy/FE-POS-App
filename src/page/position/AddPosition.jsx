@@ -44,6 +44,7 @@ const AddPosition = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [draftModal, setDraftModal] = useState(false);
+  const [saveConfirm, setSaveConfirm] = useState(false);
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
     staleTime: 5 * 60 * 1000
@@ -92,7 +93,7 @@ const AddPosition = () => {
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))}>
+          <form onSubmit={form.handleSubmit(() => setSaveConfirm(true))}>
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <FormField
@@ -273,10 +274,11 @@ const AddPosition = () => {
         title={t("page.position.add.draftTitle")}
         description={t("page.position.add.draftDescription")}
         confirmText={t("page.position.add.draftConfirm")}
-        onConfirm={() => {
-          setDraftModal(false);
-          onSubmit(form.getValues(), true);
-        }}
+        onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
+      />
+      <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
+        title="Konfirmasi Simpan" description="Apakah data sudah benar dan akan disimpan?"
+        confirmText="Ya, Simpan" onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
       />
     </div>
   );

@@ -24,6 +24,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama pembayaran wajib diisi"),
@@ -49,6 +50,8 @@ const AddTypePayment = () => {
       status: true
     }
   });
+
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const createMutation = useMutation(addTypePayment, {
     onSuccess: () => {
@@ -93,7 +96,7 @@ const AddTypePayment = () => {
         <div>
           <Card className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={onConfirmSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -192,7 +195,7 @@ const AddTypePayment = () => {
                       {t("page.typePayment.form.saveAsDraft")}
                     </Button>
                     <Button
-                      onClick={() => form.handleSubmit((v) => onSubmit(v))()}
+                      onClick={() => onConfirmSubmit()}
                       disabled={createMutation.isLoading}
                       className="gap-2">
                       <Save size={18} />
@@ -201,9 +204,10 @@ const AddTypePayment = () => {
                   </div>
                 </div>
               </form>
-            </Form>
-          </Card>
-        </div>
+              </Form>
+              <Modal type="confirm" {...confirmModal()} />
+            </Card>
+          </div>
       </div>
 
       <Modal

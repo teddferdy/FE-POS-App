@@ -64,6 +64,7 @@ import {
 import { reverseGeocode, forwardGeocode } from "@/services/geocoding";
 import { getAllEmployee } from "@/services/employee";
 import UserGuide from "@/components/organism/UserGuide";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -219,6 +220,8 @@ const EditLocation = () => {
       }))
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
 
   console.log("form.getValues()", form.getValues());
 
@@ -516,7 +519,7 @@ const EditLocation = () => {
         <div>
           <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
+              <form onSubmit={handleSubmit} className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Left Column - Form Fields */}
                   <div className="lg:col-span-2 space-y-8">
@@ -1470,6 +1473,7 @@ const EditLocation = () => {
           onSubmit(values, true);
         }}
       />
+      <Modal type="confirm" {...confirmModal()} />
     </div>
   );
 };

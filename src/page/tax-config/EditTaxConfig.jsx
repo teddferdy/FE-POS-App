@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const formSchema = z.object({
@@ -59,6 +60,8 @@ const EditTaxConfig = () => {
       isActive: true
     }
   });
+
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const tax = taxData?.data || {};
 
@@ -149,7 +152,7 @@ const EditTaxConfig = () => {
               Simpan sebagai Draft
             </Button>
             <Button
-              onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+              onClick={() => onConfirmSubmit()}
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
@@ -160,7 +163,7 @@ const EditTaxConfig = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={onConfirmSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -249,12 +252,13 @@ const EditTaxConfig = () => {
                 )}
               />
             </form>
-          </Form>
-        </Card>
+            </Form>
+            <Modal type="confirm" {...confirmModal()} />
+          </Card>
 
-        <Modal
-          type="confirm"
-          open={cancelModal}
+          <Modal
+            type="confirm"
+            open={cancelModal}
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}

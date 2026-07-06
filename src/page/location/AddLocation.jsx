@@ -65,6 +65,7 @@ import { useQuery } from "react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import UserGuide from "@/components/organism/UserGuide";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const days = [
   { id: "monday", label: "common.day.monday" },
@@ -227,6 +228,8 @@ const AddLocation = () => {
       }))
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
 
   const [showOperasional, setShowOperasional] = useState(false);
   const [showSocialMedia, setShowSocialMedia] = useState(false);
@@ -421,7 +424,7 @@ const AddLocation = () => {
       <div>
         <div className="bg-card rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6">
+            <form onSubmit={handleSubmit} className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Form Fields */}
                 <div className="lg:col-span-2 space-y-8">
@@ -1375,6 +1378,7 @@ const AddLocation = () => {
           onSubmit(values, true);
         }}
       />
+      <Modal type="confirm" {...confirmModal()} />
     </div>
   );
 };

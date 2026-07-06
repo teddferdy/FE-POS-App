@@ -27,6 +27,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
 const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -171,6 +172,8 @@ const AddReservation = () => {
     createMutation.mutate(payload);
   };
 
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+
   return (
     <div>
       <div className="space-y-6">
@@ -197,7 +200,7 @@ const AddReservation = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-full">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
@@ -411,6 +414,7 @@ const AddReservation = () => {
               </div>
             </form>
           </Form>
+          <Modal type="confirm" {...confirmModal()} />
         </Card>
 
         <Modal

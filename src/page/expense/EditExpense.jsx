@@ -23,6 +23,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
@@ -72,6 +73,8 @@ const EditExpense = () => {
       notes: ""
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   useEffect(() => {
     if (expenseItem?.id) {
@@ -160,7 +163,7 @@ const EditExpense = () => {
         <Card className="p-6">
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((values) => onSubmit(values, false))}
+              onSubmit={handleSubmit}
               className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -299,6 +302,7 @@ const EditExpense = () => {
           </Form>
         </Card>
 
+        <Modal type="confirm" {...confirmModal()} />
         <Modal
           type="confirm"
           open={cancelModal}

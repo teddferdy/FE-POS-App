@@ -18,6 +18,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import UserGuide from "@/components/organism/UserGuide";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const EditSupplier = () => {
@@ -63,6 +64,8 @@ const EditSupplier = () => {
       isActive: true
     }
   });
+
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const supplier = supplierData?.data || {};
 
@@ -150,7 +153,7 @@ const EditSupplier = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="p-6 lg:col-span-2">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={onConfirmSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -236,6 +239,7 @@ const EditSupplier = () => {
                   />
                 </form>
               </Form>
+              <Modal type="confirm" {...confirmModal()} />
             </Card>
 
             <Card className="p-6">
@@ -308,7 +312,7 @@ const EditSupplier = () => {
                 {t("page.supplier.form.saveAsDraft")}
               </Button>
               <Button
-                onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                onClick={() => onConfirmSubmit()}
                 disabled={updateMutation.isLoading}
                 className="gap-2">
                 <Save size={18} />

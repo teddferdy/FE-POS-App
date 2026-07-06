@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import Modal from "@/components/organism/modal";
 
 const formSchema = z.object({
@@ -47,6 +48,8 @@ const AddTaxConfig = () => {
       isActive: true
     }
   });
+
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
 
   const createMutation = useMutation(addTaxConfig, {
     onSuccess: () => {
@@ -91,7 +94,7 @@ const AddTaxConfig = () => {
           <Card className="p-6">
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit((values) => onSubmit(values, false))}
+                onSubmit={onConfirmSubmit}
                 className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -223,7 +226,7 @@ const AddTaxConfig = () => {
                     </Button>
                     <Button
                       type="button"
-                      onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
+                      onClick={() => onConfirmSubmit()}
                       disabled={createMutation.isLoading}
                       className="gap-2">
                       <Save size={18} />
@@ -232,9 +235,10 @@ const AddTaxConfig = () => {
                   </div>
                 </div>
               </form>
-            </Form>
-          </Card>
-        </div>
+              </Form>
+              <Modal type="confirm" {...confirmModal()} />
+            </Card>
+          </div>
       </div>
 
       <Modal

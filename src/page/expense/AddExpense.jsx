@@ -21,6 +21,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
@@ -57,6 +58,8 @@ const AddExpense = () => {
       notes: ""
     }
   });
+
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const createMutation = useMutation(addExpense, {
     onSuccess: () => {
@@ -113,7 +116,7 @@ const AddExpense = () => {
         <Card className="p-6">
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((values) => onSubmit(values, false))}
+              onSubmit={handleSubmit}
               className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -247,6 +250,7 @@ const AddExpense = () => {
           </Form>
         </Card>
 
+        <Modal type="confirm" {...confirmModal()} />
         <Modal
           type="confirm"
           open={cancelModal}
