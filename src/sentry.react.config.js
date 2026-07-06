@@ -5,10 +5,10 @@ import { useLocation } from "react-router-dom";
 export const sentryReactOptions = {
   dsn: "https://8ef705f2d617308ee20d72e17ec27204@o4508045420421952.ingest.us.sentry.io/4508045432255488",
   integrations: [
-    new Sentry.BrowserTracing({
+    Sentry.browserTracingIntegration({
       tracePropagationTargets: ["localhost", "127.0.0.1", "https://pos-app.duckdns.org"]
     }),
-    new Sentry.Replay()
+    Sentry.replayIntegration()
   ],
   tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,

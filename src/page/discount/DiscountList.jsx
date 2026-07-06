@@ -57,15 +57,6 @@ const DiscountList = () => {
     staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
-  const locationMap = React.useMemo(() => {
-    const map = {};
-    if (locData?.data)
-      locData.data.forEach((l) => {
-        map[l.id] = l;
-      });
-    return map;
-  }, [locData]);
-
   const { data, isLoading } = useQuery(
     ["discounts", page, limit, search, storeFilter],
     () => getAllDiscount({ location: locationParam, page, limit, statusDiscount: "" }),
@@ -146,9 +137,9 @@ const DiscountList = () => {
     {
       header: t("page.discount.table.store"),
       render: (item) => {
-        if (!item.store) return <span className="text-xs text-muted-foreground">Semua Toko</span>;
-        const loc = locationMap[item.store];
-        return <span className="text-xs">{loc?.name || `Store #${item.store}`}</span>;
+        const store = item.store;
+        if (!store || Array.isArray(store)) return <span className="text-xs text-muted-foreground">Semua Toko</span>;
+        return <span className="text-xs">{store.name || `Store #${store.id}`}</span>;
       }
     },
     {

@@ -42,6 +42,7 @@ const IngredientList = () => {
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [downloadingData, setDownloadingData] = useState(false);
   const [storeFilter, setStoreFilter] = useState("all");
+  const pageSize = 10;
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -53,7 +54,7 @@ const IngredientList = () => {
   });
 
   const { data, isLoading } = useQuery(
-    ["ingredients", search, storeFilter],
+    ["ingredients", search, storeFilter, page],
     () =>
       getAllIngredients({
         store: isSuperAdmin
@@ -61,7 +62,9 @@ const IngredientList = () => {
             ? storeFilter
             : ""
           : user?.store,
-        search
+        search,
+        page,
+        limit: pageSize
       }),
     { keepPreviousData: true }
   );
@@ -82,8 +85,9 @@ const IngredientList = () => {
   });
 
   const ingredients = data?.data || [];
+  const totalItems = data?.totalItems ?? ingredients.length;
+  const totalPages = data?.totalPages ?? 1;
   const stats = data?.stats || {};
-  const total = stats.total ?? ingredients.length;
   const activeCount = stats.active ?? ingredients.filter((i) => i.status === "active").length;
   const draftCount = stats.draft ?? ingredients.filter((i) => i.status === "draft").length;
   const inactiveCount = stats.inactive ?? ingredients.filter((i) => i.status === "inactive").length;
@@ -349,7 +353,7 @@ const IngredientList = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <StatCard
               label={t("page.ingredient.list.statTotal")}
-              value={total}
+              value={totalItems}
               icon="nutrition"
               variant="default"
             />
@@ -380,6 +384,13 @@ const IngredientList = () => {
               isLoading={isLoading}
               emptyMessage={t("page.ingredient.list.emptyMessage")}
               emptyIcon={Package}
+              pagination={{
+                page,
+                totalPages,
+                total: totalItems,
+                pageSize,
+                onPageChange: setPage
+              }}
               toolbar={
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
                   <h4 className="text-base font-semibold text-foreground">
@@ -394,9 +405,6 @@ const IngredientList = () => {
                           setStoreFilter(v);
                           setPage(1);
                         }}
-                        page={page}
-                        totalPages={10}
-                        onPageChange={(p) => setPage(p)}
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />
@@ -413,9 +421,6 @@ const IngredientList = () => {
                           setSearch(e.target.value);
                           setPage(1);
                         }}
-                        page={page}
-                        totalPages={10}
-                        onPageChange={(p) => setPage(p)}
                         className="pl-9 h-9 text-sm"
                       />
                     </div>
