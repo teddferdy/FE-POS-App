@@ -42,14 +42,19 @@ const CashierPage = () => {
   }, [cookie?.user]);
   const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
-  const store = isSuperAdmin
-    ? cookie?.activeStore
-      ? Number(cookie?.activeStore)
-      : null
-    : cookie?.store || cookie?.activeStore || cookie?.user?.store;
+  const [pickedStore, setPickedStore] = useState(null);
+  const store = isSuperAdmin ? pickedStore : user?.store;
+
+  const { data: locsData } = useQuery(["cashier-locations"], getAllLocation, {
+    enabled: isSuperAdmin,
+    staleTime: 60 * 1000
+  });
+  const locationList = locsData?.data || locsData || [];
+
+  const storeName = store
+    ? locationList.find((l) => l.id === store)?.name || t("page.cashier.storeName")
+    : t("page.cashier.storeName");
   const userName = user?.userName || user?.name || cookie?.name || t("page.cashier.cashierName");
-  const storeName =
-    cookie?.store_name || cookie?.activeStoreName || user?.storeName || t("page.cashier.storeName");
   const { translation, updateTranslation } = translationSelect();
   const { theme, toggleTheme: toggleThemeStore } = useThemeStore();
 
@@ -80,12 +85,6 @@ const CashierPage = () => {
   const handleMobileMenuToggle = () => setMobileSidebarOpen((prev) => !prev);
 
   const cart = orderList();
-
-  const { data: locsData } = useQuery(["cashier-locations"], getAllLocation, {
-    enabled: !store && isSuperAdmin,
-    staleTime: 60 * 1000
-  });
-  const locationList = locsData?.data || locsData || [];
 
   const {
     data: productsData,
@@ -235,17 +234,15 @@ const CashierPage = () => {
                 <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <Store size={40} className="text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">{t("page.cashier.storeName")}</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  {t("page.cashier.storeName")}
+                </h2>
                 <p className="text-muted-foreground mb-8">Pilih toko</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {locationList.map((loc) => (
                     <button
                       key={loc.id}
-                      onClick={() => {
-                        setCookie("activeStore", loc.id, { path: "/" });
-                        setCookie("activeStoreName", loc.name, { path: "/" });
-                        window.location.reload();
-                      }}
+                      onClick={() => setPickedStore(loc.id)}
                       className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
                         <Store size={24} className="text-primary" />
@@ -254,7 +251,10 @@ const CashierPage = () => {
                         <p className="font-semibold text-foreground truncate">{loc.name}</p>
                         <p className="text-sm text-muted-foreground">Pilih toko</p>
                       </div>
-                      <ChevronRight size={20} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                      <ChevronRight
+                        size={20}
+                        className="text-muted-foreground group-hover:text-primary transition-colors shrink-0"
+                      />
                     </button>
                   ))}
                 </div>
