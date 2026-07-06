@@ -86,7 +86,7 @@ const EditTypePayment = () => {
     }
   }, [item, form]);
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {

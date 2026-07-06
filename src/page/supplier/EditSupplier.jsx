@@ -65,7 +65,7 @@ const EditSupplier = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const supplier = supplierData?.data || {};
 

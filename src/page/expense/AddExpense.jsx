@@ -59,7 +59,7 @@ const AddExpense = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const createMutation = useMutation(addExpense, {
     onSuccess: () => {

@@ -122,7 +122,7 @@ const AddEmployee = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const employmentType = form.watch("employmentType");
   const startDate = form.watch("startDate");

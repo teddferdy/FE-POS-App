@@ -140,7 +140,7 @@ const EditDiscount = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   useEffect(() => {
     if (discountItem?.id) {

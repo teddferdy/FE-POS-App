@@ -50,7 +50,7 @@ const AddTypePayment = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
 
   const createMutation = useMutation(addTypePayment, {
     onSuccess: () => {
