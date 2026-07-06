@@ -29,8 +29,10 @@ const ProductGrid = ({
   const cart = orderList();
 
   const { data: categoriesData } = useQuery(
-    ["categories-cashier", cookie?.activeStore || store],
-    () => getAllCategoryActive({ location: cookie?.activeStore || store }),
+    ["categories-cashier", store],
+
+    () => getAllCategoryActive({ location: store }),
+
     { enabled: !!store, staleTime: 3 * 60 * 1000 }
   );
   const categories = categoriesData?.data || categoriesData || [];
@@ -104,10 +106,10 @@ const ProductGrid = ({
         setSelectedProduct(product);
         setShowVariantModal(true);
       } else {
-        cart.addOrder(product, cookie?.activeStore || store);
+        cart.addOrder(product, store);
       }
     },
-    [cart, cookie, store, hasChoices]
+    [cart, store, hasChoices]
   );
 
   const handleAddToCart = useCallback(
@@ -122,14 +124,14 @@ const ProductGrid = ({
           ID: product.ID || product.id,
           idProduct: product.idProduct || product.id
         };
-        cart.addOrder(variantProduct, cookie?.activeStore || store);
+        cart.addOrder(variantProduct, store);
       } else {
-        cart.addOrder(product, cookie?.activeStore || store);
+        cart.addOrder(product, store);
       }
       setShowVariantModal(false);
       setSelectedProduct(null);
     },
-    [cart, cookie, store]
+    [cart, store]
   );
 
   const randomColors = useMemo(() => {
