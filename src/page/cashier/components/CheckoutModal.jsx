@@ -396,8 +396,7 @@ const CheckoutModal = ({
   const handleAddCustomer = useCallback(() => {
     if (!newCustomerName.trim()) return;
     addCustomerMutation.mutate({
-      name: newCustomerName.trim(),
-      phone: newCustomerPhone.trim(),
+      nameMember: newCustomerName.trim(),
       phoneNumber: newCustomerPhone.trim(),
       tier: selectedTier?.id || null
     });
