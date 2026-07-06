@@ -3128,6 +3128,7 @@
   "page.cashRegister.history.statusOpen": "Open",
   "page.cashRegister.history.store": "Store",
   "page.cashRegister.history.title": "Register History",
+  "page.cashRegister.history.openRegister": "Open Register",
   "page.cashRegister.openClose.amountLabel": "Amount",
   "page.cashRegister.openClose.breadcrumb": "Open/Close Register",
   "page.cashRegister.openClose.breadcrumbDashboard": "Dashboard",

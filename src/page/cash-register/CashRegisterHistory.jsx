@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
-import { Eye, Search, Receipt } from "lucide-react";
+import { Eye, Search, Receipt, Plus } from "lucide-react";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { getCashRegisterHistory } from "@/services/cash-register";
@@ -242,12 +242,12 @@ const CashRegisterHistory = () => {
                       />
                     </div>
                   )}
-                  {/* <Button
-                    variant="outline"
-                    onClick={() => navigate("/cash-register/current")}
+                  <Button
+                    variant="default"
+                    onClick={() => navigate("/cash-register/open-close")}
                     className="shrink-0 gap-2">
-                    <ArrowLeft size={16} /> {t("page.cashRegister.history.back")}
-                  </Button> */}
+                    <Plus size={16} /> {t("page.cashRegister.history.openRegister")}
+                  </Button>
                 </div>
               </div>
             }

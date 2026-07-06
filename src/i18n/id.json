@@ -3081,6 +3081,7 @@
   "page.cashRegister.history.statusOpen": "Terbuka",
   "page.cashRegister.history.store": "Toko",
   "page.cashRegister.history.title": "Riwayat Register",
+  "page.cashRegister.history.openRegister": "Buka Register",
   "page.cashRegister.openClose.amountLabel": "Jumlah",
   "page.cashRegister.openClose.breadcrumb": "Buka/Tutup Register",
   "page.cashRegister.openClose.breadcrumbDashboard": "Dashboard",
