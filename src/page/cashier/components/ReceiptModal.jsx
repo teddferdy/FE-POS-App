@@ -64,11 +64,13 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const splitMutation = useMutation({
     mutationFn: (payload) => createSplitBill(payload),
     onSuccess: () => {
-      toast.success("Pembagian berhasil dicatat");
+      toast.success(t("page.cashier.receipt.toast.splitSuccess"));
       setShowSplit(false);
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message || err?.message || "Gagal membagi pembayaran");
+      toast.error(
+        err?.response?.data?.message || err?.message || t("page.cashier.receipt.toast.splitFailed")
+      );
     }
   });
 

@@ -208,14 +208,18 @@ const CategoryList = () => {
             {t("breadcrumb.home")}
           </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.ingredientCategory.list.title")}</span>
+          <span className="text-primary font-semibold">
+            {t("page.ingredientCategory.list.title")}
+          </span>
         </nav>
       </div>
 
       <div>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-foreground">{t("page.ingredientCategory.list.title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.ingredientCategory.list.title")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.ingredientCategory.list.subtitle")}
             </p>
@@ -224,172 +228,177 @@ const CategoryList = () => {
             className="overflow-x-auto shrink-0"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex items-center gap-2 flex-nowrap">
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingTemplate}
-                onClick={async () => {
-                  setIsDownloadingTemplate(true);
-                  try {
-                    await downloadIngredientCategoryTemplate();
-                    toast.success(t("common.success"), {
-                      description: t("page.ingredientCategory.toast.templateSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.ingredientCategory.toast.templateError")
-                    });
-                  } finally {
-                    setIsDownloadingTemplate(false);
-                  }
-                }}>
-                {isDownloadingTemplate ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
-                )}
-                {t("page.ingredientCategory.button.downloadTemplate")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "export") && (
-              <Button
-                variant="outline"
-                disabled={isDownloadingData}
-                onClick={async () => {
-                  setIsDownloadingData(true);
-                  try {
-                    await downloadIngredientCategoryExcel();
-                    toast.success(t("common.success"), {
-                      description: t("page.ingredientCategory.toast.dataSuccess")
-                    });
-                  } catch (err) {
-                    toast.error(t("common.error"), {
-                      description:
-                        err?.response?.data?.message ||
-                        err.message ||
-                        t("page.ingredientCategory.toast.dataError")
-                    });
-                  } finally {
-                    setIsDownloadingData(false);
-                  }
-                }}>
-                {isDownloadingData ? (
-                  <Loader2 size={16} className="mr-1 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg mr-1">download</span>
-                )}
-                {t("page.ingredientCategory.button.downloadData")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "import") && (
-              <Button variant="default" onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined text-lg mr-1">upload</span>
-                {t("page.ingredientCategory.button.upload")}
-              </Button>
-            )}
-            {canAccess(user, MENU_KEY, "create") && (
-              <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
-                <Plus size={16} className="mr-1" />
-                {t("page.ingredientCategory.list.addButton")}
-              </Button>
-            )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={isDownloadingTemplate}
+                  onClick={async () => {
+                    setIsDownloadingTemplate(true);
+                    try {
+                      await downloadIngredientCategoryTemplate();
+                      toast.success(t("common.success"), {
+                        description: t("page.ingredientCategory.toast.templateSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.ingredientCategory.toast.templateError")
+                      });
+                    } finally {
+                      setIsDownloadingTemplate(false);
+                    }
+                  }}>
+                  {isDownloadingTemplate ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">table_rows</span>
+                  )}
+                  {t("page.ingredientCategory.button.downloadTemplate")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "export") && (
+                <Button
+                  variant="outline"
+                  disabled={isDownloadingData}
+                  onClick={async () => {
+                    setIsDownloadingData(true);
+                    try {
+                      await downloadIngredientCategoryExcel();
+                      toast.success(t("common.success"), {
+                        description: t("page.ingredientCategory.toast.dataSuccess")
+                      });
+                    } catch (err) {
+                      toast.error(t("common.error"), {
+                        description:
+                          err?.response?.data?.message ||
+                          err.message ||
+                          t("page.ingredientCategory.toast.dataError")
+                      });
+                    } finally {
+                      setIsDownloadingData(false);
+                    }
+                  }}>
+                  {isDownloadingData ? (
+                    <Loader2 size={16} className="mr-1 animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg mr-1">download</span>
+                  )}
+                  {t("page.ingredientCategory.button.downloadData")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "import") && (
+                <Button variant="default" onClick={() => setUploadModalOpen(true)}>
+                  <span className="material-symbols-outlined text-lg mr-1">upload</span>
+                  {t("page.ingredientCategory.button.upload")}
+                </Button>
+              )}
+              {canAccess(user, MENU_KEY, "create") && (
+                <Button onClick={() => navigate("/add-ingredient-category")} className="shadow-md">
+                  <Plus size={16} className="mr-1" />
+                  {t("page.ingredientCategory.list.addButton")}
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
         <>
-      <div>
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.ingredientCategory.list.statTotal")}
-              value={statsTotal}
-              icon="folder"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.ingredientCategory.list.statActive")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.ingredientCategory.list.statInactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
-        </div>
+          <div>
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <StatCard
+                  label={t("page.ingredientCategory.list.statTotal")}
+                  value={statsTotal}
+                  icon="folder"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.ingredientCategory.list.statActive")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("page.ingredientCategory.list.statInactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
+            </div>
 
-        {isError ? (
-          <AbortController refetch={refetch} />
-        ) : (
-          <div className="mt-6">
-            <DataTable
-              columns={columns}
-              data={categories}
-              isLoading={isLoading}
-              emptyMessage={t("page.ingredientCategory.list.emptyText")}
-              emptyIcon={Package}
-              toolbar={
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                  <h4 className="text-base font-semibold text-foreground">
-                    {t("page.ingredientCategory.list.title")}
-                  </h4>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
-                        className="pl-9 h-9 text-sm"
-                      />
+            {isError ? (
+              <AbortController refetch={refetch} />
+            ) : (
+              <div className="mt-6">
+                <DataTable
+                  columns={columns}
+                  data={categories}
+                  isLoading={isLoading}
+                  emptyMessage={t("page.ingredientCategory.list.emptyText")}
+                  emptyIcon={Package}
+                  toolbar={
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      <h4 className="text-base font-semibold text-foreground">
+                        {t("page.ingredientCategory.list.title")}
+                      </h4>
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                          <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            value={search}
+                            onChange={(e) => {
+                              setSearch(e.target.value);
+                              setPage(1);
+                            }}
+                            placeholder={t("page.ingredientCategory.list.searchPlaceholder")}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              }
-              pagination={{
-                page,
-                totalPages,
-                total: statsTotal,
-                onPageChange: setPage,
-                pageSize: limit,
-                onPageSizeChange: (v) => { setLimit(v); setPage(1); }
-              }}
-            />
-          </div>
-        )}
+                  }
+                  pagination={{
+                    page,
+                    totalPages,
+                    total: statsTotal,
+                    onPageChange: setPage,
+                    pageSize: limit,
+                    onPageSizeChange: (v) => {
+                      setLimit(v);
+                      setPage(1);
+                    }
+                  }}
+                />
+              </div>
+            )}
 
-        <div className="mt-6">
-          <TipsCard
-            tips={[
-              t("page.ingredientCategory.list.tips.1"),
-              t("page.ingredientCategory.list.tips.2"),
-              t("page.ingredientCategory.list.tips.3"),
-              t("page.ingredientCategory.list.tips.4")
-            ]}
-          />
-        </div>
-      </div>
+            <div className="mt-6">
+              <TipsCard
+                tips={[
+                  t("page.ingredientCategory.list.tips.1"),
+                  t("page.ingredientCategory.list.tips.2"),
+                  t("page.ingredientCategory.list.tips.3"),
+                  t("page.ingredientCategory.list.tips.4")
+                ]}
+              />
+            </div>
+          </div>
         </>
       )}
 

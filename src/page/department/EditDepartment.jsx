@@ -25,12 +25,6 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama departemen wajib diisi"),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const EditDepartment = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -39,6 +33,12 @@ const EditDepartment = () => {
   const departmentId = searchParams.get("id");
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.department.validation.nameRequired")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
 
   const {
     data: departmentData,
@@ -99,7 +99,7 @@ const EditDepartment = () => {
     );
   }
 
-  if (departmentsLoading) return <Loading fullscreen size="lg" label="Memuat data..." />;
+  if (departmentsLoading) return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
   if (isError) return <AbortController refetch={refetch} />;
 
   if (!department) {
@@ -233,7 +233,7 @@ const EditDepartment = () => {
                   variant="outline"
                   onClick={() => setDraftModal(true)}
                   disabled={editMutation.isLoading}>
-                  Simpan sebagai Draft
+                  {t("common.saveAsDraft")}
                 </Button>
                 <Button
                   type="submit"
@@ -249,13 +249,14 @@ const EditDepartment = () => {
       </div>
 
       <Modal type="confirm" open={draftModal} onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?" description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("common.saveAsDraftTitle")} description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
       />
       <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
-        title="Konfirmasi Simpan" description="Apakah data sudah benar dan akan disimpan?"
-        confirmText="Ya, Simpan" onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
+        title={t("common.confirmSave")} description={t("common.confirmSaveDesc")}
+        confirmText={t("common.yesSave")}
+        onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
       />
     </div>
   );

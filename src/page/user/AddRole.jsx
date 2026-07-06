@@ -166,7 +166,7 @@ const AddRole = () => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error(t("common.error"), {
-        description: "Nama role harus diisi"
+        description: t("page.role.add.nameRequired")
       });
       return;
     }
@@ -197,14 +197,14 @@ const AddRole = () => {
             Manajemen Role & Izin
           </button>
           <ChevronRight size={14} />
-          <span className="text-foreground font-bold">Tambah Role Baru</span>
+          <span className="text-foreground font-bold">{t("page.role.add.title")}</span>
         </nav>
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Tambah Role Baru</h2>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">{t("page.role.add.title")}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Buat role baru dan atur hak akses untuk setiap menu sistem
+              {t("page.role.add.description")}
             </p>
           </div>
         </div>
@@ -225,7 +225,7 @@ const AddRole = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                    placeholder="cth: Kasir, Supervisor, Owner"
+                    placeholder={t("page.role.add.namePlaceholder")}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -236,7 +236,7 @@ const AddRole = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                    placeholder="Deskripsi singkat tentang role ini"
+                    placeholder={t("page.role.add.descPlaceholder")}
                     rows={5}
                   />
                 </div>
@@ -380,38 +380,38 @@ const AddRole = () => {
           </Button>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setDraftModal(true)} disabled={isSubmitting}>
-              Simpan sebagai Draft
+              {t("common.saveAsDraft")}
             </Button>
             <Button onClick={(e) => handleSubmit(e, false)} disabled={isSubmitting}>
-              Simpan Role
+              {t("page.role.add.saveRole")}
             </Button>
           </div>
         </div>
 
-        {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+        {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
         <Modal
           type="success"
           open={successModal}
           onOpenChange={setSuccessModal}
-          title="Role Berhasil Dibuat"
+          title={t("page.role.add.successTitle")}
           onConfirm={() => navigate("/role-management")}
         />
         <Modal
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title="Batalkan?"
-          confirmText="Ya, Batalkan"
+          title={t("modal.cancelTitle")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/role-management")}
         />
         <Modal
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft?"
-          description="Data yang belum lengkap bisa dilengkapi nanti"
-          confirmText="Ya, Simpan Draft"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             setIsSubmitting(true);

@@ -122,7 +122,9 @@ const DetailReservation = () => {
             {r.customerPhone && (
               <DetailRow label={t("page.reservation.detail.phone")}>{r.customerPhone}</DetailRow>
             )}
-            {r.customerEmail && <DetailRow label="Email">{r.customerEmail}</DetailRow>}
+            {r.customerEmail && (
+              <DetailRow label={t("page.reservation.detail.email")}>{r.customerEmail}</DetailRow>
+            )}
           </div>
           <div className="space-y-4">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">

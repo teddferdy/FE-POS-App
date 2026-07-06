@@ -23,21 +23,20 @@ import UserGuide from "@/components/organism/UserGuide";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
-const formSchema = z.object({
-  nama_shift: z.string().min(1, "Nama shift wajib diisi"),
-  tipe_shift: z.enum(["harian", "mingguan"]),
-  store: z.string().min(1, "Toko wajib dipilih"),
-  jam_mulai: z.string().min(1, "Jam mulai wajib diisi"),
-  jam_selesai: z.string().min(1, "Jam selesai wajib diisi"),
-  tanggal_mulai: z.date({ required_error: "Tanggal mulai wajib diisi" }),
-  tanggal_selesai: z.date().optional(),
-  karyawan: z.array(z.any()).optional(),
-  deskripsi: z.string().optional().or(z.literal("")),
-  status: z.boolean().default(true)
-});
-
 const AddShift = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    nama_shift: z.string().min(1, t("page.shift.edit.validation.namaShift")),
+    tipe_shift: z.enum(["harian", "mingguan"]),
+    store: z.string().min(1, t("page.shift.add.validation.store")),
+    jam_mulai: z.string().min(1, t("page.shift.edit.validation.jamMulai")),
+    jam_selesai: z.string().min(1, t("page.shift.edit.validation.jamSelesai")),
+    tanggal_mulai: z.date({ required_error: t("page.shift.add.validation.tanggalMulai") }),
+    tanggal_selesai: z.date().optional(),
+    karyawan: z.array(z.any()).optional(),
+    deskripsi: z.string().optional().or(z.literal("")),
+    status: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -131,8 +130,8 @@ const AddShift = () => {
     });
   };
 
-  const onSubmit = (values) => handleSave(values, false)
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+  const onSubmit = (values) => handleSave(values, false);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   return (
     <div className="space-y-6">
@@ -171,7 +170,11 @@ const AddShift = () => {
                             size={16}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           />
-                          <Input placeholder="Contoh: Shift Pagi" className="pl-9" {...field} />
+                          <Input
+                            placeholder={t("page.shift.edit.form.namaShiftPlaceholder")}
+                            className="pl-9"
+                            {...field}
+                          />
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -288,7 +291,10 @@ const AddShift = () => {
                         <FormLabel>
                           Jam Mulai <span className="text-destructive">*</span>
                         </FormLabel>
-                        <TimePicker {...field} placeholder="Pilih jam mulai" />
+                        <TimePicker
+                          {...field}
+                          placeholder={t("page.shift.edit.form.jamMulaiPlaceholder")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -301,7 +307,10 @@ const AddShift = () => {
                         <FormLabel>
                           Jam Selesai <span className="text-destructive">*</span>
                         </FormLabel>
-                        <TimePicker {...field} placeholder="Pilih jam selesai" />
+                        <TimePicker
+                          {...field}
+                          placeholder={t("page.shift.edit.form.jamSelesaiPlaceholder")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -455,7 +464,7 @@ const AddShift = () => {
                     <FormItem>
                       <FormLabel>Deskripsi</FormLabel>
                       <Textarea
-                        placeholder="Catatan tambahan tentang shift ini..."
+                        placeholder={t("page.shift.edit.form.deskripsiPlaceholder")}
                         rows={3}
                         {...field}
                       />
@@ -517,7 +526,7 @@ const AddShift = () => {
                       onClick={() => setDraftModal(true)}
                       disabled={createMutation.isLoading}
                       className="gap-2">
-                      <Save size={18} /> Simpan sebagai Draft
+                      <Save size={18} /> {t("common.saveAsDraft")}
                     </Button>
                     <Button type="submit" disabled={createMutation.isLoading} className="gap-2">
                       <Save size={18} />
@@ -536,27 +545,27 @@ const AddShift = () => {
         type="confirm"
         open={cancelModal}
         onOpenChange={setCancelModal}
-        title="Batalkan?"
-        description="Perubahan yang belum disimpan akan hilang."
-        confirmText="Ya, Batalkan"
+        title={t("modal.cancelTitle")}
+        description={t("modal.cancelDescription")}
+        confirmText={t("modal.yesCancel")}
         onConfirm={() => navigate("/shift")}
       />
       <Modal
         type="success"
         open={successModal}
         onOpenChange={setSuccessModal}
-        title="Berhasil!"
-        description="Shift berhasil ditambahkan."
-        confirmText="Kembali ke Daftar"
+        title={t("page.shift.edit.modal.successTitle")}
+        description={t("page.shift.edit.modal.successDesc")}
+        confirmText={t("page.shift.edit.modal.successConfirm")}
         onConfirm={() => navigate("/shift")}
       />
       <Modal
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

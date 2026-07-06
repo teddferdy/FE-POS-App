@@ -26,15 +26,14 @@ import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama pembayaran wajib diisi"),
-  type: z.string().min(1, "Tipe pembayaran wajib dipilih"),
-  deskripsi: z.string().optional().or(z.literal("")),
-  status: z.boolean().default(true)
-});
-
 const EditTypePayment = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
+    type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
+    deskripsi: z.string().optional().or(z.literal("")),
+    status: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get("id");
@@ -119,7 +118,7 @@ const EditTypePayment = () => {
   }
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
+    return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
   }
 
   if (isError) {
@@ -164,7 +163,7 @@ const EditTypePayment = () => {
               onClick={() => setDraftModal(true)}
               disabled={updateMutation.isLoading}
               className="gap-2">
-              Save as Draft
+              {t("common.saveAsDraft")}
             </Button>
             <Button
               onClick={() => onConfirmSubmit()}
@@ -288,9 +287,9 @@ const EditTypePayment = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft"
-          description="Data akan disimpan sebagai draft"
-          confirmText="Ya, Simpan"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();

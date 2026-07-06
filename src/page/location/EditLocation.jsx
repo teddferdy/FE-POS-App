@@ -158,16 +158,16 @@ const EditLocation = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      name: z.string().min(1, "Required"),
+      name: z.string().min(1, t("common.validation")),
       storeId: z.string().optional(),
       locationId: z.string().optional(),
       phoneNumber: z
         .string()
-        .min(1, "Required")
+        .min(1, t("common.validation"))
         .regex(/^\d*$/, "Digits only")
         .max(14, "Max 14 digits"),
       email: z.string().optional(),
-      address: z.string().min(1, "Required"),
+      address: z.string().min(1, t("common.validation")),
       detailLocation: z.string().optional(),
       location: z.string().optional(),
       city: z.string().optional(),

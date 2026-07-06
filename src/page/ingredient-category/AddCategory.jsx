@@ -23,13 +23,12 @@ import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama kategori wajib diisi"),
-  isActive: z.boolean()
-});
-
 const AddCategory = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.ingredientCategory.validation.nameRequired")),
+    isActive: z.boolean()
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -45,7 +44,9 @@ const AddCategory = () => {
     defaultValues: { name: "", isActive: true }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values, false)
+  );
 
   const {
     isLoading: loadingData,
@@ -223,7 +224,7 @@ const AddCategory = () => {
                 variant="outline"
                 onClick={() => setDraftModal(true)}
                 disabled={isSubmitting}>
-                Save as Draft
+                {t("common.saveAsDraft")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 <Save size={16} className="mr-1" />
@@ -309,9 +310,9 @@ const AddCategory = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft"
-        description="Data akan disimpan sebagai draft"
-        confirmText="Ya, Simpan"
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

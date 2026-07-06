@@ -67,10 +67,10 @@ const CustomerOrderManagement = () => {
         changedBy: cookie.user?.id,
         changedByName: cookie.user?.fullName || cookie.user?.userName
       });
-      toast.success(`Order #${order.orderNumber} accepted → Kitchen`);
+      toast.success(t("page.customerOrder.accepted", { orderNumber: order.orderNumber }));
       setOrders((prev) => prev.filter((o) => o.id !== order.id));
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Failed to accept order");
+      toast.error(e?.response?.data?.message || t("page.customerOrder.acceptFailed"));
     } finally {
       setAcceptingId(null);
     }
@@ -105,13 +105,12 @@ const CustomerOrderManagement = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("sidebar.customerOrder")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {orders.length} pending {orders.length === 1 ? "order" : "orders"} — review & accept
-              to send to kitchen
+              {t("page.customerOrder.pendingDesc", { count: orders.length })}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
             {loading ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-            Refresh
+            {t("page.customerOrder.refresh")}
           </Button>
         </div>
       </div>
@@ -136,7 +135,7 @@ const CustomerOrderManagement = () => {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
-                placeholder="Search by order number, customer name, or item..."
+                placeholder={t("page.customerOrder.searchOrders")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9 text-sm w-full"
@@ -152,7 +151,7 @@ const CustomerOrderManagement = () => {
             </div>
           ) : filtered.length === 0 ? (
             <Card className="p-12 text-center text-muted-foreground">
-              {search ? "No matching orders" : "No pending QR orders"}
+              {search ? t("page.customerOrder.noMatching") : t("page.customerOrder.noPending")}
             </Card>
           ) : (
             <div className="grid gap-3">
@@ -182,7 +181,7 @@ const CustomerOrderManagement = () => {
                           {order.table && (
                             <span className="flex items-center gap-1">
                               <Store size={12} />
-                              Table {order.table.name}
+                              {t("page.customerOrder.table")} {order.table.name}
                             </span>
                           )}
                         </div>
@@ -216,7 +215,7 @@ const CustomerOrderManagement = () => {
                           ) : (
                             <ChefHat size={14} className="mr-1" />
                           )}
-                          Accept
+                          {t("page.customerOrder.accept")}
                         </Button>
                       </div>
                     </div>

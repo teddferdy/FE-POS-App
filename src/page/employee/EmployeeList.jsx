@@ -301,7 +301,7 @@ const EmployeeList = () => {
                   value={total.toLocaleString() || "0"}
                   icon="groups"
                   variant="default"
-                  subtitle="+12% vs bulan lalu"
+                  subtitle={t("page.employee.list.subtitle")}
                 />
                 <StatCard
                   label={t("page.employee.table.active")}

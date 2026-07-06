@@ -18,19 +18,20 @@ import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
-const actionLabels = {
-  view: "Lihat",
-  add: "Tambah",
-  edit: "Ubah",
-  delete: "Hapus",
-  import: "Impor",
-  export: "Ekspor",
-  approve: "Setujui",
-  print: "Cetak",
-  "edit-points": "Ubah Poin",
-  "edit-access": "Ubah Akses",
-  "reset-password": "Atur Ulang Sandi",
-  "update-status": "Perbarui Status"
+// ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
+const actionLabelKeys = {
+  view: "page.role.action.view",
+  add: "page.role.action.add",
+  edit: "page.role.action.edit",
+  delete: "page.role.action.delete",
+  import: "page.role.action.import",
+  export: "page.role.action.export",
+  approve: "page.role.action.approve",
+  print: "page.role.action.print",
+  "edit-points": "page.role.action.editPoints",
+  "edit-access": "page.role.action.editAccess",
+  "reset-password": "page.role.action.resetPassword",
+  "update-status": "page.role.action.updateStatus"
 };
 
 const actionColors = {
@@ -203,7 +204,7 @@ const EditRole = () => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error(t("common.error"), {
-        description: "Nama role harus diisi"
+        description: t("page.role.edit.nameRequired")
       });
       return;
     }
@@ -235,7 +236,7 @@ const EditRole = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoadingRole) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
+    return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
   }
 
   return (
@@ -245,18 +246,18 @@ const EditRole = () => {
           <button
             onClick={() => navigate("/role-management")}
             className="hover:text-primary transition-colors">
-            Manajemen Role & Izin
+            {t("page.role.detail.breadcrumbParent")}
           </button>
           <ChevronRight size={14} />
-          <span className="text-foreground font-bold">Edit Role</span>
+          <span className="text-foreground font-bold">{t("page.role.edit.title")}</span>
         </nav>
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Edit Role: {name}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Ubah informasi role dan atur hak akses untuk setiap menu sistem
-            </p>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
+              {t("page.role.edit.title")}: {name}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.role.edit.description")}</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => setCancelModal(true)}>
@@ -267,13 +268,13 @@ const EditRole = () => {
               variant="outline"
               onClick={() => setDraftModal(true)}
               disabled={isSubmitting}>
-              Simpan sebagai Draft
+              {t("common.saveAsDraft")}
             </Button>
             <Button
               data-tour="role-save"
               onClick={(e) => handleSubmit(e, false)}
               disabled={isSubmitting}>
-              Simpan Perubahan
+              {t("page.role.edit.saveChanges")}
             </Button>
           </div>
         </div>
@@ -283,31 +284,33 @@ const EditRole = () => {
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-primary">info</span>
-                <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.role.detail.infoTitle")}
+                </h3>
               </div>
               <div className="space-y-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nama Role <span className="text-destructive">*</span>
+                    {t("page.role.detail.nameLabel")} <span className="text-destructive">*</span>
                   </label>
                   <input
                     data-tour="role-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                    placeholder="cth: Kasir, Supervisor, Owner"
+                    placeholder={t("page.role.edit.namePlaceholder")}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Deskripsi Role
+                    {t("page.role.edit.descLabel")}
                   </label>
                   <textarea
                     data-tour="role-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                    placeholder="Deskripsi singkat tentang role ini"
+                    placeholder={t("page.role.edit.descPlaceholder")}
                     rows={5}
                   />
                 </div>
@@ -315,11 +318,11 @@ const EditRole = () => {
             </div>
 
             <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
-              <h4 className="text-base font-semibold text-primary mb-2">Panduan Izin Akses</h4>
+              <h4 className="text-base font-semibold text-primary mb-2">
+                {t("page.role.edit.guideTitle")}
+              </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Setiap menu memiliki aksi yang bisa diizinkan atau tidak. Centang aksi yang ingin
-                diberikan untuk role ini. Menu yang tidak memiliki izin tertentu (strip) tidak dapat
-                diubah.
+                {t("page.role.edit.guideDescription")}
               </p>
             </div>
           </div>
@@ -331,7 +334,9 @@ const EditRole = () => {
               <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">rule</span>
-                  <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.role.detail.matrixTitle")}
+                  </h3>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer select-none group">
                   <input
@@ -341,7 +346,7 @@ const EditRole = () => {
                     className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
                   />
                   <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                    Pilih Semua
+                    {t("page.role.edit.selectAll")}
                   </span>
                 </label>
               </div>
@@ -377,13 +382,13 @@ const EditRole = () => {
                             <thead>
                               <tr className="bg-muted/10">
                                 <th className="px-6 py-3 text-xs font-bold text-foreground uppercase tracking-wider w-56 bg-slate-100 dark:bg-slate-800">
-                                  Menu
+                                  {t("page.role.detail.menuColumn")}
                                 </th>
                                 {visibleActions.map((action) => (
                                   <th
                                     key={action}
                                     className={`px-2 py-3 text-xs font-semibold uppercase tracking-wider text-center min-w-[60px] ${actionColors[action] || "text-muted-foreground"}`}>
-                                    {actionLabels[action] || action}
+                                    {t(actionLabelKeys[action]) || action}
                                   </th>
                                 ))}
                               </tr>
@@ -440,28 +445,28 @@ const EditRole = () => {
 
               <div className="p-4 bg-muted/20 text-right border-t border-border">
                 <p className="text-xs text-muted-foreground italic">
-                  Perubahan izin akses akan diterapkan setelah disimpan
+                  {t("page.role.edit.footerNote")}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {isSubmitting && <Loading fullscreen size="lg" label="Menyimpan..." />}
+        {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
         <Modal
           type="success"
           open={successModal}
           onOpenChange={setSuccessModal}
-          title="Role Berhasil Diperbarui"
+          title={t("page.role.edit.successTitle")}
           onConfirm={() => navigate("/role-management")}
         />
         <Modal
           type="confirm"
           open={cancelModal}
           onOpenChange={setCancelModal}
-          title="Batalkan?"
-          confirmText="Ya, Batalkan"
+          title={t("modal.cancelTitle")}
+          confirmText={t("modal.yesCancel")}
           onConfirm={() => navigate("/role-management")}
         />
 
@@ -469,9 +474,9 @@ const EditRole = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft?"
-          description="Data yang belum lengkap bisa dilengkapi nanti"
-          confirmText="Ya, Simpan Draft"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             handleSubmit(new Event("submit"), true);

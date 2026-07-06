@@ -624,8 +624,8 @@ const EditProduct = () => {
     editMutation.mutate(payload);
   };
 
-  const onSubmit = (values) => handleSave(values, false)
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+  const onSubmit = (values) => handleSave(values, false);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   if (isError) return <AbortController refetch={refetch} />;
 

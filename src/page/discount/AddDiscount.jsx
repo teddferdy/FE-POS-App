@@ -395,7 +395,7 @@ const AddDiscount = () => {
                         <Input
                           type="number"
                           min="1"
-                          placeholder="cth: 2"
+                          placeholder={t("page.discount.form.placeholder.buyQty")}
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.value === "" ? "" : Number(e.target.value))
@@ -416,7 +416,7 @@ const AddDiscount = () => {
                         <Input
                           type="number"
                           min="1"
-                          placeholder="cth: 1"
+                          placeholder={t("page.discount.form.placeholder.freeQty")}
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.value === "" ? "" : Number(e.target.value))
@@ -446,7 +446,7 @@ const AddDiscount = () => {
                         <Input
                           type="number"
                           min="1"
-                          placeholder="cth: 50000"
+                          placeholder={t("page.discount.form.placeholder.bundlePrice")}
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.value === "" ? "" : Number(e.target.value))
@@ -464,7 +464,10 @@ const AddDiscount = () => {
                         <FormLabel>
                           ID Produk <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
+                        <Input
+                          placeholder={t("page.discount.form.placeholder.productIds")}
+                          {...field}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -490,7 +493,7 @@ const AddDiscount = () => {
                           type="number"
                           min="1"
                           max="100"
-                          placeholder="cth: 10"
+                          placeholder={t("page.discount.form.placeholder.discountPercent")}
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.value === "" ? "" : Number(e.target.value))
@@ -508,7 +511,10 @@ const AddDiscount = () => {
                         <FormLabel>
                           Jam Mulai <span className="text-destructive">*</span>
                         </FormLabel>
-                        <TimePicker {...field} placeholder="Pilih jam mulai" />
+                        <TimePicker
+                          {...field}
+                          placeholder={t("page.discount.form.placeholder.startTime")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -521,7 +527,10 @@ const AddDiscount = () => {
                         <FormLabel>
                           Jam Selesai <span className="text-destructive">*</span>
                         </FormLabel>
-                        <TimePicker {...field} placeholder="Pilih jam selesai" />
+                        <TimePicker
+                          {...field}
+                          placeholder={t("page.discount.form.placeholder.endTime")}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -532,7 +541,10 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Hari (0=Minggu, 1=Senin, ..., 6=Sabtu)</FormLabel>
-                        <Input placeholder="cth: 1,2,3,4,5 (senin-jumat)" {...field} />
+                        <Input
+                          placeholder={t("page.discount.form.placeholder.daysOfWeek")}
+                          {...field}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -555,7 +567,7 @@ const AddDiscount = () => {
                           type="number"
                           min="1"
                           max="100"
-                          placeholder="cth: 15"
+                          placeholder={t("page.discount.form.placeholder.catDiscountPercent")}
                           {...field}
                           onChange={(e) =>
                             field.onChange(e.target.value === "" ? "" : Number(e.target.value))
@@ -573,7 +585,10 @@ const AddDiscount = () => {
                         <FormLabel>
                           ID Kategori <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input placeholder="cth: 1,2,3 (pisahkan dengan koma)" {...field} />
+                        <Input
+                          placeholder={t("page.discount.form.placeholder.categoryIds")}
+                          {...field}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -635,7 +650,7 @@ const AddDiscount = () => {
                           <FormLabel>{t("page.discount.form.maxDiscount")}</FormLabel>
                           <Input
                             type="number"
-                            placeholder="0 (0 = unlimited)"
+                            placeholder={t("page.discount.form.placeholder.maxDiscount")}
                             {...field}
                             onChange={(e) => {
                               field.onChange(e.target.value === "" ? "" : Number(e.target.value));

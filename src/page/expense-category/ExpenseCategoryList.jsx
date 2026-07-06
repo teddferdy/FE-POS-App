@@ -222,78 +222,80 @@ const ExpenseCategoryList = () => {
         )}
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>
-      {isError ? (
-        <AbortController refetch={refetch} />
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.expenseCategory.list.total")}
-              value={totalStats}
-              icon="folder"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.expenseCategory.list.total")}
+                  value={totalStats}
+                  icon="folder"
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={activeCount}
+                  icon="check_circle"
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={draftCount}
+                  icon="edit_note"
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={inactiveCount}
+                  icon="cancel"
+                  variant="inactive"
+                />
+              </div>
 
-          <div>
-            <div className="relative w-full sm:w-72">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.expenseCategory.list.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10"
-              />
-            </div>
-          </div>
+              <div>
+                <div className="relative w-full sm:w-72">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.expenseCategory.list.search")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-10"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <DataTable
-              columns={columns}
-              data={filtered}
-              isLoading={isLoading}
-              emptyIcon={Tag}
-              emptyMessage={t("page.expenseCategory.list.empty")}
-            />
-          </div>
-        </>
-      )}
+              <div>
+                <DataTable
+                  columns={columns}
+                  data={filtered}
+                  isLoading={isLoading}
+                  emptyIcon={Tag}
+                  emptyMessage={t("page.expenseCategory.list.empty")}
+                />
+              </div>
+            </>
+          )}
 
-      <Modal
-        type="confirm"
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={t("page.expenseCategory.modal.deleteTitle")}
-        description={t("page.expenseCategory.modal.deleteDesc", {
-          name: deleteTarget?.name || ""
-        })}
-        confirmText={t("page.expenseCategory.modal.deleteConfirm")}
-        loading={deleteMutation.isLoading}
-        onConfirm={confirmDelete}
-      />
+          <Modal
+            type="confirm"
+            open={!!deleteTarget}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+            title={t("page.expenseCategory.modal.deleteTitle")}
+            description={t("page.expenseCategory.modal.deleteDesc", {
+              name: deleteTarget?.name || ""
+            })}
+            confirmText={t("page.expenseCategory.modal.deleteConfirm")}
+            loading={deleteMutation.isLoading}
+            onConfirm={confirmDelete}
+          />
         </>
       )}
     </div>

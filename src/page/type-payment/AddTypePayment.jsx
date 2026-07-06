@@ -26,15 +26,14 @@ import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama pembayaran wajib diisi"),
-  type: z.string().min(1, "Tipe pembayaran wajib dipilih"),
-  deskripsi: z.string().optional().or(z.literal("")),
-  status: z.boolean().default(true)
-});
-
 const AddTypePayment = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
+    type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
+    deskripsi: z.string().optional().or(z.literal("")),
+    status: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);

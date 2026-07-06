@@ -19,13 +19,6 @@ import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama pajak wajib diisi"),
-  rate: z.coerce.number().min(0, "Tarif tidak boleh negatif"),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const taxTypes = [
   { value: "PPN", label: "PPN" },
   { value: "PPh", label: "PPh" },
@@ -34,6 +27,12 @@ const taxTypes = [
 
 const EditTaxConfig = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+    rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const taxId = searchParams.get("id");
@@ -109,7 +108,7 @@ const EditTaxConfig = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label="Memuat data..." />;
+    return <Loading fullscreen size="lg" label={t("common.loadingData")} />;
   }
 
   return (
@@ -149,7 +148,7 @@ const EditTaxConfig = () => {
               disabled={updateMutation.isLoading}
               className="gap-2">
               <Save size={18} />
-              Simpan sebagai Draft
+              {t("common.saveAsDraft")}
             </Button>
             <Button
               onClick={() => onConfirmSubmit()}
@@ -252,13 +251,13 @@ const EditTaxConfig = () => {
                 )}
               />
             </form>
-            </Form>
-            <Modal type="confirm" {...confirmModal()} />
-          </Card>
+          </Form>
+          <Modal type="confirm" {...confirmModal()} />
+        </Card>
 
-          <Modal
-            type="confirm"
-            open={cancelModal}
+        <Modal
+          type="confirm"
+          open={cancelModal}
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}
@@ -278,9 +277,9 @@ const EditTaxConfig = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft?"
-          description="Data yang belum lengkap bisa dilengkapi nanti"
-          confirmText="Ya, Simpan Draft"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();

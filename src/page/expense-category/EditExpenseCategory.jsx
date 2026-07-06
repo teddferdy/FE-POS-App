@@ -19,14 +19,13 @@ import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama kategori wajib diisi"),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean()
-});
-
 const EditExpenseCategory = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.expenseCategory.add.validation.nameRequired")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean()
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -221,10 +220,7 @@ const EditExpenseCategory = () => {
                     disabled={updateMutation.isLoading}>
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={updateMutation.isLoading}
-                    className="gap-2">
+                  <Button type="submit" disabled={updateMutation.isLoading} className="gap-2">
                     <Save size={18} />
                     {updateMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>

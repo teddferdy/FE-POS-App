@@ -19,13 +19,6 @@ import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import Modal from "@/components/organism/modal";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama pajak wajib diisi"),
-  rate: z.coerce.number().min(0, "Tarif tidak boleh negatif").max(100, "Tarif maksimal 100%"),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const taxTypes = [
   { value: "PPN", label: "PPN" },
   { value: "PPh", label: "PPh" },
@@ -34,6 +27,12 @@ const taxTypes = [
 
 const AddTaxConfig = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+    rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")).max(100, t("page.taxConfig.validation.rateMax")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
@@ -49,7 +48,9 @@ const AddTaxConfig = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values, false)
+  );
 
   const createMutation = useMutation(addTaxConfig, {
     onSuccess: () => {
@@ -93,9 +94,7 @@ const AddTaxConfig = () => {
         <div>
           <Card className="p-6">
             <Form {...form}>
-              <form
-                onSubmit={onConfirmSubmit}
-                className="space-y-6">
+              <form onSubmit={onConfirmSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -182,8 +181,8 @@ const AddTaxConfig = () => {
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {field.value
-                                  ? "Pajak ini aktif dan dapat digunakan."
-                                  : "Pajak ini tidak aktif."}
+                                  ? t("page.taxConfig.form.activeDesc")
+                                  : t("page.taxConfig.form.inactiveDesc")}
                               </p>
                             </div>
                           </div>
@@ -222,7 +221,7 @@ const AddTaxConfig = () => {
                       disabled={createMutation.isLoading}
                       className="gap-2">
                       <Save size={18} />
-                      Simpan sebagai Draft
+                      {t("common.saveAsDraft")}
                     </Button>
                     <Button
                       type="button"
@@ -235,10 +234,10 @@ const AddTaxConfig = () => {
                   </div>
                 </div>
               </form>
-              </Form>
-              <Modal type="confirm" {...confirmModal()} />
-            </Card>
-          </div>
+            </Form>
+            <Modal type="confirm" {...confirmModal()} />
+          </Card>
+        </div>
       </div>
 
       <Modal
@@ -263,9 +262,9 @@ const AddTaxConfig = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
           const values = form.getValues();

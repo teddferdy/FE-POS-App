@@ -873,9 +873,9 @@ const AddStockOpname = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft?"
-        description="Data yang belum lengkap bisa dilengkapi nanti"
-        confirmText="Ya, Simpan Draft"
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
           setIsSubmitting(true);
@@ -906,7 +906,7 @@ const AddStockOpname = () => {
         onOpenChange={(open) => !open && setValidationModal(false)}
         title={t("common.error")}
         description={validationErrors.join(". ")}
-        confirmText="Oke"
+        confirmText={t("common.ok")}
         onConfirm={() => setValidationModal(false)}
       />
 

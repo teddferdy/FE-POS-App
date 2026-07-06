@@ -29,7 +29,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const storeId = searchParams.get("store");
-  const tableId = searchParams.get("tåßable");
+  const tableId = searchParams.get("table");
 
   const [cart, setCart] = useState(loadCart);
   const [customerName, setCustomerName] = useState("");
@@ -163,15 +163,15 @@ const Cart = () => {
           />
           {memberLoading && (
             <div className="flex items-center gap-1.5 mt-1.5 text-xs text-on-surface-variant">
-              <Loader2 size={12} className="animate-spin" /> Checking...
+              <Loader2 size={12} className="animate-spin" /> {t("page.customerOrder.checking")}
             </div>
           )}
           {member && !memberLoading && (
             <div className="mt-2 flex items-center gap-2 bg-primary-container/20 text-primary px-3 py-1.5 rounded-lg text-xs font-semibold">
               <Star size={14} fill="currentColor" />
               <span>
-                {member.name} — {member.tier?.name || "Member"} (Diskon{" "}
-                {member.tier?.discountPercent || 0}%)
+                {member.name} — {member.tier?.name || t("page.customerOrder.member")} (
+                {t("page.customerOrder.discount")} {member.tier?.discountPercent || 0}%)
               </span>
             </div>
           )}
@@ -250,7 +250,7 @@ const Cart = () => {
           <textarea
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
-            placeholder="Allergies, preferences, or delivery notes..."
+            placeholder={t("page.customerOrder.instructionsPlaceholder")}
             className="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-primary focus:border-primary h-20 placeholder:text-outline-variant resize-none outline-none"
           />
         </div>
@@ -259,7 +259,7 @@ const Cart = () => {
         <div className="mb-4">
           <h3 className="font-bold text-sm text-on-surface mb-2 flex items-center gap-1.5">
             <Ticket size={16} />
-            Payment Method
+            {t("page.customerOrder.paymentMethod")}
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -275,7 +275,7 @@ const Cart = () => {
               />
               <span
                 className={`text-xs font-semibold mt-1 ${paymentMethod === "qris" ? "text-primary" : "text-on-surface-variant"}`}>
-                Pay Now (QRIS)
+                {t("page.customerOrder.payNowQris")}
               </span>
             </button>
             <button
@@ -291,7 +291,7 @@ const Cart = () => {
               />
               <span
                 className={`text-xs font-semibold mt-1 ${paymentMethod === "cashier" ? "text-primary" : "text-on-surface-variant"}`}>
-                Pay at Cashier
+                {t("page.customerOrder.payAtCashier")}
               </span>
             </button>
           </div>
@@ -305,12 +305,12 @@ const Cart = () => {
           </div>
           {discountPercent > 0 && (
             <div className="flex justify-between text-sm text-primary font-semibold">
-              <span>Diskon Member ({discountPercent}%)</span>
+              <span>{t("page.customerOrder.memberDiscount", { percent: discountPercent })}</span>
               <span>-Rp{discountAmount.toLocaleString("id-ID")}</span>
             </div>
           )}
           <div className="flex justify-between text-sm text-on-surface-variant">
-            <span>Tax (10%)</span>
+            <span>{t("page.customerOrder.tax")}</span>
             <span className="font-semibold">Rp{taxAmount.toLocaleString("id-ID")}</span>
           </div>
           <div className="pt-2 border-t border-outline-variant flex justify-between text-on-surface">

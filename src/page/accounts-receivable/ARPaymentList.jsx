@@ -140,7 +140,7 @@ const ARPaymentList = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          label="Total Piutang"
+          label={t("page.accountsReceivable.totalReceivable")}
           value={formatCurrencyRupiah(grandTotal)}
           icon="account_balance"
           variant="default"

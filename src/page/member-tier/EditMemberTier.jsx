@@ -220,7 +220,7 @@ const EditMemberTier = () => {
                             handleInputChange("minPoints", value);
                           }}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                          placeholder="Rp. 0"
+                          placeholder={t("page.memberTier.edit.minPointsPlaceholder")}
                         />
                       </div>
                     </div>
@@ -237,7 +237,7 @@ const EditMemberTier = () => {
                             handleInputChange("maxPoints", value);
                           }}
                           className="w-full px-3 py-2 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none transition-all bg-background text-sm disabled:opacity-50 pr-12"
-                          placeholder="Rp. 0"
+                          placeholder={t("page.memberTier.edit.maxPointsPlaceholder")}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground">

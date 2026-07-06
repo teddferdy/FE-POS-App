@@ -42,21 +42,22 @@ function generateTimeSlots(open, close) {
   return slots;
 }
 
-const formSchema = z.object({
-  customerName: z.string().min(1, "Nama customer wajib diisi"),
-  customerPhone: z.string().max(14).optional().or(z.literal("")),
-  customerEmail: z.string().optional().or(z.literal("")),
-  guestCount: z.coerce.number().min(1, "Minimal 1 tamu"),
-  store: z.string().min(1, "Pilih toko terlebih dahulu"),
-  reservationDate: z.date({ required_error: "Tanggal reservasi wajib diisi" }),
-  startTime: z.string().min(1, "Jam mulai wajib diisi"),
-  endTime: z.string().optional().or(z.literal("")),
-  tableId: z.string().optional().or(z.literal("")),
-  notes: z.string().optional().or(z.literal(""))
-});
-
 const AddReservation = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    customerName: z.string().min(1, t("page.reservation.edit.validation.customerName")),
+    customerPhone: z.string().max(14).optional().or(z.literal("")),
+    customerEmail: z.string().optional().or(z.literal("")),
+    guestCount: z.coerce.number().min(1, t("page.reservation.add.validation.guestCount")),
+    store: z.string().min(1, t("page.ingredientCategory.add.storeRequired")),
+    reservationDate: z.date({
+      required_error: t("page.reservation.edit.validation.reservationDate")
+    }),
+    startTime: z.string().min(1, t("page.reservation.add.validation.startTime")),
+    endTime: z.string().optional().or(z.literal("")),
+    tableId: z.string().optional().or(z.literal("")),
+    notes: z.string().optional().or(z.literal(""))
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [cancelModal, setCancelModal] = useState(false);
@@ -172,7 +173,7 @@ const AddReservation = () => {
     createMutation.mutate(payload);
   };
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   return (
     <div>

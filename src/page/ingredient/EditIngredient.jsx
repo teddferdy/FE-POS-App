@@ -128,7 +128,9 @@ const EditIngredient = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values, false)
+  );
 
   useEffect(() => {
     if (data?.data) {
@@ -254,7 +256,7 @@ const EditIngredient = () => {
                         options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
                         value={field.value || ""}
                         onChange={(v) => field.onChange(v || null)}
-                        placeholder="Pilih toko"
+                        placeholder={t("page.ingredient.edit.selectStorePlaceholder")}
                         searchPlaceholder="Cari toko..."
                       />
                       <FormMessage />
@@ -666,7 +668,9 @@ const EditIngredient = () => {
                     type="button"
                     onClick={() => {
                       if (isSuperAdmin && !form.getValues("store")) {
-                        form.setError("store", { message: "Pilih toko terlebih dahulu" });
+                        form.setError("store", {
+                          message: t("page.ingredientCategory.add.storeRequired")
+                        });
                         return;
                       }
                       form.clearErrors("store");
@@ -704,9 +708,9 @@ const EditIngredient = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft"
-          description="Data akan disimpan sebagai draft"
-          confirmText="Ya, Simpan"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();

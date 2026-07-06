@@ -181,7 +181,9 @@ const Detail = () => {
           {/* Description */}
           {product.description && (
             <section>
-              <h3 className="font-bold text-sm text-on-surface mb-1">Description</h3>
+              <h3 className="font-bold text-sm text-on-surface mb-1">
+                {t("page.customerOrder.description")}
+              </h3>
               <p className="text-sm text-on-surface-variant leading-relaxed">
                 {product.description}
               </p>
@@ -194,7 +196,7 @@ const Detail = () => {
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-sm text-on-surface">{group.name}</h3>
                 <span className="text-[10px] font-bold text-primary bg-primary-container/20 px-2 py-0.5 rounded">
-                  REQUIRED
+                  {t("page.customerOrder.required")}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -267,7 +269,7 @@ const Detail = () => {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="E.g. No onions, sauce on the side..."
+              placeholder={t("page.customerOrder.notesPlaceholder")}
               className="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-primary focus:border-primary h-20 placeholder:text-outline-variant resize-none outline-none"
             />
           </section>

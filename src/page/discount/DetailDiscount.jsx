@@ -114,7 +114,7 @@ const DetailDiscount = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold">{discount.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">Detail discount</p>
+            <p className="text-sm text-muted-foreground">{t("page.discount.detail.title")}</p>
           </div>
         </div>
         <Button variant="outline" onClick={() => navigate(`/edit-discount?id=${id}`)}>

@@ -16,14 +16,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/services";
 
-const STEPS = [
-  { key: "pending", label: "Order Received" },
-  { key: "preparing", label: "Preparing" },
-  { key: "ready", label: "Ready to Serve" }
-];
-
 const Tracking = () => {
   const { t } = useTranslation();
+
+  const STEPS = [
+    { key: "pending", label: t("page.customerOrder.stepPending") },
+    { key: "preparing", label: t("page.customerOrder.stepPreparing") },
+    { key: "ready", label: t("page.customerOrder.stepReady") }
+  ];
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -71,7 +71,10 @@ const Tracking = () => {
         <div className="flex items-center gap-2">
           <UtensilsCrossed size={18} className="text-primary" />
           <h1 className="font-bold text-sm text-on-surface">
-            Order #{order?.orderNumber} {tableId && `• Table ${tableId}`}
+            {t("page.customerOrder.orderHeader", {
+              number: order?.orderNumber,
+              table: tableId || ""
+            })}
           </h1>
         </div>
         <button className="p-1 active:scale-95 transition-transform">
@@ -89,10 +92,12 @@ const Tracking = () => {
           <h2 className="text-xl font-bold text-primary mb-1">
             {t("page.customerOrder.successModalTitle")}
           </h2>
-          <p className="text-sm text-on-surface-variant">Order #{order?.orderNumber}</p>
+          <p className="text-sm text-on-surface-variant">
+            {t("page.customerOrder.orderNumberShort", { number: order?.orderNumber })}
+          </p>
           <div className="mt-2 flex items-center justify-center gap-2">
             <span className="text-[10px] font-bold uppercase bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full">
-              Pay at Counter
+              {t("page.customerOrder.payAtCounter")}
             </span>
           </div>
         </section>
@@ -101,19 +106,25 @@ const Tracking = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
           <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant flex flex-col items-center text-center">
             <span className="text-[10px] font-bold uppercase text-secondary tracking-wider mb-1">
-              Estimated Wait
+              {t("page.customerOrder.estimatedWait")}
             </span>
             <div className="flex items-center gap-1.5 text-xl font-bold text-primary">
               <Clock size={20} />
-              15-20 min
+              {t("page.customerOrder.estimatedTime")}
             </div>
-            <span className="text-xs text-on-surface-variant mt-1">Freshly prepared for you</span>
+            <span className="text-xs text-on-surface-variant mt-1">
+              {t("page.customerOrder.freshlyPrepared")}
+            </span>
           </div>
           <div className="relative rounded-xl overflow-hidden min-h-[130px] border border-outline-variant bg-surface-container-high flex items-center justify-center">
             <ChefHat size={40} className="text-primary-container/50" />
             <div className="absolute bottom-2 left-3 text-white">
-              <p className="font-bold text-sm drop-shadow-md">Preparing Now</p>
-              <p className="text-xs opacity-80 drop-shadow-md">Our chefs at work</p>
+              <p className="font-bold text-sm drop-shadow-md">
+                {t("page.customerOrder.preparingNow")}
+              </p>
+              <p className="text-xs opacity-80 drop-shadow-md">
+                {t("page.customerOrder.chefsAtWork")}
+              </p>
             </div>
           </div>
         </div>
@@ -159,7 +170,11 @@ const Tracking = () => {
                       {step.label}
                     </p>
                     <p className="text-xs text-on-surface-variant">
-                      {completed ? "Done" : active ? "In progress" : "Pending"}
+                      {completed
+                        ? t("page.customerOrder.done")
+                        : active
+                          ? t("page.customerOrder.inProgress")
+                          : t("page.customerOrder.pendingStatus")}
                     </p>
                   </div>
                 </div>
@@ -172,7 +187,7 @@ const Tracking = () => {
         <div className="flex justify-center mb-5">
           <button className="flex items-center gap-2 px-4 py-2.5 bg-surface-container-high rounded-full text-on-surface-variant font-semibold text-sm transition-all active:scale-95 border border-outline-variant">
             <HelpCircle size={16} />
-            Need Help or Feedback?
+            {t("page.customerOrder.needHelp")}
           </button>
         </div>
 
@@ -184,7 +199,9 @@ const Tracking = () => {
                 {order.totalQuantity || 0}
               </div>
               <div>
-                <p className="font-bold text-sm">{order.totalQuantity || 0} Items Ordered</p>
+                <p className="font-bold text-sm">
+                  {t("page.customerOrder.itemsOrdered", { count: order.totalQuantity || 0 })}
+                </p>
                 <p className="text-xs text-on-surface-variant">{order.orderNumber}</p>
               </div>
             </div>
@@ -215,17 +232,17 @@ const Tracking = () => {
           onClick={() => navigate(`/customer-order?store=${storeId}&table=${tableId || ""}`)}
           className="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition-colors">
           <Menu size={20} />
-          <span className="text-[10px] font-semibold">Menu</span>
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.menu")}</span>
         </button>
         <button
           onClick={() => navigate(`/customer-order/cart?store=${storeId}&table=${tableId || ""}`)}
           className="flex flex-col items-center gap-0.5 text-on-surface-variant hover:text-primary transition-colors">
           <ShoppingCart size={20} />
-          <span className="text-[10px] font-semibold">Cart</span>
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.cart")}</span>
         </button>
         <button className="flex flex-col items-center gap-0.5 text-primary font-bold transition-colors">
           <FileText size={20} />
-          <span className="text-[10px] font-semibold">Orders</span>
+          <span className="text-[10px] font-semibold">{t("page.customerOrder.orders")}</span>
         </button>
       </nav>
     </div>

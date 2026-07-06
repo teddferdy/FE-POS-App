@@ -14,19 +14,20 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
-const actionLabels = {
-  view: "Lihat",
-  add: "Tambah",
-  edit: "Ubah",
-  delete: "Hapus",
-  import: "Impor",
-  export: "Ekspor",
-  approve: "Setujui",
-  print: "Cetak",
-  "edit-points": "Ubah Poin",
-  "edit-access": "Ubah Akses",
-  "reset-password": "Atur Ulang Sandi",
-  "update-status": "Perbarui Status"
+// ponytail: action labels map to translation keys. Add new actions here and in id.json/en.json.
+const actionLabelKeys = {
+  view: "page.role.action.view",
+  add: "page.role.action.add",
+  edit: "page.role.action.edit",
+  delete: "page.role.action.delete",
+  import: "page.role.action.import",
+  export: "page.role.action.export",
+  approve: "page.role.action.approve",
+  print: "page.role.action.print",
+  "edit-points": "page.role.action.editPoints",
+  "edit-access": "page.role.action.editAccess",
+  "reset-password": "page.role.action.resetPassword",
+  "update-status": "page.role.action.updateStatus"
 };
 
 const allActionTypes = [
@@ -64,7 +65,7 @@ const getLeafItemsGrouped = () => {
 };
 
 const DetailRole = () => {
-  useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams();
   const [collapsedGroups, setCollapsedGroups] = useState({});
@@ -180,9 +181,9 @@ const DetailRole = () => {
     return (
       <div className="text-center py-16">
         <Shield size={48} className="mx-auto mb-4 text-muted-foreground/40" />
-        <p className="text-muted-foreground">Role tidak ditemukan</p>
+        <p className="text-muted-foreground">{t("page.role.detail.notFound")}</p>
         <Button onClick={() => navigate("/role-management")} className="mt-4">
-          Kembali
+          {t("common.back")}
         </Button>
       </div>
     );
@@ -195,10 +196,10 @@ const DetailRole = () => {
           <button
             onClick={() => navigate("/role-management")}
             className="hover:text-primary transition-colors">
-            Manajemen Role & Izin
+            {t("page.role.detail.breadcrumbParent")}
           </button>
           <ChevronRight size={14} />
-          <span className="text-foreground font-bold">Detail Role</span>
+          <span className="text-foreground font-bold">{t("page.role.detail.title")}</span>
         </nav>
 
         <div className="flex items-center justify-between mb-8">
@@ -210,18 +211,18 @@ const DetailRole = () => {
             </button>
             <div>
               <h2 className="text-2xl font-bold text-foreground tracking-tight">
-                Detail Role: {role.name}
+                {t("page.role.detail.pageTitle")} {role.name}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Informasi lengkap role dan hak akses menu sistem
+                {t("page.role.detail.description")}
               </p>
             </div>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
-              Edit Role
+              {t("common.edit")}
             </Button>
-            <Button onClick={() => navigate("/role-management")}>Kembali</Button>
+            <Button onClick={() => navigate("/role-management")}>{t("common.back")}</Button>
           </div>
         </div>
 
@@ -230,24 +231,26 @@ const DetailRole = () => {
             <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
               <div className="flex items-center gap-2 mb-4">
                 <Shield size={20} className="text-primary" />
-                <h3 className="text-base font-semibold text-foreground">Informasi Role</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t("page.role.detail.infoTitle")}
+                </h3>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nama Role
+                    {t("page.role.detail.nameLabel")}
                   </label>
                   <p className="text-sm font-medium text-foreground mt-1">{role.name}</p>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Deskripsi
+                    {t("page.role.detail.descLabel")}
                   </label>
                   <p className="text-sm text-foreground mt-1">{role.description || "-"}</p>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Tipe
+                    {t("page.role.detail.typeLabel")}
                   </label>
                   <p className="mt-1">
                     <span
@@ -266,7 +269,7 @@ const DetailRole = () => {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Status
+                    {t("common.status")}
                   </label>
                   <p className="mt-1">
                     <span
@@ -278,7 +281,7 @@ const DetailRole = () => {
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${role.status === "active" ? "bg-green-700" : "bg-red-700"}`}
                       />
-                      {role.status === "active" ? "Aktif" : "Nonaktif"}
+                      {role.status === "active" ? t("common.active") : t("common.inactive")}
                     </span>
                   </p>
                 </div>
@@ -291,7 +294,9 @@ const DetailRole = () => {
               <div className="p-6 border-b border-border bg-muted/30">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">rule</span>
-                  <h3 className="text-base font-semibold text-foreground">Matriks Akses Menu</h3>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {t("page.role.detail.matrixTitle")}
+                  </h3>
                 </div>
               </div>
 
@@ -326,13 +331,13 @@ const DetailRole = () => {
                             <thead>
                               <tr className="bg-muted/10">
                                 <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-56">
-                                  Menu
+                                  {t("page.role.detail.menuColumn")}
                                 </th>
                                 {visibleActions.map((action) => (
                                   <th
                                     key={action}
                                     className="px-2 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center min-w-[60px]">
-                                    {actionLabels[action] || action}
+                                    {t(actionLabelKeys[action]) || action}
                                   </th>
                                 ))}
                               </tr>
@@ -396,7 +401,7 @@ const DetailRole = () => {
 
               <div className="p-4 bg-muted/20 text-right border-t border-border">
                 <p className="text-xs text-muted-foreground italic">
-                  Tampilan hanya baca — edit role untuk mengubah izin akses
+                  {t("page.role.detail.footerNote")}
                 </p>
               </div>
             </div>

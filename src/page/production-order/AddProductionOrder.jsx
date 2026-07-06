@@ -245,9 +245,9 @@ const AddProductionOrder = () => {
         type="confirm"
         open={draftModal}
         onOpenChange={setDraftModal}
-        title="Simpan sebagai Draft"
-        description="Data akan disimpan sebagai draft"
-        confirmText="Ya, Simpan"
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
+        confirmText={t("common.yesSaveDraft")}
         onConfirm={() => {
           setDraftModal(false);
           handleSubmit({ preventDefault: () => {} }, true);

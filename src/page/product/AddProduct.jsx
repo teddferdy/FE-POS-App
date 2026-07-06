@@ -472,8 +472,8 @@ const AddProduct = () => {
     createMutation.mutate(payload);
   };
 
-  const onSubmit = (values) => handleSave(values, false)
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+  const onSubmit = (values) => handleSave(values, false);
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   const steps = [
     { num: 1, title: t("page.product.step.info"), desc: t("page.product.step.infoDesc") },

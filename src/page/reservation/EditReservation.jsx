@@ -192,7 +192,7 @@ const EditReservation = () => {
     });
   };
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit)
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, onSubmit);
 
   if (isError) return <AbortController refetch={refetch} />;
   if (!id)

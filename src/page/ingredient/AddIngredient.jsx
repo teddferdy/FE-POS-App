@@ -121,7 +121,9 @@ const AddIngredient = () => {
     }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values, false)
+  );
 
   const watchUnit = form.watch("unit");
   const watchBaseUnit = form.watch("baseUnit");
@@ -228,7 +230,7 @@ const AddIngredient = () => {
                         options={locations.map((l) => ({ value: String(l.id), label: l.name }))}
                         value={field.value || ""}
                         onChange={(v) => field.onChange(v || null)}
-                        placeholder="Pilih toko"
+                        placeholder={t("page.ingredient.add.selectStorePlaceholder")}
                         searchPlaceholder="Cari toko..."
                       />
                       <FormMessage />
@@ -640,7 +642,9 @@ const AddIngredient = () => {
                     type="button"
                     onClick={() => {
                       if (isSuperAdmin && !form.getValues("store")) {
-                        form.setError("store", { message: "Pilih toko terlebih dahulu" });
+                        form.setError("store", {
+                          message: t("page.ingredientCategory.add.storeRequired")
+                        });
                         return;
                       }
                       form.clearErrors("store");
@@ -678,9 +682,9 @@ const AddIngredient = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft"
-          description="Data akan disimpan sebagai draft"
-          confirmText="Ya, Simpan"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();

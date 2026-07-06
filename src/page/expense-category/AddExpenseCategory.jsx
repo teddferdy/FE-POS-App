@@ -172,10 +172,7 @@ const AddExpenseCategory = () => {
                     disabled={createMutation.isLoading}>
                     {t("page.expenseCategory.add.saveAsDraft")}
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={createMutation.isLoading}
-                    className="gap-2">
+                  <Button type="submit" disabled={createMutation.isLoading} className="gap-2">
                     <Save size={18} />
                     {createMutation.isLoading ? t("button.saving") : t("button.save")}
                   </Button>

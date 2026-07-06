@@ -28,16 +28,15 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
 
-const formSchema = z.object({
-  categoryId: z.string().min(1, "Kategori wajib dipilih"),
-  description: z.string().min(1, "Deskripsi wajib diisi"),
-  amount: z.coerce.number().min(1, "Jumlah wajib diisi"),
-  date: z.date({ required_error: "Tanggal wajib diisi" }),
-  notes: z.string().optional().or(z.literal(""))
-});
-
 const EditExpense = () => {
   const { t } = useTranslation();
+  const formSchema = z.object({
+    categoryId: z.string().min(1, t("page.expense.add.validation.categoryRequired")),
+    description: z.string().min(1, t("page.expense.add.validation.descriptionRequired")),
+    amount: z.coerce.number().min(1, t("page.expense.add.validation.amountRequired")),
+    date: z.date({ required_error: t("page.expense.add.validation.dateRequired") }),
+    notes: z.string().optional().or(z.literal(""))
+  });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -162,9 +161,7 @@ const EditExpense = () => {
 
         <Card className="p-6">
           <Form {...form}>
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}

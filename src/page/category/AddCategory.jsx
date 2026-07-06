@@ -364,7 +364,7 @@ const AddCategory = () => {
 
   const formSchema = useMemo(() => {
     return z.object({
-      name: z.string().min(1, "Nama kategori wajib diisi"),
+      name: z.string().min(1, t("page.category.validation.nameRequired")),
       description: z.string().optional().or(z.literal("")),
       isActive: z.boolean().default(true),
       store: z.string().optional()
@@ -389,7 +389,7 @@ const AddCategory = () => {
       setSuccessModal(true);
     },
     onError: (err) => {
-      toast.error("Failed", { description: err?.response?.data?.message || err.message });
+      toast.error(t("common.error"), { description: err?.response?.data?.message || err.message });
       setIsSubmitting(false);
     }
   });
@@ -413,7 +413,7 @@ const AddCategory = () => {
 
   const onSubmit = (values, saveAsDraft = false) => {
     if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
-      form.setError("store", { message: "Pilih toko terlebih dahulu" });
+      form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
       return;
     }
     form.clearErrors("store");
@@ -714,13 +714,13 @@ const AddCategory = () => {
                     variant="outline"
                     onClick={() => setDraftModal(true)}
                     disabled={isSubmitting}>
-                    Simpan sebagai Draft
+                    {t("common.saveAsDraft")}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => {
                       if (isSuperAdmin && !allStores && selectedStore.length === 0) {
-                        form.setError("store", { message: "Pilih toko terlebih dahulu" });
+                        form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
                         return;
                       }
                       form.clearErrors("store");
@@ -882,9 +882,9 @@ const AddCategory = () => {
           type="confirm"
           open={draftModal}
           onOpenChange={setDraftModal}
-          title="Simpan sebagai Draft?"
-          description="Data yang belum lengkap bisa dilengkapi nanti"
-          confirmText="Ya, Simpan Draft"
+          title={t("common.saveAsDraftTitle")}
+          description={t("common.saveAsDraftDesc")}
+          confirmText={t("common.yesSaveDraft")}
           onConfirm={() => {
             setDraftModal(false);
             const values = form.getValues();

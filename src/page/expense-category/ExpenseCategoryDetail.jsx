@@ -89,7 +89,9 @@ const ExpenseCategoryDetail = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{category.name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">Detail kategori biaya</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.expenseCategory.detail.title")}
+          </p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate("/expense-category")} className="gap-2">

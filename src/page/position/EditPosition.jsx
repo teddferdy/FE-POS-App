@@ -33,13 +33,6 @@ import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nama posisi wajib diisi"),
-  department: z.string().min(1, "Departemen wajib dipilih"),
-  description: z.string().optional().or(z.literal("")),
-  isActive: z.boolean().default(true)
-});
-
 const EditPosition = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -48,6 +41,13 @@ const EditPosition = () => {
   const positionId = searchParams.get("id");
   const [draftModal, setDraftModal] = useState(false);
   const [saveConfirm, setSaveConfirm] = useState(false);
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("page.position.validation.nameRequired")),
+    department: z.string().min(1, t("page.position.validation.departmentRequired")),
+    description: z.string().optional().or(z.literal("")),
+    isActive: z.boolean().default(true)
+  });
 
   const { data: positionData, isLoading: positionsLoading, isError, refetch } = useQuery(
     ["position", positionId], () => getPositionById({ id: positionId }), { enabled: !!positionId }
@@ -297,8 +297,8 @@ const EditPosition = () => {
         onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
       />
       <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
-        title="Konfirmasi Simpan" description="Apakah data sudah benar dan akan disimpan?"
-        confirmText="Ya, Simpan" onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
+        title={t("common.confirmSave")} description={t("common.confirmSaveDesc")}
+        confirmText={t("common.yesSave")} onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
       />
     </div>
   );
