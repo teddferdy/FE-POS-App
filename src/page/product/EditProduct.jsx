@@ -143,9 +143,10 @@ const EditProduct = () => {
 
   const isSuperAdmin = role === "super_admin";
 
+  const editStore = selectedStores[0] || user?.store || "";
   const { data: suppliersData } = useQuery(
-    ["suppliers-for-edit"],
-    () => getAllSupplier({ limit: 100 }),
+    ["suppliers-for-edit", editStore],
+    () => getAllSupplier({ limit: 100, store: editStore }),
     { enabled: isSuperAdmin }
   );
   const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");

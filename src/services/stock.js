@@ -12,6 +12,7 @@ export const getAllStockHistory = async (payload) => {
   const params = new URLSearchParams();
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
+  if (payload?.store) params.append("store", payload.store);
   if (payload?.product) params.append("product", payload.product);
   if (payload?.referenceType) params.append("referenceType", payload.referenceType);
   if (payload?.startDate) params.append("startDate", payload.startDate);

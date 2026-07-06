@@ -113,14 +113,14 @@ const CheckoutModal = ({
   );
 
   const { data: customersData } = useQuery(
-    ["customers"],
-    () => getAllCustomer({ page: 1, limit: 999 }),
-    { staleTime: 5 * 60 * 1000 }
+    ["customers", store],
+    () => getAllCustomer({ page: 1, limit: 999, store }),
+    { staleTime: 5 * 60 * 1000, enabled: !!store }
   );
   const { data: discountsData } = useQuery(
-    ["discounts-active"],
-    () => getAllDiscount({ page: 1, limit: 999, statusDiscount: "active" }),
-    { staleTime: 5 * 60 * 1000 }
+    ["discounts-active", store],
+    () => getAllDiscount({ page: 1, limit: 999, statusDiscount: "active", location: store }),
+    { staleTime: 5 * 60 * 1000, enabled: !!store }
   );
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],

@@ -1,7 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getExpenseCategories = async () => {
-  const { data, status } = await axiosInstance.get("/expense-category/get-all");
+export const getExpenseCategories = async (store) => {
+  const { data, status } = await axiosInstance.get("/expense-category/get-all", {
+    params: store ? { store } : undefined
+  });
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

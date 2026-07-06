@@ -63,12 +63,14 @@ const StockHistory = () => {
     enabled: isSuperAdmin
   });
 
+  const store = user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate],
+    ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate, store],
     () =>
       getAllStockHistory({
         page,
         limit: pageSize,
+        store,
         product: productFilter || undefined,
         referenceType: referenceFilter || undefined,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,

@@ -4,10 +4,11 @@ export const getAllMember = async ({
   page = 1,
   limit = 10,
   nameMember = "",
-  phoneNumber = ""
+  phoneNumber = "",
+  location = ""
 } = {}) => {
   const { data, status } = await axiosInstance.get("/member/get-member", {
-    params: { page, limit, nameMember, phoneNumber }
+    params: { page, limit, nameMember, phoneNumber, location }
   });
   if (status !== 200) throw Error(`${data.message}`);
   return data;

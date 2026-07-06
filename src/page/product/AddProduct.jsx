@@ -125,8 +125,8 @@ const AddProduct = () => {
   const categories = categoriesData?.data || categoriesData?.categories || [];
 
   const { data: suppliersData } = useQuery(
-    ["suppliers-for-product"],
-    () => getAllSupplier({ limit: 100 }),
+    ["suppliers-for-product", firstStore],
+    () => getAllSupplier({ limit: 100, store: firstStore }),
     { enabled: isSuperAdmin }
   );
   const supplierOptions = (suppliersData?.data || []).filter((s) => s.status === "active");

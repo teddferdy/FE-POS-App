@@ -45,9 +45,10 @@ const SupplierList = () => {
     enabled: isSuperAdmin
   });
 
+  const store = user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
-    ["suppliers", page, limit, search],
-    () => getAllSupplier({ page, limit, search }),
+    ["suppliers", page, limit, search, store],
+    () => getAllSupplier({ page, limit, search, store }),
     { keepPreviousData: true }
   );
 
