@@ -42,6 +42,7 @@ const AddIngredient = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const store = user?.store || "";
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
   const [cancelModal, setCancelModal] = React.useState(false);
@@ -86,8 +87,8 @@ const AddIngredient = () => {
   });
 
   const { data: suppliersData } = useQuery(
-    ["suppliers-dropdown"],
-    () => getAllSupplier({ limit: 999 }),
+    ["suppliers-dropdown", store],
+    () => getAllSupplier({ limit: 999, store: store || undefined }),
     {}
   );
   const suppliers = suppliersData?.data || [];

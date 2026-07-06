@@ -42,6 +42,8 @@ const EditExpense = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [cookie] = useCookies();
+  const user = cookie?.user;
+  const store = user?.store || "";
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
@@ -55,7 +57,7 @@ const EditExpense = () => {
 
   const expenseItem = expenseData?.data || {};
 
-  const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
+  const { data: categoriesData } = useQuery(["expense-categories", store], () => getExpenseCategories(store || undefined));
   const categories = (categoriesData?.data || categoriesData || []).filter(
     (cat) =>
       cat.status === "active" ||

@@ -29,6 +29,7 @@ const EditPurchaseOrder = () => {
   const id = searchParams.get("id");
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const store = user?.store || "";
 
   const [selectedStore, setSelectedStore] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -85,8 +86,8 @@ const EditPurchaseOrder = () => {
   }, [po]);
 
   const { data: suppliersData } = useQuery(
-    ["suppliers-dropdown"],
-    () => getAllSupplier({ limit: 100 }),
+    ["suppliers-dropdown", store],
+    () => getAllSupplier({ limit: 100, store: store || undefined }),
     { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];

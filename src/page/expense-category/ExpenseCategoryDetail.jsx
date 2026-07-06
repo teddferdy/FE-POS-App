@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { Tag, ArrowLeft, Clock, Edit } from "lucide-react";
 import { getExpenseCategories } from "@/services/expense";
@@ -13,11 +14,14 @@ const ExpenseCategoryDetail = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const store = user?.store || "";
   const id = searchParams.get("id");
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["expense-categories"],
-    () => getExpenseCategories(),
+    ["expense-categories", store],
+    () => getExpenseCategories(store || undefined),
     { enabled: !!id }
   );
 

@@ -31,11 +31,13 @@ const ExpenseCategoryList = () => {
     enabled: isSuperAdmin
   });
 
+  const store = user?.store || "";
+
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading, isError, refetch } = useQuery(["expense-categories"], () =>
-    getExpenseCategories()
+  const { data, isLoading, isError, refetch } = useQuery(["expense-categories", store], () =>
+    getExpenseCategories(store || undefined)
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {

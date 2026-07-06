@@ -93,7 +93,7 @@ const MemberList = () => {
   const store = user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
     ["members", page, limit, search, tierFilter, sortBy, store],
-    () => getAllMember({ page, limit, nameMember: search, location: store }),
+    () => getAllMember({ page, limit, nameMember: search, store }),
     { keepPreviousData: true, staleTime: 0 }
   );
 

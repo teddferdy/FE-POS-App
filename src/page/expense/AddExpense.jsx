@@ -29,13 +29,15 @@ import { format } from "date-fns";
 const AddExpense = () => {
   const queryClient = useQueryClient();
   const [cookie] = useCookies();
+  const user = cookie?.user;
+  const store = user?.store || "";
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: categoriesData } = useQuery(["expense-categories"], getExpenseCategories);
+  const { data: categoriesData } = useQuery(["expense-categories", store], () => getExpenseCategories(store || undefined));
   const categories = (categoriesData?.data || categoriesData || []).filter(
     (cat) => cat.status === "active"
   );

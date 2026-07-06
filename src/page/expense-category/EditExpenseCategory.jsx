@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { X, Save, CheckCircle2, XCircle } from "lucide-react";
 import { getExpenseCategories, editExpenseCategory } from "@/services/expense";
@@ -29,14 +30,17 @@ const EditExpenseCategory = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const store = user?.store || "";
   const id = searchParams.get("id");
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["expense-categories"],
-    () => getExpenseCategories(),
+    ["expense-categories", store],
+    () => getExpenseCategories(store || undefined),
     {
       enabled: !!id
     }

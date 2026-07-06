@@ -46,6 +46,7 @@ const AddPurchaseOrder = () => {
   const navigate = useNavigate();
   const [cookie] = useCookies();
   const user = cookie?.user;
+  const store = user?.store || "";
   const [selectedStore, setSelectedStore] = useState(user?.store || 0);
   const locationParam = selectedStore;
 
@@ -69,8 +70,8 @@ const AddPurchaseOrder = () => {
   const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
   const { data: suppliersData } = useQuery(
-    ["suppliers-dropdown"],
-    () => getAllSupplier({ limit: 100 }),
+    ["suppliers-dropdown", store],
+    () => getAllSupplier({ limit: 100, store: store || undefined }),
     { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
