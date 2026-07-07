@@ -426,6 +426,8 @@
   "page.purchaseOrder.list.description": "Kelola pemesanan ke supplier",
   "page.purchaseOrder.list.search": "Cari PO...",
   "page.purchaseOrder.list.empty": "Belum ada purchase order",
+  "page.purchaseOrder.list.cancelConfirmTitle": "Batalkan Purchase Order",
+  "page.purchaseOrder.list.cancelConfirmBody": "Yakin ingin membatalkan purchase order ini? Tindakan ini tidak dapat dibatalkan.",
   "page.purchaseOrder.add.title": "Buat Purchase Order Baru",
   "page.purchaseOrder.add.description": "Buat purchase order baru untuk mengisi ulang stok dari supplier.",
   "page.purchaseOrder.edit.title": "Edit Purchase Order",

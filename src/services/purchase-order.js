@@ -37,6 +37,12 @@ export const deletePurchaseOrder = async (id) => {
   return data;
 };
 
+export const cancelPurchaseOrder = async (id) => {
+  const { data, status } = await axiosInstance.put(`/purchase-order/cancel/${id}`);
+  if (status !== 200 && status !== 201) throw Error(`${data?.message}`);
+  return data;
+};
+
 export const receivePurchaseOrder = async (id) => {
   const { data, status } = await axiosInstance.put(`/purchase-order/receive/${id}`);
   if (status !== 200 && status !== 201) throw Error(`${data?.message}`);

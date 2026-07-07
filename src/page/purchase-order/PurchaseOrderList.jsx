@@ -25,6 +25,7 @@ import { canAccess } from "@/utils/permission";
 import {
   getAllPurchaseOrder,
   getPurchaseOrderById,
+  cancelPurchaseOrder,
   returnPurchaseOrder,
   uploadPurchaseOrderExcel,
   downloadPurchaseOrderExcel
@@ -89,6 +90,8 @@ const PurchaseOrderList = () => {
   const [returItems, setReturItems] = useState([]);
   const [importModal, setImportModal] = useState(false);
   const [payModal, setPayModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(false);
+  const [cancelPoId, setCancelPoId] = useState(null);
   const [payPo, setPayPo] = useState(null);
   const [payForm, setPayForm] = useState({
     amount: "",
@@ -179,6 +182,20 @@ const PurchaseOrderList = () => {
       }
     }
   );
+
+  const cancelMutation = useMutation(cancelPurchaseOrder, {
+    onSuccess: () => {
+      toast.success(t("common.success"));
+      queryClient.invalidateQueries(["purchase-orders"]);
+      setCancelModal(false);
+      setCancelPoId(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.failed"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
 
   const orders = data?.data || [];
   const pagination = data?.pagination || {};
@@ -431,6 +448,16 @@ const PurchaseOrderList = () => {
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                 <path d="m15 5 4 4" />
               </svg>
+            </Button>
+          )}
+          {(po.status === "draft" || po.status === "pending") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-600"
+              onClick={() => { setCancelPoId(po.id); setCancelModal(true); }}
+              title={t("common.cancel")}>
+              <XCircle size={15} />
             </Button>
           )}
           {po.status === "pending" && (
@@ -1099,6 +1126,32 @@ const PurchaseOrderList = () => {
                   }}
                   disabled={payMutation.isLoading}>
                   {payMutation.isLoading ? t("common.processing") : t("common.save")}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {cancelModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.list.cancelConfirmTitle")}</h3>
+              </div>
+              <div className="p-6">
+                <p className="text-muted-foreground">{t("page.purchaseOrder.list.cancelConfirmBody")}</p>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setCancelModal(false); setCancelPoId(null); }}>
+                  {t("common.no")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => cancelMutation.mutate(cancelPoId)}
+                  disabled={cancelMutation.isLoading}>
+                  {cancelMutation.isLoading ? t("common.processing") : t("common.yes")}
                 </Button>
               </div>
             </div>

@@ -427,6 +427,8 @@
   "page.purchaseOrder.list.description": "Manage supplier orders",
   "page.purchaseOrder.list.search": "Search PO...",
   "page.purchaseOrder.list.empty": "No purchase orders found",
+  "page.purchaseOrder.list.cancelConfirmTitle": "Cancel Purchase Order",
+  "page.purchaseOrder.list.cancelConfirmBody": "Are you sure you want to cancel this purchase order? This action cannot be undone.",
   "page.purchaseOrder.add.title": "Create New Purchase Order",
   "page.purchaseOrder.add.description": "Create a new purchase order to restock inventory from suppliers.",
   "page.purchaseOrder.edit.title": "Edit Purchase Order",
