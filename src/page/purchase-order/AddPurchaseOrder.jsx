@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
@@ -57,6 +57,21 @@ const AddPurchaseOrder = () => {
   const [items, setItems] = useState([
     { name: "", ingredientId: null, qty: 1, price: 0, unit: "pcs" }
   ]);
+  // ponytail: pre-fill items from low-stock → PO flow
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const raw = searchParams.get("ingredients");
+    if (raw) {
+      const names = raw.split(",").filter(Boolean).map((n) => ({
+        name: decodeURIComponent(n.trim()),
+        ingredientId: null,
+        qty: 1,
+        price: 0,
+        unit: "pcs"
+      }));
+      if (names.length > 0) setItems(names);
+    }
+  }, [searchParams]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());

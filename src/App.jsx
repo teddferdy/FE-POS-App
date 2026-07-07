@@ -66,6 +66,7 @@ const BestSellingReportPage = React.lazy(() => import("./page/report/BestSelling
 const DailyReport = React.lazy(() => import("./page/report/DailyReport"));
 const ProfitLossReport = React.lazy(() => import("./page/report/ProfitLossReport"));
 const CashFlowReport = React.lazy(() => import("./page/report/CashFlowReport"));
+const ProfitPerProduct = React.lazy(() => import("./page/report/ProfitPerProduct"));
 const AddRole = React.lazy(() => import("./page/user/AddRole"));
 const RoleManagement = React.lazy(() => import("./page/role/RoleManagement"));
 const EditRole = React.lazy(() => import("./page/role/EditRole"));
@@ -476,6 +477,7 @@ function App() {
                 <Route path="/report/daily" element={<DailyReport />} />
                 <Route path="/report/profit-loss" element={<ProfitLossReport />} />
                 <Route path="/report/cash-flow" element={<CashFlowReport />} />
+                <Route path="/report/profit-per-product" element={<ProfitPerProduct />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -61,6 +61,31 @@ const Dashboard = () => {
   const [orderPage, setOrderPage] = useState(1);
   const ORDER_PAGE_SIZE = 5;
 
+  // ponytail: double-fetch previous period for comparison, single endpoint reuse
+  const getPrevDateRange = (filter) => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (filter === "daily") {
+      return {
+        prevStart: new Date(todayStart.getTime() - 86400000),
+        prevEnd: new Date(todayStart.getTime() - 1)
+      };
+    }
+    if (filter === "monthly") {
+      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return { prevStart: prevMonth, prevEnd: prevMonthEnd };
+    }
+    const daysSinceMonday = (now.getDay() + 6) % 7;
+    const monday = new Date(todayStart);
+    monday.setDate(todayStart.getDate() - daysSinceMonday);
+    return {
+      prevStart: new Date(monday.getTime() - 7 * 86400000),
+      prevEnd: new Date(monday.getTime() - 1)
+    };
+  };
+  const prevRange = useMemo(() => getPrevDateRange(chartFilter), [chartFilter]);
+
   const { data: dashData, isLoading } = useQuery(
     ["dashboard-summary", store, chartFilter, orderPage],
     () =>
@@ -73,7 +98,23 @@ const Dashboard = () => {
     { enabled: true, staleTime: 30_000 }
   );
 
+  const { data: prevDashData } = useQuery(
+    ["dashboard-prev", store, chartFilter],
+    () =>
+      getDashboardSummary({
+        store,
+        startDate: prevRange.prevStart.toISOString(),
+        endDate: prevRange.prevEnd.toISOString(),
+        page: 1,
+        pageSize: 1
+      }),
+    { staleTime: 30_000 }
+  );
+
   const d = dashData?.data || dashData || {};
+  const prev = prevDashData?.data || prevDashData || {};
+  const growth = (curr, prev) =>
+    prev > 0 ? Math.round(((curr - prev) / prev) * 100) : curr > 0 ? 100 : 0;
 
   const totalSales = d.totalSales || 0;
   const dailyTarget = d.dailyTarget || 0;
@@ -86,8 +127,7 @@ const Dashboard = () => {
     {
       label: t("page.dashboard.revenue"),
       value: formatCurrencyRupiah(totalSales),
-      trend: t("page.dashboard.trendVsYesterday"),
-      trendUp: totalSales > 0,
+      growth: growth(totalSales, prev.totalSales || 0),
       icon: DollarSign,
       color: "text-primary"
     },
@@ -106,24 +146,21 @@ const Dashboard = () => {
     {
       label: t("page.dashboard.orderCount"),
       value: String(totalOrders),
-      trend: t("page.dashboard.trendWeekly"),
-      trendUp: totalOrders > 0,
+      growth: growth(totalOrders, prev.totalOrders || 0),
       icon: ShoppingCart,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.activeProducts"),
       value: String(totalProducts),
-      trend: `${totalProducts} ${t("page.dashboard.items")}`,
-      trendUp: true,
+      growth: growth(totalProducts, prev.totalProducts || 0),
       icon: Package,
       color: "text-primary"
     },
     {
       label: t("page.dashboard.memberCount"),
       value: String(totalMembers),
-      trend: t("page.dashboard.trendLoyalty"),
-      trendUp: totalMembers > 0,
+      growth: growth(totalMembers, prev.totalMembers || 0),
       icon: Users,
       color: "text-primary"
     },
@@ -236,6 +273,7 @@ const Dashboard = () => {
               const isLowStock = card.icon === AlertTriangle;
               const isMember = card.icon === Users;
               const isClickable = isLowStock || isMember;
+              const trendUp = card.growth !== undefined ? card.growth >= 0 : card.trendUp;
               return (
                 <div
                   key={card.label}
@@ -262,10 +300,22 @@ const Dashboard = () => {
                   <h2 className="text-2xl font-bold text-foreground">{card.value}</h2>
                   <div
                     className={`flex items-center gap-1 mt-1.5 ${
-                      card.trendUp ? "text-green-600 dark:text-green-400" : "text-destructive"
+                      trendUp ? "text-green-600 dark:text-green-400" : "text-destructive"
                     }`}>
-                    {card.trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    <span className="text-xs font-medium">{card.trend}</span>
+                    {card.growth !== undefined ? (
+                      <>
+                        {trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                        <span className="text-xs font-medium">
+                          {card.growth > 0 ? "+" : ""}
+                          {card.growth}%
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {card.trendUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                        <span className="text-xs font-medium">{card.trend}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               );

@@ -310,6 +310,7 @@ const AddEmployee = () => {
     setIsSubmitting(true);
     const payload = {
       ...values,
+      confirmPassword: values.password,
       status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
     delete payload.isActive;

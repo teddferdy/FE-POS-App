@@ -1,8 +1,9 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
-import { AlertTriangle, Package, ShoppingBasket } from "lucide-react";
+import { AlertTriangle, Package, ShoppingBasket, Plus } from "lucide-react";
 import { getLowStockProducts } from "@/services/stock";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -242,11 +243,22 @@ const LowStock = () => {
 
                     {ingredients.length > 0 && (
                       <Card className="overflow-hidden mt-6">
-                        <div className="p-4 border-b border-border bg-muted/30">
+                        <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between">
                           <h3 className="font-semibold text-sm flex items-center gap-2">
                             <ShoppingBasket size={16} className="text-orange-500" />
                             {t("page.lowStock.ingredient")} ({ingredients.length})
                           </h3>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => {
+                              const names = ingredients.map((i) => encodeURIComponent(i.name)).join(",");
+                              navigate(`/add-purchase-order?ingredients=${names}`);
+                            }}>
+                            <Plus size={14} />
+                            {t("page.lowStock.buatPO")}
+                          </Button>
                         </div>
                         <div className="overflow-x-auto">
                           <Table>
