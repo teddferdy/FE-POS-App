@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { createSplitBill } from "@/services/split-bill";
 import { sendInvoiceWhatsApp, sendInvoiceEmail } from "@/services/invoice";
 import { toast } from "sonner";
-import { printReceipt } from "@/utils/thermalPrint";
+import { printReceipt, printTestPage } from "@/utils/thermalPrint";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
@@ -331,6 +331,12 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
               <Printer size={16} />
               Thermal
             </Button>
+            <button
+              onClick={printTestPage}
+              className="h-11 w-11 rounded-xl border border-border/60 text-xs text-muted-foreground hover:bg-accent flex items-center justify-center"
+              title="Test Printer">
+              TP
+            </button>
             <Button
               variant="outline"
               className="flex-1 h-11 rounded-xl border-border/60"

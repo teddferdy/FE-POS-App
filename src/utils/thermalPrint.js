@@ -66,7 +66,11 @@ export const generateReceiptHTML = (data) => {
   return `
 <!DOCTYPE html>
 <html>
-<head><title>Print Receipt</title></head>
+<head><title>Print Receipt</title>
+<style>
+  @page { width:58mm; margin:0; padding:0; }
+  @media print { body { margin:0; padding:0; } }
+</style></head>
 <body>
   <div id="receipt" style="width:58mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
     <div style="text-align:center;margin-bottom:8px">
@@ -125,9 +129,6 @@ export const generateReceiptHTML = (data) => {
     </div>
     <div style="text-align:center;margin-top:12px;font-size:11px;font-style:italic;color:#666">${footer}</div>
   </div>
-  <script>
-    window.onload = function() { window.print(); window.close(); }
-  </script>
 </body>
 </html>`;
 };
@@ -251,13 +252,31 @@ export const printViaBrowser = (data) => {
     document.body.appendChild(iframe);
     iframe.contentDocument.write(html);
     iframe.contentDocument.close();
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    setTimeout(() => document.body.removeChild(iframe), 1000);
+    setTimeout(() => {
+      iframe.contentWindow.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 300);
     return;
   }
   win.document.write(html);
   win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 300);
+};
+
+export const printTestPage = () => {
+  printViaBrowser({
+    storeName: "TEST PRINTER",
+    orderNumber: "TEST-001",
+    cashier: "Admin",
+    date: new Date().toISOString(),
+    items: [{ name: "Test Print", qty: 1, price: 1000, total: 1000 }],
+    subtotal: 1000,
+    tax: 0,
+    total: 1000,
+    paymentMethod: "Test",
+    footer: "Jika terbaca, printer OK"
+  });
 };
 
 export const printViaWebUSB = async (data) => {
