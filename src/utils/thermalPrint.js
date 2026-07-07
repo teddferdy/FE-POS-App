@@ -243,7 +243,7 @@ export const formatCurrency = (amount) => {
 
 export const printViaBrowser = (data) => {
   const html = generateReceiptHTML(data);
-  const win = window.open("", "_blank", "width=400,height=600");
+  const win = window.open("", "_blank");
   if (win) {
     win.document.write(html);
     win.document.close();
@@ -251,8 +251,22 @@ export const printViaBrowser = (data) => {
     setTimeout(() => win.print(), 500);
     return;
   }
-  // ponytail: popup blocked or no new window — print current page
-  window.print();
+  // ponytail: popup blocked — inject receipt overlay, print, remove
+  const overlay = document.createElement("div");
+  overlay.innerHTML = html;
+  overlay.style.cssText =
+    "position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center";
+  overlay.className = "print-thermal";
+  const style = document.createElement("style");
+  style.textContent = "@media print{body>*:not(.print-thermal){display:none!important}}";
+  document.body.append(style, overlay);
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      overlay.remove();
+      style.remove();
+    }, 100);
+  }, 100);
 };
 
 export const printTestPage = () => {
