@@ -31,7 +31,9 @@ const BestSellingReportPage = () => {
     isLoading: bestLoading,
     isError,
     refetch
-  } = useQuery(["best-seller-report"], () => getBestSellerReport({ limit: 10 }));
+  } = useQuery(["best-seller-report"], () => getBestSellerReport({ limit: 10 }), {
+    keepPreviousData: true
+  });
 
   const handleExport = async () => {
     setExportLoading(true);

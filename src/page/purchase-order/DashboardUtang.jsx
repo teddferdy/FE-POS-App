@@ -39,7 +39,9 @@ const DashboardUtang = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard);
+  const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard, {
+    keepPreviousData: true
+  });
 
   const { summary = {}, suppliers = [], outstandingPOs = [] } = data?.data || {};
   const supplierPOs = selectedSupplier

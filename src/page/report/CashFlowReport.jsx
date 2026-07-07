@@ -34,7 +34,7 @@ const CashFlowReport = () => {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd")
       }),
-    { staleTime: 30000 }
+    { staleTime: 30000, keepPreviousData: true }
   );
 
   const cf = data?.data || {};

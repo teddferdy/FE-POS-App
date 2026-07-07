@@ -45,7 +45,7 @@ const CashRegisterCurrent = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["cash-register-current", storeId],
     () => getCurrentCashRegister(storeId),
-    { enabled: !!storeId, staleTime: 0, refetchInterval: storeId ? 30000 : false }
+    { enabled: !!storeId, staleTime: 0, refetchInterval: storeId ? 30000 : false, keepPreviousData: true }
   );
   const reg = data?.data?.register || data?.data;
   const currentSales = data?.data?.currentSales || reg?.totalSales || 0;

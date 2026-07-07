@@ -28,7 +28,7 @@ const ProfitPerProduct = () => {
         startDate,
         endDate
       }),
-    { enabled: true, staleTime: 30000 }
+    { enabled: true, staleTime: 30000, keepPreviousData: true }
   );
 
   const items = data?.data || [];

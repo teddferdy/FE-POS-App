@@ -37,7 +37,8 @@ const ExpenseCategoryList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading, isError, refetch } = useQuery(["expense-categories", store], () =>
-    getExpenseCategories(store || undefined)
+    getExpenseCategories(store || undefined),
+    { keepPreviousData: true }
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {

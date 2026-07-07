@@ -56,7 +56,7 @@ const StockAdjustment = () => {
   const { data: productsData, isLoading: productsLoading } = useQuery(
     ["products-adjustment", store],
     () => getAllProduct({ location: store }),
-    { enabled: !!store }
+    { enabled: !!store, keepPreviousData: true }
   );
   const products = productsData?.data || [];
 

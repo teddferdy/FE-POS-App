@@ -19,9 +19,11 @@ import { Input } from "@/components/ui/input";
 import { createSplitBill } from "@/services/split-bill";
 import { sendInvoiceWhatsApp, sendInvoiceEmail } from "@/services/invoice";
 import { toast } from "sonner";
+import { printReceipt } from "@/utils/thermalPrint";
 
 const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
   const { t } = useTranslation();
+  const [thermalLoading, setThermalLoading] = useState(false);
   const formatPrice = (value) => {
     if (value == null || isNaN(value)) return "0";
     return Number(value).toLocaleString("id-ID");
@@ -122,6 +124,41 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
       order: orderId,
       items: splitAmounts.map((amount) => ({ amount }))
     });
+  };
+
+  const handleThermalPrint = async () => {
+    setThermalLoading(true);
+    try {
+      const receipt = {
+        storeName: data?.storeName || data?.outlet || "Toko Anda",
+        storeAddress: data?.storeAddress || "",
+        storePhone: data?.storePhone || "",
+        orderNumber,
+        cashier: cashierName,
+        date: transactionDate,
+        items: items.map((i) => ({
+          name: i.nameProduct || i.name || "-",
+          qty: i.count || i.qty || 0,
+          price: i.price || 0,
+          total: i.totalPrice || i.price * (i.count || 1) || 0
+        })),
+        subtotal,
+        discount,
+        tax,
+        total,
+        paymentMethod,
+        cashAmount,
+        changeAmount
+      };
+      printReceipt(receipt, "browser");
+      toast.success("Struk berhasil dicetak");
+    } catch (err) {
+      if (err.name !== "NotFoundError") {
+        toast.error(err?.message || "Gagal mencetak");
+      }
+    } finally {
+      setThermalLoading(false);
+    }
   };
 
   return (
@@ -286,6 +323,14 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
 
         <div className="border-t border-border/50 p-4 shrink-0 flex flex-col gap-2">
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl border-border/60"
+              onClick={handleThermalPrint}
+              loading={thermalLoading}>
+              <Printer size={16} />
+              Thermal
+            </Button>
             <Button
               variant="outline"
               className="flex-1 h-11 rounded-xl border-border/60"

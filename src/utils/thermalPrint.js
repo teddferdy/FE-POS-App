@@ -9,8 +9,6 @@ const padBoth = (left, right, width = RECEIPT_WIDTH) => {
 
 const line = (char = "-", width = RECEIPT_WIDTH) => char.repeat(width);
 
-const cut = () => "\x1B\x69";
-
 const formatPrice = (val) => `Rp${Number(val || 0).toLocaleString("id-ID")}`;
 
 export const generateReceiptHTML = (data) => {
@@ -70,7 +68,7 @@ export const generateReceiptHTML = (data) => {
 <html>
 <head><title>Print Receipt</title></head>
 <body>
-  <div id="receipt" style="width:80mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
+  <div id="receipt" style="width:58mm;padding:4px 8px;font-family:'Courier New',Courier,monospace;font-size:12px;line-height:1.3">
     <div style="text-align:center;margin-bottom:8px">
       ${logoHtml}
       <div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">${storeName}</div>
@@ -134,7 +132,7 @@ export const generateReceiptHTML = (data) => {
 </html>`;
 };
 
-export const generateESCPOS = (data) => {
+export const generateESCPOS = (data, opts = {}) => {
   const {
     storeName = "TOKO ANDA",
     storeAddress = "",
@@ -148,6 +146,7 @@ export const generateESCPOS = (data) => {
     items = [],
     subtotal = 0,
     discount = 0,
+    serviceCharge = 0,
     tax = 0,
     total = 0,
     paymentMethod = "Tunai",
@@ -199,7 +198,6 @@ export const generateESCPOS = (data) => {
   }
   enc += line("=", W) + "\n";
 
-  // Table header
   enc += padBoth("Item", "") + "\n";
   enc += "  " + "Qty".padEnd(3) + "  " + "Harga".padStart(15) + "  " + "Total".padStart(13) + "\n";
   enc += line("-", W) + "\n";
@@ -219,6 +217,7 @@ export const generateESCPOS = (data) => {
   enc += line("=", W) + "\n";
   enc += padBoth("Subtotal", formatPrice(subtotal)) + "\n";
   if (discount > 0) enc += padBoth("Diskon", "-" + formatPrice(discount)) + "\n";
+  if (serviceCharge > 0) enc += padBoth("Biaya Layanan", formatPrice(serviceCharge)) + "\n";
   enc += padBoth("Pajak (10%)", formatPrice(tax)) + "\n";
   enc += boldOn + line("=", W) + "\n";
   enc += padBoth("TOTAL", formatPrice(total)) + "\n";
@@ -229,7 +228,10 @@ export const generateESCPOS = (data) => {
   enc += line("=", W) + "\n";
   enc += alignCenter + footer + "\n";
   enc += "\n\n\n";
-  enc += cut();
+  // ponytail: skip cut for mobile printers (no cutter), enable via opts.cut
+  if (opts.cut) {
+    enc += "\x1D\x56\x00";
+  }
 
   return enc;
 };
@@ -268,7 +270,7 @@ export const printViaWebUSB = async (data) => {
     await device.claimInterface(0);
 
     const escpos = generateESCPOS(data);
-    const encoder = new TextEncoder("ascii");
+    const encoder = new TextEncoder();
     const bytes = encoder.encode(escpos);
 
     await device.transferOut(1, bytes);
@@ -279,13 +281,34 @@ export const printViaWebUSB = async (data) => {
   }
 };
 
+// ponytail: tries 9600 then 115200; X-58MP II sometimes needs 115200
+const BAUD_RATES = [9600, 115200];
+
 export const printViaSerial = async (data) => {
   try {
-    const port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 9600 });
+    let ports = await navigator.serial.getPorts();
+    if (ports.length === 0) {
+      const port = await navigator.serial.requestPort();
+      ports = [port];
+    }
+    const port = ports[0];
+
+    let lastError;
+    for (const baud of BAUD_RATES) {
+      try {
+        await port.open({ baudRate: baud });
+        lastError = null;
+        break;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    if (lastError) throw lastError;
+
     const writer = port.writable.getWriter();
+    // ponytail: no cut for mobile printers
     const escpos = generateESCPOS(data);
-    const encoder = new TextEncoder("ascii");
+    const encoder = new TextEncoder();
     const bytes = encoder.encode(escpos);
     await writer.write(bytes);
     writer.releaseLock();
@@ -296,7 +319,48 @@ export const printViaSerial = async (data) => {
   }
 };
 
-export const printReceipt = (data, method = "browser") => {
+export const detectPrintMethod = async () => {
+  const methods = [];
+  // ponytail: check in order of reliability
+  if ("serial" in navigator) {
+    try {
+      const ports = await navigator.serial.getPorts();
+      methods.push({
+        id: "serial",
+        label: "Serial (Bluetooth/USB)",
+        priority: ports.length > 0 ? 1 : 2
+      });
+    } catch {
+      methods.push({ id: "serial", label: "Serial (Bluetooth/USB)", priority: 2 });
+    }
+  }
+  if ("usb" in navigator) {
+    methods.push({ id: "webusb", label: "USB", priority: 3 });
+  }
+  methods.push({ id: "browser", label: "Browser Print", priority: 9 });
+  methods.sort((a, b) => a.priority - b.priority);
+  return methods;
+};
+
+export const printReceipt = async (data, method = "auto") => {
+  if (method === "auto") {
+    const methods = await detectPrintMethod();
+    const errors = [];
+    for (const m of methods) {
+      if (m.id === "browser") {
+        printViaBrowser(data);
+        return;
+      }
+      try {
+        await printReceipt(data, m.id);
+        return;
+      } catch (e) {
+        errors.push(`${m.id}: ${e.message}`);
+      }
+    }
+    throw new Error("All print methods failed:\n" + errors.join("\n"));
+  }
+
   switch (method) {
     case "webusb":
       return printViaWebUSB(data);
@@ -305,6 +369,6 @@ export const printReceipt = (data, method = "browser") => {
     case "browser":
     default:
       printViaBrowser(data);
-      return Promise.resolve();
+      return;
   }
 };

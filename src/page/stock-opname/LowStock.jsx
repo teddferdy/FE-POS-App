@@ -42,7 +42,8 @@ const LowStock = () => {
     ["low-stock"],
     () => getLowStockProducts(),
     {
-      staleTime: 30 * 1000
+      staleTime: 30 * 1000,
+      keepPreviousData: true
     }
   );
 

@@ -39,7 +39,8 @@ const PriceStoreList = () => {
     () => getProductByOutlet({ location: selectedStore }),
     {
       enabled: !!selectedStore,
-      staleTime: 60000
+      staleTime: 60000,
+      keepPreviousData: true
     }
   );
   const allProducts = useMemo(() => prodData?.data || prodData || [], [prodData]);

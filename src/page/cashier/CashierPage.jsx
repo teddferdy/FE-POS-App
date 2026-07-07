@@ -101,7 +101,8 @@ const CashierPage = () => {
     () => getProductByOutlet({ location: store, search: search || undefined }),
     {
       enabled: !!store,
-      staleTime: 3 * 60 * 1000 // 3 minutes
+      staleTime: 3 * 60 * 1000,
+      keepPreviousData: true
     }
   );
 

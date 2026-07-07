@@ -95,7 +95,7 @@ const Dashboard = () => {
         page: orderPage,
         pageSize: ORDER_PAGE_SIZE
       }),
-    { enabled: true, staleTime: 30_000 }
+    { enabled: true, staleTime: 30_000, keepPreviousData: true }
   );
 
   const { data: prevDashData } = useQuery(
@@ -108,7 +108,7 @@ const Dashboard = () => {
         page: 1,
         pageSize: 1
       }),
-    { staleTime: 30_000 }
+    { staleTime: 30_000, keepPreviousData: true }
   );
 
   const d = dashData?.data || dashData || {};

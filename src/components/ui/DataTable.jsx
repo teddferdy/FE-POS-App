@@ -308,7 +308,7 @@ const DataTable = ({
       )}>
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
 
-      {isLoading ? (
+      {isLoading && data.length === 0 ? (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

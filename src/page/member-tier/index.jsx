@@ -39,7 +39,7 @@ const MemberTier = () => {
     isLoading,
     isError,
     refetch
-  } = useQuery(["member-tiers"], getAllMemberTier);
+  } = useQuery(["member-tiers"], getAllMemberTier, { keepPreviousData: true });
   const tiers = tiersData?.data || tiersData?.tiers || [];
   const activeTierCount =
     tiersData?.activeCount ?? tiers.filter((t) => t.status === "active").length;

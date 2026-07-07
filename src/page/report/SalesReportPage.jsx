@@ -35,7 +35,8 @@ const SalesReportPage = () => {
     isError,
     refetch
   } = useQuery(["sales-summary", salesPeriod], () =>
-    getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange })
+    getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange }),
+    { keepPreviousData: true }
   );
 
   const handleExport = async () => {
