@@ -13,6 +13,7 @@ import CartPanel from "./components/CartPanel";
 import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 import Sidebar from "@/components/layout/Sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { UserDropdown, NotificationBell, StoreSelector } from "@/components/layout/Header";
 import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
@@ -43,12 +44,16 @@ const CashierPage = () => {
   const role = user?.roleType;
   const isSuperAdmin = role === "super_admin";
   const [pickedStore, setPickedStore] = useState(null);
-  const store = isSuperAdmin ? pickedStore : user?.store;
+  const store = isSuperAdmin ? pickedStore : cookie?.activeStore || user?.store;
 
-  const { data: locsData } = useQuery(["cashier-locations"], getAllLocation, {
-    enabled: isSuperAdmin,
-    staleTime: 60 * 1000
-  });
+  const { data: locsData, isLoading: locsLoading } = useQuery(
+    ["cashier-locations"],
+    getAllLocation,
+    {
+      enabled: isSuperAdmin,
+      staleTime: 60 * 1000
+    }
+  );
   const locationList = locsData?.data || locsData || [];
 
   const storeName = store
@@ -91,7 +96,7 @@ const CashierPage = () => {
     isLoading,
     isError,
     refetch
-  } = useQuery(["products-outlet", store], () => getProductByOutlet({ location: store }), {
+  } = useQuery(["products-outlet", store, search], () => getProductByOutlet({ location: store, search: search || undefined }), {
     enabled: !!store,
     staleTime: 3 * 60 * 1000 // 3 minutes
   });
@@ -230,7 +235,7 @@ const CashierPage = () => {
         <div className="flex flex-1 overflow-hidden">
           {!store ? (
             <div className="flex-1 flex items-center justify-center p-6">
-              <div className="text-center max-w-lg">
+              <div className="text-center w-full">
                 <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <Store size={40} className="text-primary" />
                 </div>
@@ -238,25 +243,40 @@ const CashierPage = () => {
                   {t("page.cashier.storeName")}
                 </h2>
                 <p className="text-muted-foreground mb-8">Pilih toko</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {locationList.map((loc) => (
-                    <button
-                      key={loc.id}
-                      onClick={() => setPickedStore(loc.id)}
-                      className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
-                        <Store size={24} className="text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground truncate">{loc.name}</p>
-                        <p className="text-sm text-muted-foreground">Pilih toko</p>
-                      </div>
-                      <ChevronRight
-                        size={20}
-                        className="text-muted-foreground group-hover:text-primary transition-colors shrink-0"
-                      />
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {locsLoading
+                    ? [0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card ${
+                            i === 1 ? "hidden sm:flex" : i >= 2 ? "hidden lg:flex" : ""
+                          }`}>
+                          <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <Skeleton className="h-5 w-5/6" />
+                            <Skeleton className="h-4 w-4/6" />
+                          </div>
+                          <Skeleton className="w-5 h-5 shrink-0" />
+                        </div>
+                      ))
+                    : locationList.map((loc) => (
+                        <button
+                          key={loc.id}
+                          onClick={() => setPickedStore(loc.id)}
+                          className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
+                            <Store size={24} className="text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground">{loc.name}</p>
+                            <p className="text-sm text-muted-foreground">Pilih toko</p>
+                          </div>
+                          <ChevronRight
+                            size={20}
+                            className="text-muted-foreground group-hover:text-primary transition-colors shrink-0"
+                          />
+                        </button>
+                      ))}
                 </div>
               </div>
             </div>
@@ -313,18 +333,20 @@ const CashierPage = () => {
           )}
 
           {/* Desktop cart sidebar */}
-          <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
-            <CartPanel
-              items={cart.order}
-              subtotal={subtotal}
-              onIncrement={cart.incrementOrder}
-              onDecrement={cart.decrementOrder}
-              onDelete={cart.handleDeleteOrder}
-              onCheckout={() => setCheckoutOpen(true)}
-              totalItems={totalItems}
-              onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
-            />
-          </div>
+          {store && (
+            <div className="hidden lg:flex lg:w-[380px] xl:w-[420px] lg:h-full border-l border-border/50 bg-card/50 backdrop-blur-sm">
+              <CartPanel
+                items={cart.order}
+                subtotal={subtotal}
+                onIncrement={cart.incrementOrder}
+                onDecrement={cart.decrementOrder}
+                onDelete={cart.handleDeleteOrder}
+                onCheckout={() => setCheckoutOpen(true)}
+                totalItems={totalItems}
+                onUpdatePrice={(item, newPrice) => cart.updateItemPrice(item, newPrice)}
+              />
+            </div>
+          )}
         </div>
 
         {checkoutOpen && (

@@ -82,11 +82,12 @@ const ProductionOrderList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["production-orders", page, limit, statusFilter],
+    ["production-orders", page, limit, search, statusFilter],
     () =>
       getAllProductionOrder({
         page,
         limit,
+        search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
     { keepPreviousData: true }
@@ -96,18 +97,6 @@ const ProductionOrderList = () => {
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
   const stats = data?.stats || {};
-
-  const filteredItems = items.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (
-        !item.productionNo?.toLowerCase().includes(q) &&
-        !item.productData?.nameProduct?.toLowerCase().includes(q)
-      )
-        return false;
-    }
-    return true;
-  });
 
   const deleteMutation = useMutation(deleteProductionOrder, {
     onSuccess: () => {
@@ -329,7 +318,7 @@ const ProductionOrderList = () => {
               <div>
                 <DataTable
                   columns={columns}
-                  data={filteredItems}
+                  data={items}
                   isLoading={isLoading}
                   emptyMessage={t("page.productionOrder.list.emptyMessage")}
                   emptyIcon={ClipboardList}

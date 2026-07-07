@@ -31,11 +31,12 @@ const LocationList = () => {
   const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["locations", page, limit, statusFilter, categoryFilter],
+    ["locations", page, limit, search, statusFilter, categoryFilter],
     () =>
       getAllLocationTable({
         page,
         limit,
+        search: search || undefined,
         statusLocation: statusFilter,
         category: categoryFilter
       }),
@@ -77,27 +78,6 @@ const LocationList = () => {
       setDeleteTarget(null);
     }
   };
-
-  const filteredLocations = locations.filter((loc) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (
-        !loc.name?.toLowerCase().includes(q) &&
-        !loc.address?.toLowerCase().includes(q) &&
-        !loc.storeId?.toLowerCase().includes(q) &&
-        !loc.phoneNumber?.toLowerCase().includes(q)
-      ) {
-        return false;
-      }
-    }
-
-    if (statusFilter !== "all") {
-      const locStatus = loc.status || (loc.isActive ? "active" : "inactive");
-      if (locStatus !== statusFilter) return false;
-    }
-
-    return true;
-  });
 
   const columns = [
     {
@@ -375,7 +355,7 @@ const LocationList = () => {
             <div data-tour="location-table" className="mt-6">
               <DataTable
                 columns={columns}
-                data={filteredLocations}
+                  data={locations}
                 isLoading={isLoading}
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={

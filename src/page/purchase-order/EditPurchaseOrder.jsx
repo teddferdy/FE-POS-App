@@ -87,14 +87,9 @@ const EditPurchaseOrder = () => {
 
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown", store],
-    () => getAllSupplier({ limit: 100, store: store || undefined }),
-    { staleTime: 30000 }
-  );
-  const suppliers = suppliersData?.data || [];
+    () => getAllSupplier({ limit: 999, store: store || undefined }),
 
-  const { data: employeesData } = useQuery(
-    ["employees-for-po"],
-    () => getAllEmployee({ limit: 100, status: "active" }),
+    () => getAllEmployee({ limit: 999, status: "active" }),
     { staleTime: 30000 }
   );
   const employees = employeesData?.data || [];

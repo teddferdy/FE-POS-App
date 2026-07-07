@@ -92,38 +92,32 @@ const MemberList = () => {
 
   const store = user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
-    ["members", page, limit, search, tierFilter, sortBy, store],
-    () => getAllMember({ page, limit, nameMember: search, store }),
+    ["members", page, limit, search, tierFilter, statusFilter, sortBy, store],
+    () => getAllMember({
+      page,
+      limit,
+      nameMember: search,
+      store,
+      tier: tierFilter != null ? tierFilter : undefined,
+      statusMember: statusFilter || undefined
+    }),
     { keepPreviousData: true, staleTime: 0 }
   );
-
-  const deleteMutation = useMutation(deleteMember, {
-    onSuccess: () => {
-      toast.success(t("page.member.list.toastSuccess"), {
-        description: t("page.member.list.toastSuccessDesc")
-      });
-      queryClient.invalidateQueries(["members"]);
-    },
-    onError: (err) => {
-      toast.error(t("page.member.list.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  });
 
   const members = data?.data || data?.members || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
   const stats = data?.stats || { total: 0, active: 0, draft: 0, inactive: 0 };
 
-  const filteredMembers = members.filter((m) => {
-    if (tierFilter != null && Number(m.tier) !== tierFilter) return false;
-    if (statusFilter != null && m.status !== statusFilter) return false;
-    return true;
-  });
-
   const handleDelete = (member) => {
     setDeleteTarget(member);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });
+      setDeleteTarget(null);
+    }
   };
 
   const confirmDelete = () => {
@@ -522,7 +516,7 @@ const MemberList = () => {
               <div data-tour="member-table" className="mt-6">
                 <DataTable
                   columns={columns}
-                  data={filteredMembers}
+                  data={members}
                   isLoading={isLoading}
                   emptyMessage={t("page.member.list.empty")}
                   toolbar={

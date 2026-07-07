@@ -27,9 +27,14 @@ export const deleteExpenseCategory = async (payload) => {
 };
 
 export const getAllExpenses = async (payload) => {
-  const { data, status } = await axiosInstance.get(
-    `/expense/get-all?store=${payload?.location || ""}&page=${payload?.page || 1}&limit=${payload?.limit || 10}`
-  );
+  const params = new URLSearchParams();
+  if (payload?.location) params.append("store", payload.location);
+  if (payload?.page) params.append("page", payload.page);
+  if (payload?.limit) params.append("limit", payload.limit);
+  if (payload?.search) params.append("search", payload.search);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
+  const { data, status } = await axiosInstance.get(`/expense/get-all?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

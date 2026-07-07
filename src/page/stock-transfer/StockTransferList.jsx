@@ -63,19 +63,20 @@ const StockTransferList = () => {
     enabled: isSuperAdmin
   });
 
+  const queryClient = useQueryClient();
+
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stock-transfers", page, limit, statusFilter],
+    ["stock-transfers", page, limit, search, statusFilter],
     () =>
       getTransferHistory({
         store,
         page,
         limit,
+        search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
     { keepPreviousData: true }
   );
-
-  const queryClient = useQueryClient();
 
   const receiveMutation = useMutation(receiveStockTransfer, {
     onSuccess: () => {
@@ -96,14 +97,6 @@ const StockTransferList = () => {
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
-
-  const filteredItems = items.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (!item.transferNumber?.toLowerCase().includes(q)) return false;
-    }
-    return true;
-  });
 
   const columns = [
     {
@@ -252,7 +245,7 @@ const StockTransferList = () => {
             <div>
               <DataTable
                 columns={columns}
-                data={filteredItems}
+                  data={items}
                 isLoading={isLoading}
                 emptyMessage={t("page.stockTransfer.list.emptyMessage")}
                 toolbar={

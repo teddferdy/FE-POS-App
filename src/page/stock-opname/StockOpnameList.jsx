@@ -68,11 +68,12 @@ const StockOpnameList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stockOpname", page, limit, warehouseFilter, statusFilter],
+    ["stockOpname", page, limit, search, warehouseFilter, statusFilter],
     () =>
       getStockOpname({
         page,
         limit,
+        search: search || undefined,
         location: warehouseFilter !== "all" ? warehouseFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
@@ -82,20 +83,6 @@ const StockOpnameList = () => {
   const items = data?.data || data?.stockOpname || [];
   const total = data?.pagination?.total || data?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
-
-  const filteredItems = items.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (
-        !item.auditId?.toLowerCase().includes(q) &&
-        !item.warehouse?.toLowerCase().includes(q) &&
-        !item.auditor?.toLowerCase().includes(q)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  });
 
   useEffect(() => {
     setSelectedItems([]);
@@ -423,7 +410,7 @@ const StockOpnameList = () => {
             <div>
               <DataTable
                 columns={columns}
-                data={filteredItems}
+                  data={items}
                 isLoading={isLoading}
                 emptyMessage={t("page.stockOpname.list.empty")}
                 emptyIcon={ClipboardList}

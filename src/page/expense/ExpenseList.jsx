@@ -35,10 +35,25 @@ const ExpenseList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["expenses", page, limit],
-    () => getAllExpenses({ location: locationParam, page, limit }),
+    ["expenses", page, limit, search],
+    () => getAllExpenses({ location: locationParam, page, limit, search: search || undefined }),
     { keepPreviousData: true }
   );
+
+  const expenses = data?.data || [];
+  const pagination = data?.pagination || {};
+  const total = pagination?.total || pagination?.totalItems || data?.total || 0;
+  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
+
+  const pendingExpenses = expenses.filter(
+    (e) => e.status === "need approve" || e.status === "pending"
+  ).length;
+  const approvedExpenses = expenses.filter(
+    (e) => e.status === "approved" || e.status === "disetujui"
+  ).length;
+  const rejectedExpenses = expenses.filter(
+    (e) => e.status === "rejected" || e.status === "ditolak"
+  ).length;
 
   const approveMutation = useMutation(approveExpense, {
     onSuccess: () => {
@@ -344,7 +359,7 @@ const ExpenseList = () => {
               <div>
                 <DataTable
                   columns={columns}
-                  data={filtered}
+                  data={expenses}
                   isLoading={isLoading}
                   emptyMessage={t("page.expense.list.empty")}
                   emptyIcon={DollarSign}

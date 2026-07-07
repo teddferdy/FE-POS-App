@@ -9,6 +9,7 @@ export const getAllGoodsReceipt = async (payload) => {
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);
   if (payload?.store) params.append("store", payload.store);
+  if (payload?.search) params.append("search", payload.search);
   const { data, status } = await axiosInstance.get(`/goods-receipt/get-all?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

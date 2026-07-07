@@ -6,10 +6,14 @@ export const transferStock = async (payload) => {
   return data;
 };
 
-export const getTransferHistory = async ({ store, page = 1, limit = 10 } = {}) => {
-  const { data, status } = await axiosInstance.get(
-    `/pos/transfer-history?store=${store}&page=${page}&limit=${limit}`
-  );
+export const getTransferHistory = async ({ store, page = 1, limit = 10, search, status: filterStatus } = {}) => {
+  const params = new URLSearchParams();
+  if (store) params.append("store", store);
+  if (page) params.append("page", page);
+  if (limit) params.append("limit", limit);
+  if (search) params.append("search", search);
+  if (filterStatus) params.append("status", filterStatus);
+  const { data, status } = await axiosInstance.get(`/pos/transfer-history?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

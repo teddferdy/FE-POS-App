@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import NoStore from "@/components/ui/NoStore";
 import DataTable from "@/components/ui/DataTable";
 import { getAllLocation } from "@/services/location";
+import StoreFilter from "@/components/ui/StoreFilter";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -41,6 +42,7 @@ const SalesReturnList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [storeFilter, setStoreFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
@@ -50,24 +52,24 @@ const SalesReturnList = () => {
     enabled: isSuperAdmin
   });
 
+  const locationParam = storeFilter !== "all" ? storeFilter : undefined;
+
   const { data, isLoading, isError, refetch } = useQuery(
-    ["sales-returns", page, limit, statusFilter],
+    ["sales-returns", page, limit, search, storeFilter, statusFilter],
     () =>
-      getAllSalesReturn({ page, limit, status: statusFilter !== "all" ? statusFilter : undefined }),
+      getAllSalesReturn({
+        page,
+        limit,
+        search: search || undefined,
+        store: locationParam,
+        status: statusFilter !== "all" ? statusFilter : undefined
+      }),
     { keepPreviousData: true }
   );
 
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
-
-  const filteredItems = items.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (!item.returnNumber?.toLowerCase().includes(q)) return false;
-    }
-    return true;
-  });
 
   const approveMut = useMutation(approveSalesReturn, {
     onSuccess: () => {
@@ -213,11 +215,23 @@ const SalesReturnList = () => {
             <div>
               <DataTable
                 columns={columns}
-                data={filteredItems}
+                data={items}
                 isLoading={isLoading}
                 emptyMessage={t("page.salesReturn.list.emptyMessage")}
                 toolbar={
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isSuperAdmin && (
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setStoreFilter(v);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                    )}
                     <select
                       value={statusFilter}
                       onChange={(e) => {

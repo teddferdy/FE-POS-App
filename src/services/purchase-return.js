@@ -5,6 +5,11 @@ export const getAllPurchaseReturn = async (payload) => {
   if (payload?.page) params.append("page", payload.page);
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.status) params.append("status", payload.status);
+  if (payload?.store) params.append("store", payload.store);
+  if (payload?.search) params.append("search", payload.search);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
+  if (payload?.supplier) params.append("supplier", payload.supplier);
   const { data, status } = await axiosInstance.get(`/purchase-return/get-all?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

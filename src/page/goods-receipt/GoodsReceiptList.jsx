@@ -55,11 +55,12 @@ const GoodsReceiptList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["goods-receipts", page, limit, statusFilter, storeFilter],
+    ["goods-receipts", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllGoodsReceipt({
         page,
         limit,
+        search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
       }),
@@ -70,18 +71,6 @@ const GoodsReceiptList = () => {
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
   const stats = data?.stats || {};
-
-  const filteredItems = items.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (
-        !item.receiptNumber?.toLowerCase().includes(q) &&
-        !item.purchaseOrderData?.orderNumber?.toLowerCase().includes(q)
-      )
-        return false;
-    }
-    return true;
-  });
 
   const handleExport = async () => {
     setExportLoading(true);
@@ -296,7 +285,7 @@ const GoodsReceiptList = () => {
               <div>
                 <DataTable
                   columns={columns}
-                  data={filteredItems}
+                  data={items}
                   isLoading={isLoading}
                   emptyMessage={t("page.goodsReceipt.list.empty")}
                   emptyIcon={FileText}

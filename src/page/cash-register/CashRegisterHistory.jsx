@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { Eye, Search, Receipt, Plus } from "lucide-react";
@@ -36,11 +36,12 @@ const CashRegisterHistory = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["cash-register-history", page, limit, storeFilter],
+    ["cash-register-history", page, limit, search, storeFilter],
     () =>
       getCashRegisterHistory({
         page,
         limit,
+        search: search || undefined,
         store: storeFilter === "all" ? undefined : storeFilter
       }),
     { keepPreviousData: true }
@@ -49,17 +50,6 @@ const CashRegisterHistory = () => {
   const items = data?.data || [];
   const total = data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || 1;
-
-  const filteredItems = useMemo(() => {
-    if (!search) return items;
-    const q = search.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.storeData?.name?.toLowerCase().includes(q) ||
-        item.userData?.fullName?.toLowerCase().includes(q) ||
-        item.status?.toLowerCase().includes(q)
-    );
-  }, [items, search]);
 
   const statusCfg = {
     open: {
@@ -203,7 +193,7 @@ const CashRegisterHistory = () => {
         <div>
           <DataTable
             columns={columns}
-            data={filteredItems}
+                  data={items}
             isLoading={isLoading}
             emptyMessage={t("page.cashRegister.history.empty")}
             emptyIcon={Receipt}

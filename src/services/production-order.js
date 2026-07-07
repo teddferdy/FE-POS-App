@@ -8,6 +8,7 @@ export const getAllProductionOrder = async (payload) => {
   if (payload?.startDate) params.append("startDate", payload.startDate);
   if (payload?.endDate) params.append("endDate", payload.endDate);
   if (payload?.product) params.append("product", payload.product);
+  if (payload?.search) params.append("search", payload.search);
   const { data, status } = await axiosInstance.get(`/production-order/get-all?${params}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

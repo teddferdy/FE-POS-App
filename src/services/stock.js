@@ -72,6 +72,9 @@ export const getStockOpname = async (payload) => {
   if (payload?.limit) params.append("limit", payload.limit);
   if (payload?.location) params.append("store", payload.location);
   if (payload?.status) params.append("status", payload.status);
+  if (payload?.search) params.append("search", payload.search);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
   const query = params.toString();
   const { data, status } = await axiosInstance.get(
     `/stock-opname/get-all${query ? `?${query}` : ""}`

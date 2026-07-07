@@ -17,10 +17,11 @@ export const getAllProduct = async ({ location, nameProduct, category, status } 
   return data;
 };
 
-export const getProductByOutlet = async ({ location }) => {
-  const { data, status } = await axiosInstance.get(
-    `/product/get-product-by-super-admin?store=${location}`
-  );
+export const getProductByOutlet = async ({ location, search }) => {
+  const params = new URLSearchParams();
+  if (location) params.append("store", location);
+  if (search) params.append("search", search);
+  const { data, status } = await axiosInstance.get(`/product/get-product-by-super-admin?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

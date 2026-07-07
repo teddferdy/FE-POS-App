@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/organism/modal";
 import { toast } from "sonner";
 import StatCard from "@/components/ui/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
 
 const PriceStoreList = () => {
@@ -26,7 +27,7 @@ const PriceStoreList = () => {
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
 
-  const { data: locData } = useQuery(["locations-price-store"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData, isLoading } = useQuery(["locations-price-store"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);
   const storeName = useMemo(
     () => stores.find((s) => String(s.id) === selectedStore)?.name || "",
@@ -89,7 +90,7 @@ const PriceStoreList = () => {
         <span className="text-primary font-semibold">{t("page.priceStore.list.title")}</span>
       </nav>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : !selectedStore ? (
+      {isLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <Store size={40} className="text-primary" />
@@ -100,7 +101,28 @@ const PriceStoreList = () => {
           <p className="text-muted-foreground text-lg mb-10 max-w-md">
             {t("page.priceStore.list.desc")}
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-3xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card">
+                <Skeleton className="w-14 h-14 rounded-xl" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : locData && (locData?.data || []).length === 0 ? <NoStore /> : !selectedStore ? (
+        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+            <Store size={40} className="text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {t("page.priceStore.list.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg mb-10 max-w-md">
+            {t("page.priceStore.list.desc")}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
             {stores.map((s) => (
               <button
                 key={s.id}

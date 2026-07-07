@@ -19,9 +19,14 @@ export const getCurrentCashRegister = async (storeId) => {
 };
 
 export const getCashRegisterHistory = async (payload) => {
-  const { data, status } = await axiosInstance.get(
-    `/cash-register/history?page=${payload?.page || 1}&limit=${payload?.limit || 10}&store=${payload?.store || ""}`
-  );
+  const params = new URLSearchParams();
+  if (payload?.page) params.append("page", payload.page);
+  if (payload?.limit) params.append("limit", payload.limit);
+  if (payload?.store) params.append("store", payload.store);
+  if (payload?.search) params.append("search", payload.search);
+  if (payload?.startDate) params.append("startDate", payload.startDate);
+  if (payload?.endDate) params.append("endDate", payload.endDate);
+  const { data, status } = await axiosInstance.get(`/cash-register/history?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -13,13 +13,16 @@ export const getAllLocationTable = async ({
   page = 1,
   limit = 10,
   statusLocation = "all",
-  category = "all"
+  category = "all",
+  search
 }) => {
-  let url = `/location/get-location-all?page=${page}&limit=${limit}&status=${statusLocation}`;
-  if (category !== "all") {
-    url += `&category=${encodeURIComponent(category)}`;
-  }
-  const { data, status } = await axiosInstance.get(url);
+  const params = new URLSearchParams();
+  params.append("page", page);
+  params.append("limit", limit);
+  params.append("status", statusLocation);
+  if (category !== "all") params.append("category", category);
+  if (search) params.append("search", search);
+  const { data, status } = await axiosInstance.get(`/location/get-location-all?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

@@ -48,6 +48,7 @@ import {
 } from "@/services/general";
 import { printViaBrowser } from "@/utils/thermalPrint";
 import AbortController from "@/components/organism/abort-controller";
+import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
 
 const DEFAULT_INVOICE_TEMPLATE = {
@@ -245,9 +246,13 @@ const InvoicePage = () => {
   const [selectedStore, setSelectedStore] = useState("");
   const cashierName = user?.userName || user?.name || user?.fullName || "";
 
-  const { data: locData } = useQuery(["active-locations"], () => getAllLocation("active"), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: locData, isLoading: locLoading } = useQuery(
+    ["active-locations"],
+    () => getAllLocation("active"),
+    {
+      staleTime: 5 * 60 * 1000
+    }
+  );
   const locationList = locData?.data || locData || [];
 
   const {
@@ -529,21 +534,31 @@ const InvoicePage = () => {
           <p className="text-muted-foreground text-lg mb-10 max-w-md">
             {t("page.invoice.selectStore")}
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-3xl">
-            {locationList.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedStore(String(s.id))}
-                className="group relative flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                  <Store size={28} className="text-primary" />
-                </div>
-                <span className="text-lg font-semibold text-foreground">{s.name}</span>
-                <span className="text-sm text-muted-foreground">
-                  {t("page.priceStore.list.selectStore")}
-                </span>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
+            {locLoading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card">
+                    <Skeleton className="w-14 h-14 rounded-xl" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))
+              : locationList.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedStore(String(s.id))}
+                    className="group relative flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                      <Store size={28} className="text-primary" />
+                    </div>
+                    <span className="text-lg font-semibold text-foreground">{s.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("page.priceStore.list.selectStore")}
+                    </span>
+                  </button>
+                ))}
           </div>
         </div>
       ) : storeError ? (

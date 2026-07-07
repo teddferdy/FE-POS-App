@@ -15,11 +15,14 @@ export const getAllCategoryActive = async ({ location } = {}) => {
   return data;
 };
 
-export const getAllCategoryTable = async ({ limit, page, statusCategory, location } = {}) => {
-  const storeParam = location ? `&store=${location}` : "";
-  const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?page=${page}&limit=${limit}&status=${statusCategory}${storeParam}`
-  );
+export const getAllCategoryTable = async ({ limit, page, statusCategory, location, search } = {}) => {
+  const params = new URLSearchParams();
+  params.append("page", page);
+  params.append("limit", limit);
+  params.append("status", statusCategory);
+  if (location) params.append("store", location);
+  if (search) params.append("search", search);
+  const { data, status } = await axiosInstance.get(`/category/get-category-all?${params}`);
   if (status !== 200) throw Error(`${data.message}`);
   return data;
 };

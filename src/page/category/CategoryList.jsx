@@ -90,6 +90,7 @@ const CategoryList = () => {
       getAllCategoryTable({
         page,
         limit,
+        search: search || undefined,
         statusCategory: statusFilter || "all",
         location:
           locationParam ||
@@ -143,15 +144,6 @@ const CategoryList = () => {
       setDeleteTarget(null);
     }
   };
-
-  const filtered = categories.filter((cat) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      (cat.name || "").toLowerCase().includes(q) ||
-      (cat.code || cat.idCategory || "").toLowerCase().includes(q)
-    );
-  });
 
   const columns = [
     {
@@ -449,7 +441,7 @@ const CategoryList = () => {
               <div data-tour="category-table" className="mt-6">
                 <DataTable
                   columns={columns}
-                  data={filtered}
+                  data={categories}
                   isLoading={isLoading}
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
