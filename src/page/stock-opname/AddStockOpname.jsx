@@ -196,12 +196,22 @@ const AddStockOpname = () => {
   );
   const locations = locationData?.data || locationData?.locations || locationData || [];
 
+  // ponytail: filter product list by first row's location; falls back to all products
+  const activeLocationId = rows.find((r) => r.lokasiId)?.lokasiId || "";
+
   const { data: productsData } = useQuery(
-    ["all-products-for-opname"],
-    () => getAllProduct({ location: "", nameProduct: "", category: "" }),
-    { staleTime: 60000 }
+    ["all-products-for-opname", activeLocationId],
+    () => getAllProduct({ location: activeLocationId, nameProduct: "", category: "" }),
+    { staleTime: 60000, enabled: !!activeLocationId }
   );
-  const allProducts = productsData?.data || [];
+  const { data: productsFallback } = useQuery(
+    ["all-products-for-opname-fallback"],
+    () => getAllProduct({ location: "", nameProduct: "", category: "" }),
+    { staleTime: 60000, enabled: !activeLocationId }
+  );
+  const allProducts = activeLocationId
+    ? (productsData?.data || [])
+    : (productsFallback?.data || []);
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },

@@ -14,6 +14,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -23,11 +24,14 @@ const ExpenseList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const MENU_KEY = "/expense";
-  const locationParam = user?.store || "";
+  const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
 
   const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -35,25 +39,17 @@ const ExpenseList = () => {
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["expenses", page, limit, search],
-    () => getAllExpenses({ location: locationParam, page, limit, search: search || undefined }),
+    ["expenses", page, limit, search, statusFilter, storeFilter],
+    () =>
+      getAllExpenses({
+        location: locationParam,
+        page,
+        limit,
+        search: search || undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined
+      }),
     { keepPreviousData: true }
   );
-
-  const expenses = data?.data || [];
-  const pagination = data?.pagination || {};
-  const total = pagination?.total || pagination?.totalItems || data?.total || 0;
-  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
-
-  const pendingExpenses = expenses.filter(
-    (e) => e.status === "need approve" || e.status === "pending"
-  ).length;
-  const approvedExpenses = expenses.filter(
-    (e) => e.status === "approved" || e.status === "disetujui"
-  ).length;
-  const rejectedExpenses = expenses.filter(
-    (e) => e.status === "rejected" || e.status === "ditolak"
-  ).length;
 
   const approveMutation = useMutation(approveExpense, {
     onSuccess: () => {
@@ -85,25 +81,9 @@ const ExpenseList = () => {
 
   const expenses = data?.data || [];
   const pagination = data?.pagination || {};
-  const total = pagination?.total || pagination?.totalItems || data?.total || 0;
-  const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
-
-  const pendingExpenses = expenses.filter(
-    (e) => e.status === "need approve" || e.status === "pending"
-  ).length;
-  const approvedExpenses = expenses.filter(
-    (e) => e.status === "approved" || e.status === "disetujui"
-  ).length;
-  const rejectedExpenses = expenses.filter(
-    (e) => e.status === "rejected" || e.status === "ditolak"
-  ).length;
-
-  const filtered = expenses.filter(
-    (item) =>
-      !search ||
-      item.description?.toLowerCase().includes(search.toLowerCase()) ||
-      item.categoryData?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const total = pagination?.total || 0;
+  const totalPages = pagination?.totalPages || 1;
+  const stats = data?.stats || {};
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("id-ID", {
@@ -320,25 +300,25 @@ const ExpenseList = () => {
                 />
                 <StatCard
                   label={t("page.expense.list.approved")}
-                  value={approvedExpenses}
+                  value={stats.approved || 0}
                   icon="check_circle"
                   variant="active"
                 />
                 <StatCard
                   label={t("page.expense.list.pending")}
-                  value={pendingExpenses}
+                  value={stats.pending || 0}
                   icon="edit_note"
                   variant="draft"
                 />
                 <StatCard
                   label={t("page.expense.list.rejected")}
-                  value={rejectedExpenses}
+                  value={stats.rejected || 0}
                   icon="cancel"
                   variant="inactive"
                 />
               </div>
 
-              <div>
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-full sm:w-72">
                   <Search
                     size={16}
@@ -354,6 +334,44 @@ const ExpenseList = () => {
                     className="pl-9 h-10"
                   />
                 </div>
+                {isSuperAdmin && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 h-9 lg:hidden"
+                      onClick={() => setShowFilters(!showFilters)}>
+                      <span className="material-symbols-outlined text-base">filter_list</span>
+                      {showFilters ? "Tutup" : "Filter"}
+                    </Button>
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setStoreFilter(v);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                        <option value="all">{t("common.all")}</option>
+                        <option value="draft">{t("page.expense.list.statusDraft")}</option>
+                        <option value="pending">{t("page.expense.list.statusPending")}</option>
+                        <option value="approved">{t("page.expense.list.statusApproved")}</option>
+                        <option value="rejected">{t("page.expense.list.statusRejected")}</option>
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div>

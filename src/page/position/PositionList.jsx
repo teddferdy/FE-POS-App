@@ -100,7 +100,7 @@ const PositionList = () => {
   const pagination = data?.pagination || {};
   const stats = data?.stats || {};
 
-  const total = stats.total ?? pagination?.totalItems ?? data?.total ?? 0;
+  const total = stats.total ?? pagination?.total ?? pagination?.totalItems ?? data?.total ?? 0;
 
   const activeCount = stats.active ?? 0;
 

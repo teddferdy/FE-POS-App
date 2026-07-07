@@ -96,10 +96,14 @@ const CashierPage = () => {
     isLoading,
     isError,
     refetch
-  } = useQuery(["products-outlet", store, search], () => getProductByOutlet({ location: store, search: search || undefined }), {
-    enabled: !!store,
-    staleTime: 3 * 60 * 1000 // 3 minutes
-  });
+  } = useQuery(
+    ["products-outlet", store, search],
+    () => getProductByOutlet({ location: store, search: search || undefined }),
+    {
+      enabled: !!store,
+      staleTime: 3 * 60 * 1000 // 3 minutes
+    }
+  );
 
   const products = productsData?.data || productsData || [];
 

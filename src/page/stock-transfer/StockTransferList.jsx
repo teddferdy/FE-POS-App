@@ -17,6 +17,7 @@ import DataTable from "@/components/ui/DataTable";
 import AbortController from "@/components/organism/abort-controller";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 
 const statusCfg = {
   sent: {
@@ -57,6 +58,9 @@ const StockTransferList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+  const effectiveStore = storeFilter !== "all" ? storeFilter : store;
 
   const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
     staleTime: 5 * 60 * 1000,
@@ -66,10 +70,10 @@ const StockTransferList = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, refetch } = useQuery(
-    ["stock-transfers", page, limit, search, statusFilter],
+    ["stock-transfers", page, limit, search, statusFilter, storeFilter],
     () =>
       getTransferHistory({
-        store,
+        store: effectiveStore,
         page,
         limit,
         search: search || undefined,
@@ -250,20 +254,35 @@ const StockTransferList = () => {
                 emptyMessage={t("page.stockTransfer.list.emptyMessage")}
                 toolbar={
                   <div className="flex items-center gap-3">
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                      <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
-                      {Object.entries(statusCfg).map(([k, v]) => (
-                        <option key={k} value={k}>
-                          {v.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Button variant="outline" size="sm" className="gap-2 h-9 lg:hidden" onClick={() => setShowFilters(!showFilters)}>
+                      <span className="material-symbols-outlined text-base">filter_list</span>
+                      {showFilters ? "Tutup" : "Filter"}
+                    </Button>
+                    <div className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                      {isSuperAdmin && (
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      )}
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setPage(1);
+                        }}
+                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                        <option value="all">{t("page.stockTransfer.list.filter.allStatus")}</option>
+                        {Object.entries(statusCfg).map(([k, v]) => (
+                          <option key={k} value={k}>
+                            {v.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="relative w-full sm:w-64">
                       <Search
                         size={16}

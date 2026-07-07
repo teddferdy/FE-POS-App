@@ -85,7 +85,7 @@ const DepartmentList = () => {
   const departments = data?.data || [];
   const pagination = data?.pagination || {};
   const stats = data?.stats || {};
-  const total = pagination?.totalItems || 0;
+  const total = pagination?.total ?? pagination?.totalItems ?? 0;
   const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
   const handleDelete = (department) => {

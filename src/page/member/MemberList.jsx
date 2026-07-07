@@ -16,6 +16,7 @@ import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 
@@ -65,6 +66,7 @@ const MemberList = () => {
   const [tierFilter, setTierFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
+  const [storeFilter, setStoreFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
@@ -90,9 +92,9 @@ const MemberList = () => {
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
-  const store = user?.store || "";
+  const store = storeFilter !== "all" ? storeFilter : user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
-    ["members", page, limit, search, tierFilter, statusFilter, sortBy, store],
+    ["members", page, limit, search, tierFilter, statusFilter, sortBy, store, storeFilter],
     () => getAllMember({
       page,
       limit,
@@ -111,13 +113,6 @@ const MemberList = () => {
 
   const handleDelete = (member) => {
     setDeleteTarget(member);
-  };
-
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });
-      setDeleteTarget(null);
-    }
   };
 
   const confirmDelete = () => {
@@ -524,6 +519,15 @@ const MemberList = () => {
                       <h4 className="text-base font-semibold text-foreground">
                         {t("page.member.list.title")}
                       </h4>
+                      {isSuperAdmin && (
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      )}
                       <div className="relative">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
                           search

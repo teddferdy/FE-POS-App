@@ -85,8 +85,8 @@ const IngredientList = () => {
   });
 
   const ingredients = data?.data || [];
-  const totalItems = data?.totalItems ?? ingredients.length;
-  const totalPages = data?.totalPages ?? 1;
+  const totalItems = data?.pagination?.total ?? data?.totalItems ?? ingredients.length;
+  const totalPages = data?.pagination?.totalPages ?? data?.totalPages ?? 1;
   const stats = data?.stats || {};
   const activeCount = stats.active ?? ingredients.filter((i) => i.status === "active").length;
   const draftCount = stats.draft ?? ingredients.filter((i) => i.status === "draft").length;

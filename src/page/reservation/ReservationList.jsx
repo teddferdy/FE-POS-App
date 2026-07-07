@@ -98,8 +98,8 @@ const ReservationList = () => {
   });
 
   const reservations = data?.data || [];
-  const total = data?.totalItems || 0;
-  const totalPages = data?.totalPages || 1;
+  const total = data?.pagination?.total || 0;
+  const totalPages = data?.pagination?.totalPages || 1;
   const stats = data?.stats || {};
 
   const formatDate = (d) => {
