@@ -343,9 +343,21 @@ export const printViaSerial = async (data) => {
   }
 };
 
+const BACKEND_PRINT_URL = "http://localhost:5001/print-thermal";
+
+export const printViaBackend = async (data) => {
+  const resp = await fetch(BACKEND_PRINT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data })
+  });
+  const result = await resp.json();
+  if (!result.success) throw new Error(result.message);
+};
+
 export const detectPrintMethod = async () => {
   const methods = [];
-  // ponytail: check in order of reliability
+  methods.push({ id: "backend", label: "Bluetooth (via Backend)", priority: 0 });
   if ("serial" in navigator) {
     try {
       const ports = await navigator.serial.getPorts();
@@ -386,6 +398,8 @@ export const printReceipt = async (data, method = "auto") => {
   }
 
   switch (method) {
+    case "backend":
+      return printViaBackend(data);
     case "webusb":
       return printViaWebUSB(data);
     case "serial":

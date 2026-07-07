@@ -150,7 +150,7 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         cashAmount,
         changeAmount
       };
-      printReceipt(receipt, "browser");
+      await printReceipt(receipt, "auto");
       toast.success("Struk berhasil dicetak");
     } catch (err) {
       if (err.name !== "NotFoundError") {
