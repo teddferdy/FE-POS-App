@@ -244,24 +244,15 @@ export const formatCurrency = (amount) => {
 export const printViaBrowser = (data) => {
   const html = generateReceiptHTML(data);
   const win = window.open("", "_blank", "width=400,height=600");
-  if (!win) {
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
-    iframe.style.top = "-9999px";
-    iframe.style.left = "-9999px";
-    document.body.appendChild(iframe);
-    iframe.contentDocument.write(html);
-    iframe.contentDocument.close();
-    setTimeout(() => {
-      iframe.contentWindow.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }, 300);
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 500);
     return;
   }
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 300);
+  // ponytail: popup blocked or no new window — print current page
+  window.print();
 };
 
 export const printTestPage = () => {
