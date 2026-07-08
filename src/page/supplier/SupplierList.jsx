@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, Eye, Loader2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Building2, Eye, Loader2 } from "lucide-react";
 import {
   getAllSupplier,
   deleteSupplier,
@@ -48,11 +48,21 @@ const SupplierList = () => {
     enabled: isSuperAdmin
   });
 
-  const store = isSuperAdmin && storeFilter !== "all" ? storeFilter : user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
-    ["suppliers", page, limit, search, store],
-    () => getAllSupplier({ page, limit, search, store }),
-    { keepPreviousData: true }
+    ["suppliers", page, limit, search, storeFilter],
+    () =>
+      getAllSupplier({
+        page,
+        limit,
+        search: search || undefined,
+        store:
+          isSuperAdmin
+            ? storeFilter && storeFilter !== "all"
+              ? storeFilter
+              : ""
+            : user?.store || ""
+      }),
+    { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
   );
 
   const deleteMutation = useMutation(deleteSupplier, {
@@ -98,40 +108,36 @@ const SupplierList = () => {
       render: (item) => {
         const stores = Array.isArray(item.store) ? item.store : [];
         return (
-          <div className="flex items-center gap-1.5 text-sm">
-            <Building2 size={14} className="text-muted-foreground shrink-0" />
-            <span className="truncate max-w-[150px]">
-              {stores.length > 0
-                ? stores.map((s) => (typeof s === "object" ? s.name : s)).join(", ")
-                : "-"}
-            </span>
-          </div>
+          <span className="text-sm text-muted-foreground">
+            {stores.length > 0
+              ? stores.map((s) => (typeof s === "object" ? s.name : s)).join(", ")
+              : t("page.category.form.storeSection.allStores") || "Semua Toko"}
+          </span>
         );
       }
     },
-    { header: t("page.supplier.form.contactPerson"), accessor: "contactPerson" },
+    {
+      header: t("page.supplier.form.contactPerson"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">{item.contactPerson || "-"}</span>
+      )
+    },
     {
       header: t("page.supplier.form.phone"),
       render: (item) => (
-        <div className="flex items-center gap-1.5 text-sm">
-          <Phone size={14} className="text-muted-foreground" />
-          {item.phone || "-"}
-        </div>
+        <span className="text-sm text-muted-foreground">{item.phone || "-"}</span>
       )
     },
     {
       header: t("page.supplier.form.email"),
       render: (item) => (
-        <div className="flex items-center gap-1.5 text-sm">
-          <Mail size={14} className="text-muted-foreground" />
-          {item.email || "-"}
-        </div>
+        <span className="text-sm text-muted-foreground">{item.email || "-"}</span>
       )
     },
     {
       header: t("page.supplier.form.address"),
       render: (item) => (
-        <span className="text-muted-foreground max-w-[200px] block truncate">
+        <span className="text-muted-foreground max-w-[200px] block truncate text-sm">
           {item.address || "-"}
         </span>
       )
@@ -165,40 +171,10 @@ const SupplierList = () => {
       }
     },
     {
-      header: t("common.createdBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
-        </span>
-      )
-    },
-    {
       header: t("common.createdAt"),
       render: (item) => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
         const d = new Date(item.createdAt);
-        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
-        return (
-          <span className="text-sm font-mono text-muted-foreground">
-            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
-            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-          </span>
-        );
-      }
-    },
-    {
-      header: t("common.updatedAt"),
-      render: (item) => {
-        if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
-        const d = new Date(item.updatedAt);
         if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
         return (
           <span className="text-sm font-mono text-muted-foreground">
