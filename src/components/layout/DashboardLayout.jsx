@@ -209,13 +209,13 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 xl:hidden">
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
@@ -227,7 +227,7 @@ const DashboardLayout = () => {
       )}
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
         <Header
           onMenuToggle={handleMobileMenuToggle}
           onOpenPalette={() => setIsPaletteOpen(true)}
@@ -244,7 +244,12 @@ const DashboardLayout = () => {
           </div>
           {tips && (
             <div className="mt-6 shrink-0">
-              <TipsCard title={t("common.tips")} variant="default" tips={tips} dismissKey={location.pathname} />
+              <TipsCard
+                title={t("common.tips")}
+                variant="default"
+                tips={tips}
+                dismissKey={location.pathname}
+              />
             </div>
           )}
         </main>

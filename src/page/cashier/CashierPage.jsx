@@ -157,13 +157,13 @@ const CashierPage = () => {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 xl:hidden">
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileSidebarOpen(false)}
@@ -176,13 +176,13 @@ const CashierPage = () => {
 
       {/* Main Content */}
       <div
-        className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
+        className={`h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? "xl:ml-16" : "xl:ml-64"}`}>
         <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-border/50 shrink-0">
           <div className="flex items-center justify-between px-4 lg:px-6 py-3 gap-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={handleMobileMenuToggle}
-                className="lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                className="xl:hidden p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
                 <Menu size={20} />
               </button>
               <div className="flex items-center gap-3">
@@ -223,7 +223,7 @@ const CashierPage = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="lg:hidden relative rounded-xl border-border/60"
+                  className="xl:hidden relative rounded-xl border-border/60"
                   onClick={() => setShowCartMobile(!showCartMobile)}>
                   <ShoppingCart size={18} />
                   {totalItems > 0 && (
@@ -307,7 +307,7 @@ const CashierPage = () => {
 
           {/* Mobile cart overlay */}
           {showCartMobile && (
-            <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="fixed inset-0 z-50 xl:hidden">
               <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setShowCartMobile(false)}

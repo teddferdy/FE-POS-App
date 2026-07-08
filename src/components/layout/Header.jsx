@@ -382,7 +382,7 @@ const Header = ({ onMenuToggle, onOpenPalette }) => {
         <div className="flex items-center gap-3 flex-1">
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+            className="xl:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <Menu size={20} />
           </button>
           <div>
