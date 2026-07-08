@@ -52,16 +52,18 @@ const CashRegisterOpenClose = () => {
 
   const numericBalance = parseIDR(rawBalance);
 
-  const { data: waStatus, refetch: refetchWa } = useQuery(
-    ["wa-status"],
-    () => getWhatsAppStatus(),
-    { refetchInterval: 5000 }
+  const waStoreId = isSuperAdmin ? selectedStore : cookie?.activeStore || user?.store || "default";
+
+  const { data: waStatus, refetch: refetchWa, isFetching: waLoading } = useQuery(
+    ["wa-status", waStoreId],
+    () => getWhatsAppStatus(waStoreId),
+    { refetchInterval: 5000, enabled: !!waStoreId }
   );
   const waData = waStatus?.data;
   const waReady = waData?.ready;
   const waQR = waData?.qrBase64;
 
-  const restartWaMut = useMutation(() => restartWhatsApp(), {
+  const restartWaMut = useMutation(() => restartWhatsApp(waStoreId), {
     onSuccess: () => {
       toast.info("WhatsApp client restarting, QR akan muncul dalam beberapa detik");
       setTimeout(() => refetchWa(), 2000);
@@ -252,8 +254,17 @@ const CashRegisterOpenClose = () => {
             <div className="flex items-center gap-2">
               <Smartphone size={18} className="text-primary" />
               <h2 className="font-semibold text-sm">WhatsApp</h2>
+              {isSuperAdmin && waStoreId && (
+                <span className="text-xs text-muted-foreground ml-1">
+                  ({waStoreId})
+                </span>
+              )}
             </div>
-            {waReady ? (
+            {waLoading ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+                Loading...
+              </span>
+            ) : waReady ? (
               <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full">
                 <CheckCircle2 size={12} />
                 Terhubung
@@ -266,7 +277,9 @@ const CashRegisterOpenClose = () => {
             )}
           </div>
           <div className="p-6">
-            {waReady ? (
+            {waLoading && !waData ? (
+              <p className="text-sm text-muted-foreground text-center">Memuat status WhatsApp...</p>
+            ) : waReady ? (
               <p className="text-sm text-muted-foreground">
                 WhatsApp terhubung — invoice bisa dikirim langsung dari POS.
               </p>
@@ -289,17 +302,13 @@ const CashRegisterOpenClose = () => {
                   QR Tidak Muncul? Klik Refresh
                 </Button>
               </div>
+            ) : waData?.error ? (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-destructive text-center">{waData.error}</p>
+              </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <p className="text-sm text-muted-foreground text-center">Menunggu QR code...</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => restartWaMut.mutate()}
-                  loading={restartWaMut.isLoading}>
-                  <RefreshCw size={14} className="mr-1" />
-                  Mulai Ulang WhatsApp
-                </Button>
               </div>
             )}
           </div>

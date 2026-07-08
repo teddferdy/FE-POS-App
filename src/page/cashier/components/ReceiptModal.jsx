@@ -133,6 +133,10 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         storeName: data?.storeName || data?.outlet || "Toko Anda",
         storeAddress: data?.storeAddress || "",
         storePhone: data?.storePhone || "",
+        storeEmail: data?.storeEmail || data?.email || "",
+        memberName: data?.customerName || data?.customer?.name || "",
+        memberTier: data?.customer?.memberTier || data?.customer?.tier || "",
+        memberPoints: data?.customer?.memberPoints || data?.customer?.totalPoints || data?.customer?.points || 0,
         orderNumber,
         cashier: cashierName,
         date: transactionDate,
@@ -148,7 +152,9 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         total,
         paymentMethod,
         cashAmount,
-        changeAmount
+        changeAmount,
+        socialMedia: data?.socialMedia || [],
+        socialMediaVisible: data?.socialMediaVisible || {}
       };
       await printReceipt(receipt, "auto");
       toast.success("Struk berhasil dicetak");

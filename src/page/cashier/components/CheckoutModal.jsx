@@ -361,7 +361,19 @@ const CheckoutModal = ({
           ...item,
           nameProduct: item.productName,
           count: item.quantity
-        }))
+        })),
+        customer: selectedCustomer
+          ? {
+              name: selectedCustomer.name || selectedCustomer.Name,
+              memberTier: matchedTier?.name || "",
+              memberPoints: Number(
+                selectedCustomer.totalPoints ||
+                  selectedCustomer.TotalPoints ||
+                  memberData?.data?.totalPoints ||
+                  0
+              )
+            }
+          : null
       });
     },
     onError: (err) => {
