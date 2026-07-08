@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
@@ -299,6 +300,7 @@ const ExpenseCategoryList = () => {
             loading={deleteMutation.isLoading}
             onConfirm={confirmDelete}
           />
+          {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
         </>
       )}
     </div>

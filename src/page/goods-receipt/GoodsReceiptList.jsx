@@ -16,6 +16,7 @@ import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
@@ -375,6 +376,7 @@ const GoodsReceiptList = () => {
                 loading={deleteMutation.isLoading}
                 onConfirm={() => deleteMutation.mutate(deleteTarget)}
               />
+              {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
             </>
           )}
         </>

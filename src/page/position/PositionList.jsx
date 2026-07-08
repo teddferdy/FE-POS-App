@@ -14,6 +14,7 @@ import { getAllDepartment } from "@/services/department";
 import { getAllLocation } from "@/services/location";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadPositionExcel } from "@/services/position";
@@ -495,6 +496,7 @@ const PositionList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

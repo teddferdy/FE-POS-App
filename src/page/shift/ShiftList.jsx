@@ -9,6 +9,7 @@ import { getAllShift, deleteShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -313,6 +314,7 @@ const ShiftList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };

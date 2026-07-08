@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { User } from "lucide-react";
@@ -445,6 +446,7 @@ const EmployeeList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };

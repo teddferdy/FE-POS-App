@@ -14,6 +14,7 @@ import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import { Loading } from "@/components/ui/loading";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -30,7 +31,7 @@ const LocationList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [targetModal, setTargetModal] = useState({ open: false, location: null, value: 0 });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isError, refetch, isFetching } = useQuery(
     ["locations", page, limit, search, statusFilter, categoryFilter],
     () =>
       getAllLocationTable({
@@ -40,7 +41,7 @@ const LocationList = () => {
         statusLocation: statusFilter,
         category: categoryFilter
       }),
-    { keepPreviousData: true }
+    { retry: 1 }
   );
 
   const deleteMutation = useMutation(deleteLocation, {
@@ -48,9 +49,11 @@ const LocationList = () => {
       toast.success(t("common.success"), { description: t("page.location.toast.success") });
       queryClient.invalidateQueries(["locations"]);
       queryClient.invalidateQueries(["allLocations"]);
+      setDeleteTarget(null);
     },
     onError: (err) => {
       toast.error(t("common.error"), { description: err.message });
+      setDeleteTarget(null);
     }
   });
 
@@ -75,7 +78,6 @@ const LocationList = () => {
   const confirmDelete = () => {
     if (deleteTarget) {
       deleteMutation.mutate({ id: deleteTarget });
-      setDeleteTarget(null);
     }
   };
 
@@ -244,7 +246,7 @@ const LocationList = () => {
               <Eye size={15} />
             </Button>
           )}
-          {canAccess(user, MENU_KEY, "edit") && (
+          {loc.status === "active" && canAccess(user, MENU_KEY, "edit") && (
             <Button
               variant="ghost"
               size="icon"
@@ -355,8 +357,8 @@ const LocationList = () => {
             <div data-tour="location-table" className="mt-6">
               <DataTable
                 columns={columns}
-                  data={locations}
-                isLoading={isLoading}
+                data={locations}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.location.list.empty")}
                 toolbar={
                   <div className="flex flex-col gap-3">
@@ -461,6 +463,8 @@ const LocationList = () => {
           </div>
         </div>
       )}
+
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
       <Modal
         type="confirm"

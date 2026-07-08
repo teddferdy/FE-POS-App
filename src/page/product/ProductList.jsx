@@ -28,6 +28,7 @@ import NoStore from "@/components/ui/NoStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -645,6 +646,7 @@ const ProductList = () => {
             loading={deleteMutation?.isLoading}
             onConfirm={confirmDelete}
           />
+          {deleteMutation?.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
           <UploadExcelModal
             open={uploadModalOpen}
             onOpenChange={setUploadModalOpen}

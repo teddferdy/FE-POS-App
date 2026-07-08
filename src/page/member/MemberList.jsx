@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import NoStore from "@/components/ui/NoStore";
@@ -106,6 +107,18 @@ const MemberList = () => {
     { keepPreviousData: true, staleTime: 0 }
   );
 
+  const deleteMutation = useMutation(deleteMember, {
+    onSuccess: () => {
+      toast.success(t("common.success"), { description: t("page.member.list.deleteSuccess") || "Member berhasil dihapus" });
+      queryClient.invalidateQueries(["members"]);
+      setDeleteTarget(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.error"), { description: err.message });
+      setDeleteTarget(null);
+    }
+  });
+
   const members = data?.data || data?.members || [];
   const total = data?.total || data?.pagination?.total || 0;
   const totalPages = data?.pagination?.totalPages || Math.ceil(total / limit) || 1;
@@ -118,7 +131,6 @@ const MemberList = () => {
   const confirmDelete = () => {
     if (deleteTarget) {
       deleteMutation.mutate({ id: deleteTarget.id || deleteTarget._id });
-      setDeleteTarget(null);
     }
   };
 
@@ -570,6 +582,7 @@ const MemberList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };

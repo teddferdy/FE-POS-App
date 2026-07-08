@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 const DataTable = ({
   columns = [],
   data = [],
-  isLoading = false,
+  isLoading,
   emptyMessage: emptyMessageProp,
   emptyIcon: EmptyIcon,
   containerClassName,

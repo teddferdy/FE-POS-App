@@ -384,6 +384,7 @@ const RoleManagement = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };

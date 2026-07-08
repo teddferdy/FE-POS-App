@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadTaxConfigExcel } from "@/services/tax-config";
@@ -410,7 +411,8 @@ const TaxConfigList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
-
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+ 
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

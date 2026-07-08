@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
@@ -453,7 +454,8 @@ const IngredientList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
-
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+ 
       <UploadExcelModal
         open={importModal}
         onOpenChange={setImportModal}

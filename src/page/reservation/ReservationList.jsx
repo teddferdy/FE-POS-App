@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X, Eye } from "lucide-react";
 import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
@@ -418,6 +419,7 @@ const ReservationList = () => {
           setDeleteTarget(null);
         }}
       />
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
     </div>
   );
 };

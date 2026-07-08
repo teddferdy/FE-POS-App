@@ -13,6 +13,7 @@ import {
 } from "@/services/supplier";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadSupplierExcel } from "@/services/supplier";
@@ -426,7 +427,8 @@ const SupplierList = () => {
         loading={deleteMutation.isLoading}
         onConfirm={confirmDelete}
       />
-
+      {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+ 
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

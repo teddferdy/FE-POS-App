@@ -25,6 +25,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
@@ -418,6 +419,7 @@ const TableList = () => {
               setDeleteTarget(null);
             }}
           />
+          {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
 
           <Modal
             type="confirm"

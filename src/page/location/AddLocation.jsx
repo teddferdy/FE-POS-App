@@ -97,6 +97,7 @@ const AddLocation = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [isIdGenerating, setIsIdGenerating] = useState(!isEdit);
   const fileInputRef = useRef(null);
   const [managerModalOpen, setManagerModalOpen] = useState(false);
   const [managerSearch, setManagerSearch] = useState("");
@@ -195,7 +196,10 @@ const AddLocation = () => {
           form.setValue("locationId", res.data.locationId);
           form.setValue("storeId", res.data.storeId);
         }
+        setIsIdGenerating(false);
       });
+    } else {
+      setIsIdGenerating(false);
     }
   }, []);
 
@@ -1192,6 +1196,8 @@ const AddLocation = () => {
           </Form>
         </div>
       </div>
+
+      {isIdGenerating && <Loading fullscreen size="lg" label={t("common.loading")} />}
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

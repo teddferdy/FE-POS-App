@@ -12,6 +12,7 @@ import AbortController from "@/components/organism/abort-controller";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import NoStore from "@/components/ui/NoStore";
 
@@ -212,6 +213,7 @@ const BomList = () => {
             loading={deleteMut.isLoading}
             onConfirm={() => deleteMut.mutate()}
           />
+          {deleteMut.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
         </>
       )}
     </div>

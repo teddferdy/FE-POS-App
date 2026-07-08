@@ -27,6 +27,7 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
+import { Loading } from "@/components/ui/loading";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -379,7 +380,8 @@ const ProductionOrderList = () => {
                 loading={deleteMutation.isLoading}
                 onConfirm={() => deleteMutation.mutate(deleteTarget)}
               />
-
+              {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+ 
               <Modal
                 type="confirm"
                 open={!!startTarget}

@@ -402,7 +402,7 @@
   "page.location.category.office": "Office",
   "page.location.button.viewMap": "View Map",
   "page.location.button.viewMapDescription": "View store locations on interactive map",
-  "page.location.toast.success": "Store saved successfully",
+  "page.location.toast.success": "Store deleted successfully",
   "page.location.add.title": "Add New Store",
   "page.location.add.description": "Complete new store information",
   "page.location.edit.title": "Edit Store",
