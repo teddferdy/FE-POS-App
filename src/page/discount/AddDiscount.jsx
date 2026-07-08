@@ -11,6 +11,7 @@ import { X, Save } from "lucide-react";
 import { addDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
+import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -56,9 +57,13 @@ const AddDiscount = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const formSchema = z.object({
@@ -277,6 +282,7 @@ const AddDiscount = () => {
                           }}
                           navigate={navigate}
                           mandatory={true}
+                          locationsLoading={locsLoading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -796,6 +802,7 @@ const AddDiscount = () => {
             onSubmit(values, true);
           }}
         />
+        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
     </div>
   );

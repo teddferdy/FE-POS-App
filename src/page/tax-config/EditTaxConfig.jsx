@@ -60,7 +60,9 @@ const EditTaxConfig = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values)
+  );
 
   const tax = taxData?.data || {};
 

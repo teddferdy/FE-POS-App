@@ -360,9 +360,13 @@ const EditCategory = () => {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: categoryData, isLoading: categoryLoading } = useQuery(
@@ -533,6 +537,7 @@ const EditCategory = () => {
                             }}
                             navigate={navigate}
                             mandatory={true}
+                            locationsLoading={locsLoading}
                           />
                         </FormControl>
                         <FormMessage />

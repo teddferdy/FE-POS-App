@@ -193,7 +193,7 @@ const CashRegisterHistory = () => {
         <div>
           <DataTable
             columns={columns}
-                  data={items}
+            data={items}
             isLoading={isLoading}
             emptyMessage={t("page.cashRegister.history.empty")}
             emptyIcon={Receipt}

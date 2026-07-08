@@ -411,7 +411,7 @@ const StockOpnameList = () => {
             <div>
               <DataTable
                 columns={columns}
-                  data={items}
+                data={items}
                 isLoading={isLoading}
                 emptyMessage={t("page.stockOpname.list.empty")}
                 emptyIcon={ClipboardList}
@@ -541,7 +541,9 @@ const StockOpnameList = () => {
             loading={deleteMutation.isLoading}
             onConfirm={confirmDelete}
           />
-          {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+          {deleteMutation.isLoading && (
+            <Loading fullscreen size="lg" label={t("common.loadingData")} />
+          )}
         </>
       )}
     </div>

@@ -209,9 +209,7 @@ const AddStockOpname = () => {
     () => getAllProduct({ location: "", nameProduct: "", category: "" }),
     { staleTime: 60000, enabled: !activeLocationId }
   );
-  const allProducts = activeLocationId
-    ? (productsData?.data || [])
-    : (productsFallback?.data || []);
+  const allProducts = activeLocationId ? productsData?.data || [] : productsFallback?.data || [];
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },

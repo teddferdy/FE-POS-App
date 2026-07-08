@@ -16,6 +16,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
+import { Loading } from "@/components/ui/loading";
 import {
   Select,
   SelectContent,
@@ -427,6 +428,7 @@ const AddReservation = () => {
           confirmText="Ya, Batalkan"
           onConfirm={() => navigate("/reservation")}
         />
+        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
       </div>
     </div>
   );

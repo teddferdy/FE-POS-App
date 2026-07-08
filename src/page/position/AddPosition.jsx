@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import {
   Form,
   FormField,
@@ -126,14 +127,16 @@ const AddPosition = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {t("page.position.form.department")} <span className="text-destructive">*</span>
+                        {t("page.position.form.department")}{" "}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         {departments.length === 0 ? (
                           <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-border rounded-lg bg-muted/20">
                             <div className="text-center flex flex-col items-center gap-3">
                               <div className="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-primary text-[28px]"
+                                <span
+                                  className="material-symbols-outlined text-primary text-[28px]"
                                   style={{ fontVariationSettings: "'FILL' 1" }}>
                                   domain
                                 </span>
@@ -145,8 +148,12 @@ const AddPosition = () => {
                                 {t("page.position.empty.addDepartmentFirst")}
                               </p>
                             </div>
-                            <Button type="button" variant="outline" size="sm"
-                              onClick={() => navigate("/add-department")} className="gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate("/add-department")}
+                              className="gap-2">
                               <span className="material-symbols-outlined text-base">add</span>
                               {t("page.position.button.addDepartment")}
                             </Button>
@@ -159,16 +166,23 @@ const AddPosition = () => {
                               </span>
                               <Select value={field.value} onValueChange={field.onChange}>
                                 <SelectTrigger className="pl-9">
-                                  <SelectValue placeholder={t("page.position.form.departmentPlaceholder")} />
+                                  <SelectValue
+                                    placeholder={t("page.position.form.departmentPlaceholder")}
+                                  />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {departments.map((d) => (
-                                    <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                                    <SelectItem key={d.id} value={String(d.id)}>
+                                      {d.name}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
                             </div>
-                            <Button type="button" variant="outline" size="icon"
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
                               className="shrink-0 mt-0.5"
                               onClick={() => navigate("/add-department")}
                               title={t("page.position.button.addDepartmentNew")}>
@@ -192,8 +206,12 @@ const AddPosition = () => {
                       {t("page.position.form.description")}
                     </FormLabel>
                     <FormControl>
-                      <Textarea {...field} placeholder={t("page.position.form.descriptionPlaceholder")}
-                        rows={4} className="resize-none" />
+                      <Textarea
+                        {...field}
+                        placeholder={t("page.position.form.descriptionPlaceholder")}
+                        rows={4}
+                        className="resize-none"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -205,22 +223,27 @@ const AddPosition = () => {
                 name="isActive"
                 render={({ field }) => (
                   <FormItem>
-                    <div className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
-                      field.value
-                        ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
-                        : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
-                    }`}>
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all ${
+                        field.value
+                          ? "bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                          : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"
+                      }`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          field.value ? "bg-green-600 text-white" : "bg-destructive/10 text-destructive"
-                        }`}>
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            field.value
+                              ? "bg-green-600 text-white"
+                              : "bg-destructive/10 text-destructive"
+                          }`}>
                           <span className="material-symbols-outlined text-lg">
                             {field.value ? "check" : "close"}
                           </span>
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {t("common.status")} {field.value ? t("common.active") : t("common.inactive")}
+                            {t("common.status")}{" "}
+                            {field.value ? t("common.active") : t("common.inactive")}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {field.value
@@ -248,17 +271,25 @@ const AddPosition = () => {
               </div>
 
               <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
-                <Button type="button" variant="outline"
-                  onClick={() => navigate("/position-list")} className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/position-list")}
+                  className="gap-2">
                   <span className="material-symbols-outlined text-lg">close</span>
                   {t("common.cancel")}
                 </Button>
                 <div className="flex gap-3">
-                  <Button type="button" variant="outline"
-                    onClick={() => setDraftModal(true)} disabled={createMutation.isLoading}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDraftModal(true)}
+                    disabled={createMutation.isLoading}>
                     {t("page.position.button.saveDraft")}
                   </Button>
-                  <Button type="submit" disabled={createMutation.isLoading}
+                  <Button
+                    type="submit"
+                    disabled={createMutation.isLoading}
                     className="gap-2 shadow-lg shadow-primary/20">
                     <span className="material-symbols-outlined text-lg">save</span>
                     {t("page.position.button.save")}
@@ -270,16 +301,31 @@ const AddPosition = () => {
         </Form>
       </div>
 
-      <Modal type="confirm" open={draftModal} onOpenChange={setDraftModal}
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
         title={t("page.position.add.draftTitle")}
         description={t("page.position.add.draftDescription")}
         confirmText={t("page.position.add.draftConfirm")}
-        onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
+        onConfirm={() => {
+          setDraftModal(false);
+          onSubmit(form.getValues(), true);
+        }}
       />
-      <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
-        title={t("common.confirmSave")} description={t("common.confirmSaveDesc")}
-        confirmText={t("common.yesSave")} onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
+      <Modal
+        type="confirm"
+        open={saveConfirm}
+        onOpenChange={setSaveConfirm}
+        title={t("common.confirmSave")}
+        description={t("common.confirmSaveDesc")}
+        confirmText={t("common.yesSave")}
+        onConfirm={() => {
+          setSaveConfirm(false);
+          onSubmit(form.getValues(), false);
+        }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

@@ -45,7 +45,9 @@ const ProfitPerProduct = () => {
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.report.profitPerProduct.title")}</span>
+        <span className="text-primary font-semibold">
+          {t("page.report.profitPerProduct.title")}
+        </span>
       </nav>
 
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -58,8 +60,18 @@ const ProfitPerProduct = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-40" />
-          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-40" />
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-40"
+          />
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-40"
+          />
         </div>
       </div>
 
@@ -75,16 +87,23 @@ const ProfitPerProduct = () => {
         <>
           <div className="grid grid-cols-3 gap-4">
             <Card className="p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("page.report.profitPerProduct.totalSales")}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t("page.report.profitPerProduct.totalSales")}
+              </p>
               <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(totalSales)}</p>
             </Card>
             <Card className="p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("page.report.profitPerProduct.totalHpp")}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t("page.report.profitPerProduct.totalHpp")}
+              </p>
               <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(totalHpp)}</p>
             </Card>
             <Card className="p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">{t("page.report.profitPerProduct.totalProfit")}</p>
-              <p className={`text-xl font-bold mt-1 ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t("page.report.profitPerProduct.totalProfit")}
+              </p>
+              <p
+                className={`text-xl font-bold mt-1 ${totalProfit >= 0 ? "text-green-600" : "text-destructive"}`}>
                 {formatCurrency(totalProfit)}
               </p>
             </Card>
@@ -94,12 +113,24 @@ const ProfitPerProduct = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/60 border-b">
-                    <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.product")}</th>
-                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.qty")}</th>
-                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.sales")}</th>
-                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.hpp")}</th>
-                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.profit")}</th>
-                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">{t("page.report.profitPerProduct.table.margin")}</th>
+                    <th className="px-3 py-3 text-left font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.product")}
+                    </th>
+                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.qty")}
+                    </th>
+                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.sales")}
+                    </th>
+                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.hpp")}
+                    </th>
+                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.profit")}
+                    </th>
+                    <th className="px-3 py-3 text-right font-semibold text-muted-foreground text-xs uppercase">
+                      {t("page.report.profitPerProduct.table.margin")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -109,11 +140,13 @@ const ProfitPerProduct = () => {
                       <td className="px-3 py-3 text-right">{item.qtySold}</td>
                       <td className="px-3 py-3 text-right">{formatCurrency(item.totalSales)}</td>
                       <td className="px-3 py-3 text-right">{formatCurrency(item.totalHpp)}</td>
-                      <td className={`px-3 py-3 text-right font-semibold ${item.profit >= 0 ? "text-green-600" : "text-destructive"}`}>
+                      <td
+                        className={`px-3 py-3 text-right font-semibold ${item.profit >= 0 ? "text-green-600" : "text-destructive"}`}>
                         {formatCurrency(item.profit)}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        <span className={`inline-flex items-center gap-1 ${item.margin >= 0 ? "text-green-600" : "text-destructive"}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 ${item.margin >= 0 ? "text-green-600" : "text-destructive"}`}>
                           {item.margin >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                           {item.margin}%
                         </span>

@@ -455,7 +455,7 @@ const IngredientList = () => {
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
- 
+
       <UploadExcelModal
         open={importModal}
         onOpenChange={setImportModal}

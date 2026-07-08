@@ -111,9 +111,13 @@ const AddProduct = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    getAllLocation,
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const firstStore = selectedStores[0] || "";
@@ -582,6 +586,7 @@ const AddProduct = () => {
                                 }}
                                 navigate={navigate}
                                 mandatory={true}
+                                locationsLoading={locsLoading}
                               />
                             </FormControl>
                             <FormMessage />

@@ -254,7 +254,9 @@ const LowStock = () => {
                             variant="outline"
                             className="gap-1.5"
                             onClick={() => {
-                              const names = ingredients.map((i) => encodeURIComponent(i.name)).join(",");
+                              const names = ingredients
+                                .map((i) => encodeURIComponent(i.name))
+                                .join(",");
                               navigate(`/add-purchase-order?ingredients=${names}`);
                             }}>
                             <Plus size={14} />

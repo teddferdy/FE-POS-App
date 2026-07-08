@@ -86,7 +86,9 @@ const EditTypePayment = () => {
     }
   }, [item, form]);
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values)
+  );
 
   const updateMutation = useMutation(editTypePayment, {
     onSuccess: () => {
@@ -261,13 +263,13 @@ const EditTypePayment = () => {
                 )}
               />
             </form>
-            </Form>
-            <Modal type="confirm" {...confirmModal()} />
-          </Card>
+          </Form>
+          <Modal type="confirm" {...confirmModal()} />
+        </Card>
 
-          <Modal
-            type="confirm"
-            open={cancelModal}
+        <Modal
+          type="confirm"
+          open={cancelModal}
           onOpenChange={setCancelModal}
           title={t("modal.cancelTitle")}
           description={t("modal.cancelDescription")}

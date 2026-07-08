@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import PageHeader from "@/components/ui/PageHeader";
 import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
@@ -29,7 +30,10 @@ const AddTaxConfig = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
-    rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")).max(100, t("page.taxConfig.validation.rateMax")),
+    rate: z.coerce
+      .number()
+      .min(0, t("page.taxConfig.validation.rateNegative"))
+      .max(100, t("page.taxConfig.validation.rateMax")),
     description: z.string().optional().or(z.literal("")),
     isActive: z.boolean().default(true)
   });
@@ -271,6 +275,7 @@ const AddTaxConfig = () => {
           onSubmit(values, true);
         }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

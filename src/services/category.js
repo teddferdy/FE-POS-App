@@ -15,7 +15,13 @@ export const getAllCategoryActive = async ({ location } = {}) => {
   return data;
 };
 
-export const getAllCategoryTable = async ({ limit, page, statusCategory, location, search } = {}) => {
+export const getAllCategoryTable = async ({
+  limit,
+  page,
+  statusCategory,
+  location,
+  search
+} = {}) => {
   const params = new URLSearchParams();
   params.append("page", page);
   params.append("limit", limit);

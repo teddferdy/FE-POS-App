@@ -158,9 +158,13 @@ const EditProduct = () => {
   );
   const taxOptions = (taxData?.data || []).filter((t) => t.status === "active");
 
-  const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    getAllLocation,
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const storeIds = locations.map((l) => l.id);
@@ -767,6 +771,7 @@ const EditProduct = () => {
                                 }}
                                 navigate={navigate}
                                 mandatory={true}
+                                locationsLoading={locsLoading}
                               />
                             </FormControl>
                             <FormMessage />

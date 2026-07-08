@@ -27,7 +27,10 @@ const PriceStoreList = () => {
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
 
-  const { data: locData, isLoading } = useQuery(["locations-price-store"], () => getAllLocation(), { staleTime: 5 * 60 * 1000, enabled: isSuperAdmin });
+  const { data: locData, isLoading } = useQuery(["locations-price-store"], () => getAllLocation(), {
+    staleTime: 5 * 60 * 1000,
+    enabled: isSuperAdmin
+  });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);
   const storeName = useMemo(
     () => stores.find((s) => String(s.id) === selectedStore)?.name || "",
@@ -84,7 +87,9 @@ const PriceStoreList = () => {
   return (
     <div className="space-y-6">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground transition-colors">
           {t("breadcrumb.home")}
         </button>
         <span className="text-xs">/</span>
@@ -104,7 +109,9 @@ const PriceStoreList = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card">
+              <div
+                key={i}
+                className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card">
                 <Skeleton className="w-14 h-14 rounded-xl" />
                 <Skeleton className="h-5 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -112,7 +119,9 @@ const PriceStoreList = () => {
             ))}
           </div>
         </div>
-      ) : locData && (locData?.data || []).length === 0 ? <NoStore /> : !selectedStore ? (
+      ) : locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : !selectedStore ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <Store size={40} className="text-primary" />
@@ -186,7 +195,9 @@ const PriceStoreList = () => {
                       {t("page.priceStore.list.stock")}
                     </th>
                     <th className="pb-3 font-medium">{t("page.priceStore.list.unit")}</th>
-                    <th className="pb-3 font-medium text-right">{t("page.priceStore.list.edit")}</th>
+                    <th className="pb-3 font-medium text-right">
+                      {t("page.priceStore.list.edit")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,7 +211,9 @@ const PriceStoreList = () => {
                     products.map((p) => (
                       <tr key={p.id} className="border-b last:border-0">
                         <td className="py-3">{p.nameProduct || p.name}</td>
-                        <td className="py-3 text-muted-foreground">{p.categoryData?.name || p.nameCategory || "-"}</td>
+                        <td className="py-3 text-muted-foreground">
+                          {p.categoryData?.name || p.nameCategory || "-"}
+                        </td>
                         <td className="py-3">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
                             {p.tipeProduk || "menu"}
@@ -236,7 +249,10 @@ const PriceStoreList = () => {
       {editModal && (
         <Modal
           open={!!editModal}
-          onOpenChange={() => { setEditModal(null); setEditPrice(""); }}
+          onOpenChange={() => {
+            setEditModal(null);
+            setEditPrice("");
+          }}
           title={t("page.priceStore.list.storePrice")}
           description={`${editModal.nameProduct || editModal.name} — ${storeName}`}
           confirmText={t("page.priceStore.list.save")}
@@ -247,7 +263,9 @@ const PriceStoreList = () => {
               <label className="text-sm font-medium text-muted-foreground">
                 {t("page.priceStore.list.defaultPrice")}
               </label>
-              <p className="text-lg font-bold">{Number(editModal.price || 0).toLocaleString("id-ID")}</p>
+              <p className="text-lg font-bold">
+                {Number(editModal.price || 0).toLocaleString("id-ID")}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">

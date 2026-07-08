@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Store, Plus, Check, Info } from "lucide-react";
+import { Store, Plus, Check, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const StoreSelectCard = ({
@@ -18,7 +18,8 @@ const StoreSelectCard = ({
   allStores,
   onAllStoresChange,
   navigate,
-  mandatory
+  mandatory,
+  locationsLoading
 }) => {
   if (!isSuperAdmin) {
     if (allStores) {
@@ -74,7 +75,12 @@ const StoreSelectCard = ({
           </span>
         )}
       </div>
-      {locations.length === 0 ? (
+      {locationsLoading ? (
+        <div className="flex items-center gap-3 pl-9">
+          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Memuat toko...</p>
+        </div>
+      ) : locations.length === 0 ? (
         <div className="flex items-center gap-3 pl-9">
           <p className="text-sm text-muted-foreground">{noStoreLabel}</p>
           <Button size="sm" onClick={() => navigate("/add-location")} className="gap-1.5 shrink-0">
@@ -208,7 +214,8 @@ StoreSelectCard.propTypes = {
   allStores: PropTypes.bool,
   onAllStoresChange: PropTypes.func,
   navigate: PropTypes.func.isRequired,
-  mandatory: PropTypes.bool
+  mandatory: PropTypes.bool,
+  locationsLoading: PropTypes.bool
 };
 
 export default StoreSelectCard;

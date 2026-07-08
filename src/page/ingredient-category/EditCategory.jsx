@@ -39,7 +39,9 @@ const EditCategory = () => {
     defaultValues: { name: "", isActive: true }
   });
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values, false));
+  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values, false)
+  );
 
   const {
     isLoading: loadingData,

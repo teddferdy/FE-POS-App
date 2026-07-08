@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
@@ -214,6 +215,7 @@ const AddExpenseCategory = () => {
           }}
         />
         <Modal type="confirm" {...confirmModal()} />
+        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
     </div>
   );

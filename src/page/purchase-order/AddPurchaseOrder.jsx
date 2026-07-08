@@ -62,13 +62,16 @@ const AddPurchaseOrder = () => {
   useEffect(() => {
     const raw = searchParams.get("ingredients");
     if (raw) {
-      const names = raw.split(",").filter(Boolean).map((n) => ({
-        name: decodeURIComponent(n.trim()),
-        ingredientId: null,
-        qty: 1,
-        price: 0,
-        unit: "pcs"
-      }));
+      const names = raw
+        .split(",")
+        .filter(Boolean)
+        .map((n) => ({
+          name: decodeURIComponent(n.trim()),
+          ingredientId: null,
+          qty: 1,
+          price: 0,
+          unit: "pcs"
+        }));
       if (names.length > 0) setItems(names);
     }
   }, [searchParams]);
@@ -97,7 +100,7 @@ const AddPurchaseOrder = () => {
   );
   const employees = employeesData?.data || [];
 
-  const filteredSuppliers = suppliers.filter((s) =>
+  const filteredSuppliers = suppliersData.filter((s) =>
     s.name?.toLowerCase().includes(supplierSearch.toLowerCase())
   );
 

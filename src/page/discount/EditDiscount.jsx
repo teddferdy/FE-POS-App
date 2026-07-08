@@ -92,9 +92,13 @@ const EditDiscount = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
-  });
+  const { data: locData, isLoading: locsLoading } = useQuery(
+    ["locations"],
+    () => getAllLocation(),
+    {
+      staleTime: 5 * 60 * 1000
+    }
+  );
   const locations = locData?.data || [];
 
   const [selectedStores, setSelectedStores] = useState([]);
@@ -355,6 +359,7 @@ const EditDiscount = () => {
                           }}
                           navigate={navigate}
                           mandatory={true}
+                          locationsLoading={locsLoading}
                         />
                       </FormControl>
                       <FormMessage />

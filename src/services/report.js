@@ -65,7 +65,9 @@ export const getProfitPerProduct = async (payload = {}) => {
   if (payload.startDate) params.append("startDate", payload.startDate);
   if (payload.endDate) params.append("endDate", payload.endDate);
   const query = params.toString();
-  const { data, status } = await axiosInstance.get(`/report/profit-per-product${query ? `?${query}` : ""}`);
+  const { data, status } = await axiosInstance.get(
+    `/report/profit-per-product${query ? `?${query}` : ""}`
+  );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

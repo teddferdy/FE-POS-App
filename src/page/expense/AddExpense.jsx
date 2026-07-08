@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { addExpense, getExpenseCategories } from "@/services/expense";
+import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +38,9 @@ const AddExpense = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: categoriesData } = useQuery(["expense-categories", store], () => getExpenseCategories(store || undefined));
+  const { data: categoriesData } = useQuery(["expense-categories", store], () =>
+    getExpenseCategories(store || undefined)
+  );
   const categories = (categoriesData?.data || categoriesData || []).filter(
     (cat) => cat.status === "active"
   );
@@ -282,6 +285,7 @@ const AddExpense = () => {
             onSubmit(values, true);
           }}
         />
+        {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}
       </div>
     </div>
   );

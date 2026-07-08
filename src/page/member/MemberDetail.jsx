@@ -62,11 +62,9 @@ const MemberDetail = () => {
     }
   );
 
-  const { data: tierData } = useQuery(
-    ["member-tiers"],
-    () => getAllMemberTier(),
-    { staleTime: 300000 }
-  );
+  const { data: tierData } = useQuery(["member-tiers"], () => getAllMemberTier(), {
+    staleTime: 300000
+  });
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
     ["member-point-history", id, pointPage],
@@ -214,8 +212,10 @@ const MemberDetail = () => {
   const visitFrequency = count;
   const averageSpending = count > 0 ? totalSpent / count : 0;
   const points = member.points ?? member.totalPoints ?? 0;
-  const sortedTiers = [...tiers].filter(t => t.status === 'active').sort((a, b) => a.minPoints - b.minPoints);
-  const nextTierObj = sortedTiers.find(t => t.id !== member?.tier && t.minPoints > points);
+  const sortedTiers = [...tiers]
+    .filter((t) => t.status === "active")
+    .sort((a, b) => a.minPoints - b.minPoints);
+  const nextTierObj = sortedTiers.find((t) => t.id !== member?.tier && t.minPoints > points);
   const nextTier = nextTierObj?.name || "-";
   const pointsRemaining = nextTierObj ? Math.max(0, nextTierObj.minPoints - points) : 0;
   const expiringPoints = member.expiringPoints || 1200;
@@ -376,7 +376,12 @@ const MemberDetail = () => {
                 </div>
                 <span
                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
-                  style={{ backgroundColor: level.color + "20", color: level.color, borderColor: level.color + "40", borderWidth: 1 }}>
+                  style={{
+                    backgroundColor: level.color + "20",
+                    color: level.color,
+                    borderColor: level.color + "40",
+                    borderWidth: 1
+                  }}>
                   <span
                     className="material-symbols-outlined text-sm"
                     style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -681,7 +686,8 @@ const MemberDetail = () => {
               {activeTab === "transactions" && (
                 <div className="px-4 py-3 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/10">
                   <p className="text-xs text-muted-foreground">
-                    Menampilkan {transactions.length} dari {member?.transactionPagination?.total || 0} transaksi
+                    Menampilkan {transactions.length} dari{" "}
+                    {member?.transactionPagination?.total || 0} transaksi
                   </p>
                   <div className="flex gap-1">
                     <button

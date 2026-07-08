@@ -357,9 +357,13 @@ const AddCategory = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const formSchema = useMemo(() => {
@@ -492,6 +496,7 @@ const AddCategory = () => {
                             }}
                             navigate={navigate}
                             mandatory={true}
+                            locationsLoading={locsLoading}
                           />
                         </FormControl>
                         <FormMessage />
@@ -720,7 +725,9 @@ const AddCategory = () => {
                     type="button"
                     onClick={() => {
                       if (isSuperAdmin && !allStores && selectedStore.length === 0) {
-                        form.setError("store", { message: t("page.ingredientCategory.add.storeRequired") });
+                        form.setError("store", {
+                          message: t("page.ingredientCategory.add.storeRequired")
+                        });
                         return;
                       }
                       form.clearErrors("store");

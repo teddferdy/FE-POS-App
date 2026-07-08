@@ -376,7 +376,9 @@ const GoodsReceiptList = () => {
                 loading={deleteMutation.isLoading}
                 onConfirm={() => deleteMutation.mutate(deleteTarget)}
               />
-              {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+              {deleteMutation.isLoading && (
+                <Loading fullscreen size="lg" label={t("common.loadingData")} />
+              )}
             </>
           )}
         </>

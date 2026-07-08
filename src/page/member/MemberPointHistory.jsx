@@ -194,8 +194,8 @@ const MemberPointHistory = () => {
             </table>
             <div className="px-4 py-3 border-t border-border flex justify-between items-center bg-muted/10">
               <p className="text-xs text-muted-foreground">
-                Menampilkan {transactions.length} dari{" "}
-                {member?.transactionPagination?.total || 0} transaksi
+                Menampilkan {transactions.length} dari {member?.transactionPagination?.total || 0}{" "}
+                transaksi
               </p>
               <div className="flex gap-1">
                 <button

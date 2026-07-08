@@ -1,23 +1,27 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useCookies } from "react-cookie";
 import { Switch } from "@/components/ui/switch";
 import { addSupplier } from "@/services/supplier";
+import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import PageHeader from "@/components/ui/PageHeader";
 import Modal from "@/components/organism/modal";
 import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import { Loading } from "@/components/ui/loading";
 const AddSupplier = () => {
   const { t } = useTranslation();
 
@@ -31,13 +35,26 @@ const AddSupplier = () => {
       .optional()
       .or(z.literal("")),
     address: z.string().optional().or(z.literal("")),
-    isActive: z.boolean().default(true)
+    isActive: z.boolean().default(true),
+    store: z.string().optional()
   });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [cookie] = useCookies();
+  const user = cookie?.user;
+  const isSuperAdmin = user?.roleType === "super_admin";
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
+
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || locationsData?.locations || [];
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -51,7 +68,9 @@ const AddSupplier = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values)
+  );
 
   const createMutation = useMutation(addSupplier, {
     onSuccess: () => {
@@ -67,13 +86,22 @@ const AddSupplier = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.supplier.validation.storeRequired") || "Pilih minimal satu toko" });
+      return;
+    }
+    form.clearErrors("store");
     let statusValue;
     if (saveAsDraft) {
       statusValue = "draft";
     } else {
       statusValue = values.isActive ? "active" : "inactive";
     }
-    createMutation.mutate({ ...values, status: statusValue });
+    createMutation.mutate({
+      ...values,
+      status: statusValue,
+      store: selectedStore
+    });
   };
 
   return (
@@ -104,9 +132,47 @@ const AddSupplier = () => {
       <div>
         <div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="p-6 lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="p-6">
               <Form {...form}>
                 <form onSubmit={onConfirmSubmit} className="space-y-6">
+                  {isSuperAdmin && (
+                    <FormField
+                      control={form.control}
+                      name="store"
+                      render={() => (
+                        <FormItem>
+                          <FormControl>
+                            <StoreSelectCard
+                              locations={locations}
+                              selectedStores={selectedStore}
+                              onChange={(stores) => {
+                                setSelectedStore(stores);
+                                form.clearErrors("store");
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              user={user}
+                              t={t}
+                              title={t("page.category.form.storeSection.title")}
+                              description={t("page.category.form.storeSection.desc")}
+                              noStoreLabel={t("page.category.form.storeSection.noStore")}
+                              addStoreLabel={t("page.category.form.storeSection.addStore")}
+                              storeInfoLabel={t("page.category.form.storeInfo")}
+                              allStores={allStores}
+                              onAllStoresChange={(val) => {
+                                setAllStores(val);
+                                form.clearErrors("store");
+                              }}
+                              navigate={navigate}
+                              mandatory={true}
+                              locationsLoading={locsLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -194,6 +260,7 @@ const AddSupplier = () => {
               </Form>
               <Modal type="confirm" {...confirmModal()} />
             </Card>
+            </div>
 
             <Card className="p-6 space-y-6">
               <h3 className="text-sm font-semibold text-foreground mb-3">
@@ -276,6 +343,10 @@ const AddSupplier = () => {
           </div>
         </div>
       </div>
+
+      {createMutation.isLoading && (
+        <Loading fullscreen size="lg" label={t("page.product.form.saving")} />
+      )}
 
       <Modal
         type="confirm"

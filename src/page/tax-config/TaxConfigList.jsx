@@ -412,7 +412,7 @@ const TaxConfigList = () => {
         onConfirm={confirmDelete}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
- 
+
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

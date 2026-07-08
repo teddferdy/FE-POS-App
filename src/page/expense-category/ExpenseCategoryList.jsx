@@ -37,8 +37,9 @@ const ExpenseCategoryList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading, isError, refetch } = useQuery(["expense-categories", store], () =>
-    getExpenseCategories(store || undefined),
+  const { data, isLoading, isError, refetch } = useQuery(
+    ["expense-categories", store],
+    () => getExpenseCategories(store || undefined),
     { keepPreviousData: true }
   );
 
@@ -300,7 +301,9 @@ const ExpenseCategoryList = () => {
             loading={deleteMutation.isLoading}
             onConfirm={confirmDelete}
           />
-          {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+          {deleteMutation.isLoading && (
+            <Loading fullscreen size="lg" label={t("common.loadingData")} />
+          )}
         </>
       )}
     </div>

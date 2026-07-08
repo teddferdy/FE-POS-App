@@ -6,7 +6,13 @@ export const transferStock = async (payload) => {
   return data;
 };
 
-export const getTransferHistory = async ({ store, page = 1, limit = 10, search, status: filterStatus } = {}) => {
+export const getTransferHistory = async ({
+  store,
+  page = 1,
+  limit = 10,
+  search,
+  status: filterStatus
+} = {}) => {
   const params = new URLSearchParams();
   if (store) params.append("store", store);
   if (page) params.append("page", page);

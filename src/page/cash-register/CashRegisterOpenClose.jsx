@@ -54,11 +54,14 @@ const CashRegisterOpenClose = () => {
 
   const waStoreId = isSuperAdmin ? selectedStore : cookie?.activeStore || user?.store || "default";
 
-  const { data: waStatus, refetch: refetchWa, isFetching: waLoading } = useQuery(
-    ["wa-status", waStoreId],
-    () => getWhatsAppStatus(waStoreId),
-    { refetchInterval: 5000, enabled: !!waStoreId }
-  );
+  const {
+    data: waStatus,
+    refetch: refetchWa,
+    isFetching: waLoading
+  } = useQuery(["wa-status", waStoreId], () => getWhatsAppStatus(waStoreId), {
+    refetchInterval: 5000,
+    enabled: !!waStoreId
+  });
   const waData = waStatus?.data;
   const waReady = waData?.ready;
   const waQR = waData?.qrBase64;
@@ -255,9 +258,7 @@ const CashRegisterOpenClose = () => {
               <Smartphone size={18} className="text-primary" />
               <h2 className="font-semibold text-sm">WhatsApp</h2>
               {isSuperAdmin && waStoreId && (
-                <span className="text-xs text-muted-foreground ml-1">
-                  ({waStoreId})
-                </span>
+                <span className="text-xs text-muted-foreground ml-1">({waStoreId})</span>
               )}
             </div>
             {waLoading ? (

@@ -45,7 +45,12 @@ const CashRegisterCurrent = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["cash-register-current", storeId],
     () => getCurrentCashRegister(storeId),
-    { enabled: !!storeId, staleTime: 0, refetchInterval: storeId ? 30000 : false, keepPreviousData: true }
+    {
+      enabled: !!storeId,
+      staleTime: 0,
+      refetchInterval: storeId ? 30000 : false,
+      keepPreviousData: true
+    }
   );
   const reg = data?.data?.register || data?.data;
   const currentSales = data?.data?.currentSales || reg?.totalSales || 0;
@@ -57,11 +62,19 @@ const CashRegisterCurrent = () => {
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground">{t("page.cashRegister.current.breadcrumbDashboard")}</button>
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground">
+            {t("page.cashRegister.current.breadcrumbDashboard")}
+          </button>
           <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.cashRegister.current.breadcrumb")}</span>
+          <span className="text-primary font-semibold">
+            {t("page.cashRegister.current.breadcrumb")}
+          </span>
         </nav>
-        <div className="flex min-h-full w-full"><NoStore /></div>
+        <div className="flex min-h-full w-full">
+          <NoStore />
+        </div>
       </div>
     );
   }
@@ -70,35 +83,49 @@ const CashRegisterCurrent = () => {
     () => closeCashRegister(reg?.id, { storeId, closedBy: user?.id, closingBalance }),
     {
       onSuccess: () => {
-        toast.success(t("page.cashRegister.current.success"), { description: t("page.cashRegister.current.closedDesc") });
+        toast.success(t("page.cashRegister.current.success"), {
+          description: t("page.cashRegister.current.closedDesc")
+        });
         queryClient.invalidateQueries(["cash-register"]);
         setCloseModal(false);
         refetch();
       },
-      onError: (err) => toast.error(t("page.cashRegister.current.fail"), { description: err?.response?.data?.message || err.message })
+      onError: (err) =>
+        toast.error(t("page.cashRegister.current.fail"), {
+          description: err?.response?.data?.message || err.message
+        })
     }
   );
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading) return (
-    <div className="space-y-4 p-6">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-32 w-full" />
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="space-y-4 p-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground">Dashboard</button>
+        <button
+          onClick={() => navigate("/dashboard-super-admin")}
+          className="hover:text-foreground">
+          Dashboard
+        </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{t("page.cashRegister.current.breadcrumb")}</span>
+        <span className="text-primary font-semibold">
+          {t("page.cashRegister.current.breadcrumb")}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t("page.cashRegister.current.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.cashRegister.current.shiftStatus")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("page.cashRegister.current.shiftStatus")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/cash-register/history")}>
@@ -124,22 +151,68 @@ const CashRegisterCurrent = () => {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border">
-              <h2 className="text-lg font-semibold mb-4">{t("page.cashRegister.current.infoTitle")}</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                {t("page.cashRegister.current.infoTitle")}
+              </h2>
               <table className="w-full text-sm">
                 <tbody>
                   {[
-                    [t("page.cashRegister.current.store"), reg.storeData?.name ? { label: reg.storeData.name, sub: [reg.storeData.address, reg.storeData.city].filter(Boolean).join(", ") || null } : { label: reg.storeName || cookie?.activeStoreName || user?.storeName || "-" }],
+                    [
+                      t("page.cashRegister.current.store"),
+                      reg.storeData?.name
+                        ? {
+                            label: reg.storeData.name,
+                            sub:
+                              [reg.storeData.address, reg.storeData.city]
+                                .filter(Boolean)
+                                .join(", ") || null
+                          }
+                        : {
+                            label:
+                              reg.storeName || cookie?.activeStoreName || user?.storeName || "-"
+                          }
+                    ],
                     [t("page.cashRegister.current.openedBy"), reg.userData?.fullName || "-"],
-                    [t("page.cashRegister.current.openDate"), new Date(reg.openedAt).toLocaleDateString("id")],
-                    [t("page.cashRegister.current.openTime"), new Date(reg.openedAt).toTimeString().slice(0, 8)],
-                    [t("page.cashRegister.current.openingBalance"), `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`],
-                    [t("page.cashRegister.current.totalSales"), `Rp ${parseInt(currentSales).toLocaleString("id")}`],
-                    [t("page.cashRegister.current.status"), reg.status === "open" ? t("page.cashRegister.current.statusOpen") : t("page.cashRegister.current.statusClosed")],
+                    [
+                      t("page.cashRegister.current.openDate"),
+                      new Date(reg.openedAt).toLocaleDateString("id")
+                    ],
+                    [
+                      t("page.cashRegister.current.openTime"),
+                      new Date(reg.openedAt).toTimeString().slice(0, 8)
+                    ],
+                    [
+                      t("page.cashRegister.current.openingBalance"),
+                      `Rp ${parseInt(reg.openingBalance).toLocaleString("id")}`
+                    ],
+                    [
+                      t("page.cashRegister.current.totalSales"),
+                      `Rp ${parseInt(currentSales).toLocaleString("id")}`
+                    ],
+                    [
+                      t("page.cashRegister.current.status"),
+                      reg.status === "open"
+                        ? t("page.cashRegister.current.statusOpen")
+                        : t("page.cashRegister.current.statusClosed")
+                    ],
                     [t("page.cashRegister.current.notes"), reg.notes || "-"]
                   ].map(([l, v]) => (
                     <tr key={l} className="border-b border-muted/30">
                       <td className="py-2 pr-4 text-muted-foreground w-44 align-top">{l}</td>
-                      <td className="py-2 font-medium">{typeof v === "object" ? <div><div>{v.label}</div>{v.sub && <div className="text-xs text-muted-foreground font-normal">{v.sub}</div>}</div> : v}</td>
+                      <td className="py-2 font-medium">
+                        {typeof v === "object" ? (
+                          <div>
+                            <div>{v.label}</div>
+                            {v.sub && (
+                              <div className="text-xs text-muted-foreground font-normal">
+                                {v.sub}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          v
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -152,15 +225,21 @@ const CashRegisterCurrent = () => {
               {/* ponytail: settlement summary — auto-calculated expected vs physical */}
               <div className="rounded-lg bg-muted/30 p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("page.cashRegister.current.openingBalance")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.cashRegister.current.openingBalance")}
+                  </span>
                   <span className="font-medium">{formatIDR(reg.openingBalance)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("page.cashRegister.current.totalSales")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.cashRegister.current.totalSales")}
+                  </span>
                   <span className="font-medium text-green-600">+{formatIDR(currentSales)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("page.cashRegister.current.totalExpenses")}</span>
+                  <span className="text-muted-foreground">
+                    {t("page.cashRegister.current.totalExpenses")}
+                  </span>
                   <span className="font-medium text-destructive">-{formatIDR(totalExpenses)}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
@@ -168,8 +247,17 @@ const CashRegisterCurrent = () => {
                   <span>{formatIDR(expectedCash)}</span>
                 </div>
                 <div className="flex justify-between text-xs pt-1">
-                  <span className="text-muted-foreground">{t("page.cashRegister.current.variance")}</span>
-                  <span className={variance !== 0 ? (variance > 0 ? "text-green-600" : "text-destructive") : "text-muted-foreground"}>
+                  <span className="text-muted-foreground">
+                    {t("page.cashRegister.current.variance")}
+                  </span>
+                  <span
+                    className={
+                      variance !== 0
+                        ? variance > 0
+                          ? "text-green-600"
+                          : "text-destructive"
+                        : "text-muted-foreground"
+                    }>
                     {variance === 0 ? "Rp 0" : `${variance > 0 ? "+" : ""}${formatIDR(variance)}`}
                   </span>
                 </div>
@@ -177,7 +265,8 @@ const CashRegisterCurrent = () => {
 
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  {t("page.cashRegister.current.closingBalance")} <span className="text-destructive">*</span>
+                  {t("page.cashRegister.current.closingBalance")}{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground pointer-events-none">
@@ -198,11 +287,16 @@ const CashRegisterCurrent = () => {
               </div>
 
               {variance !== 0 && (
-                <p className={`text-xs flex items-center gap-1 ${variance > 0 ? "text-green-600" : "text-destructive"}`}>
+                <p
+                  className={`text-xs flex items-center gap-1 ${variance > 0 ? "text-green-600" : "text-destructive"}`}>
                   <ArrowRightLeft size={12} />
                   {variance > 0
-                    ? t("page.cashRegister.current.varianceMore", { amount: formatIDR(Math.abs(variance)) })
-                    : t("page.cashRegister.current.varianceLess", { amount: formatIDR(Math.abs(variance)) })}
+                    ? t("page.cashRegister.current.varianceMore", {
+                        amount: formatIDR(Math.abs(variance))
+                      })
+                    : t("page.cashRegister.current.varianceLess", {
+                        amount: formatIDR(Math.abs(variance))
+                      })}
                 </p>
               )}
 
@@ -221,10 +315,14 @@ const CashRegisterCurrent = () => {
               </h3>
               <div className="space-y-1 text-sm">
                 {data?.data?.expenses.map((exp, i) => (
-                  <div key={exp.id || i} className="flex justify-between py-1.5 border-b border-muted/20 last:border-0">
+                  <div
+                    key={exp.id || i}
+                    className="flex justify-between py-1.5 border-b border-muted/20 last:border-0">
                     <div>
                       <span className="font-medium">{exp.description || "-"}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{new Date(exp.date).toLocaleDateString("id")}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {new Date(exp.date).toLocaleDateString("id")}
+                      </span>
                     </div>
                     <span className="text-destructive font-medium">-{formatIDR(exp.amount)}</span>
                   </div>
@@ -240,7 +338,9 @@ const CashRegisterCurrent = () => {
         open={closeModal}
         onOpenChange={(o) => !o && setCloseModal(false)}
         title={t("page.cashRegister.current.modalTitle")}
-        description={t("page.cashRegister.current.modalDesc", { balance: formatIDR(closingBalance) })}
+        description={t("page.cashRegister.current.modalDesc", {
+          balance: formatIDR(closingBalance)
+        })}
         confirmText={t("page.cashRegister.current.modalConfirm")}
         onConfirm={() => closeMut.mutate()}
       />

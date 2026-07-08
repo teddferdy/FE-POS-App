@@ -202,10 +202,10 @@ const AddRole = () => {
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">{t("page.role.add.title")}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.role.add.description")}
-            </p>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">
+              {t("page.role.add.title")}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.role.add.description")}</p>
           </div>
         </div>
 

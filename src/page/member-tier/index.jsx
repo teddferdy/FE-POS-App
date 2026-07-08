@@ -53,10 +53,7 @@ const MemberTier = () => {
     tier.name?.toLowerCase().includes(search.toLowerCase())
   );
   const totalPages = Math.ceil(filteredTiers.length / limit);
-  const paginatedTiers = filteredTiers.slice(
-    (currentPage - 1) * limit,
-    currentPage * limit
-  );
+  const paginatedTiers = filteredTiers.slice((currentPage - 1) * limit, currentPage * limit);
 
   const deleteMutation = useMutation(deleteMemberTier, {
     onSuccess: () => {
@@ -270,7 +267,9 @@ const MemberTier = () => {
       <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.memberTier.list.title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {t("page.memberTier.list.title")}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t("page.memberTier.list.description")}
             </p>
@@ -284,96 +283,103 @@ const MemberTier = () => {
         </div>
       </div>
 
-      {locData && (locData?.data || []).length === 0 ? <NoStore /> : (
-        <>{isError ? (
-          <AbortController refetch={refetch} />
-        ) : (
-          <div>
+      {locData && (locData?.data || []).length === 0 ? (
+        <NoStore />
+      ) : (
+        <>
+          {isError ? (
+            <AbortController refetch={refetch} />
+          ) : (
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.memberTier.list.totalTiers")}
-                  value={tiers.length}
-                  icon="workspace_premium"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("common.active")}
-                  value={activeTierCount}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftTierCount}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("common.inactive")}
-                  value={inactiveTierCount}
-                  icon="cancel"
-                  variant="red"
-                />
-              </div>
-
-              {tiers.length === 0 ? (
-                <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
-                  <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
-                  <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
-                    <Plus size={16} className="mr-2" />
-                    {t("page.memberTier.list.addTier")}
-                  </Button>
-                </div>
-              ) : (
-                <div data-tour="tier-table" className="mt-6">
-                  <DataTable
-                    columns={columns}
-                    data={paginatedTiers}
-                    isLoading={isLoading}
-                    rowClassName={() => "group"}
-                    toolbar={
-                      <div className="flex items-center justify-between w-full">
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.memberTier.list.tableTitle")}
-                        </h4>
-                        <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                            search
-                          </span>
-                          <Input
-                            data-tour="tier-search"
-                            placeholder={t("common.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setCurrentPage(1);
-                            }}
-                            className="pl-9 h-9 w-72 text-sm"
-                          />
-                        </div>
-                      </div>
-                    }
-                    pagination={{
-                      page: currentPage,
-                      totalPages,
-                      total: filteredTiers.length,
-                      onPageChange: setCurrentPage,
-                      pageSize: limit,
-                      onPageSizeChange: (v) => { setLimit(v); setCurrentPage(1); },
-                      showingText: `${t("common.showing", {
-                        start: (currentPage - 1) * limit + 1,
-                        end: Math.min(currentPage * limit, filteredTiers.length),
-                        total: filteredTiers.length
-                      })}`
-                    }}
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.memberTier.list.totalTiers")}
+                    value={tiers.length}
+                    icon="workspace_premium"
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("common.active")}
+                    value={activeTierCount}
+                    icon="check_circle"
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftTierCount}
+                    icon="edit_note"
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("common.inactive")}
+                    value={inactiveTierCount}
+                    icon="cancel"
+                    variant="red"
                   />
                 </div>
-              )}
+
+                {tiers.length === 0 ? (
+                  <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
+                    <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
+                    <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
+                      <Plus size={16} className="mr-2" />
+                      {t("page.memberTier.list.addTier")}
+                    </Button>
+                  </div>
+                ) : (
+                  <div data-tour="tier-table" className="mt-6">
+                    <DataTable
+                      columns={columns}
+                      data={paginatedTiers}
+                      isLoading={isLoading}
+                      rowClassName={() => "group"}
+                      toolbar={
+                        <div className="flex items-center justify-between w-full">
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.memberTier.list.tableTitle")}
+                          </h4>
+                          <div className="relative">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                              search
+                            </span>
+                            <Input
+                              data-tour="tier-search"
+                              placeholder={t("common.search")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                              className="pl-9 h-9 w-72 text-sm"
+                            />
+                          </div>
+                        </div>
+                      }
+                      pagination={{
+                        page: currentPage,
+                        totalPages,
+                        total: filteredTiers.length,
+                        onPageChange: setCurrentPage,
+                        pageSize: limit,
+                        onPageSizeChange: (v) => {
+                          setLimit(v);
+                          setCurrentPage(1);
+                        },
+                        showingText: `${t("common.showing", {
+                          start: (currentPage - 1) * limit + 1,
+                          end: Math.min(currentPage * limit, filteredTiers.length),
+                          total: filteredTiers.length
+                        })}`
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}</>
+          )}
+        </>
       )}
 
       <Modal

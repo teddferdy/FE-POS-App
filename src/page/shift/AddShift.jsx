@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -572,6 +573,7 @@ const AddShift = () => {
           handleSave(values, true);
         }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

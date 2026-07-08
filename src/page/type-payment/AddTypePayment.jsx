@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import {
   Select,
   SelectContent,
@@ -50,7 +51,9 @@ const AddTypePayment = () => {
     }
   });
 
-  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) => onSubmit(values));
+  const { handleSubmit: onConfirmSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
+    onSubmit(values)
+  );
 
   const createMutation = useMutation(addTypePayment, {
     onSuccess: () => {
@@ -203,10 +206,10 @@ const AddTypePayment = () => {
                   </div>
                 </div>
               </form>
-              </Form>
-              <Modal type="confirm" {...confirmModal()} />
-            </Card>
-          </div>
+            </Form>
+            <Modal type="confirm" {...confirmModal()} />
+          </Card>
+        </div>
       </div>
 
       <Modal
@@ -240,6 +243,7 @@ const AddTypePayment = () => {
           onSubmit(v, true);
         }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

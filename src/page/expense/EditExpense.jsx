@@ -57,7 +57,9 @@ const EditExpense = () => {
 
   const expenseItem = expenseData?.data || {};
 
-  const { data: categoriesData } = useQuery(["expense-categories", store], () => getExpenseCategories(store || undefined));
+  const { data: categoriesData } = useQuery(["expense-categories", store], () =>
+    getExpenseCategories(store || undefined)
+  );
   const categories = (categoriesData?.data || categoriesData || []).filter(
     (cat) =>
       cat.status === "active" ||

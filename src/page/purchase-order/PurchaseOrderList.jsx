@@ -455,7 +455,10 @@ const PurchaseOrderList = () => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-red-600"
-              onClick={() => { setCancelPoId(po.id); setCancelModal(true); }}
+              onClick={() => {
+                setCancelPoId(po.id);
+                setCancelModal(true);
+              }}
               title={t("common.cancel")}>
               <XCircle size={15} />
             </Button>
@@ -1138,13 +1141,22 @@ const PurchaseOrderList = () => {
           <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
             <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm">
               <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-lg font-semibold">{t("page.purchaseOrder.list.cancelConfirmTitle")}</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.list.cancelConfirmTitle")}
+                </h3>
               </div>
               <div className="p-6">
-                <p className="text-muted-foreground">{t("page.purchaseOrder.list.cancelConfirmBody")}</p>
+                <p className="text-muted-foreground">
+                  {t("page.purchaseOrder.list.cancelConfirmBody")}
+                </p>
               </div>
               <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-                <Button variant="outline" onClick={() => { setCancelModal(false); setCancelPoId(null); }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCancelModal(false);
+                    setCancelPoId(null);
+                  }}>
                   {t("common.no")}
                 </Button>
                 <Button

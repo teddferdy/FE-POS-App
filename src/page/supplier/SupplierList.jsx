@@ -22,6 +22,7 @@ import StatCard from "@/components/ui/StatCard";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { getAllLocation } from "@/services/location";
 
 const SupplierList = () => {
@@ -36,6 +37,7 @@ const SupplierList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [storeFilter, setStoreFilter] = useState("all");
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -46,7 +48,7 @@ const SupplierList = () => {
     enabled: isSuperAdmin
   });
 
-  const store = user?.store || "";
+  const store = isSuperAdmin && storeFilter !== "all" ? storeFilter : user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
     ["suppliers", page, limit, search, store],
     () => getAllSupplier({ page, limit, search, store }),
@@ -90,6 +92,22 @@ const SupplierList = () => {
           <span className="font-medium text-foreground">{item.name || "-"}</span>
         </div>
       )
+    },
+    {
+      header: t("header.selectStore") || "Store",
+      render: (item) => {
+        const stores = Array.isArray(item.store) ? item.store : [];
+        return (
+          <div className="flex items-center gap-1.5 text-sm">
+            <Building2 size={14} className="text-muted-foreground shrink-0" />
+            <span className="truncate max-w-[150px]">
+              {stores.length > 0
+                ? stores.map((s) => (typeof s === "object" ? s.name : s)).join(", ")
+                : "-"}
+            </span>
+          </div>
+        );
+      }
     },
     { header: t("page.supplier.form.contactPerson"), accessor: "contactPerson" },
     {
@@ -382,6 +400,16 @@ const SupplierList = () => {
                       {t("page.supplier.list.title")}
                     </h4>
                     <div className="flex items-center gap-3 w-full md:w-auto">
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(val) => {
+                          setStoreFilter(val);
+                          setPage(1);
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        t={t}
+                      />
                       <div className="relative flex-1 md:w-64">
                         <Search
                           size={16}
@@ -428,7 +456,7 @@ const SupplierList = () => {
         onConfirm={confirmDelete}
       />
       {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
- 
+
       <UploadExcelModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}

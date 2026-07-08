@@ -380,8 +380,10 @@ const ProductionOrderList = () => {
                 loading={deleteMutation.isLoading}
                 onConfirm={() => deleteMutation.mutate(deleteTarget)}
               />
-              {deleteMutation.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
- 
+              {deleteMutation.isLoading && (
+                <Loading fullscreen size="lg" label={t("common.loadingData")} />
+              )}
+
               <Modal
                 type="confirm"
                 open={!!startTarget}

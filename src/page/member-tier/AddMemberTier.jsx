@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Star, Award, Medal, Diamond, Plus, CheckCircle, Delete, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Loading } from "@/components/ui/loading";
 import { z } from "zod";
 import { addMemberTier } from "@/services/member-tier";
 import PageHeader from "@/components/ui/PageHeader";
@@ -499,6 +500,7 @@ const AddMemberTier = () => {
           });
         }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };

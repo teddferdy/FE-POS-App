@@ -249,21 +249,29 @@ const StockTransferList = () => {
             <div>
               <DataTable
                 columns={columns}
-                  data={items}
+                data={items}
                 isLoading={isLoading}
                 emptyMessage={t("page.stockTransfer.list.emptyMessage")}
                 toolbar={
                   <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm" className="gap-2 h-9 lg:hidden" onClick={() => setShowFilters(!showFilters)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 h-9 lg:hidden"
+                      onClick={() => setShowFilters(!showFilters)}>
                       <span className="material-symbols-outlined text-base">filter_list</span>
                       {showFilters ? "Tutup" : "Filter"}
                     </Button>
-                    <div className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                    <div
+                      className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
                       {isSuperAdmin && (
                         <StoreFilter
                           locations={locData?.data || []}
                           value={storeFilter}
-                          onChange={(v) => { setStoreFilter(v); setPage(1); }}
+                          onChange={(v) => {
+                            setStoreFilter(v);
+                            setPage(1);
+                          }}
                           isSuperAdmin={isSuperAdmin}
                           t={t}
                         />

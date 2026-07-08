@@ -646,7 +646,9 @@ const ProductList = () => {
             loading={deleteMutation?.isLoading}
             onConfirm={confirmDelete}
           />
-          {deleteMutation?.isLoading && <Loading fullscreen size="lg" label={t("common.loadingData")} />}
+          {deleteMutation?.isLoading && (
+            <Loading fullscreen size="lg" label={t("common.loadingData")} />
+          )}
           <UploadExcelModal
             open={uploadModalOpen}
             onOpenChange={setUploadModalOpen}

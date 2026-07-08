@@ -139,7 +139,8 @@ const DiscountList = () => {
       header: t("page.discount.table.store"),
       render: (item) => {
         const store = item.store;
-        if (!store || Array.isArray(store)) return <span className="text-xs text-muted-foreground">Semua Toko</span>;
+        if (!store || Array.isArray(store))
+          return <span className="text-xs text-muted-foreground">Semua Toko</span>;
         return <span className="text-xs">{store.name || `Store #${store.id}`}</span>;
       }
     },

@@ -136,7 +136,11 @@ const ReceiptModal = ({ data, onClose, onNewTransaction }) => {
         storeEmail: data?.storeEmail || data?.email || "",
         memberName: data?.customerName || data?.customer?.name || "",
         memberTier: data?.customer?.memberTier || data?.customer?.tier || "",
-        memberPoints: data?.customer?.memberPoints || data?.customer?.totalPoints || data?.customer?.points || 0,
+        memberPoints:
+          data?.customer?.memberPoints ||
+          data?.customer?.totalPoints ||
+          data?.customer?.points ||
+          0,
         orderNumber,
         cashier: cashierName,
         date: transactionDate,

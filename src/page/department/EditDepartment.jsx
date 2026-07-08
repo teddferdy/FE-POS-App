@@ -248,15 +248,29 @@ const EditDepartment = () => {
         </Form>
       </div>
 
-      <Modal type="confirm" open={draftModal} onOpenChange={setDraftModal}
-        title={t("common.saveAsDraftTitle")} description={t("common.saveAsDraftDesc")}
+      <Modal
+        type="confirm"
+        open={draftModal}
+        onOpenChange={setDraftModal}
+        title={t("common.saveAsDraftTitle")}
+        description={t("common.saveAsDraftDesc")}
         confirmText={t("common.yesSaveDraft")}
-        onConfirm={() => { setDraftModal(false); onSubmit(form.getValues(), true); }}
+        onConfirm={() => {
+          setDraftModal(false);
+          onSubmit(form.getValues(), true);
+        }}
       />
-      <Modal type="confirm" open={saveConfirm} onOpenChange={setSaveConfirm}
-        title={t("common.confirmSave")} description={t("common.confirmSaveDesc")}
+      <Modal
+        type="confirm"
+        open={saveConfirm}
+        onOpenChange={setSaveConfirm}
+        title={t("common.confirmSave")}
+        description={t("common.confirmSaveDesc")}
         confirmText={t("common.yesSave")}
-        onConfirm={() => { setSaveConfirm(false); onSubmit(form.getValues(), false); }}
+        onConfirm={() => {
+          setSaveConfirm(false);
+          onSubmit(form.getValues(), false);
+        }}
       />
     </div>
   );

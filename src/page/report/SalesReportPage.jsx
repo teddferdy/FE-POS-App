@@ -34,8 +34,9 @@ const SalesReportPage = () => {
     isLoading: salesLoading,
     isError,
     refetch
-  } = useQuery(["sales-summary", salesPeriod], () =>
-    getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange }),
+  } = useQuery(
+    ["sales-summary", salesPeriod],
+    () => getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange }),
     { keepPreviousData: true }
   );
 

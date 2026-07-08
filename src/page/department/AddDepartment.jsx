@@ -11,6 +11,7 @@ import { sanitizeInput } from "@/utils/inputSanitizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Loading } from "@/components/ui/loading";
 import { Switch } from "@/components/ui/switch";
 import {
   Form,
@@ -222,6 +223,7 @@ const AddDepartment = () => {
           onSubmit(form.getValues(), false);
         }}
       />
+      {createMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
     </div>
   );
 };
