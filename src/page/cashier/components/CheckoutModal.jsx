@@ -350,6 +350,7 @@ const CheckoutModal = ({
       const order = res?.data || res;
       queryClient.invalidateQueries(["products-outlet", store]);
       queryClient.invalidateQueries(["categories-cashier", store]);
+      queryClient.invalidateQueries(["products"]);
       onComplete({
         ...order,
         subtotal: order.subTotal,
