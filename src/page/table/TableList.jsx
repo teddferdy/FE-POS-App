@@ -4,7 +4,19 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa, QrCode, RotateCcw, CheckCircle, XCircle, FileEdit, Utensils } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Sofa,
+  QrCode,
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  FileEdit,
+  Utensils
+} from "lucide-react";
 import {
   getTablesByStore,
   addTable,
@@ -75,7 +87,7 @@ const TableList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
     () => getTablesByStore({ location: locationParam, page, limit, search }),
-    { }
+    {}
   );
 
   const deleteMutation = useMutation(deleteTable, {
@@ -268,7 +280,7 @@ const TableList = () => {
             <NoStore />
           ) : (
             <>
-              {isFetching ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -314,7 +326,8 @@ const TableList = () => {
                 <DataTable
                   columns={columns}
                   data={tables}
-                  isLoading={isFetching}
+                  isLoading={isLoading}
+                  isFetching={isFetching}
                   emptyIcon={Sofa}
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
@@ -439,9 +452,7 @@ const TableList = () => {
           {deleteMutation.isLoading && (
             <Loading fullscreen size="lg" label={t("common.loadingData")} />
           )}
-          {saveMutation.isLoading && (
-            <Loading fullscreen size="lg" label={t("common.saving")} />
-          )}
+          {saveMutation.isLoading && <Loading fullscreen size="lg" label={t("common.saving")} />}
 
           <Modal
             type="confirm"

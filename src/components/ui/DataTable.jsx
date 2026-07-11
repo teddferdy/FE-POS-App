@@ -4,12 +4,14 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const DataTable = ({
   columns = [],
   data = [],
   isLoading,
+  isFetching,
   emptyMessage: emptyMessageProp,
   emptyIcon: EmptyIcon,
   containerClassName,
@@ -308,52 +310,59 @@ const DataTable = ({
       )}>
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
 
-      {isLoading && data.length === 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 text-muted-foreground">
-                {allColumns.map((col, i) => (
-                  <th
-                    key={i}
-                    className={cn(
-                      "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
-                      col.align === "right" && "text-right",
-                      col.align === "center" && "text-center",
-                      col.stickyRight &&
-                        "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
-                      col.hideOn && `hidden ${col.hideOn}:table-cell`
-                    )}>
-                    {col.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {Array.from({ length: 6 }).map((_, rowIdx) => (
-                <tr key={rowIdx}>
-                  {allColumns.map((col, colIdx) => (
-                    <td
-                      key={colIdx}
+      <div className={cn("relative", isLoading && data.length === 0 && "hidden")}>
+        {isLoading && data.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-muted-foreground">
+                  {allColumns.map((col, i) => (
+                    <th
+                      key={i}
                       className={cn(
-                        "px-6 py-4 text-center",
+                        "px-6 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap",
                         col.align === "right" && "text-right",
+                        col.align === "center" && "text-center",
                         col.stickyRight &&
                           "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
-                        col.hideOn && `hidden ${col.hideOn}:table-cell`,
-                        col.className
+                        col.hideOn && `hidden ${col.hideOn}:table-cell`
                       )}>
-                      <Skeleton className={cn("h-4", colIdx === 0 ? "w-24" : "w-32")} />
-                    </td>
+                      {col.header}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        renderTable()
-      )}
+              </thead>
+              <tbody className="divide-y divide-border">
+                {Array.from({ length: 6 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    {allColumns.map((col, colIdx) => (
+                      <td
+                        key={colIdx}
+                        className={cn(
+                          "px-6 py-4 text-center",
+                          col.align === "right" && "text-right",
+                          col.stickyRight &&
+                            "sticky right-0 bg-card shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]",
+                          col.hideOn && `hidden ${col.hideOn}:table-cell`,
+                          col.className
+                        )}>
+                        <Skeleton className={cn("h-4", colIdx === 0 ? "w-24" : "w-32")} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          renderTable()
+        )}
+        {isFetching && !isLoading && data.length > 0 && (
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-10 rounded-b-xl">
+            <Loading size="sm" />
+          </div>
+        )}
+      </div>
 
       {selectedIds.length > 0 && bulkActions && (
         <div className="flex items-center justify-between px-4 py-3 bg-primary/5 border-t border-border">
