@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, PackageOpen, Award, CheckCircle, FileEdit, XCircle, Users } from "lucide-react";
+import { Plus, PackageOpen, Award, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -53,7 +53,6 @@ const MemberTier = () => {
     tiersData?.activeCount ?? tiers.filter((t) => normalizeStatus(t.status) === "active").length;
   const draftTierCount = tiers.filter((t) => normalizeStatus(t.status) === "draft").length;
   const inactiveTierCount = tiers.filter((t) => normalizeStatus(t.status) === "inactive").length;
-  const totalMembers = tiers.reduce((sum, t) => sum + (Number(t.memberCount) || 0), 0);
 
   const filteredTiers = tiers.filter((tier) =>
     tier.name?.toLowerCase().includes(search.toLowerCase())
@@ -300,8 +299,8 @@ const MemberTier = () => {
             <div>
               <div>
                 {isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    {[...Array(5)].map((_, i) => (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
                       <div key={i} className="bg-card rounded-xl border border-border p-4">
                         <div className="flex items-start justify-between mb-3">
                           <Skeleton className="h-3 w-24" />
@@ -313,7 +312,7 @@ const MemberTier = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <StatCard
                       label={t("page.memberTier.list.totalTiers")}
                       value={tiers.length}
@@ -337,12 +336,6 @@ const MemberTier = () => {
                       value={inactiveTierCount}
                       icon={XCircle}
                       variant="red"
-                    />
-                    <StatCard
-                      label={t("page.memberTier.list.totalMembers")}
-                      value={totalMembers}
-                      icon={Users}
-                      variant="default"
                     />
                   </div>
                 )}

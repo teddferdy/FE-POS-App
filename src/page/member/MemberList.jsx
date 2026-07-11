@@ -85,7 +85,7 @@ const MemberList = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  const { data: tiersData } = useQuery(
+  const { data: tiersData, isLoading: tiersLoading } = useQuery(
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
     {
@@ -433,7 +433,19 @@ const MemberList = () => {
                 <div
                   data-tour="member-search"
                   className="bg-card rounded-xl border border-border p-5">
-                  {tiers.length === 0 ? (
+                  {tiersLoading ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-4 rounded" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[...Array(4)].map((_, i) => (
+                          <Skeleton key={i} className="h-8 w-20 rounded-lg" />
+                        ))}
+                      </div>
+                    </div>
+                  ) : tiers.length === 0 ? (
                     <div className="flex items-center gap-3 w-full">
                       <PackageOpen size={20} className="text-muted-foreground" />
                       <span className="text-sm text-muted-foreground flex-1">
