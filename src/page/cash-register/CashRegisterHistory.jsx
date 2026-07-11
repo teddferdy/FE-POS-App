@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { Eye, Search, Receipt, Plus } from "lucide-react";
@@ -25,7 +26,7 @@ const CashRegisterHistory = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   // const defaultStoreId = cookie?.activeStore || user?.store;
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
@@ -224,7 +225,7 @@ const CashRegisterHistory = () => {
                         locations={locData?.data || []}
                         value={storeFilter}
                         onChange={(v) => {
-                          setStoreFilter(v);
+                          setGlobalStoreFilter(v);
                           setPage(1);
                         }}
                         isSuperAdmin={isSuperAdmin}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -45,7 +46,7 @@ const PurchaseReturnList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
@@ -264,13 +265,13 @@ const PurchaseReturnList = () => {
                 toolbar={
                   <div className="flex flex-wrap items-center gap-2">
                     {isSuperAdmin && (
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
-                        onChange={(v) => {
-                          setStoreFilter(v);
-                          setPage(1);
-                        }}
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setGlobalStoreFilter(v);
+                            setPage(1);
+                          }}
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />

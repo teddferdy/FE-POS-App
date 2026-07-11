@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -58,7 +59,7 @@ const ProductList = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [isDownloadingData, setIsDownloadingData] = useState(false);
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
   const user = cookie?.user;
@@ -586,7 +587,7 @@ const ProductList = () => {
                       locations={locData?.data || []}
                       value={storeFilter}
                       onChange={(v) => {
-                        setStoreFilter(v);
+                        setGlobalStoreFilter(v);
                         setPage(1);
                       }}
                       isSuperAdmin={isSuperAdmin}

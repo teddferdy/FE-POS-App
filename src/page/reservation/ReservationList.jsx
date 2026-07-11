@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -69,7 +70,7 @@ const ReservationList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null);
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
@@ -358,7 +359,7 @@ const ReservationList = () => {
                           locations={locData?.data || []}
                           value={storeFilter}
                           onChange={(v) => {
-                            setStoreFilter(v);
+                            setGlobalStoreFilter(v);
                             setPage(1);
                           }}
                           isSuperAdmin={isSuperAdmin}

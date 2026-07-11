@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -37,7 +38,7 @@ const AccountsReceivableList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [statusFilter, setStatusFilter] = useState("");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
 
@@ -251,7 +252,7 @@ const AccountsReceivableList = () => {
               locations={locData?.data || locData?.locations || []}
               value={storeFilter}
               onChange={(v) => {
-                setStoreFilter(v);
+                setGlobalStoreFilter(v);
                 setPage(1);
               }}
             />

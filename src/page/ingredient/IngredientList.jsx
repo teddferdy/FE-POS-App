@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -43,7 +44,7 @@ const IngredientList = () => {
   const [importModal, setImportModal] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [downloadingData, setDownloadingData] = useState(false);
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const pageSize = 10;
 
   const user = cookie?.user;
@@ -419,7 +420,7 @@ const IngredientList = () => {
                         locations={locData?.data || []}
                         value={storeFilter}
                         onChange={(v) => {
-                          setStoreFilter(v);
+                          setGlobalStoreFilter(v);
                           setPage(1);
                         }}
                         isSuperAdmin={isSuperAdmin}

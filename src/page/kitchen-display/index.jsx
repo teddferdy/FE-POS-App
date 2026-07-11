@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 // import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -73,7 +74,7 @@ const KitchenDisplay = () => {
   const { socket } = useSocket();
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const storeId = isSuperAdmin
     ? storeFilter && storeFilter !== "all"
       ? storeFilter
@@ -177,7 +178,7 @@ const KitchenDisplay = () => {
           <StoreFilter
             locations={locData?.data || []}
             value={storeFilter}
-            onChange={(v) => setStoreFilter(v)}
+            onChange={(v) => setGlobalStoreFilter(v)}
             isSuperAdmin={isSuperAdmin}
             t={t}
           />

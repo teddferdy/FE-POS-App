@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +32,7 @@ const LowStockAll = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [search, setSearch] = useState("");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [typeFilter, setTypeFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
@@ -194,7 +195,7 @@ const LowStockAll = () => {
         <Select
           value={storeFilter}
           onValueChange={(v) => {
-            setStoreFilter(v);
+            setGlobalStoreFilter(v);
             setPage(1);
           }}>
           <SelectTrigger className="w-44 h-9 text-sm">

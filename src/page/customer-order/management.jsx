@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { Clock, ChefHat, User, Store, Loader2, Utensils, Search } from "lucide-react";
@@ -22,7 +23,7 @@ const CustomerOrderManagement = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const store = cookie?.activeStore || cookie.user?.store;
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -124,7 +125,7 @@ const CustomerOrderManagement = () => {
               <StoreFilter
                 locations={locData?.data || []}
                 value={storeFilter}
-                onChange={(v) => setStoreFilter(v)}
+                onChange={(v) => setGlobalStoreFilter(v)}
                 isSuperAdmin={isSuperAdmin}
                 t={t}
               />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -46,7 +47,7 @@ const GoodsReceiptList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -312,7 +313,7 @@ const GoodsReceiptList = () => {
                         <select
                           value={storeFilter}
                           onChange={(e) => {
-                            setStoreFilter(e.target.value);
+                            setGlobalStoreFilter(e.target.value);
                             setPage(1);
                           }}
                           className="h-9 px-3 rounded-md border border-input bg-background text-sm">

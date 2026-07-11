@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -68,14 +69,7 @@ const MemberList = () => {
   const [tierFilter, setTierFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
-  const [storeFilter, setStoreFilter] = useState(
-    () => localStorage.getItem("globalStoreFilter") || "all"
-  );
-  const handleStoreFilterChange = (v) => {
-    setStoreFilter(v);
-    localStorage.setItem("globalStoreFilter", v);
-    setPage(1);
-  };
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
@@ -569,7 +563,7 @@ const MemberList = () => {
                           <StoreFilter
                             locations={locData?.data || []}
                             value={storeFilter}
-                            onChange={handleStoreFilterChange}
+                            onChange={(v) => { setGlobalStoreFilter(v); setPage(1); }}
                             isSuperAdmin={isSuperAdmin}
                             t={t}
                           />

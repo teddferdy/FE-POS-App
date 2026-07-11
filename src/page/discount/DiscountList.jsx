@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
@@ -44,7 +45,7 @@ const DiscountList = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
 
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
@@ -318,7 +319,7 @@ const DiscountList = () => {
                       locations={locData?.data || []}
                       value={storeFilter}
                       onChange={(v) => {
-                        setStoreFilter(v);
+                        setGlobalStoreFilter(v);
                         setPage(1);
                       }}
                       isSuperAdmin={isSuperAdmin}

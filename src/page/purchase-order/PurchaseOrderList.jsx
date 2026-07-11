@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -88,7 +89,7 @@ const PurchaseOrderList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [returModal, setReturModal] = useState(false);
@@ -698,7 +699,7 @@ const PurchaseOrderList = () => {
                           locations={locData?.data || []}
                           value={storeFilter}
                           onChange={(v) => {
-                            setStoreFilter(v);
+                            setGlobalStoreFilter(v);
                             setPage(1);
                           }}
                           isSuperAdmin={isSuperAdmin}
