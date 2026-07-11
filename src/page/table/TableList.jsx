@@ -439,6 +439,9 @@ const TableList = () => {
           {deleteMutation.isLoading && (
             <Loading fullscreen size="lg" label={t("common.loadingData")} />
           )}
+          {saveMutation.isLoading && (
+            <Loading fullscreen size="lg" label={t("common.saving")} />
+          )}
 
           <Modal
             type="confirm"
