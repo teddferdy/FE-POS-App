@@ -68,7 +68,9 @@ const MemberList = () => {
   const [tierFilter, setTierFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
-  const [storeFilter, setStoreFilter] = useState(() => localStorage.getItem("globalStoreFilter") || "all");
+  const [storeFilter, setStoreFilter] = useState(
+    () => localStorage.getItem("globalStoreFilter") || "all"
+  );
   const handleStoreFilterChange = (v) => {
     setStoreFilter(v);
     localStorage.setItem("globalStoreFilter", v);
@@ -99,7 +101,7 @@ const MemberList = () => {
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
-  const store = storeFilter !== "all" ? storeFilter : user?.store || "";
+  const store = storeFilter !== "all" ? storeFilter : undefined;
   const { data, isLoading, isError, refetch } = useQuery(
     ["members", page, limit, search, tierFilter, statusFilter, sortBy, store, storeFilter],
     () =>
@@ -450,103 +452,105 @@ const MemberList = () => {
                         ))}
                       </div>
                     </div>
-                  ) : tiers.length > 0 && (
-                    <>
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="material-symbols-outlined text-primary text-lg">
-                          filter_alt
-                        </span>
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {t("page.member.list.filter")}
-                        </h3>
-                      </div>
+                  ) : (
+                    tiers.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="material-symbols-outlined text-primary text-lg">
+                            filter_alt
+                          </span>
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {t("page.member.list.filter")}
+                          </h3>
+                        </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        {[
-                          { key: null, label: t("common.all"), icon: "group" },
-                          { key: "draft", label: t("common.draft"), icon: "edit_note" },
-                          { key: "inactive", label: t("common.inactive"), icon: "cancel" }
-                        ].map(({ key, label, icon }) => (
-                          <button
-                            key={key ?? "all"}
-                            onClick={() => {
-                              setStatusFilter(key);
-                              setPage(1);
-                            }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                              statusFilter === key
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                            }`}>
-                            <span className="material-symbols-outlined text-sm">{icon}</span>
-                            {label}
-                          </button>
-                        ))}
-                      </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {[
+                            { key: null, label: t("common.all"), icon: "group" },
+                            { key: "draft", label: t("common.draft"), icon: "edit_note" },
+                            { key: "inactive", label: t("common.inactive"), icon: "cancel" }
+                          ].map(({ key, label, icon }) => (
+                            <button
+                              key={key ?? "all"}
+                              onClick={() => {
+                                setStatusFilter(key);
+                                setPage(1);
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                statusFilter === key
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                              }`}>
+                              <span className="material-symbols-outlined text-sm">{icon}</span>
+                              {label}
+                            </button>
+                          ))}
+                        </div>
 
-                      {tiers.length > 0 && (
-                        <>
-                          <div className="border-t border-border my-4" />
-                          <div className="flex flex-wrap items-center gap-2">
-                            {tiers.map((tier) => (
-                              <button
-                                key={tier.id || tier._id}
-                                onClick={() => {
-                                  setTierFilter(tierFilter === tier.id ? null : tier.id);
-                                  setPage(1);
-                                }}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                  tierFilter === tier.id
-                                    ? "text-white shadow-sm"
-                                    : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                                }`}
-                                style={
-                                  tierFilter === tier.id
-                                    ? { backgroundColor: tier.color || "#6366f1" }
-                                    : undefined
-                                }>
-                                <span
-                                  className="w-2 h-2 rounded-full"
-                                  style={{ backgroundColor: tier.color || "#6366f1" }}
-                                />
-                                {tier.name}
-                              </button>
-                            ))}
+                        {tiers.length > 0 && (
+                          <>
+                            <div className="border-t border-border my-4" />
+                            <div className="flex flex-wrap items-center gap-2">
+                              {tiers.map((tier) => (
+                                <button
+                                  key={tier.id || tier._id}
+                                  onClick={() => {
+                                    setTierFilter(tierFilter === tier.id ? null : tier.id);
+                                    setPage(1);
+                                  }}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                    tierFilter === tier.id
+                                      ? "text-white shadow-sm"
+                                      : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                                  }`}
+                                  style={
+                                    tierFilter === tier.id
+                                      ? { backgroundColor: tier.color || "#6366f1" }
+                                      : undefined
+                                  }>
+                                  <span
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: tier.color || "#6366f1" }}
+                                  />
+                                  {tier.name}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-muted-foreground text-sm">
+                              sort
+                            </span>
+                            <span className="text-xs text-muted-foreground hidden sm:inline">
+                              {t("page.member.list.sort")}
+                            </span>
+                            <select
+                              value={sortBy}
+                              onChange={(e) => {
+                                setSortBy(e.target.value);
+                                setPage(1);
+                              }}
+                              className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                              <option value="terbaru">{t("page.member.list.sortNewest")}</option>
+                              <option value="poin">{t("page.member.list.sortPoints")}</option>
+                              <option value="nama">{t("page.member.list.sortName")}</option>
+                            </select>
                           </div>
-                        </>
-                      )}
-
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-muted-foreground text-sm">
-                            sort
-                          </span>
-                          <span className="text-xs text-muted-foreground hidden sm:inline">
-                            {t("page.member.list.sort")}
-                          </span>
-                          <select
-                            value={sortBy}
-                            onChange={(e) => {
-                              setSortBy(e.target.value);
-                              setPage(1);
-                            }}
-                            className="h-8 px-2 bg-background border border-border rounded-lg text-xs focus:ring-2 focus:ring-primary focus:border-primary outline-none">
-                            <option value="terbaru">{t("page.member.list.sortNewest")}</option>
-                            <option value="poin">{t("page.member.list.sortPoints")}</option>
-                            <option value="nama">{t("page.member.list.sortName")}</option>
-                          </select>
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-muted-foreground text-sm">
+                              people
+                            </span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {t("page.member.list.totalMembers")}:{" "}
+                              <strong>{total.toLocaleString()}</strong>
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-muted-foreground text-sm">
-                            people
-                          </span>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {t("page.member.list.totalMembers")}:{" "}
-                            <strong>{total.toLocaleString()}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    </>
+                      </>
+                    )
                   )}
                 </div>
 
