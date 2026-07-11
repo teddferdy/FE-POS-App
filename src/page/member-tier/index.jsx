@@ -29,6 +29,7 @@ const MemberTier = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState(null);
   const [limit, setLimit] = useState(5);
 
   const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
@@ -54,9 +55,11 @@ const MemberTier = () => {
   const draftTierCount = tiers.filter((t) => normalizeStatus(t.status) === "draft").length;
   const inactiveTierCount = tiers.filter((t) => normalizeStatus(t.status) === "inactive").length;
 
-  const filteredTiers = tiers.filter((tier) =>
-    tier.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTiers = tiers.filter((tier) => {
+    const matchesSearch = tier.name?.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = !statusFilter || normalizeStatus(tier.status) === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
   const totalPages = Math.ceil(filteredTiers.length / limit);
   const paginatedTiers = filteredTiers.slice((currentPage - 1) * limit, currentPage * limit);
 
@@ -144,7 +147,10 @@ const MemberTier = () => {
       header: t("page.memberTier.table.benefits"),
       render: (tier) => (
         <div className="flex flex-wrap gap-1">
-          {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).map((benefit, idx) => (
+          {(Array.isArray(tier.benefits)
+            ? tier.benefits
+            : (tier.benefits || "").split("\n").filter(Boolean)
+          ).map((benefit, idx) => (
             <span
               key={idx}
               className="bg-primary/10 px-2 py-0.5 rounded text-[10px] font-bold text-primary">
@@ -357,24 +363,56 @@ const MemberTier = () => {
                       isLoading={isLoading}
                       rowClassName={() => "group"}
                       toolbar={
-                        <div className="flex items-center justify-between w-full">
-                          <h4 className="text-base font-semibold text-foreground">
-                            {t("page.memberTier.list.tableTitle")}
-                          </h4>
-                          <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                              search
+                        <div className="flex flex-col gap-3 w-full">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-base font-semibold text-foreground">
+                              {t("page.memberTier.list.tableTitle")}
+                            </h4>
+                            <div className="relative">
+                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                                search
+                              </span>
+                              <Input
+                                data-tour="tier-search"
+                                placeholder={t("common.search")}
+                                value={search}
+                                onChange={(e) => {
+                                  setSearch(e.target.value);
+                                  setCurrentPage(1);
+                                }}
+                                className="pl-9 h-9 w-72 text-sm"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {[
+                              { key: null, label: t("common.all"), icon: "group" },
+                              { key: "active", label: t("common.active"), icon: "check_circle" },
+                              { key: "draft", label: t("common.draft"), icon: "edit_note" },
+                              { key: "inactive", label: t("common.inactive"), icon: "cancel" }
+                            ].map(({ key, label, icon }) => (
+                              <button
+                                key={key ?? "all"}
+                                onClick={() => {
+                                  setStatusFilter(key);
+                                  setCurrentPage(1);
+                                }}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                  statusFilter === key
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                                }`}>
+                                <span className="material-symbols-outlined text-sm">{icon}</span>
+                                {label}
+                              </button>
+                            ))}
+                            <span className="text-xs text-muted-foreground ml-auto">
+                              {t("common.showing", {
+                                start: filteredTiers.length > 0 ? (currentPage - 1) * limit + 1 : 0,
+                                end: Math.min(currentPage * limit, filteredTiers.length),
+                                total: filteredTiers.length
+                              })}
                             </span>
-                            <Input
-                              data-tour="tier-search"
-                              placeholder={t("common.search")}
-                              value={search}
-                              onChange={(e) => {
-                                setSearch(e.target.value);
-                                setCurrentPage(1);
-                              }}
-                              className="pl-9 h-9 w-72 text-sm"
-                            />
                           </div>
                         </div>
                       }
@@ -387,12 +425,7 @@ const MemberTier = () => {
                         onPageSizeChange: (v) => {
                           setLimit(v);
                           setCurrentPage(1);
-                        },
-                        showingText: `${t("common.showing", {
-                          start: (currentPage - 1) * limit + 1,
-                          end: Math.min(currentPage * limit, filteredTiers.length),
-                          total: filteredTiers.length
-                        })}`
+                        }
                       }}
                     />
                   </div>
