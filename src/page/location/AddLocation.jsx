@@ -52,11 +52,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import {
-  addLocation,
-  editLocation,
-  generateLocationId
-} from "@/services/location";
+import { addLocation, editLocation, generateLocationId } from "@/services/location";
 import { getAllEmployee } from "@/services/employee";
 import {
   getProvinces,
