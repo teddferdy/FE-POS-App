@@ -87,7 +87,7 @@ const CategoryList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["categories", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllCategoryTable({
@@ -410,7 +410,7 @@ const CategoryList = () => {
             <NoStore />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -460,7 +460,7 @@ const CategoryList = () => {
                 <DataTable
                   columns={columns}
                   data={categories}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">

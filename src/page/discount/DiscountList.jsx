@@ -60,7 +60,7 @@ const DiscountList = () => {
     staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["discounts", page, limit, search, storeFilter],
     () => getAllDiscount({ location: locationParam, page, limit }),
     { }
@@ -256,7 +256,7 @@ const DiscountList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -306,7 +306,7 @@ const DiscountList = () => {
             <DataTable
               columns={columns}
               data={discounts}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
               emptyMessage={t("page.discount.list.empty")}
               emptyIcon={Gift}
               toolbar={

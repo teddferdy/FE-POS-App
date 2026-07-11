@@ -61,7 +61,7 @@ const SupplierList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["suppliers", page, limit, search, storeFilter],
     () =>
       getAllSupplier({
@@ -341,7 +341,7 @@ const SupplierList = () => {
       ) : (
         <>
           {/* Stats Cards */}
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -390,7 +390,7 @@ const SupplierList = () => {
               <DataTable
                 columns={columns}
                 data={suppliers}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.supplier.list.empty")}
                 emptyIcon={Building2}
                 toolbar={

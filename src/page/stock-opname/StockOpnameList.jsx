@@ -73,7 +73,7 @@ const StockOpnameList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["stockOpname", page, limit, search, warehouseFilter, statusFilter],
     () =>
       getStockOpname({
@@ -379,7 +379,7 @@ const StockOpnameList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -432,7 +432,7 @@ const StockOpnameList = () => {
               <DataTable
                 columns={columns}
                 data={items}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.stockOpname.list.empty")}
                 emptyIcon={ClipboardList}
                 selectable

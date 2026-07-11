@@ -40,6 +40,7 @@ const MemberTier = () => {
   const {
     data: tiersData,
     isLoading,
+    isFetching,
     isError,
     refetch
   } = useQuery(["member-tiers"], getAllMemberTier, { staleTime: 30000 });
@@ -304,7 +305,7 @@ const MemberTier = () => {
           ) : (
             <div>
               <div>
-                {isLoading ? (
+                {isFetching || isLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
                       <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -350,7 +351,7 @@ const MemberTier = () => {
                   <DataTable
                     columns={columns}
                     data={paginatedTiers}
-                    isLoading={isLoading}
+                    isLoading={isLoading || isFetching}
                     rowClassName={() => "group"}
                     toolbar={
                       <div className="flex flex-col gap-3 w-full">

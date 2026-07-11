@@ -58,7 +58,7 @@ const PurchaseReturnList = () => {
 
   const locationParam = storeFilter !== "all" ? storeFilter : undefined;
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["purchase-returns", page, limit, search, storeFilter, statusFilter],
     () =>
       getAllPurchaseReturn({
@@ -211,7 +211,7 @@ const PurchaseReturnList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -260,7 +260,7 @@ const PurchaseReturnList = () => {
               <DataTable
                 columns={columns}
                 data={items}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
                 toolbar={
                   <div className="flex flex-wrap items-center gap-2">

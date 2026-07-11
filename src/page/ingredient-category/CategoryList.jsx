@@ -62,7 +62,7 @@ const CategoryList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ingredient-categories", page, search],
     () => getAllIngredientCategoryTable({ page, limit, search }),
     { }
@@ -313,7 +313,7 @@ const CategoryList = () => {
         <>
           <div>
             <div>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -363,7 +363,7 @@ const CategoryList = () => {
                 <DataTable
                   columns={columns}
                   data={categories}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.ingredientCategory.list.emptyText")}
                   emptyIcon={Package}
                   toolbar={

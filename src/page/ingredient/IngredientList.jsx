@@ -56,7 +56,7 @@ const IngredientList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["ingredients", search, storeFilter, page],
     () =>
       getAllIngredients({
@@ -353,7 +353,7 @@ const IngredientList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -399,7 +399,7 @@ const IngredientList = () => {
             <DataTable
               columns={columns}
               data={ingredients}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
               emptyMessage={t("page.ingredient.list.emptyMessage")}
               emptyIcon={Package}
               pagination={{

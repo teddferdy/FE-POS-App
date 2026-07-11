@@ -47,7 +47,7 @@ const AccountsReceivableList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ar-list", page, limit, statusFilter, storeFilter],
     () =>
       getARList({
@@ -190,7 +190,7 @@ const AccountsReceivableList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -285,7 +285,7 @@ const AccountsReceivableList = () => {
               <DataTable
                 columns={columns}
                 data={arList}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.accountsReceivable.list.emptyMessage")}
                 emptyIcon={Receipt}
                 pagination={{

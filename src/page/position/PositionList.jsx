@@ -74,7 +74,7 @@ const PositionList = () => {
 
   const departments = departmentData?.data || departmentData?.departments || [];
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["positions", page, limit, search],
     () =>
       getAllPositionTable({
@@ -380,7 +380,7 @@ const PositionList = () => {
         <>
           <div>
             <div>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -429,7 +429,7 @@ const PositionList = () => {
                 <DataTable
                   columns={columns}
                   data={positions}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.position.list.empty")}
                   toolbar={
                     <div className="flex flex-wrap items-center justify-between gap-4 w-full">

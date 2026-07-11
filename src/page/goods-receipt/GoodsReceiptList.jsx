@@ -57,7 +57,7 @@ const GoodsReceiptList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["goods-receipts", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllGoodsReceipt({
@@ -254,7 +254,7 @@ const GoodsReceiptList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -304,7 +304,7 @@ const GoodsReceiptList = () => {
                 <DataTable
                   columns={columns}
                   data={items}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.goodsReceipt.list.empty")}
                   emptyIcon={FileText}
                   toolbar={

@@ -86,7 +86,7 @@ const ProductList = () => {
     // }
   }, [role, locData, locationParam, storeFilter, isLoadingLocations, navigate]);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["products", page, limit, storeFilter, search, categoryFilter, sortFilter],
     () =>
       getAllProductTable({
@@ -517,7 +517,7 @@ const ProductList = () => {
         <NoStore />
       ) : (
         <div data-tour="page-products">
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -563,7 +563,7 @@ const ProductList = () => {
             <DataTable
               columns={columns}
               data={products}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
               emptyMessage={t("page.product.list.empty")}
               emptyIcon={Package}
               toolbar={

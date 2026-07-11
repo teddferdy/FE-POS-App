@@ -158,7 +158,7 @@ const PurchaseOrderList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
     () =>
       getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
@@ -573,7 +573,7 @@ const PurchaseOrderList = () => {
         <>
           <div className="space-y-6">
             <h3>Status Order :</h3>
-            {isLoading ? (
+            {isFetching || isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -630,7 +630,7 @@ const PurchaseOrderList = () => {
 
           <div className="space-y-6">
             <h3>Status Payment :</h3>
-            {isLoading ? (
+            {isFetching || isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -674,7 +674,7 @@ const PurchaseOrderList = () => {
               <DataTable
                 columns={columns}
                 data={orders}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 emptyMessage={t("page.purchaseOrder.list.empty")}
                 emptyIcon={Package}
                 toolbar={

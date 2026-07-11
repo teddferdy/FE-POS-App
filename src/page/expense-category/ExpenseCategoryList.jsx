@@ -38,7 +38,7 @@ const ExpenseCategoryList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["expense-categories", store],
     () => getExpenseCategories(store || undefined),
     { }
@@ -236,7 +236,7 @@ const ExpenseCategoryList = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -297,7 +297,7 @@ const ExpenseCategoryList = () => {
                 <DataTable
                   columns={columns}
                   data={filtered}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyIcon={Tag}
                   emptyMessage={t("page.expenseCategory.list.empty")}
                 />

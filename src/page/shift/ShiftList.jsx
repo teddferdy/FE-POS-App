@@ -48,7 +48,7 @@ const ShiftList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
     () => getAllShift({ store: locationParam, page, limit, statusShift: search }),
     {}
@@ -240,7 +240,7 @@ const ShiftList = () => {
             <NoStore />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -286,7 +286,7 @@ const ShiftList = () => {
                 <DataTable
                   columns={columns}
                   data={shifts}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyIcon={Clock}
                   emptyMessage={t("page.shift.list.empty")}
                   toolbar={

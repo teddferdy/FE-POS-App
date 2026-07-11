@@ -87,7 +87,7 @@ const ProductionOrderList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["production-orders", page, limit, search, statusFilter],
     () =>
       getAllProductionOrder({
@@ -282,7 +282,7 @@ const ProductionOrderList = () => {
         <NoStore />
       ) : (
         <>
-          {isLoading ? (
+          {isFetching || isLoading ? (
             <>
               <div className="grid grid-cols-2 gap-4">
                 {[...Array(2)].map((_, i) => (
@@ -356,7 +356,7 @@ const ProductionOrderList = () => {
                 <DataTable
                   columns={columns}
                   data={items}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.productionOrder.list.emptyMessage")}
                   emptyIcon={ClipboardList}
                   toolbar={

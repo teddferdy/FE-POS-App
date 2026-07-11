@@ -46,7 +46,7 @@ const EmployeeList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const { t } = useTranslation();
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["employees", page, limit, search, locationFilter, positionFilter],
     () =>
       getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
@@ -297,7 +297,7 @@ const EmployeeList = () => {
         ) : (
           <>
             <div>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -346,7 +346,7 @@ const EmployeeList = () => {
                 <DataTable
                   columns={columns}
                   data={employees}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.employee.list.empty")}
                   toolbar={
                     <div className="flex flex-wrap gap-4 items-center justify-between">

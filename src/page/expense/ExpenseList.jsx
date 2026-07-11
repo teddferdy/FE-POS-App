@@ -41,7 +41,7 @@ const ExpenseList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["expenses", page, limit, search, statusFilter, storeFilter],
     () =>
       getAllExpenses({
@@ -294,7 +294,7 @@ const ExpenseList = () => {
             <NoStore />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -396,7 +396,7 @@ const ExpenseList = () => {
                 <DataTable
                   columns={columns}
                   data={expenses}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyMessage={t("page.expense.list.empty")}
                   emptyIcon={DollarSign}
                   pagination={{

@@ -71,7 +71,7 @@ const TypePaymentList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["type-payments", page, limit, search],
     () => getAllTypePaymentListActive({ page, limit, statusPayment: "all" }),
     { }
@@ -336,7 +336,7 @@ const TypePaymentList = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching || isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -382,7 +382,7 @@ const TypePaymentList = () => {
                 <DataTable
                   columns={columns}
                   data={payments}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isFetching}
                   emptyIcon={CreditCard}
                   emptyMessage={t("page.typePayment.list.empty")}
                   toolbar={
