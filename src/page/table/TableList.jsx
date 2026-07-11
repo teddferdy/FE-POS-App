@@ -326,8 +326,7 @@ const TableList = () => {
                 <DataTable
                   columns={columns}
                   data={tables}
-                  isLoading={isLoading}
-                  isFetching={isFetching}
+                  isLoading={isLoading || isFetching}
                   emptyIcon={Sofa}
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={

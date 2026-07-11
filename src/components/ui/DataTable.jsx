@@ -4,14 +4,12 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loading } from "@/components/ui/loading";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const DataTable = ({
   columns = [],
   data = [],
   isLoading,
-  isFetching,
   emptyMessage: emptyMessageProp,
   emptyIcon: EmptyIcon,
   containerClassName,
@@ -310,8 +308,8 @@ const DataTable = ({
       )}>
       {toolbar && <div className="p-4 border-b border-border bg-muted/30">{toolbar}</div>}
 
-      <div className={cn("relative", isLoading && data.length === 0 && "hidden")}>
-        {isLoading && data.length === 0 ? (
+      <div className={cn("relative")}>
+        {isLoading ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -356,11 +354,6 @@ const DataTable = ({
           </div>
         ) : (
           renderTable()
-        )}
-        {isFetching && !isLoading && data.length > 0 && (
-          <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-10 rounded-b-xl">
-            <Loading size="sm" />
-          </div>
         )}
       </div>
 

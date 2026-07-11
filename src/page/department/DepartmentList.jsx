@@ -66,7 +66,7 @@ const DepartmentList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     ["departments", page, limit, search],
     () => getAllDepartmentTable({ page, limit, statusRole: "all", search }),
     { }
@@ -346,7 +346,7 @@ const DepartmentList = () => {
         <>
           <div>
             <div>
-              {isLoading ? (
+              {isFetching ? (
                 <>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {[...Array(2)].map((_, i) => (
@@ -440,7 +440,7 @@ const DepartmentList = () => {
                 <DataTable
                   columns={columns}
                   data={departments}
-                  isLoading={isLoading}
+                  isLoading={isFetching}
                   emptyMessage={t("page.department.list.empty")}
                   toolbar={
                     <div className="flex flex-wrap items-center justify-between gap-4 w-full">
