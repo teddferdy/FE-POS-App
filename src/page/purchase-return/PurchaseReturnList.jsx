@@ -265,13 +265,13 @@ const PurchaseReturnList = () => {
                 toolbar={
                   <div className="flex flex-wrap items-center gap-2">
                     {isSuperAdmin && (
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
+                      <StoreFilter
+                        locations={locData?.data || []}
+                        value={storeFilter}
+                        onChange={(v) => {
+                          setGlobalStoreFilter(v);
+                          setPage(1);
+                        }}
                         isSuperAdmin={isSuperAdmin}
                         t={t}
                       />

@@ -113,7 +113,7 @@ const RegisterPage = () => {
             .string()
             .min(1, { message: translationMemo.errorEmail })
             .email({ message: translationMemo.errorValidationEmail }),
-          location: z.string().min(1, { message: translationMemo.errorLocation }),
+          store: z.string().min(1, { message: translationMemo.errorLocation }),
           password: z.string().min(4, { message: translationMemo.errorPassword }),
           confirmPassword: z.string().min(1, { message: translationMemo.errorConfirmation })
         })
@@ -129,7 +129,7 @@ const RegisterPage = () => {
     defaultValues: {
       userName: "",
       email: "",
-      location: "",
+      store: "",
       password: "",
       confirmPassword: ""
     }
@@ -273,7 +273,7 @@ const RegisterPage = () => {
 
                   <FormField
                     control={form.control}
-                    name="location"
+                    name="store"
                     render={({ field }) => (
                       <FormItem data-tour="auth-location">
                         <FormLabel className="text-[10px] md:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.1em]">
@@ -297,8 +297,8 @@ const RegisterPage = () => {
                           </select>
                           <ChevronDown className="absolute right-3.5 md:right-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-muted-foreground/60 pointer-events-none" />
                         </div>
-                        {form?.formState?.errors?.location && (
-                          <FormMessage>{form?.formState?.errors?.location}</FormMessage>
+                        {form?.formState?.errors?.store && (
+                          <FormMessage>{form?.formState?.errors?.store}</FormMessage>
                         )}
                       </FormItem>
                     )}

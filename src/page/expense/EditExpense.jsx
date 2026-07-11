@@ -104,13 +104,11 @@ const EditExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { categoryId, ...rest } = values;
     const store = cookie?.user?.store || "";
     const payload = {
       id,
-      ...rest,
+      ...values,
       store,
-      category: categoryId,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };

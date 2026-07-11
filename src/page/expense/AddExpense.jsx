@@ -82,12 +82,10 @@ const AddExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const { categoryId, ...rest } = values;
     const store = cookie?.user?.store || "";
     const payload = {
-      ...rest,
+      ...values,
       store,
-      category: categoryId,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };

@@ -563,7 +563,10 @@ const MemberList = () => {
                           <StoreFilter
                             locations={locData?.data || []}
                             value={storeFilter}
-                            onChange={(v) => { setGlobalStoreFilter(v); setPage(1); }}
+                            onChange={(v) => {
+                              setGlobalStoreFilter(v);
+                              setPage(1);
+                            }}
                             isSuperAdmin={isSuperAdmin}
                             t={t}
                           />
