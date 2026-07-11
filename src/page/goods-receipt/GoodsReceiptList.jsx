@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Eye, Trash2, FileText, Download } from "lucide-react";
+import { Plus, Search, Eye, Trash2, FileText, Download, Package, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
   getAllGoodsReceipt,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import * as XLSX from "xlsx";
 import AbortController from "@/components/organism/abort-controller";
@@ -65,7 +66,7 @@ const GoodsReceiptList = () => {
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
       }),
-    { keepPreviousData: true }
+    { }
   );
 
   const items = data?.data || [];
@@ -252,32 +253,47 @@ const GoodsReceiptList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <StatCard
-              label={t("page.goodsReceipt.list.stats.total")}
-              value={stats.total ?? total}
-              icon="inventory"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.goodsReceipt.list.status.completed")}
-              value={stats.completed ?? 0}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.goodsReceipt.list.status.draft")}
-              value={stats.draft ?? 0}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.goodsReceipt.list.status.cancelled")}
-              value={stats.cancelled ?? 0}
-              icon="cancel"
-              variant="red"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <StatCard
+                label={t("page.goodsReceipt.list.stats.total")}
+                value={stats.total ?? total}
+                icon={Package}
+                variant="default"
+              />
+              <StatCard
+                label={t("page.goodsReceipt.list.status.completed")}
+                value={stats.completed ?? 0}
+                icon={CheckCircle}
+                variant="active"
+              />
+              <StatCard
+                label={t("page.goodsReceipt.list.status.draft")}
+                value={stats.draft ?? 0}
+                icon={FileEdit}
+                variant="draft"
+              />
+              <StatCard
+                label={t("page.goodsReceipt.list.status.cancelled")}
+                value={stats.cancelled ?? 0}
+                icon={XCircle}
+                variant="red"
+              />
+            </div>
+          )}
 
           {isError ? (
             <AbortController refetch={refetch} />

@@ -3,10 +3,25 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Calendar, Users, Clock, Check, X, Eye } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Calendar,
+  Users,
+  Clock,
+  Check,
+  X,
+  Eye,
+  CalendarCheck,
+  CheckCircle,
+  Hourglass,
+  XCircle
+} from "lucide-react";
 import { getReservations, deleteReservation, updateReservation } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
@@ -84,7 +99,7 @@ const ReservationList = () => {
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const deleteMutation = useMutation(deleteReservation, {
@@ -274,32 +289,47 @@ const ReservationList = () => {
             <NoStore />
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.reservation.stats.total")}
-                  value={stats.total ?? total}
-                  icon="calendar_month"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.reservation.status.confirmed")}
-                  value={stats.confirmed ?? 0}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("page.reservation.status.pending")}
-                  value={stats.pending ?? 0}
-                  icon="pending"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.reservation.status.cancelled")}
-                  value={stats.cancelled ?? 0}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.reservation.stats.total")}
+                    value={stats.total ?? total}
+                    icon={CalendarCheck}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.reservation.status.confirmed")}
+                    value={stats.confirmed ?? 0}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("page.reservation.status.pending")}
+                    value={stats.pending ?? 0}
+                    icon={Hourglass}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.reservation.status.cancelled")}
+                    value={stats.cancelled ?? 0}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
               <div data-tour="reservation-table" className="mt-6">
                 <DataTable
                   columns={columns}

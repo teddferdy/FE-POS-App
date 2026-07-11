@@ -79,7 +79,7 @@ const StockTransferList = () => {
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const receiveMutation = useMutation(receiveStockTransfer, {

@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useMemo } from "react";
 import { formatCurrency, formatNumber, periods } from "@/utils/reportUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AreaChart,
   Area,
@@ -45,7 +46,7 @@ const CustomTooltip = ({ active, payload, label, t }) => {
   );
 };
 
-const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
+const GlobalSalesTab = ({ t, period, setPeriod, data, isLoading }) => {
   const salesChart = data?.salesChart || [];
   const stores = data?.stores || [];
   const storeSalesChart = data?.storeSalesChart || [];
@@ -77,6 +78,43 @@ const GlobalSalesTab = ({ t, period, setPeriod, data }) => {
       return row;
     });
   }, [salesChart, storeSalesChart, dateStoreMap, hasMultipleStores]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card rounded-xl border border-border p-4">
+              <div className="flex items-start justify-between mb-3">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+              <Skeleton className="h-8 w-28 mb-2" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6">
+          <Skeleton className="h-4 w-40 mb-2" />
+          <Skeleton className="h-3 w-56 mb-6" />
+          <Skeleton className="h-[300px] w-full rounded-lg" />
+        </div>
+        <div className="bg-card rounded-xl border border-border p-6">
+          <Skeleton className="h-4 w-48 mb-4" />
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 py-3 border-b border-border last:border-0">
+              <Skeleton className="h-8 w-8 rounded-lg" />
+              <Skeleton className="h-3 w-32" />
+              <Skeleton className="h-3 w-20 ml-auto" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

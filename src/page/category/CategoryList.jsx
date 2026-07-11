@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, FolderOpen, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   getAllCategoryTable,
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadExcel } from "@/services/category";
@@ -101,7 +102,7 @@ const CategoryList = () => {
               : ""
             : user?.store || "")
       }),
-    { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
+    { staleTime: 3 * 60 * 1000 }
   );
 
   const deleteMutation = useMutation(deleteCategory, {
@@ -408,36 +409,51 @@ const CategoryList = () => {
             <NoStore />
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                <StatCard
-                  label={t("page.category.list.statsTotal")}
-                  value={statsTotal}
-                  icon="category"
-                  variant="default"
-                  subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })}
-                />
-                <StatCard
-                  label={t("page.category.list.statsActive")}
-                  value={activeCount}
-                  icon="check_circle"
-                  variant="active"
-                  subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
-                />
-                <StatCard
-                  label={t("page.category.list.statsInactive")}
-                  value={inactiveCount}
-                  icon="cancel"
-                  variant="inactive"
-                  subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftCount}
-                  icon="edit_note"
-                  variant="draft"
-                  subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <StatCard
+                    label={t("page.category.list.statsTotal")}
+                    value={statsTotal}
+                    icon={FolderOpen}
+                    variant="default"
+                    subtitle={t("page.category.list.statsTotalBadge", { count: categories.length })}
+                  />
+                  <StatCard
+                    label={t("page.category.list.statsActive")}
+                    value={activeCount}
+                    icon={CheckCircle}
+                    variant="active"
+                    subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+                  />
+                  <StatCard
+                    label={t("page.category.list.statsInactive")}
+                    value={inactiveCount}
+                    icon={XCircle}
+                    variant="inactive"
+                    subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftCount}
+                    icon={FileEdit}
+                    variant="draft"
+                    subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+                  />
+                </div>
+              )}
 
               <div data-tour="category-table" className="mt-6">
                 <DataTable

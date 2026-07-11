@@ -4,7 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Building2, Eye, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Building2,
+  Eye,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  FileEdit
+} from "lucide-react";
 import {
   getAllSupplier,
   deleteSupplier,
@@ -14,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadSupplierExcel } from "@/services/supplier";
@@ -55,14 +67,13 @@ const SupplierList = () => {
         page,
         limit,
         search: search || undefined,
-        store:
-          isSuperAdmin
-            ? storeFilter && storeFilter !== "all"
-              ? storeFilter
-              : ""
-            : user?.store || ""
+        store: isSuperAdmin
+          ? storeFilter && storeFilter !== "all"
+            ? storeFilter
+            : ""
+          : user?.store || ""
       }),
-    { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
+    { staleTime: 3 * 60 * 1000 }
   );
 
   const deleteMutation = useMutation(deleteSupplier, {
@@ -124,15 +135,11 @@ const SupplierList = () => {
     },
     {
       header: t("page.supplier.form.phone"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">{item.phone || "-"}</span>
-      )
+      render: (item) => <span className="text-sm text-muted-foreground">{item.phone || "-"}</span>
     },
     {
       header: t("page.supplier.form.email"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">{item.email || "-"}</span>
-      )
+      render: (item) => <span className="text-sm text-muted-foreground">{item.email || "-"}</span>
     },
     {
       header: t("page.supplier.form.address"),
@@ -333,32 +340,47 @@ const SupplierList = () => {
       ) : (
         <>
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.supplier.stats.total")}
-              value={total}
-              icon="business"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={data?.stats?.active ?? 0}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={data?.stats?.inactive ?? 0}
-              icon="cancel"
-              variant="inactive"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={data?.stats?.draft ?? 0}
-              icon="edit_note"
-              variant="draft"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <StatCard
+                label={t("page.supplier.stats.total")}
+                value={total}
+                icon={Building2}
+                variant="default"
+              />
+              <StatCard
+                label={t("common.active")}
+                value={data?.stats?.active ?? 0}
+                icon={CheckCircle}
+                variant="active"
+              />
+              <StatCard
+                label={t("common.inactive")}
+                value={data?.stats?.inactive ?? 0}
+                icon={XCircle}
+                variant="inactive"
+              />
+              <StatCard
+                label={t("common.draft")}
+                value={data?.stats?.draft ?? 0}
+                icon={FileEdit}
+                variant="draft"
+              />
+            </div>
+          )}
 
           {isError ? (
             <AbortController refetch={refetch} />

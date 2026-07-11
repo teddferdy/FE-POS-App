@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload, Loader2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Package, Download, Upload, Loader2, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import {
   getAllIngredients,
   deleteIngredient,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
@@ -67,7 +68,7 @@ const IngredientList = () => {
         page,
         limit: pageSize
       }),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteIngredient, {
@@ -351,32 +352,47 @@ const IngredientList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.ingredient.list.statTotal")}
-              value={totalItems}
-              icon="nutrition"
-              variant="default"
-            />
-            <StatCard
-              label={t("common.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-            />
-            <StatCard
-              label={t("common.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <StatCard
+                label={t("page.ingredient.list.statTotal")}
+                value={totalItems}
+                icon={Package}
+                variant="default"
+              />
+              <StatCard
+                label={t("common.active")}
+                value={activeCount}
+                icon={CheckCircle}
+                variant="active"
+              />
+              <StatCard
+                label={t("common.draft")}
+                value={draftCount}
+                icon={FileEdit}
+                variant="draft"
+              />
+              <StatCard
+                label={t("common.inactive")}
+                value={inactiveCount}
+                icon={XCircle}
+                variant="inactive"
+              />
+            </div>
+          )}
 
           <div data-tour="ingredient-table" className="mt-6">
             <DataTable

@@ -11,9 +11,10 @@ import {
   downloadDepartmentExcel
 } from "@/services/department";
 import { getAllLocation } from "@/services/location";
-import { Loader2 } from "lucide-react";
+import { Loader2, Building, CheckCircle, FileEdit, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadDepartmentExcel } from "@/services/department";
@@ -68,7 +69,7 @@ const DepartmentList = () => {
   const { data, isLoading } = useQuery(
     ["departments", page, limit, search],
     () => getAllDepartmentTable({ page, limit, statusRole: "all", search }),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteDepartment, {
@@ -345,64 +346,95 @@ const DepartmentList = () => {
         <>
           <div>
             <div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <StatCard
-                  label={t("page.department.list.statsTotal")}
-                  value={stats?.totalDepartemen ?? total}
-                  icon="domain"
-                  variant="default"
-                  subtitle={t("page.department.list.statsAll")}
-                />
-                <StatCard
-                  label={t("page.department.list.statsActive")}
-                  value={stats?.totalDepartemenAktif ?? 0}
-                  icon="check_circle"
-                  variant="active"
-                  subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
-                />
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <StatCard
-                  label={t("page.department.list.statsDraft")}
-                  value={stats?.totalDepartemenDraft ?? 0}
-                  icon="edit_note"
-                  variant="draft"
-                  subtitle={
-                    stats?.totalDepartemen
-                      ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%`
-                      : "0%"
-                  }
-                />
-                <StatCard
-                  label={t("page.department.list.statsInactive")}
-                  value={stats?.totalDepartemenNonActive ?? 0}
-                  icon="cancel"
-                  variant="inactive"
-                  subtitle={t("page.department.list.statsAttention")}
-                />
-                <div
-                  data-tour="department-stat-nodesc"
-                  className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                      {t("page.department.list.statsNoDesc")}
-                    </p>
-                    <h3 className="text-3xl font-bold text-foreground">
-                      {stats?.totalTanpaDeskripsi ?? 0}
-                    </h3>
-                    <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
-                      <span className="material-symbols-outlined text-sm">warning</span>
-                      {stats?.totalDepartemen
-                        ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
-                        : 0}
-                      {t("page.department.list.statsNoDescPercent")}
-                    </p>
+              {isLoading ? (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
                   </div>
-                  <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-3xl">warning</span>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <StatCard
+                      label={t("page.department.list.statsTotal")}
+                      value={stats?.totalDepartemen ?? total}
+                      icon={Building}
+                      variant="default"
+                      subtitle={t("page.department.list.statsAll")}
+                    />
+                    <StatCard
+                      label={t("page.department.list.statsActive")}
+                      value={stats?.totalDepartemenAktif ?? 0}
+                      icon={CheckCircle}
+                      variant="active"
+                      subtitle={`${stats?.totalDepartemen ? Math.round((stats.totalDepartemenAktif / stats.totalDepartemen) * 100) : 0}${t("page.department.list.statsActivePercent")}`}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                    <StatCard
+                      label={t("page.department.list.statsDraft")}
+                      value={stats?.totalDepartemenDraft ?? 0}
+                      icon={FileEdit}
+                      variant="draft"
+                      subtitle={
+                        stats?.totalDepartemen
+                          ? `${Math.round((stats.totalDepartemenDraft / stats.totalDepartemen) * 100)}%`
+                          : "0%"
+                      }
+                    />
+                    <StatCard
+                      label={t("page.department.list.statsInactive")}
+                      value={stats?.totalDepartemenNonActive ?? 0}
+                      icon={XCircle}
+                      variant="inactive"
+                      subtitle={t("page.department.list.statsAttention")}
+                    />
+                    <div
+                      data-tour="department-stat-nodesc"
+                      className="bg-card p-6 rounded-xl shadow-sm border border-border flex justify-between items-center group hover:shadow-md transition-shadow">
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                          {t("page.department.list.statsNoDesc")}
+                        </p>
+                        <h3 className="text-3xl font-bold text-foreground">
+                          {stats?.totalTanpaDeskripsi ?? 0}
+                        </h3>
+                        <p className="text-xs font-semibold text-destructive flex items-center gap-1 mt-1">
+                          <AlertTriangle size={14} />
+                          {stats?.totalDepartemen
+                            ? Math.round((stats.totalTanpaDeskripsi / stats.totalDepartemen) * 100)
+                            : 0}
+                          {t("page.department.list.statsNoDescPercent")}
+                        </p>
+                      </div>
+                      <div className="w-14 h-14 rounded-2xl bg-destructive-container flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
+                        <AlertTriangle size={28} />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div data-tour="department-table" className="mt-6">
                 <DataTable

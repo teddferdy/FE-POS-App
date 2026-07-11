@@ -29,15 +29,14 @@ const MemberPointHistory = () => {
     ["member-detail", id, transactionPage],
     () => getMemberById({ id, page: transactionPage, limit: 5 }),
     {
-      enabled: !!id,
-      keepPreviousData: true
+      enabled: !!id
     }
   );
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
     ["member-point-history", id, pointPage],
     () => getMemberPointHistory({ id, page: pointPage }),
-    { enabled: !!id, keepPreviousData: true }
+    { enabled: !!id }
   );
 
   const member = data?.data || data?.member || data;

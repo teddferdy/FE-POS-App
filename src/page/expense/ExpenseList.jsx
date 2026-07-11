@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Plus, Search, Edit, Tag, DollarSign, CheckCircle, XCircle, Eye, Wallet, FileEdit } from "lucide-react";
 import { getAllExpenses, approveExpense, rejectExpense } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ExpenseList = () => {
   const { t } = useTranslation();
@@ -48,7 +50,7 @@ const ExpenseList = () => {
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    { }
   );
 
   const approveMutation = useMutation(approveExpense, {
@@ -291,32 +293,47 @@ const ExpenseList = () => {
             <NoStore />
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.expense.list.total")}
-                  value={total}
-                  icon="money_off"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.expense.list.approved")}
-                  value={stats.approved || 0}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("page.expense.list.pending")}
-                  value={stats.pending || 0}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.expense.list.rejected")}
-                  value={stats.rejected || 0}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.expense.list.total")}
+                    value={total}
+                    icon={Wallet}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.expense.list.approved")}
+                    value={stats.approved || 0}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("page.expense.list.pending")}
+                    value={stats.pending || 0}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.expense.list.rejected")}
+                    value={stats.rejected || 0}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-full sm:w-72">

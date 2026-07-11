@@ -115,7 +115,14 @@ export const canAccess = (user, menuKey, action) => {
   if (!user) return false;
   const role = user.roleType;
   if (role === "super_admin") return true;
-  const accessMenu = parseAccessMenu(user.accessMenu);
+  // ponytail: accessMenu stripped from cookie to fit 4KB limit, read from sessionStorage
+  let accessMenu = parseAccessMenu(user.accessMenu);
+  if (!accessMenu || accessMenu.length === 0) {
+    try {
+      const full = JSON.parse(sessionStorage.getItem("user"));
+      accessMenu = parseAccessMenu(full?.accessMenu);
+    } catch (e) {}
+  }
   if (!accessMenu || accessMenu.length === 0) return false;
   const menu = accessMenu.find(
     (m) =>
@@ -136,7 +143,14 @@ export const filterMenuByPermission = (menuItems, user) => {
   if (!user) return [];
   const role = user.roleType;
   if (role === "super_admin") return menuItems;
-  const accessMenu = parseAccessMenu(user.accessMenu);
+  // ponytail: accessMenu stripped from cookie, read from sessionStorage
+  let accessMenu = parseAccessMenu(user.accessMenu);
+  if (!accessMenu || accessMenu.length === 0) {
+    try {
+      const full = JSON.parse(sessionStorage.getItem("user"));
+      accessMenu = parseAccessMenu(full?.accessMenu);
+    } catch (e) {}
+  }
   if (!accessMenu || accessMenu.length === 0) return [];
 
   const permissions = parseAccessMenuToPermissions(accessMenu);

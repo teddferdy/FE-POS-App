@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
 import { getAllLocation } from "@/services/location";
-import { Receipt, Wallet } from "lucide-react";
+import { Receipt, Wallet, Building2, CheckCircle, XCircle, FileEdit, Clock3 } from "lucide-react";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STATUS_LABELS = {
   UNPAID: { label: "Belum Dibayar", color: "bg-yellow-100 text-yellow-800" },
@@ -58,7 +59,7 @@ const AccountsReceivableList = () => {
             : ""
           : user?.store
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const { data: agingData } = useQuery(["ar-aging"], () => getARAging(), {
@@ -79,8 +80,6 @@ const AccountsReceivableList = () => {
   const pagination = data?.pagination || {};
   const agingBuckets = agingData?.data?.buckets || {};
   const grandTotal = agingData?.data?.grandTotal || 0;
-
-  // const totalOutstanding = arList.reduce((s, ar) => s + Number(ar.outstandingAmount || 0), 0);
 
   const columns = [
     {
@@ -190,45 +189,62 @@ const AccountsReceivableList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1">
-            <StatCard
-              label={t("page.accountsReceivable.list.totalPiutang")}
-              value={formatCurrencyRupiah(grandTotal)}
-              icon="account_balance"
-              variant="default"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {Object.entries(agingBuckets).map(([key, bucket]) => {
-              const lk = key.toLowerCase();
-              const icon = lk.includes("paid")
-                ? "check_circle"
-                : lk.includes("overdue")
-                  ? "cancel"
-                  : lk.includes("unpaid")
-                    ? "edit_note"
-                    : lk.includes("partial")
-                      ? "schedule"
-                      : "account_balance";
-              const variant = lk.includes("paid")
-                ? "active"
-                : lk.includes("overdue")
-                  ? "inactive"
-                  : lk.includes("unpaid")
-                    ? "draft"
-                    : "default";
-              return (
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1">
                 <StatCard
-                  key={key}
-                  label={bucket.label}
-                  value={formatCurrencyRupiah(bucket.total)}
-                  icon={icon}
-                  variant={variant}
+                  label={t("page.accountsReceivable.list.totalPiutang")}
+                  value={formatCurrencyRupiah(grandTotal)}
+                  icon={Building2}
+                  variant="default"
                 />
-              );
-            })}
-          </div>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {Object.entries(agingBuckets).map(([key, bucket]) => {
+                  const lk = key.toLowerCase();
+                  const icon = lk.includes("paid")
+                    ? CheckCircle
+                    : lk.includes("overdue")
+                      ? XCircle
+                      : lk.includes("unpaid")
+                        ? FileEdit
+                        : lk.includes("partial")
+                          ? Clock3
+                          : Building2;
+                  const variant = lk.includes("paid")
+                    ? "active"
+                    : lk.includes("overdue")
+                      ? "inactive"
+                      : lk.includes("unpaid")
+                        ? "draft"
+                        : "default";
+                  return (
+                    <StatCard
+                      key={key}
+                      label={bucket.label}
+                      value={formatCurrencyRupiah(bucket.total)}
+                      icon={icon}
+                      variant={variant}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {isSuperAdmin && (
             <StoreFilter

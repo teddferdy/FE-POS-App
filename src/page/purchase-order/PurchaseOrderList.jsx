@@ -16,7 +16,13 @@ import {
   Eye,
   Wallet,
   Upload,
-  Download
+  Download,
+  ShoppingCart,
+  CheckCircle,
+  ClipboardList,
+  FileEdit,
+  CircleDollarSign,
+  Ban
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -49,6 +55,7 @@ import {
 import DataTable from "@/components/ui/DataTable";
 import { TipsCard } from "@/components/ui/tips-card";
 import AbortController from "@/components/organism/abort-controller";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PurchaseOrderList = () => {
   const { t } = useTranslation();
@@ -154,7 +161,7 @@ const PurchaseOrderList = () => {
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
     () =>
       getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
-    { keepPreviousData: true }
+    {}
   );
 
   const returnMutation = useMutation(
@@ -565,68 +572,98 @@ const PurchaseOrderList = () => {
         <>
           <div className="space-y-6">
             <h3>Status Order :</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <StatCard
-                label={t("page.purchaseOrder.list.title")}
-                value={total}
-                icon="shopping_cart"
-                variant="default"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.status.received")}
-                value={data?.stats?.received ?? 0}
-                icon="check_circle"
-                variant="active"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.status.ordered")}
-                value={data?.stats?.ordered ?? 0}
-                icon="schedule"
-                variant="blue"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.status.draft")}
-                value={data?.stats?.draft ?? 0}
-                icon="description"
-                variant="gray"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.status.pending")}
-                value={data?.stats?.pending ?? 0}
-                icon="edit_note"
-                variant="yellow"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.status.cancelled")}
-                value={data?.stats?.cancelled ?? 0}
-                icon="cancel"
-                variant="red"
-              />
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard
+                  label={t("page.purchaseOrder.list.title")}
+                  value={total}
+                  icon={ShoppingCart}
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.status.received")}
+                  value={data?.stats?.received ?? 0}
+                  icon={CheckCircle}
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.status.ordered")}
+                  value={data?.stats?.ordered ?? 0}
+                  icon={Clock}
+                  variant="blue"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.status.draft")}
+                  value={data?.stats?.draft ?? 0}
+                  icon={ClipboardList}
+                  variant="gray"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.status.pending")}
+                  value={data?.stats?.pending ?? 0}
+                  icon={FileEdit}
+                  variant="yellow"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.status.cancelled")}
+                  value={data?.stats?.cancelled ?? 0}
+                  icon={XCircle}
+                  variant="red"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
             <h3>Status Payment :</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <StatCard
-                label={t("page.purchaseOrder.list.paymentStatus.paid")}
-                value={data?.paymentStats?.paid ?? 0}
-                icon="paid"
-                variant="active"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.list.paymentStatus.unpaid")}
-                value={data?.paymentStats?.unpaid ?? 0}
-                icon="money_off"
-                variant="yellow"
-              />
-              <StatCard
-                label={t("page.purchaseOrder.list.paymentStatus.partial")}
-                value={data?.paymentStats?.partial ?? 0}
-                icon="payments"
-                variant="blue"
-              />
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StatCard
+                  label={t("page.purchaseOrder.list.paymentStatus.paid")}
+                  value={data?.paymentStats?.paid ?? 0}
+                  icon={CircleDollarSign}
+                  variant="active"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.list.paymentStatus.unpaid")}
+                  value={data?.paymentStats?.unpaid ?? 0}
+                  icon={Ban}
+                  variant="yellow"
+                />
+                <StatCard
+                  label={t("page.purchaseOrder.list.paymentStatus.partial")}
+                  value={data?.paymentStats?.partial ?? 0}
+                  icon={Wallet}
+                  variant="blue"
+                />
+              </div>
+            )}
           </div>
 
           {isError ? (

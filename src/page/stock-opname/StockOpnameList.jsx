@@ -12,13 +12,18 @@ import {
   Trash2,
   FileDown,
   ClipboardList,
-  X
+  X,
+  ClipboardCheck,
+  CheckCircle,
+  AlertTriangle,
+  XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { getStockOpname, deleteStockOpname, exportStockOpnameByIds } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -78,7 +83,7 @@ const StockOpnameList = () => {
         location: warehouseFilter !== "all" ? warehouseFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const items = data?.data || data?.stockOpname || [];
@@ -374,36 +379,51 @@ const StockOpnameList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.stockOpname.stats.totalAudit")}
-              value={data?.stats?.total ?? total ?? 0}
-              icon="assignment"
-              variant="default"
-              subtitle={t("page.stockOpname.stats.trend")}
-            />
-            <StatCard
-              label={t("page.stockOpname.status.completed")}
-              value={data?.stats?.completed ?? 0}
-              icon="check_circle"
-              variant="active"
-              subtitle={t("page.stockOpname.stats.completedSub")}
-            />
-            <StatCard
-              label={t("page.stockOpname.status.draft")}
-              value={data?.stats?.draft ?? 0}
-              icon="warning"
-              variant="draft"
-              subtitle={t("page.stockOpname.stats.draftSub")}
-            />
-            <StatCard
-              label={t("page.stockOpname.status.cancelled")}
-              value={data?.stats?.cancelled ?? 0}
-              icon="cancel"
-              variant="inactive"
-              subtitle={t("page.stockOpname.stats.cancelledSub")}
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                label={t("page.stockOpname.stats.totalAudit")}
+                value={data?.stats?.total ?? total ?? 0}
+                icon={ClipboardCheck}
+                variant="default"
+                subtitle={t("page.stockOpname.stats.trend")}
+              />
+              <StatCard
+                label={t("page.stockOpname.status.completed")}
+                value={data?.stats?.completed ?? 0}
+                icon={CheckCircle}
+                variant="active"
+                subtitle={t("page.stockOpname.stats.completedSub")}
+              />
+              <StatCard
+                label={t("page.stockOpname.status.draft")}
+                value={data?.stats?.draft ?? 0}
+                icon={AlertTriangle}
+                variant="draft"
+                subtitle={t("page.stockOpname.stats.draftSub")}
+              />
+              <StatCard
+                label={t("page.stockOpname.status.cancelled")}
+                value={data?.stats?.cancelled ?? 0}
+                icon={XCircle}
+                variant="inactive"
+                subtitle={t("page.stockOpname.stats.cancelledSub")}
+              />
+            </div>
+          )}
 
           {isError ? (
             <AbortController refetch={refetch} />

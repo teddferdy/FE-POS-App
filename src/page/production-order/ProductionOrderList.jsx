@@ -14,7 +14,11 @@ import {
   ClipboardList,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Factory,
+  PlayCircle,
+  CalendarClock,
+  FileEdit
 } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import {
@@ -28,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -91,7 +96,7 @@ const ProductionOrderList = () => {
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const items = data?.data || [];
@@ -277,40 +282,71 @@ const ProductionOrderList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard
-              label={t("page.productionOrder.list.statTotal")}
-              value={stats.total ?? total}
-              icon="factory"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.productionOrder.list.statCompleted")}
-              value={stats.completed ?? 0}
-              icon="check_circle"
-              variant="active"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <StatCard
-              label={t("page.productionOrder.list.statInProgress")}
-              value={stats.inProgress ?? 0}
-              icon="play_circle"
-              variant="yellow"
-            />
-            <StatCard
-              label={t("page.productionOrder.list.statPlanned")}
-              value={stats.planned ?? 0}
-              icon="schedule"
-              variant="blue"
-            />
-            <StatCard
-              label={t("page.productionOrder.list.statDraft")}
-              value={stats.draft ?? 0}
-              icon="edit_note"
-              variant="gray"
-            />
-          </div>
+          {isLoading ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard
+                  label={t("page.productionOrder.list.statTotal")}
+                  value={stats.total ?? total}
+                  icon={Factory}
+                  variant="default"
+                />
+                <StatCard
+                  label={t("page.productionOrder.list.statCompleted")}
+                  value={stats.completed ?? 0}
+                  icon={CheckCircle}
+                  variant="active"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <StatCard
+                  label={t("page.productionOrder.list.statInProgress")}
+                  value={stats.inProgress ?? 0}
+                  icon={PlayCircle}
+                  variant="yellow"
+                />
+                <StatCard
+                  label={t("page.productionOrder.list.statPlanned")}
+                  value={stats.planned ?? 0}
+                  icon={CalendarClock}
+                  variant="blue"
+                />
+                <StatCard
+                  label={t("page.productionOrder.list.statDraft")}
+                  value={stats.draft ?? 0}
+                  icon={FileEdit}
+                  variant="gray"
+                />
+              </div>
+            </>
+          )}
 
           {isError ? (
             <AbortController refetch={refetch} />

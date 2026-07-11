@@ -102,7 +102,7 @@ const CashierPage = () => {
     {
       enabled: !!store,
       staleTime: 3 * 60 * 1000,
-      keepPreviousData: true
+
     }
   );
 

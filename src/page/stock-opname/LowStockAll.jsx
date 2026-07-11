@@ -50,7 +50,7 @@ const LowStockAll = () => {
         type: typeFilter !== "all" ? typeFilter : undefined,
         search: search || undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const items = data?.data?.items || [];

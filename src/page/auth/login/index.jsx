@@ -83,7 +83,7 @@ const LoginPage = () => {
   const mutateLogin = useMutation(login, {
     onMutate: () => setIsLoading(true),
     onSuccess: (success) => {
-      setCookie("token", success.token);
+      setCookie("token", success.token, { path: "/" });
       const user = { ...success.user };
       if (typeof user.accessMenu === "string") {
         try {
@@ -95,7 +95,9 @@ const LoginPage = () => {
       try {
         sessionStorage.setItem("user", JSON.stringify(user));
       } catch (e) {}
-      setCookie("user", user);
+      // ponytail: strip accessMenu to fit 4KB cookie limit, canAccess falls back to sessionStorage
+      const { accessMenu, ...userSlim } = user;
+      setCookie("user", userSlim, { path: "/" });
       setIsLoading(false);
       setTimeout(() => {
         toast.success(t("page.login.toast.success"), {

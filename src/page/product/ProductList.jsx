@@ -13,7 +13,11 @@ import {
   Package,
   Loader2,
   Eye,
-  Filter
+  Filter,
+  Boxes,
+  CheckCircle,
+  XCircle,
+  FileEdit
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StoreFilter from "@/components/ui/StoreFilter";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -92,7 +97,7 @@ const ProductList = () => {
         category: categoryFilter,
         sort: sortFilter
       }),
-    { keepPreviousData: true, staleTime: 3 * 60 * 1000 }
+    { staleTime: 3 * 60 * 1000 }
   );
 
   const { data: categoriesData } = useQuery(
@@ -511,32 +516,47 @@ const ProductList = () => {
         <NoStore />
       ) : (
         <div data-tour="page-products">
-          <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label={t("page.product.stats.total")}
-              value={stats.total}
-              icon="inventory_2"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.product.stats.active")}
-              value={stats.active}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.product.stats.nonActive")}
-              value={stats.nonActive}
-              icon="cancel"
-              variant="inactive"
-            />
-            <StatCard
-              label={t("page.product.stats.draft")}
-              value={stats.draft}
-              icon="edit_note"
-              variant="draft"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                label={t("page.product.stats.total")}
+                value={stats.total}
+                icon={Boxes}
+                variant="default"
+              />
+              <StatCard
+                label={t("page.product.stats.active")}
+                value={stats.active}
+                icon={CheckCircle}
+                variant="active"
+              />
+              <StatCard
+                label={t("page.product.stats.nonActive")}
+                value={stats.nonActive}
+                icon={XCircle}
+                variant="inactive"
+              />
+              <StatCard
+                label={t("page.product.stats.draft")}
+                value={stats.draft}
+                icon={FileEdit}
+                variant="draft"
+              />
+            </div>
+          )}
 
           <div data-tour="product-table" className="mt-6">
             <DataTable

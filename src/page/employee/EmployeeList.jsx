@@ -7,9 +7,10 @@ import { getAllEmployee, deleteEmployee } from "@/services/employee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import PageHeader from "@/components/ui/PageHeader";
-import { User } from "lucide-react";
+import { User, Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,7 @@ const EmployeeList = () => {
     ["employees", page, limit, search, locationFilter, positionFilter],
     () =>
       getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
-    { keepPreviousData: true }
+    {}
   );
 
   const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {
@@ -296,35 +297,50 @@ const EmployeeList = () => {
         ) : (
           <>
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <StatCard
-                  label={t("page.employee.table.total")}
-                  value={total.toLocaleString() || "0"}
-                  icon="groups"
-                  variant="default"
-                  subtitle={t("page.employee.list.subtitle")}
-                />
-                <StatCard
-                  label={t("page.employee.table.active")}
-                  value={activeCount.toLocaleString() || "0"}
-                  icon="check_circle"
-                  variant="active"
-                  subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`}
-                />
-                <StatCard
-                  label={t("page.employee.table.draft")}
-                  value={draftCount.toLocaleString()}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.employee.table.inactive")}
-                  value={inactiveCount.toLocaleString()}
-                  icon="cancel"
-                  variant="inactive"
-                  subtitle={t("page.employee.table.attentionNeeded")}
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <StatCard
+                    label={t("page.employee.table.total")}
+                    value={total.toLocaleString() || "0"}
+                    icon={Users}
+                    variant="default"
+                    subtitle={t("page.employee.list.subtitle")}
+                  />
+                  <StatCard
+                    label={t("page.employee.table.active")}
+                    value={activeCount.toLocaleString() || "0"}
+                    icon={CheckCircle}
+                    variant="active"
+                    subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.employee.table.activeRate")}`}
+                  />
+                  <StatCard
+                    label={t("page.employee.table.draft")}
+                    value={draftCount.toLocaleString()}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.employee.table.inactive")}
+                    value={inactiveCount.toLocaleString()}
+                    icon={XCircle}
+                    variant="inactive"
+                    subtitle={t("page.employee.table.attentionNeeded")}
+                  />
+                </div>
+              )}
 
               <div data-tour="employee-table" className="mt-6">
                 <DataTable

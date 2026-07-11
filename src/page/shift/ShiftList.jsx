@@ -3,13 +3,24 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Clock } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Clock,
+  Clock3,
+  CheckCircle,
+  FileEdit,
+  XCircle
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getAllShift, deleteShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import { canAccess } from "@/utils/permission";
@@ -40,7 +51,7 @@ const ShiftList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
     () => getAllShift({ store: locationParam, page, limit, statusShift: search }),
-    { keepPreviousData: true }
+    {}
   );
 
   const deleteMutation = useMutation(deleteShift, {
@@ -229,32 +240,47 @@ const ShiftList = () => {
             <NoStore />
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.shift.table.name")}
-                  value={statsTotal}
-                  icon="schedule"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("common.active")}
-                  value={activeCount}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftCount}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("common.inactive")}
-                  value={inactiveCount}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.shift.table.name")}
+                    value={statsTotal}
+                    icon={Clock3}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("common.active")}
+                    value={activeCount}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftCount}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("common.inactive")}
+                    value={inactiveCount}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
 
               <div data-tour="shift-table">
                 <DataTable

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Receipt, Wallet } from "lucide-react";
+import { Receipt, Wallet, Building2, CheckCircle, XCircle, FileEdit, Clock3 } from "lucide-react";
 import { getARList, getARAging, recordARPayment } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ const ARPaymentList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["ar-payment-list", page, limit, statusFilter],
     () => getARList({ page, limit, status: statusFilter || undefined }),
-    { keepPreviousData: true }
+    { }
   );
 
   const { data: agingData } = useQuery(["ar-aging-payment"], () => getARAging(), {
@@ -142,20 +142,20 @@ const ARPaymentList = () => {
         <StatCard
           label={t("page.accountsReceivable.totalReceivable")}
           value={formatCurrencyRupiah(grandTotal)}
-          icon="account_balance"
+          icon={Building2}
           variant="default"
         />
         {Object.entries(agingBuckets).map(([key, bucket]) => {
           const lk = key.toLowerCase();
           const icon = lk.includes("paid")
-            ? "check_circle"
+            ? CheckCircle
             : lk.includes("overdue")
-              ? "cancel"
+              ? XCircle
               : lk.includes("unpaid")
-                ? "edit_note"
+                ? FileEdit
                 : lk.includes("partial")
-                  ? "schedule"
-                  : "account_balance";
+                  ? Clock3
+                  : Building2;
           const variant = lk.includes("paid")
             ? "active"
             : lk.includes("overdue")

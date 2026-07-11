@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { getCashFlow } from "@/services/report";
 import { getAllLocation } from "@/services/location";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
@@ -34,7 +34,7 @@ const CashFlowReport = () => {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd")
       }),
-    { staleTime: 30000, keepPreviousData: true }
+    { staleTime: 30000 }
   );
 
   const cf = data?.data || {};
@@ -97,7 +97,18 @@ const CashFlowReport = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : isLoading ? (
-            <Loading fullscreen size="lg" label={t("page.report.cashFlow.loading")} />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {summaryCards.map((card) => (

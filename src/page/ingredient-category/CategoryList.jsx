@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Package, Loader2 } from "lucide-react";
+import { Plus, Search, Package, Loader2, FolderOpen, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import {
   getAllIngredientCategoryTable,
   deleteIngredientCategory,
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadIngredientCategoryExcel } from "@/services/ingredientCategory";
@@ -64,7 +65,7 @@ const CategoryList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["ingredient-categories", page, search],
     () => getAllIngredientCategoryTable({ page, limit, search }),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {
@@ -312,32 +313,47 @@ const CategoryList = () => {
         <>
           <div>
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                <StatCard
-                  label={t("page.ingredientCategory.list.statTotal")}
-                  value={statsTotal}
-                  icon="folder"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.ingredientCategory.list.statActive")}
-                  value={activeCount}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftCount}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.ingredientCategory.list.statInactive")}
-                  value={inactiveCount}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                  <StatCard
+                    label={t("page.ingredientCategory.list.statTotal")}
+                    value={statsTotal}
+                    icon={FolderOpen}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.ingredientCategory.list.statActive")}
+                    value={activeCount}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftCount}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.ingredientCategory.list.statInactive")}
+                    value={inactiveCount}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
             </div>
 
             {isError ? (

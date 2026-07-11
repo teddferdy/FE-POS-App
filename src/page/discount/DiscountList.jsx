@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Tags, Gift, Eye } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Tags, Gift, Eye, Percent, CheckCircle, XCircle, FileEdit } from "lucide-react";
 import { getAllDiscount, deleteDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import StoreFilter from "@/components/ui/StoreFilter";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import DataTable from "@/components/ui/DataTable";
@@ -61,7 +62,7 @@ const DiscountList = () => {
   const { data, isLoading } = useQuery(
     ["discounts", page, limit, search, storeFilter],
     () => getAllDiscount({ location: locationParam, page, limit, statusDiscount: "" }),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteDiscount, {
@@ -254,36 +255,51 @@ const DiscountList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              label={t("page.discount.list.total")}
-              value={statsTotal}
-              icon="local_offer"
-              variant="default"
-              subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
-            />
-            <StatCard
-              label={t("page.discount.list.active")}
-              value={activeCount}
-              icon="check_circle"
-              variant="active"
-              subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
-            />
-            <StatCard
-              label={t("common.draft")}
-              value={draftCount}
-              icon="edit_note"
-              variant="draft"
-              subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
-            />
-            <StatCard
-              label={t("page.discount.list.inactive")}
-              value={inactiveCount}
-              icon="cancel"
-              variant="inactive"
-              subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                label={t("page.discount.list.total")}
+                value={statsTotal}
+                icon={Tags}
+                variant="default"
+                subtitle={t("page.discount.list.totalBadge", { count: discounts.length })}
+              />
+              <StatCard
+                label={t("page.discount.list.active")}
+                value={activeCount}
+                icon={CheckCircle}
+                variant="active"
+                subtitle={`${statsTotal > 0 ? Math.round((activeCount / statsTotal) * 100) : 0}%`}
+              />
+              <StatCard
+                label={t("common.draft")}
+                value={draftCount}
+                icon={FileEdit}
+                variant="draft"
+                subtitle={`${statsTotal > 0 ? Math.round((draftCount / statsTotal) * 100) : 0}%`}
+              />
+              <StatCard
+                label={t("page.discount.list.inactive")}
+                value={inactiveCount}
+                icon={XCircle}
+                variant="inactive"
+                subtitle={`${statsTotal > 0 ? Math.round((inactiveCount / statsTotal) * 100) : 0}%`}
+              />
+            </div>
+          )}
 
           <div data-tour="discount-table" className="mt-6">
             <DataTable

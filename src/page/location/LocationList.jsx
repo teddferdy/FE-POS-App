@@ -3,7 +3,20 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Edit, Trash2, Eye, Store, Map, Target } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  Store,
+  Map,
+  Target,
+  Building2,
+  CheckCircle,
+  XCircle,
+  FileEdit
+} from "lucide-react";
 import { toast } from "sonner";
 import { getAllLocationTable, deleteLocation, editLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -15,6 +28,7 @@ import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LocationList = () => {
   const { t } = useTranslation();
@@ -314,45 +328,76 @@ const LocationList = () => {
       ) : (
         <div>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <StatCard
-                label={t("page.location.stats.total")}
-                value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
-                icon="store"
-                variant="default"
-                subtitle={t("page.location.stats.totalSub")}
-              />
-              <StatCard
-                label={t("page.location.stats.cities")}
-                value={(data?.stats?.cities ?? 0).toLocaleString()}
-                icon="location_city"
-                variant="gold"
-                subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.cities ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.citiesSub")}`}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard
-                label={t("page.location.stats.active")}
-                value={(data?.stats?.active ?? 0).toLocaleString()}
-                icon="check_circle"
-                variant="active"
-                subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`}
-              />
-              <StatCard
-                label={t("page.location.stats.inactive")}
-                value={(data?.stats?.inactive ?? 0).toLocaleString()}
-                icon="cancel"
-                variant="inactive"
-                subtitle={t("page.location.stats.inactiveSub")}
-              />
-              <StatCard
-                label={t("page.location.stats.draft")}
-                value={(data?.stats?.draft ?? 0).toLocaleString()}
-                icon="edit_note"
-                variant="draft"
-                subtitle={t("page.location.stats.draftSub")}
-              />
-            </div>
+            {isLoading ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <StatCard
+                    label={t("page.location.stats.total")}
+                    value={(data?.stats?.total ?? data?.total ?? 0).toLocaleString()}
+                    icon={Building2}
+                    variant="default"
+                    subtitle={t("page.location.stats.totalSub")}
+                  />
+                  <StatCard
+                    label={t("page.location.stats.cities")}
+                    value={(data?.stats?.cities ?? 0).toLocaleString()}
+                    icon={Map}
+                    variant="gold"
+                    subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.cities ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.citiesSub")}`}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <StatCard
+                    label={t("page.location.stats.active")}
+                    value={(data?.stats?.active ?? 0).toLocaleString()}
+                    icon={CheckCircle}
+                    variant="active"
+                    subtitle={`${(data?.stats?.total ?? 0) > 0 ? Math.round(((data?.stats?.active ?? 0) / (data?.stats?.total ?? 1)) * 100) : 0}% ${t("page.location.stats.activeSub")}`}
+                  />
+                  <StatCard
+                    label={t("page.location.stats.inactive")}
+                    value={(data?.stats?.inactive ?? 0).toLocaleString()}
+                    icon={XCircle}
+                    variant="inactive"
+                    subtitle={t("page.location.stats.inactiveSub")}
+                  />
+                  <StatCard
+                    label={t("page.location.stats.draft")}
+                    value={(data?.stats?.draft ?? 0).toLocaleString()}
+                    icon={FileEdit}
+                    variant="draft"
+                    subtitle={t("page.location.stats.draftSub")}
+                  />
+                </div>
+              </>
+            )}
 
             <div data-tour="location-table" className="mt-6">
               <DataTable

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Search, Eye, CheckCircle, XCircle } from "lucide-react";
+import { Search, Eye, CheckCircle, XCircle, ClipboardList, Hourglass } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
 import {
@@ -20,6 +20,7 @@ import StoreFilter from "@/components/ui/StoreFilter";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statusCfg = {
   pending: {
@@ -66,7 +67,7 @@ const PurchaseReturnList = () => {
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const items = data?.data || [];
@@ -209,32 +210,47 @@ const PurchaseReturnList = () => {
         <NoStore />
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <StatCard
-              label={t("page.purchaseReturn.list.title")}
-              value={total}
-              icon="assignment_return"
-              variant="default"
-            />
-            <StatCard
-              label={t("page.purchaseReturn.status.approved")}
-              value={data?.stats?.approved ?? 0}
-              icon="check_circle"
-              variant="active"
-            />
-            <StatCard
-              label={t("page.purchaseReturn.status.pending")}
-              value={data?.stats?.pending ?? 0}
-              icon="hourglass_empty"
-              variant="draft"
-            />
-            <StatCard
-              label={t("page.purchaseReturn.status.rejected")}
-              value={data?.stats?.rejected ?? 0}
-              icon="cancel"
-              variant="inactive"
-            />
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </div>
+                  <Skeleton className="h-8 w-28 mb-2" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <StatCard
+                label={t("page.purchaseReturn.list.title")}
+                value={total}
+                icon={ClipboardList}
+                variant="default"
+              />
+              <StatCard
+                label={t("page.purchaseReturn.status.approved")}
+                value={data?.stats?.approved ?? 0}
+                icon={CheckCircle}
+                variant="active"
+              />
+              <StatCard
+                label={t("page.purchaseReturn.status.pending")}
+                value={data?.stats?.pending ?? 0}
+                icon={Hourglass}
+                variant="draft"
+              />
+              <StatCard
+                label={t("page.purchaseReturn.status.rejected")}
+                value={data?.stats?.rejected ?? 0}
+                icon={XCircle}
+                variant="inactive"
+              />
+            </div>
+          )}
 
           {isError ? (
             <AbortController refetch={refetch} />

@@ -77,7 +77,7 @@ const variantStyles = {
 
 const StatCard = ({ label, value, icon, subtitle, variant = "default", "data-tour": dataTour }) => {
   const s = variantStyles[variant] || variantStyles.default;
-  const isLucide = typeof icon === "function";
+  const isLucide = typeof icon !== "string";
   return (
     <div
       data-tour={dataTour}
@@ -94,7 +94,7 @@ const StatCard = ({ label, value, icon, subtitle, variant = "default", "data-tou
       <div
         className={`w-14 h-14 rounded-2xl ${s.iconBg} flex items-center justify-center ${s.iconColor} group-hover:scale-110 transition-transform`}>
         {isLucide ? (
-          <span className="[&>svg]:w-7 [&>svg]:h-7">{icon({ size: 24 })}</span>
+          <span className="[&>svg]:w-7 [&>svg]:h-7">{React.createElement(icon, { size: 24 })}</span>
         ) : (
           <span className="material-symbols-outlined text-3xl">{icon}</span>
         )}

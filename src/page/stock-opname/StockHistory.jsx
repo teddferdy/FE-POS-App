@@ -76,13 +76,13 @@ const StockHistory = () => {
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const { data: productsData } = useQuery(
     ["products-dropdown", searchProduct],
     () => getAllProductTable({ location: "", limit: 100, page: 1, statusProduct: "all" }),
-    { keepPreviousData: true }
+    {}
   );
 
   const histories = data?.data || [];

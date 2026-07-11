@@ -88,7 +88,7 @@ const KitchenDisplay = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["kitchen-orders", storeId],
     () => getKitchenOrders(storeId ? { store: storeId } : {}),
-    { enabled: !!storeId || storeId === "", refetchInterval: 15000, keepPreviousData: true }
+    { enabled: !!storeId || storeId === "", refetchInterval: 15000, }
   );
   const orders = data?.data || [];
 

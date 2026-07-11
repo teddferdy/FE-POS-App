@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, PackageOpen } from "lucide-react";
+import { Plus, PackageOpen, Award, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import NoStore from "@/components/ui/NoStore";
@@ -40,7 +41,7 @@ const MemberTier = () => {
     isLoading,
     isError,
     refetch
-  } = useQuery(["member-tiers"], getAllMemberTier, { keepPreviousData: true });
+  } = useQuery(["member-tiers"], getAllMemberTier);
   const tiers = tiersData?.data || tiersData?.tiers || [];
   const activeTierCount =
     tiersData?.activeCount ?? tiers.filter((t) => t.status === "active").length;
@@ -292,32 +293,47 @@ const MemberTier = () => {
           ) : (
             <div>
               <div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <StatCard
-                    label={t("page.memberTier.list.totalTiers")}
-                    value={tiers.length}
-                    icon="workspace_premium"
-                    variant="default"
-                  />
-                  <StatCard
-                    label={t("common.active")}
-                    value={activeTierCount}
-                    icon="check_circle"
-                    variant="active"
-                  />
-                  <StatCard
-                    label={t("common.draft")}
-                    value={draftTierCount}
-                    icon="edit_note"
-                    variant="draft"
-                  />
-                  <StatCard
-                    label={t("common.inactive")}
-                    value={inactiveTierCount}
-                    icon="cancel"
-                    variant="red"
-                  />
-                </div>
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="bg-card rounded-xl border border-border p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-4 w-4 rounded" />
+                        </div>
+                        <Skeleton className="h-8 w-28 mb-2" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <StatCard
+                      label={t("page.memberTier.list.totalTiers")}
+                      value={tiers.length}
+                      icon={Award}
+                      variant="default"
+                    />
+                    <StatCard
+                      label={t("common.active")}
+                      value={activeTierCount}
+                      icon={CheckCircle}
+                      variant="active"
+                    />
+                    <StatCard
+                      label={t("common.draft")}
+                      value={draftTierCount}
+                      icon={FileEdit}
+                      variant="draft"
+                    />
+                    <StatCard
+                      label={t("common.inactive")}
+                      value={inactiveTierCount}
+                      icon={XCircle}
+                      variant="red"
+                    />
+                  </div>
+                )}
 
                 {tiers.length === 0 ? (
                   <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">

@@ -3,11 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Eye, Shield } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Shield, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { getAllRoleTable, deleteRole } from "@/services/role";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
@@ -40,7 +41,7 @@ const RoleManagement = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["roles-table", page],
     () => getAllRoleTable({ page, limit: 10 }),
-    { keepPreviousData: true }
+    {}
   );
 
   const roles = data?.data || [];
@@ -118,32 +119,47 @@ const RoleManagement = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.globalSetting.roleManagement.stats.total")}
-                  value={stats.total ?? total}
-                  icon="shield"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.globalSetting.roleManagement.stats.active")}
-                  value={activeCount}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftCount}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.globalSetting.roleManagement.stats.inactive")}
-                  value={inactiveCount}
-                  icon="cancel"
-                  variant="red"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.globalSetting.roleManagement.stats.total")}
+                    value={stats.total ?? total}
+                    icon={Shield}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.globalSetting.roleManagement.stats.active")}
+                    value={activeCount}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftCount}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.globalSetting.roleManagement.stats.inactive")}
+                    value={inactiveCount}
+                    icon={XCircle}
+                    variant="red"
+                  />
+                </div>
+              )}
               <div
                 data-tour="role-table"
                 className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">

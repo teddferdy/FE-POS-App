@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, PackageOpen } from "lucide-react";
+import { Plus, PackageOpen, Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import UserGuide from "@/components/organism/UserGuide";
 import AbortController from "@/components/organism/abort-controller";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import DataTable from "@/components/ui/DataTable";
 import NoStore from "@/components/ui/NoStore";
@@ -105,7 +106,7 @@ const MemberList = () => {
         tier: tierFilter != null ? tierFilter : undefined,
         statusMember: statusFilter || undefined
       }),
-    { keepPreviousData: true, staleTime: 0 }
+    { staleTime: 0 }
   );
 
   const deleteMutation = useMutation(deleteMember, {
@@ -381,34 +382,48 @@ const MemberList = () => {
         <NoStore />
       ) : (
         <>
-          {!isError && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <StatCard
-                label={t("page.member.list.totalMembers")}
-                value={stats.total}
-                icon="group"
-                variant="default"
-              />
-              <StatCard
-                label={t("common.active")}
-                value={stats.active}
-                icon="check_circle"
-                variant="active"
-              />
-              <StatCard
-                label={t("common.draft")}
-                value={stats.draft}
-                icon="edit_note"
-                variant="draft"
-              />
-              <StatCard
-                label={t("common.inactive")}
-                value={stats.inactive}
-                icon="cancel"
-                variant="red"
-              />
-            </div>
-          )}
+          {!isError &&
+            (isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <StatCard
+                  label={t("page.member.list.totalMembers")}
+                  value={stats.total}
+                  icon={Users}
+                  variant="default"
+                />
+                <StatCard
+                  label={t("common.active")}
+                  value={stats.active}
+                  icon={CheckCircle}
+                  variant="active"
+                />
+                <StatCard
+                  label={t("common.draft")}
+                  value={stats.draft}
+                  icon={FileEdit}
+                  variant="draft"
+                />
+                <StatCard
+                  label={t("common.inactive")}
+                  value={stats.inactive}
+                  icon={XCircle}
+                  variant="red"
+                />
+              </div>
+            ))}
 
           {isError ? (
             <AbortController refetch={refetch} />

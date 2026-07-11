@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Sofa, QrCode, RotateCcw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Sofa, QrCode, RotateCcw, CheckCircle, XCircle, FileEdit, Utensils } from "lucide-react";
 import {
   getTablesByStore,
   addTable,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import TableQRModal from "@/components/organism/TableQRModal";
 import { useTranslation } from "react-i18next";
@@ -73,7 +74,7 @@ const TableList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
     () => getTablesByStore({ location: locationParam, page, limit, search }),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteTable, {
@@ -266,32 +267,47 @@ const TableList = () => {
             <NoStore />
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.table.stats.total")}
-                  value={total}
-                  icon="table_restaurant"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("page.table.stats.available")}
-                  value={data?.stats?.available ?? 0}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("page.table.stats.reserved")}
-                  value={data?.stats?.reserved ?? 0}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.table.stats.occupied")}
-                  value={data?.stats?.occupied ?? 0}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.table.stats.total")}
+                    value={total}
+                    icon={Utensils}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("page.table.stats.available")}
+                    value={data?.stats?.available ?? 0}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("page.table.stats.reserved")}
+                    value={data?.stats?.reserved ?? 0}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.table.stats.occupied")}
+                    value={data?.stats?.occupied ?? 0}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
 
               <div data-tour="table-list-table">
                 <DataTable

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Tag, Eye } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Tag, Eye, FolderOpen, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 import { canAccess } from "@/utils/permission";
@@ -40,7 +41,7 @@ const ExpenseCategoryList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["expense-categories", store],
     () => getExpenseCategories(store || undefined),
-    { keepPreviousData: true }
+    { }
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {
@@ -235,32 +236,47 @@ const ExpenseCategoryList = () => {
             <AbortController refetch={refetch} />
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <StatCard
-                  label={t("page.expenseCategory.list.total")}
-                  value={totalStats}
-                  icon="folder"
-                  variant="default"
-                />
-                <StatCard
-                  label={t("common.active")}
-                  value={activeCount}
-                  icon="check_circle"
-                  variant="active"
-                />
-                <StatCard
-                  label={t("common.draft")}
-                  value={draftCount}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("common.inactive")}
-                  value={inactiveCount}
-                  icon="cancel"
-                  variant="inactive"
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <StatCard
+                    label={t("page.expenseCategory.list.total")}
+                    value={totalStats}
+                    icon={FolderOpen}
+                    variant="default"
+                  />
+                  <StatCard
+                    label={t("common.active")}
+                    value={activeCount}
+                    icon={CheckCircle}
+                    variant="active"
+                  />
+                  <StatCard
+                    label={t("common.draft")}
+                    value={draftCount}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("common.inactive")}
+                    value={inactiveCount}
+                    icon={XCircle}
+                    variant="inactive"
+                  />
+                </div>
+              )}
 
               <div>
                 <div className="relative w-full sm:w-72">

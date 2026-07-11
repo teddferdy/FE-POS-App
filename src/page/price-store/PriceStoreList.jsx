@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "react-query";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { Store, ArrowLeft, Pencil } from "lucide-react";
+import { Store, ArrowLeft, Pencil, Boxes } from "lucide-react";
 import { getAllLocation } from "@/services/location";
 import { getProductByOutlet } from "@/services/product";
 import { updateProductPriceByStore } from "@/services/price-store";
@@ -42,8 +42,7 @@ const PriceStoreList = () => {
     () => getProductByOutlet({ location: selectedStore }),
     {
       enabled: !!selectedStore,
-      staleTime: 60000,
-      keepPreviousData: true
+      staleTime: 60000
     }
   );
   const allProducts = useMemo(() => prodData?.data || prodData || [], [prodData]);
@@ -165,17 +164,30 @@ const PriceStoreList = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[160px]">
-              <StatCard
-                label={t("page.priceStore.list.totalProducts")}
-                value={products.length}
-                icon="inventory_2"
-                variant="default"
-                subtitle={`${new Set(products.map((p) => p.categoryData?.name || p.nameCategory)).size} ${t("page.priceStore.list.totalCategories")}`}
-              />
+          {isLoading ? (
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[160px] bg-card rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-4 rounded" />
+                </div>
+                <Skeleton className="h-8 w-28 mb-2" />
+                <Skeleton className="h-3 w-20" />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[160px]">
+                <StatCard
+                  label={t("page.priceStore.list.totalProducts")}
+                  value={products.length}
+                  icon={Boxes}
+                  variant="default"
+                  subtitle={`${new Set(products.map((p) => p.categoryData?.name || p.nameCategory)).size} ${t("page.priceStore.list.totalCategories")}`}
+                />
+              </div>
+            </div>
+          )}
 
           <Card className="p-6">
             <div className="overflow-x-auto">

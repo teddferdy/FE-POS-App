@@ -3,13 +3,13 @@ import { useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCookies } from "react-cookie";
-import { Wallet, Building2, Clock, Eye } from "lucide-react";
+import { Wallet, Building2, Clock, Eye, DollarSign, AlertTriangle } from "lucide-react";
 import { getAPDashboard } from "@/services/purchase-payment";
 import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
 import StatCard from "@/components/ui/StatCard";
 import DataTable from "@/components/ui/DataTable";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import NoStore from "@/components/ui/NoStore";
 import AbortController from "@/components/organism/abort-controller";
 import {
@@ -39,9 +39,7 @@ const DashboardUtang = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard, {
-    keepPreviousData: true
-  });
+  const { data, isLoading, isError, refetch } = useQuery("ap-dashboard", getAPDashboard, {});
 
   const { summary = {}, suppliers = [], outstandingPOs = [] } = data?.data || {};
   const supplierPOs = selectedSupplier
@@ -188,35 +186,58 @@ const DashboardUtang = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : isLoading ? (
-            <Loading fullscreen size="lg" label={t("page.apDashboard.loading")} />
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="lg:col-span-8 bg-card rounded-xl border border-border overflow-hidden">
+                  <div className="p-5 border-b border-border">
+                    <Skeleton className="h-5 w-40 mb-2" />
+                    <Skeleton className="h-3 w-56" />
+                  </div>
+                  <div className="p-5">
+                    <Skeleton className="h-[220px] w-full rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 <StatCard
                   label={t("page.apDashboard.card.supplierCount")}
                   value={summary.supplierCount || 0}
-                  icon="business"
+                  icon={Building2}
                 />
                 <StatCard
                   label={t("page.apDashboard.card.totalPaid")}
                   value={`Rp ${(summary.totalPaid || 0).toLocaleString("id-ID")}`}
-                  icon="payments"
+                  icon={DollarSign}
                   variant="active"
                 />
                 <StatCard
                   label={t("page.apDashboard.card.totalOutstanding")}
                   value={`Rp ${(summary.totalOutstanding || 0).toLocaleString("id-ID")}`}
-                  icon="account_balance"
+                  icon={Wallet}
                   variant="inactive"
                 />
                 <StatCard
                   label={t("page.apDashboard.card.outstandingPO")}
                   value={summary.outstandingPOCount || 0}
-                  icon="warning"
+                  icon={AlertTriangle}
                   variant={summary.outstandingPOCount > 0 ? "inactive" : "default"}
                 />
               </div>
-
               <Card className="p-5">
                 <h3 className="text-lg font-semibold mb-4">
                   {t("page.apDashboard.supplierTitle")}
@@ -229,7 +250,6 @@ const DashboardUtang = () => {
                   emptyIcon={Building2}
                 />
               </Card>
-
               <Card className="p-5">
                 <h3 className="text-lg font-semibold mb-4">{t("page.apDashboard.poTitle")}</h3>
                 <DataTable

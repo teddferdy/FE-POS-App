@@ -29,7 +29,7 @@ const PurchasePaymentList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["purchase-payments", page, limit],
     () => getAllPayments({ page, limit }),
-    { keepPreviousData: true }
+    {}
   );
 
   const payments = data?.data || [];

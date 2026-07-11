@@ -49,7 +49,7 @@ const CashRegisterCurrent = () => {
       enabled: !!storeId,
       staleTime: 0,
       refetchInterval: storeId ? 30000 : false,
-      keepPreviousData: true
+
     }
   );
   const reg = data?.data?.register || data?.data;

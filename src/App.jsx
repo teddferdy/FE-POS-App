@@ -15,7 +15,6 @@ import NotFoundPage from "@/components/ui/NotFoundPage";
 
 import Modal from "@/components/organism/modal";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { Loading } from "@/components/ui/loading";
 
 // Auth
 const LoginPage = React.lazy(() => import("./page/auth/login"));
@@ -285,12 +284,7 @@ function App() {
     <React.Fragment>
       <OfflineIndicator />
       <BrowserRouter>
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center min-h-screen">
-              <Loading />
-            </div>
-          }>
+        <Suspense>
           <SupportComponent />
           <RouteProgress />
           <ShortcutHandler />

@@ -12,9 +12,10 @@ import {
 } from "@/services/position";
 import { getAllDepartment } from "@/services/department";
 import { getAllLocation } from "@/services/location";
-import { Loader2 } from "lucide-react";
+import { Loader2, Briefcase, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
 import { uploadPositionExcel } from "@/services/position";
@@ -82,7 +83,7 @@ const PositionList = () => {
         statusRole: "all",
         search
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const deleteMutation = useMutation(deletePosition, {
@@ -379,35 +380,50 @@ const PositionList = () => {
         <>
           <div>
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-                <StatCard
-                  label={t("page.position.stats.total")}
-                  value={total.toLocaleString()}
-                  icon="work"
-                  variant="default"
-                  subtitle={t("page.position.stats.totalSub")}
-                />
-                <StatCard
-                  label={t("page.position.stats.active")}
-                  value={activeCount.toLocaleString()}
-                  icon="check_circle"
-                  variant="active"
-                  subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`}
-                />
-                <StatCard
-                  label={t("page.position.stats.draft")}
-                  value={draftCount.toLocaleString()}
-                  icon="edit_note"
-                  variant="draft"
-                />
-                <StatCard
-                  label={t("page.position.stats.inactive")}
-                  value={inactiveCount.toLocaleString()}
-                  icon="cancel"
-                  variant="inactive"
-                  subtitle={t("page.position.stats.inactiveSub")}
-                />
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl border border-border p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </div>
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                  <StatCard
+                    label={t("page.position.stats.total")}
+                    value={total.toLocaleString()}
+                    icon={Briefcase}
+                    variant="default"
+                    subtitle={t("page.position.stats.totalSub")}
+                  />
+                  <StatCard
+                    label={t("page.position.stats.active")}
+                    value={activeCount.toLocaleString()}
+                    icon={CheckCircle}
+                    variant="active"
+                    subtitle={`${total > 0 ? Math.round((activeCount / total) * 100) : 0}% ${t("page.position.stats.activeSub")}`}
+                  />
+                  <StatCard
+                    label={t("page.position.stats.draft")}
+                    value={draftCount.toLocaleString()}
+                    icon={FileEdit}
+                    variant="draft"
+                  />
+                  <StatCard
+                    label={t("page.position.stats.inactive")}
+                    value={inactiveCount.toLocaleString()}
+                    icon={XCircle}
+                    variant="inactive"
+                    subtitle={t("page.position.stats.inactiveSub")}
+                  />
+                </div>
+              )}
 
               <div data-tour="position-table" className="mt-6">
                 <DataTable

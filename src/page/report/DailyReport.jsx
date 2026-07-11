@@ -6,7 +6,7 @@ import { useCookies } from "react-cookie";
 import { getDailyReport } from "@/services/report";
 import { getAllLocation } from "@/services/location";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { formatCurrency } from "@/utils/reportUtils";
@@ -34,7 +34,7 @@ const DailyReport = () => {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd")
       }),
-    { staleTime: 30000, keepPreviousData: true }
+    { staleTime: 30000 }
   );
 
   const reports = data?.data || [];
@@ -71,7 +71,14 @@ const DailyReport = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : isLoading ? (
-            <Loading fullscreen size="lg" label={t("page.report.daily.loading")} />
+            <div className="bg-card rounded-xl border border-border p-4">
+              <div className="flex items-start justify-between mb-3">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+              <Skeleton className="h-8 w-28 mb-2" />
+              <Skeleton className="h-3 w-20" />
+            </div>
           ) : reports.length === 0 ? (
             <div className="bg-card rounded-xl border border-border p-12 text-center">
               <p className="text-muted-foreground">{t("page.report.daily.noData")}</p>

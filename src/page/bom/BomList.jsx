@@ -37,7 +37,7 @@ const BomList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["bom-list", page, limit, search],
     () => getAllBom({ page, limit, search }),
-    { keepPreviousData: true }
+    { }
   );
 
   const items = data?.data || [];

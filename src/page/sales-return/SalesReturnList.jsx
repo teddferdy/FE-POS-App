@@ -64,7 +64,7 @@ const SalesReturnList = () => {
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    { keepPreviousData: true }
+    {}
   );
 
   const items = data?.data || [];

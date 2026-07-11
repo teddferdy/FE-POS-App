@@ -7,6 +7,8 @@ import { getAllUsers } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loading } from "@/components/ui/loading";
+import { Shield, CheckCircle, FileEdit } from "lucide-react";
 import { canAccess } from "@/utils/permission";
 import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
@@ -88,7 +90,7 @@ const AdminList = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["admins", page, limit, search],
     () => getAllUsers({ page, limit, search }),
-    { keepPreviousData: true }
+    { }
   );
 
   const users = data?.data || data?.users || [];
@@ -134,29 +136,44 @@ const AdminList = () => {
           <AbortController refetch={refetch} />
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard
-                label={t("page.user.adminList.statsTotal")}
-                value={data?.stats?.total || total || 0}
-                icon="admin_panel_settings"
-                variant="default"
-                subtitle={t("page.user.adminList.statsTotalBadge")}
-              />
-              <StatCard
-                label={t("page.user.adminList.statsActive")}
-                value={data?.stats?.active || 0}
-                icon="check_circle"
-                variant="active"
-                subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`}
-              />
-              <StatCard
-                label={t("page.user.adminList.statsPending")}
-                value={data?.stats?.pending || 0}
-                icon="edit_note"
-                variant="draft"
-                subtitle={t("page.user.adminList.statsPendingBadge")}
-              />
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-xl border border-border p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    <Skeleton className="h-8 w-28 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard
+                  label={t("page.user.adminList.statsTotal")}
+                  value={data?.stats?.total || total || 0}
+                  icon={Shield}
+                  variant="default"
+                  subtitle={t("page.user.adminList.statsTotalBadge")}
+                />
+                <StatCard
+                  label={t("page.user.adminList.statsActive")}
+                  value={data?.stats?.active || 0}
+                  icon={CheckCircle}
+                  variant="active"
+                  subtitle={`${total > 0 ? Math.round(((data?.stats?.active || 0) / (data?.stats?.total || total || 1)) * 100) : 0}${t("page.user.adminList.statsActivePercent")}`}
+                />
+                <StatCard
+                  label={t("page.user.adminList.statsPending")}
+                  value={data?.stats?.pending || 0}
+                  icon={FileEdit}
+                  variant="draft"
+                  subtitle={t("page.user.adminList.statsPendingBadge")}
+                />
+              </div>
+            )}
 
             <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
               <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
