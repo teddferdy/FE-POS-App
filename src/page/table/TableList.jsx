@@ -72,7 +72,7 @@ const TableList = () => {
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
     () => getTablesByStore({ location: locationParam, page, limit, search }),
     { }
@@ -268,7 +268,7 @@ const TableList = () => {
             <NoStore />
           ) : (
             <>
-              {isLoading ? (
+              {isFetching ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
@@ -314,7 +314,7 @@ const TableList = () => {
                 <DataTable
                   columns={columns}
                   data={tables}
-                  isLoading={isLoading}
+                  isLoading={isFetching}
                   emptyIcon={Sofa}
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
