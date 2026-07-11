@@ -61,7 +61,7 @@ const DiscountList = () => {
   });
   const { data, isLoading } = useQuery(
     ["discounts", page, limit, search, storeFilter],
-    () => getAllDiscount({ location: locationParam, page, limit, statusDiscount: "" }),
+    () => getAllDiscount({ location: locationParam, page, limit }),
     { }
   );
 

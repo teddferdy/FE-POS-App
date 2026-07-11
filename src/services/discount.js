@@ -6,18 +6,20 @@ export const getDiscount = async () => {
   return data;
 };
 
-export const getAllDiscountByLocationAndActive = async ({ limit, page, statusDiscount }) => {
+export const getAllDiscountByLocationAndActive = async ({ limit, page, store }) => {
+  const params = new URLSearchParams({ page, limit });
+  if (store) params.append("store", store);
   const { data, status } = await axiosInstance.get(
-    `/discount/get-discount-by-location?page=${page}&limit=${limit}&status=${statusDiscount}`
+    `/discount/get-discount-by-location?${params}`
   );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
 
-export const getAllDiscount = async ({ page, limit, statusDiscount, location } = {}) => {
+export const getAllDiscount = async ({ page, limit, location } = {}) => {
   const storeParam = location ? `&store=${location}` : "";
   const { data, status } = await axiosInstance.get(
-    `/discount/get-discount?page=${page}&limit=${limit}&status=${statusDiscount}${storeParam}`
+    `/discount/get-discount?page=${page}&limit=${limit}${storeParam}`
   );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;

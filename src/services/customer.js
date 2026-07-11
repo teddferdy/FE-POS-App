@@ -7,7 +7,7 @@ export const getAllCustomer = async (params = {}) => {
 };
 
 export const getCustomerById = async (id) => {
-  const { data, status } = await axiosInstance.get(`/customer/get-customer/${id}`);
+  const { data, status } = await axiosInstance.get(`/member/get-member/${id}`);
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };
@@ -20,7 +20,7 @@ export const addCustomer = async (payload) => {
 
 export const editCustomer = async (payload) => {
   const { data, status } = await axiosInstance.put(
-    `/customer/edit-customer/${payload.id}`,
+    `/member/edit-member/${payload.id}`,
     payload
   );
   if (status !== 200 && status !== 201) throw Error(`${data?.message || data?.error}`);
@@ -28,9 +28,7 @@ export const editCustomer = async (payload) => {
 };
 
 export const deleteCustomer = async (payload) => {
-  const { data, status } = await axiosInstance.delete(`/customer/delete-customer/${payload.id}`, {
-    data: payload
-  });
+  const { data, status } = await axiosInstance.delete(`/member/delete-member/${payload.id}`);
   if (status !== 200 && status !== 201 && status !== 204) throw Error(`${data?.error}`);
   return data;
 };

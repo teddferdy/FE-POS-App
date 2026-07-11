@@ -1,14 +1,9 @@
 import { axiosInstance } from ".";
 
-export const getDashboardSummary = async (payload) => {
-  const params = new URLSearchParams();
-  if (payload?.store) params.append("store", payload.store);
-  if (payload?.startDate) params.append("startDate", payload.startDate);
-  if (payload?.endDate) params.append("endDate", payload.endDate);
-  if (payload?.filter) params.append("filter", payload.filter);
-  if (payload?.page) params.append("page", payload.page);
-  if (payload?.pageSize) params.append("pageSize", payload.pageSize);
-  const query = params.toString();
+export const getDashboardSummary = async (params = {}) => {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v != null && v !== "")
+  ).toString();
   const { data, status } = await axiosInstance.get(
     `/pos/dashboard/summary${query ? `?${query}` : ""}`
   );

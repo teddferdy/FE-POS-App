@@ -76,7 +76,7 @@ function FaqChat() {
           const answer = await askAi(q);
           addMessage({ role: "bot", text: answer || "Maaf, AI belum bisa jawab. Coba lagi." });
         } else {
-          const results = await searchFaq(q);
+          const results = await searchFaq({ page: 1, limit: 10, search: q });
           if (results.length === 0) {
             addMessage({
               role: "bot",

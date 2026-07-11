@@ -29,9 +29,10 @@ export const deleteReservation = async (id) => {
   return data;
 };
 
-export const getAvailableTables = async ({ date, startTime, endTime, store }) => {
-  const params = new URLSearchParams({ date, startTime });
-  if (endTime) params.set("endTime", endTime);
+export const getAvailableTables = async ({ date, time, guestCount, store }) => {
+  const params = new URLSearchParams({ date });
+  if (time) params.set("time", time);
+  if (guestCount) params.set("guestCount", guestCount);
   if (store) params.set("store", store);
   const { data } = await axiosInstance.get(`/reservation/available-tables/list?${params}`);
   return data;

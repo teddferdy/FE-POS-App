@@ -1,8 +1,8 @@
 import { axiosInstance } from ".";
 
-export async function searchFaq(query) {
+export async function searchFaq({ page = 1, limit = 10, search } = {}) {
   const { data } = await axiosInstance.get("/faq/faq", {
-    params: { q: query }
+    params: { page, limit, search }
   });
   return data;
 }

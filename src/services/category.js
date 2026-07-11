@@ -2,7 +2,7 @@ import { axiosInstance } from ".";
 
 export const getAllCategory = async () => {
   const { data, status } = await axiosInstance.get(
-    `/category/get-category-all?page=1&pageSize=100&status=active`
+    `/category/get-category-all?page=1&limit=100`
   );
   if (status !== 200) throw Error(`${data.message}`);
   return data;

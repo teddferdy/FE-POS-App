@@ -46,8 +46,15 @@ export const updateUserRole = async (payload) => {
   return data;
 };
 
-export const getUsersByRole = async () => {
-  const { data, status } = await axiosInstance.get("/role/get-users-by-role");
+export const getUsersByRole = async ({ store, roleId, search } = {}) => {
+  const params = new URLSearchParams();
+  if (store) params.append("store", store);
+  if (roleId) params.append("roleId", roleId);
+  if (search) params.append("search", search);
+  const query = params.toString();
+  const { data, status } = await axiosInstance.get(
+    `/role/get-users-by-role${query ? `?${query}` : ""}`
+  );
   if (status !== 200) throw Error(`${data?.message}`);
   return data;
 };

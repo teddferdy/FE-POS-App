@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSalesSummary } from "@/services/report";
 import { getAllLocation } from "@/services/location";
-import { getDateRangeForPeriod, formatCurrency, formatNumber } from "@/utils/reportUtils";
+import { formatCurrency, formatNumber } from "@/utils/reportUtils";
 import GlobalSalesTab from "./GlobalSalesTab";
 import AbortController from "@/components/organism/abort-controller";
 import NoStore from "@/components/ui/NoStore";
@@ -27,8 +27,6 @@ const SalesReportPage = () => {
     enabled: isSuperAdmin
   });
 
-  const dateRange = getDateRangeForPeriod(salesPeriod);
-
   const {
     data: salesData,
     isLoading: salesLoading,
@@ -36,7 +34,7 @@ const SalesReportPage = () => {
     refetch
   } = useQuery(
     ["sales-summary", salesPeriod],
-    () => getSalesSummary({ filter: salesPeriod.toLowerCase(), ...dateRange }),
+    () => getSalesSummary({ period: salesPeriod.toLowerCase() }),
     {}
   );
 

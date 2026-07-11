@@ -31,8 +31,7 @@ const DailyReport = () => {
     ["daily-report", startDate, endDate],
     () =>
       getDailyReport({
-        startDate: format(startDate, "yyyy-MM-dd"),
-        endDate: format(endDate, "yyyy-MM-dd")
+        date: format(startDate, "yyyy-MM-dd")
       }),
     { staleTime: 30000 }
   );
