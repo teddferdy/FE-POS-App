@@ -68,7 +68,12 @@ const MemberList = () => {
   const [tierFilter, setTierFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
-  const [storeFilter, setStoreFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState(() => localStorage.getItem("globalStoreFilter") || "all");
+  const handleStoreFilterChange = (v) => {
+    setStoreFilter(v);
+    localStorage.setItem("globalStoreFilter", v);
+    setPage(1);
+  };
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
@@ -560,10 +565,7 @@ const MemberList = () => {
                           <StoreFilter
                             locations={locData?.data || []}
                             value={storeFilter}
-                            onChange={(v) => {
-                              setStoreFilter(v);
-                              setPage(1);
-                            }}
+                            onChange={handleStoreFilterChange}
                             isSuperAdmin={isSuperAdmin}
                             t={t}
                           />

@@ -101,6 +101,7 @@ const AddMember = () => {
       address: form.address,
       tier: form.tier || null,
       point: form.initialPoints,
+      store: user?.roleType === "super_admin" ? (localStorage.getItem("globalStoreFilter") !== "all" ? localStorage.getItem("globalStoreFilter") : null) : undefined,
       createdBy: user?.id,
       status: saveAsDraft ? "draft" : "active"
     });

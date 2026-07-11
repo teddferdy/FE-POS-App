@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, PackageOpen, Award, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Plus, Award, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "sonner";
@@ -346,90 +346,79 @@ const MemberTier = () => {
                   </div>
                 )}
 
-                {tiers.length === 0 ? (
-                  <div className="bg-card rounded-xl border border-border p-12 text-center mt-6">
-                    <PackageOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">{t("page.memberTier.list.noTier")}</p>
-                    <Button onClick={() => navigate("/add-member-tier")} className="mt-4">
-                      <Plus size={16} className="mr-2" />
-                      {t("page.memberTier.list.addTier")}
-                    </Button>
-                  </div>
-                ) : (
-                  <div data-tour="tier-table" className="mt-6">
-                    <DataTable
-                      columns={columns}
-                      data={paginatedTiers}
-                      isLoading={isLoading}
-                      rowClassName={() => "group"}
-                      toolbar={
-                        <div className="flex flex-col gap-3 w-full">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-base font-semibold text-foreground">
-                              {t("page.memberTier.list.tableTitle")}
-                            </h4>
-                            <div className="relative">
-                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                                search
-                              </span>
-                              <Input
-                                data-tour="tier-search"
-                                placeholder={t("common.search")}
-                                value={search}
-                                onChange={(e) => {
-                                  setSearch(e.target.value);
-                                  setCurrentPage(1);
-                                }}
-                                className="pl-9 h-9 w-72 text-sm"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {[
-                              { key: null, label: t("common.all"), icon: "group" },
-                              { key: "active", label: t("common.active"), icon: "check_circle" },
-                              { key: "draft", label: t("common.draft"), icon: "edit_note" },
-                              { key: "inactive", label: t("common.inactive"), icon: "cancel" }
-                            ].map(({ key, label, icon }) => (
-                              <button
-                                key={key ?? "all"}
-                                onClick={() => {
-                                  setStatusFilter(key);
-                                  setCurrentPage(1);
-                                }}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                  statusFilter === key
-                                    ? "bg-primary text-primary-foreground shadow-sm"
-                                    : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                                }`}>
-                                <span className="material-symbols-outlined text-sm">{icon}</span>
-                                {label}
-                              </button>
-                            ))}
-                            <span className="text-xs text-muted-foreground ml-auto">
-                              {t("common.showing", {
-                                start: filteredTiers.length > 0 ? (currentPage - 1) * limit + 1 : 0,
-                                end: Math.min(currentPage * limit, filteredTiers.length),
-                                total: filteredTiers.length
-                              })}
+                <div data-tour="tier-table" className="mt-6">
+                  <DataTable
+                    columns={columns}
+                    data={paginatedTiers}
+                    isLoading={isLoading}
+                    rowClassName={() => "group"}
+                    toolbar={
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.memberTier.list.tableTitle")}
+                          </h4>
+                          <div className="relative">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                              search
                             </span>
+                            <Input
+                              data-tour="tier-search"
+                              placeholder={t("common.search")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setCurrentPage(1);
+                              }}
+                              className="pl-9 h-9 w-72 text-sm"
+                            />
                           </div>
                         </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {[
+                            { key: null, label: t("common.all"), icon: "group" },
+                            { key: "active", label: t("common.active"), icon: "check_circle" },
+                            { key: "draft", label: t("common.draft"), icon: "edit_note" },
+                            { key: "inactive", label: t("common.inactive"), icon: "cancel" }
+                          ].map(({ key, label, icon }) => (
+                            <button
+                              key={key ?? "all"}
+                              onClick={() => {
+                                setStatusFilter(key);
+                                setCurrentPage(1);
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                statusFilter === key
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
+                              }`}>
+                              <span className="material-symbols-outlined text-sm">{icon}</span>
+                              {label}
+                            </button>
+                          ))}
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {t("common.showing", {
+                              start: filteredTiers.length > 0 ? (currentPage - 1) * limit + 1 : 0,
+                              end: Math.min(currentPage * limit, filteredTiers.length),
+                              total: filteredTiers.length
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                    pagination={{
+                      page: currentPage,
+                      totalPages,
+                      total: filteredTiers.length,
+                      onPageChange: setCurrentPage,
+                      pageSize: limit,
+                      onPageSizeChange: (v) => {
+                        setLimit(v);
+                        setCurrentPage(1);
                       }
-                      pagination={{
-                        page: currentPage,
-                        totalPages,
-                        total: filteredTiers.length,
-                        onPageChange: setCurrentPage,
-                        pageSize: limit,
-                        onPageSizeChange: (v) => {
-                          setLimit(v);
-                          setCurrentPage(1);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
+                    }}
+                  />
+                </div>
               </div>
             </div>
           )}
