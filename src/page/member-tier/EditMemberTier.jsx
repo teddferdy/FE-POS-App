@@ -74,7 +74,7 @@ const EditMemberTier = () => {
       maxPoints: tier.maxPoints != null ? String(tier.maxPoints).replace(/[^\d]/g, "") : "",
       discountPercent:
         tier.discountPercent != null ? String(tier.discountPercent).replace(/[^\d]/g, "") : "",
-      isActive: tier.status === "active",
+      isActive: tier.status === "active" || tier.status === "true",
       selectedIcon: "star",
       selectedColor: tier.color || "#f59e0b",
       perks: (typeof tier.benefits === "string" ? tier.benefits.split("\n").filter(Boolean) : tier.benefits || []).map((text, i) => ({ id: i + 1, text }))

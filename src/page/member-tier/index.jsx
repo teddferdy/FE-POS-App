@@ -43,12 +43,16 @@ const MemberTier = () => {
     refetch
   } = useQuery(["member-tiers"], getAllMemberTier, { staleTime: 30000 });
   const tiers = tiersData?.data || tiersData?.tiers || [];
+  const normalizeStatus = (s) => {
+    const v = String(s ?? "").toLowerCase();
+    if (v === "true" || v === "active") return "active";
+    if (v === "false" || v === "inactive") return "inactive";
+    return "draft";
+  };
   const activeTierCount =
-    tiersData?.activeCount ?? tiers.filter((t) => t.status === "active").length;
-  const draftTierCount = tiers.filter(
-    (t) => t.status !== "active" && t.status !== "inactive"
-  ).length;
-  const inactiveTierCount = tiers.filter((t) => t.status === "inactive").length;
+    tiersData?.activeCount ?? tiers.filter((t) => normalizeStatus(t.status) === "active").length;
+  const draftTierCount = tiers.filter((t) => normalizeStatus(t.status) === "draft").length;
+  const inactiveTierCount = tiers.filter((t) => normalizeStatus(t.status) === "inactive").length;
 
   const filteredTiers = tiers.filter((tier) =>
     tier.name?.toLowerCase().includes(search.toLowerCase())
@@ -71,8 +75,9 @@ const MemberTier = () => {
   });
 
   const statusBadge = (status) => {
-    const isActive = status === "active";
-    const isInactive = status === "inactive";
+    const ns = normalizeStatus(status);
+    const isActive = ns === "active";
+    const isInactive = ns === "inactive";
     return (
       <span
         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${

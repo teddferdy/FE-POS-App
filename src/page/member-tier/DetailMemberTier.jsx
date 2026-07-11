@@ -166,7 +166,7 @@ const DetailMemberTier = () => {
     );
   }
 
-  const isActive = tier.status === "active" || tier.status === true;
+  const isActive = tier.status === "active" || tier.status === true || tier.status === "true";
 
   return (
     <div>
