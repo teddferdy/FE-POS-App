@@ -1072,9 +1072,9 @@ const CheckoutModal = ({
                                 ? `${tier.discountPercent}% ${t("page.cashier.discount")}`
                                 : "-"}
                             </span>
-                            {isSelected && tier.benefits?.length > 0 && (
+                            {isSelected && (Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).length > 0 && (
                               <div className="mt-2 pt-2 border-t border-border/40 space-y-1">
-                                {tier.benefits.map((b, i) => (
+                                {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
                                   <div key={i} className="flex items-start gap-1.5">
                                     <Check size={10} className="text-emerald-500 mt-0.5 shrink-0" />
                                     <span className="text-[11px] text-muted-foreground">{b}</span>

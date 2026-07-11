@@ -77,7 +77,7 @@ const EditMemberTier = () => {
       isActive: tier.status === "active",
       selectedIcon: "star",
       selectedColor: tier.color || "#f59e0b",
-      perks: (tier.benefits || []).map((text, i) => ({ id: i + 1, text }))
+      perks: (typeof tier.benefits === "string" ? tier.benefits.split("\n").filter(Boolean) : tier.benefits || []).map((text, i) => ({ id: i + 1, text }))
     });
   }, [tierData]);
 
@@ -148,7 +148,7 @@ const EditMemberTier = () => {
       minPoints: formData.minPoints === "" ? 0 : Number(formData.minPoints),
       maxPoints: formData.maxPoints === "" ? 0 : Number(formData.maxPoints),
       discountPercent: formData.discountPercent === "" ? 0 : Number(formData.discountPercent),
-      benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== ""),
+      benefits: formData.perks.map((p) => p.text).filter((t) => t.trim() !== "").join("\n"),
       status: saveAsDraft ? "draft" : formData.isActive ? "active" : "inactive",
       color: formData.selectedColor
     });

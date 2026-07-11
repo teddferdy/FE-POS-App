@@ -363,7 +363,7 @@ const EditMember = () => {
                                   )}
                                 </div>
                               </div>
-                              {selected.benefits?.length > 0 && (
+                              {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).length > 0 && (
                                 <div
                                   className="px-4 py-3 border-t"
                                   style={{ borderColor: `${selected.color || "#6366f1"}15` }}>
@@ -371,7 +371,7 @@ const EditMember = () => {
                                     {t("page.member.benefits")}
                                   </p>
                                   <ul className="space-y-1.5">
-                                    {selected.benefits.map((b, i) => (
+                                    {(Array.isArray(selected.benefits) ? selected.benefits : (selected.benefits || "").split("\n").filter(Boolean)).map((b, i) => (
                                       <li
                                         key={i}
                                         className="flex items-start gap-2 text-xs text-muted-foreground">

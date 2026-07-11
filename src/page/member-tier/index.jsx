@@ -139,7 +139,7 @@ const MemberTier = () => {
       header: t("page.memberTier.table.benefits"),
       render: (tier) => (
         <div className="flex flex-wrap gap-1">
-          {(tier.benefits || []).map((benefit, idx) => (
+          {(Array.isArray(tier.benefits) ? tier.benefits : (tier.benefits || "").split("\n").filter(Boolean)).map((benefit, idx) => (
             <span
               key={idx}
               className="bg-primary/10 px-2 py-0.5 rounded text-[10px] font-bold text-primary">
