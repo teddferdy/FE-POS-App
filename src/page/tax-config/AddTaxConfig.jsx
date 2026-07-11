@@ -21,15 +21,16 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import Modal from "@/components/organism/modal";
 
 const taxTypes = [
-  { value: "PPN", label: "PPN" },
-  { value: "PPh", label: "PPh" },
-  { value: "Non-Pajak", label: "Non-Pajak" }
+  { value: "ppn", label: "PPN" },
+  { value: "other", label: "PPh" },
+  { value: "service_charge", label: "Non-Pajak" }
 ];
 
 const AddTaxConfig = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+    type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
     rate: z.coerce
       .number()
       .min(0, t("page.taxConfig.validation.rateNegative"))
@@ -46,6 +47,7 @@ const AddTaxConfig = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      type: "ppn",
       rate: 11,
       description: "",
       isActive: true
@@ -72,7 +74,6 @@ const AddTaxConfig = () => {
     const { isActive, ...rest } = values;
     createMutation.mutate({
       ...rest,
-      type: "percentage",
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };

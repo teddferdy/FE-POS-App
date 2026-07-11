@@ -159,8 +159,8 @@ const EditReservation = () => {
     try {
       const res = await getAvailableTables({
         date: form.getValues("reservationDate"),
-        time: form.getValues("startTime"),
-        guestCount: undefined
+        startTime: form.getValues("startTime"),
+        store: locationDetail?.id || undefined
       });
       setAvailableTables(res.data || []);
     } catch (e) {

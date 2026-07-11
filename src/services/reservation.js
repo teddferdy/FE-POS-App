@@ -1,7 +1,7 @@
 import { axiosInstance } from ".";
 
 export const getReservations = async ({ page = 1, limit = 10, date, status, store } = {}) => {
-  const params = new URLSearchParams({ page, limit });
+  const params = new URLSearchParams({ page, size: limit });
   if (date) params.set("date", date);
   if (status) params.set("status", status);
   if (store) params.set("store", store);
@@ -29,10 +29,10 @@ export const deleteReservation = async (id) => {
   return data;
 };
 
-export const getAvailableTables = async ({ date, time, guestCount, store }) => {
+export const getAvailableTables = async ({ date, startTime, endTime, store }) => {
   const params = new URLSearchParams({ date });
-  if (time) params.set("time", time);
-  if (guestCount) params.set("guestCount", guestCount);
+  if (startTime) params.set("startTime", startTime);
+  if (endTime) params.set("endTime", endTime);
   if (store) params.set("store", store);
   const { data } = await axiosInstance.get(`/reservation/available-tables/list?${params}`);
   return data;

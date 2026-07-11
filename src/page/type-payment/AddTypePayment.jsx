@@ -12,7 +12,6 @@ import UserGuide from "@/components/organism/UserGuide";
 import { addTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import {
@@ -32,7 +31,6 @@ const AddTypePayment = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
     type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
-    deskripsi: z.string().optional().or(z.literal("")),
     status: z.boolean().default(true)
   });
   const navigate = useNavigate();
@@ -46,7 +44,6 @@ const AddTypePayment = () => {
     defaultValues: {
       name: "",
       type: "",
-      deskripsi: "",
       status: true
     }
   });
@@ -131,9 +128,11 @@ const AddTypePayment = () => {
                             <SelectValue placeholder={t("page.typePayment.form.typePlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Tunai">Tunai</SelectItem>
-                            <SelectItem value="Non-Tunai">Non-Tunai</SelectItem>
-                            <SelectItem value="Transfer">Transfer</SelectItem>
+                            <SelectItem value="cash">Tunai</SelectItem>
+                            <SelectItem value="debit">Non-Tunai</SelectItem>
+                            <SelectItem value="credit">Kartu Kredit</SelectItem>
+                            <SelectItem value="e-wallet">E-Wallet</SelectItem>
+                            <SelectItem value="other">Lainnya</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -141,21 +140,6 @@ const AddTypePayment = () => {
                     )}
                   />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="deskripsi"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("page.typePayment.form.description")}</FormLabel>
-                      <Textarea
-                        placeholder={t("page.typePayment.form.descriptionPlaceholder")}
-                        rows={3}
-                        {...field}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <FormField
                   control={form.control}
                   name="status"

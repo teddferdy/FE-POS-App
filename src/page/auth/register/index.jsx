@@ -221,8 +221,7 @@ const RegisterPage = () => {
                 <form
                   onSubmit={form.handleSubmit((values) => {
                     setIsSubmitting(true);
-                    const { confirmPassword, ...payload } = values;
-                    mutateRegister.mutate(payload);
+                    mutateRegister.mutate(values);
                   })}
                   className="space-y-4 md:space-y-5">
                   <FormField

@@ -13,7 +13,6 @@ import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loading } from "@/components/ui/loading";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -35,7 +34,6 @@ const AddShift = () => {
     tanggal_mulai: z.date({ required_error: t("page.shift.add.validation.tanggalMulai") }),
     tanggal_selesai: z.date().optional(),
     karyawan: z.array(z.any()).optional(),
-    deskripsi: z.string().optional().or(z.literal("")),
     status: z.boolean().default(true)
   });
   const navigate = useNavigate();
@@ -69,7 +67,6 @@ const AddShift = () => {
       tanggal_mulai: new Date(),
       tanggal_selesai: undefined,
       karyawan: [],
-      deskripsi: "",
       status: true
     }
   });
@@ -452,23 +449,6 @@ const AddShift = () => {
                           )}
                         </div>
                       )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Deskripsi */}
-                <FormField
-                  control={form.control}
-                  name="deskripsi"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deskripsi</FormLabel>
-                      <Textarea
-                        placeholder={t("page.shift.edit.form.deskripsiPlaceholder")}
-                        rows={3}
-                        {...field}
-                      />
                       <FormMessage />
                     </FormItem>
                   )}

@@ -10,7 +10,6 @@ import { X, Save } from "lucide-react";
 import { getTypePaymentById, editTypePayment } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -31,7 +30,6 @@ const EditTypePayment = () => {
   const formSchema = z.object({
     name: z.string().min(1, t("page.typePayment.validation.nameRequired")),
     type: z.string().min(1, t("page.typePayment.validation.typeRequired")),
-    deskripsi: z.string().optional().or(z.literal("")),
     status: z.boolean().default(true)
   });
   const navigate = useNavigate();
@@ -63,7 +61,6 @@ const EditTypePayment = () => {
     defaultValues: {
       name: "",
       type: "",
-      deskripsi: "",
       status: true
     }
   });
@@ -79,8 +76,7 @@ const EditTypePayment = () => {
           : false;
       form.reset({
         name: item.name || "",
-        type: item.type || item.tipe || "",
-        deskripsi: item.deskripsi || "",
+        type: item.type || "",
         status: statusValue
       });
     }
@@ -209,9 +205,11 @@ const EditTypePayment = () => {
                           <SelectValue placeholder={t("page.typePayment.form.typePlaceholder")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Tunai">Tunai</SelectItem>
-                          <SelectItem value="Non-Tunai">Non-Tunai</SelectItem>
-                          <SelectItem value="Transfer">Transfer</SelectItem>
+                          <SelectItem value="cash">Tunai</SelectItem>
+                          <SelectItem value="debit">Non-Tunai</SelectItem>
+                          <SelectItem value="credit">Kartu Kredit</SelectItem>
+                          <SelectItem value="e-wallet">E-Wallet</SelectItem>
+                          <SelectItem value="other">Lainnya</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -219,21 +217,6 @@ const EditTypePayment = () => {
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="deskripsi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.typePayment.form.description")}</FormLabel>
-                    <Textarea
-                      placeholder={t("page.typePayment.form.descriptionPlaceholder")}
-                      rows={3}
-                      {...field}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="status"

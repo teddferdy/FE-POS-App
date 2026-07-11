@@ -317,14 +317,13 @@ const AddLocation = () => {
     const { latitude, longitude, category, ...rest } = values;
     const payload = {
       ...rest,
-      storeId: values.storeId,
+      store: values.storeId,
       locationId: values.locationId,
       mainBranch: category === "Main Branch",
+      category: category || null,
+      latitude: latitude || null,
+      longitude: longitude || null,
       status: saveAsDraft ? "draft" : values.isActive === false ? "inactive" : "active",
-      coordinates: {
-        lat: latitude,
-        lng: longitude
-      },
       openingHours: openingHoursFormatted,
       socialMedia: socialLinks.filter((s) => s.platform && s.account)
     };

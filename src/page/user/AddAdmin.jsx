@@ -19,6 +19,7 @@ const AddAdmin = () => {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phoneNumber: "",
     locationId: "",
     role: ""
@@ -60,7 +61,16 @@ const AddAdmin = () => {
       return;
     }
     setIsSubmitting(true);
-    createMutation.mutate({ ...form, status: saveAsDraft ? "draft" : "active" });
+    createMutation.mutate({
+      userName: form.name,
+      email: form.email,
+      password: form.password,
+      confirmPassword: form.password,
+      phoneNumber: form.phoneNumber,
+      store: form.locationId ? Number(form.locationId) : null,
+      userType: "admin",
+      status: saveAsDraft ? "draft" : "active"
+    });
   };
 
   return (
@@ -320,7 +330,16 @@ const AddAdmin = () => {
           onConfirm={() => {
             setDraftModal(false);
             setIsSubmitting(true);
-            createMutation.mutate({ ...form, status: "draft" });
+            createMutation.mutate({
+              userName: form.name,
+              email: form.email,
+              password: form.password,
+              confirmPassword: form.password,
+              phoneNumber: form.phoneNumber,
+              store: form.locationId ? Number(form.locationId) : null,
+              userType: "admin",
+              status: "draft"
+            });
           }}
         />
       </div>

@@ -11,7 +11,6 @@ import { getAllShift, editShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/time-picker";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
@@ -26,7 +25,6 @@ const EditShift = () => {
     nama_shift: z.string().min(1, t("page.shift.edit.validation.namaShift")),
     jam_mulai: z.string().min(1, t("page.shift.edit.validation.jamMulai")),
     jam_selesai: z.string().min(1, t("page.shift.edit.validation.jamSelesai")),
-    deskripsi: z.string().optional().or(z.literal("")),
     status: z.boolean().default(true)
   });
   const navigate = useNavigate();
@@ -51,7 +49,6 @@ const EditShift = () => {
       nama_shift: "",
       jam_mulai: "",
       jam_selesai: "",
-      deskripsi: "",
       status: true
     }
   });
@@ -65,7 +62,6 @@ const EditShift = () => {
         nama_shift: shift.nama_shift || "",
         jam_mulai: shift.jam_mulai || "",
         jam_selesai: shift.jam_selesai || "",
-        deskripsi: shift.deskripsi || "",
         status:
           shift.status === "Aktif" ||
           shift.status === 1 ||
@@ -216,21 +212,6 @@ const EditShift = () => {
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="deskripsi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("page.shift.edit.form.deskripsi")}</FormLabel>
-                    <Textarea
-                      placeholder={t("page.shift.edit.form.deskripsiPlaceholder")}
-                      rows={3}
-                      {...field}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="status"

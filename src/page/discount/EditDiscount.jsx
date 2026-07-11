@@ -262,7 +262,7 @@ const EditDiscount = () => {
       conditions: conditions || {},
       store: allStores ? null : selectedStores[0] || null,
       description: values.description || null,
-      status: saveAsDraft ? false : !!values.isActive
+      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive"
     };
     updateMutation.mutate(payload);
   };

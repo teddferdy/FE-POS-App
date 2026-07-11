@@ -20,15 +20,16 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import AbortController from "@/components/organism/abort-controller";
 
 const taxTypes = [
-  { value: "PPN", label: "PPN" },
-  { value: "PPh", label: "PPh" },
-  { value: "Non-Pajak", label: "Non-Pajak" }
+  { value: "ppn", label: "PPN" },
+  { value: "other", label: "PPh" },
+  { value: "service_charge", label: "Non-Pajak" }
 ];
 
 const EditTaxConfig = () => {
   const { t } = useTranslation();
   const formSchema = z.object({
     name: z.string().min(1, t("page.taxConfig.validation.nameRequired")),
+    type: z.string().min(1, t("page.taxConfig.validation.typeRequired")),
     rate: z.coerce.number().min(0, t("page.taxConfig.validation.rateNegative")),
     description: z.string().optional().or(z.literal("")),
     isActive: z.boolean().default(true)
@@ -70,6 +71,7 @@ const EditTaxConfig = () => {
     if (tax?.id) {
       form.reset({
         name: tax.name || "",
+        type: tax.type || "ppn",
         rate: tax.rate || 0,
         description: tax.description || "",
         isActive: tax.status === "active"
@@ -94,7 +96,6 @@ const EditTaxConfig = () => {
     updateMutation.mutate({
       id: taxId,
       ...rest,
-      type: "percentage",
       status: saveAsDraft ? "draft" : isActive ? "active" : "inactive"
     });
   };
