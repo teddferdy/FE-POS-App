@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Plus, PackageOpen, Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import { Users, CheckCircle, FileEdit, XCircle } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { getAllMember, deleteMember } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
@@ -445,20 +445,7 @@ const MemberList = () => {
                         ))}
                       </div>
                     </div>
-                  ) : tiers.length === 0 ? (
-                    <div className="flex items-center gap-3 w-full">
-                      <PackageOpen size={20} className="text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground flex-1">
-                        {t("page.member.list.noTier")}
-                      </span>
-                      <Button
-                        onClick={() => navigate("/add-member-tier")}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
-                        <Plus size={16} />
-                        {t("page.member.list.addMemberTier")}
-                      </Button>
-                    </div>
-                  ) : (
+                  ) : tiers.length > 0 && (
                     <>
                       <div className="flex items-center gap-2 mb-4">
                         <span className="material-symbols-outlined text-primary text-lg">
