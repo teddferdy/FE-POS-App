@@ -56,6 +56,8 @@ const AddDiscount = () => {
   const [draftModal, setDraftModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [pendingValues, setPendingValues] = useState(null);
 
   const { data: locationsData, isLoading: locsLoading } = useQuery(
     ["allLocations"],
@@ -208,7 +210,7 @@ const AddDiscount = () => {
       minimumOrder: values.minPurchase || 0,
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
-      conditions,
+      conditions: conditions || {},
       store: allStores ? null : selectedStores[0] || null,
       description: values.description || null,
       status: saveAsDraft ? false : !!values.isActive
@@ -223,7 +225,10 @@ const AddDiscount = () => {
       return;
     }
     form.clearErrors("store");
-    form.handleSubmit((v) => onSubmit(v, false))();
+    form.handleSubmit((v) => {
+      setPendingValues(v);
+      setConfirmModal(true);
+    })();
   };
 
   return (
@@ -800,6 +805,18 @@ const AddDiscount = () => {
             setDraftModal(false);
             const values = form.getValues();
             onSubmit(values, true);
+          }}
+        />
+        <Modal
+          type="confirm"
+          open={confirmModal}
+          onOpenChange={setConfirmModal}
+          title={t("page.discount.add.confirmTitle")}
+          description={t("page.discount.add.confirmDescription")}
+          confirmText={t("button.save")}
+          onConfirm={() => {
+            setConfirmModal(false);
+            if (pendingValues) onSubmit(pendingValues, false);
           }}
         />
         {createMutation.isLoading && <Loading fullscreen size="lg" label={t("button.saving")} />}

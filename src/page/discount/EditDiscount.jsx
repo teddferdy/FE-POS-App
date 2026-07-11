@@ -259,7 +259,7 @@ const EditDiscount = () => {
       minimumOrder: values.minPurchase || 0,
       maximumDiscount: values.maxDiscount || 0,
       code: values.code || null,
-      conditions,
+      conditions: conditions || {},
       store: allStores ? null : selectedStores[0] || null,
       description: values.description || null,
       status: saveAsDraft ? false : !!values.isActive

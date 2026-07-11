@@ -41,6 +41,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import LocationMapPicker from "@/components/ui/location-map-picker";
 import { Combobox } from "@/components/ui/combobox";
@@ -51,7 +52,11 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { addLocation, editLocation, generateLocationId } from "@/services/location";
+import {
+  addLocation,
+  editLocation,
+  generateLocationId
+} from "@/services/location";
 import { getAllEmployee } from "@/services/employee";
 import {
   getProvinces,
@@ -189,18 +194,21 @@ const AddLocation = () => {
     }
   }, [provincesData]);
 
+  const generateIdCalled = useRef(false);
+
   useEffect(() => {
-    if (!isEdit) {
-      generateLocationId().then((res) => {
-        if (res?.data) {
-          form.setValue("locationId", res.data.locationId);
-          form.setValue("storeId", res.data.storeId);
-        }
-        setIsIdGenerating(false);
-      });
-    } else {
-      setIsIdGenerating(false);
+    if (isEdit || generateIdCalled.current) {
+      if (isEdit) setIsIdGenerating(false);
+      return;
     }
+    generateIdCalled.current = true;
+    generateLocationId().then((res) => {
+      if (res?.data) {
+        form.setValue("locationId", res.data.locationId);
+        form.setValue("storeId", res.data.storeId);
+      }
+      setIsIdGenerating(false);
+    });
   }, []);
 
   const form = useForm({
@@ -1197,7 +1205,34 @@ const AddLocation = () => {
         </div>
       </div>
 
-      {isIdGenerating && <Loading fullscreen size="lg" label={t("common.loading")} />}
+      {isIdGenerating && (
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              ))}
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-[300px] w-full rounded-lg" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-20 w-full rounded-lg" />
+              <Skeleton className="h-48 w-full rounded-lg" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {isSubmitting && <Loading fullscreen size="lg" label={t("common.saving")} />}
 

@@ -282,6 +282,8 @@
   "page.discount.add.draftTitle": "Save Draft?",
   "page.discount.add.draftDescription": "Discount will be saved as draft",
   "page.discount.add.draftConfirm": "Yes, Save",
+  "page.discount.add.confirmTitle": "Add Discount?",
+  "page.discount.add.confirmDescription": "Are you sure you want to add this discount?",
   "page.discount.edit.description": "Edit discount data",
   "page.discount.edit.saveAsDraft": "Save as Draft",
   "page.discount.edit.toast.error": "Failed",

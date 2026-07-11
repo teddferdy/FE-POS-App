@@ -92,6 +92,7 @@ const AddPurchaseOrder = () => {
     () => getAllSupplier({ limit: 999, store: store || undefined }),
     { staleTime: 30000 }
   );
+  const suppliers = suppliersData?.data || [];
 
   const { data: employeesData } = useQuery(
     ["employees-dropdown"],
@@ -100,7 +101,7 @@ const AddPurchaseOrder = () => {
   );
   const employees = employeesData?.data || [];
 
-  const filteredSuppliers = suppliersData.filter((s) =>
+  const filteredSuppliers = suppliers.filter((s) =>
     s.name?.toLowerCase().includes(supplierSearch.toLowerCase())
   );
 

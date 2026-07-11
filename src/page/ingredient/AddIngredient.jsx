@@ -78,7 +78,7 @@ const AddIngredient = () => {
     category: z.string().nullable(),
     unit: z.string(),
     baseUnit: z.string(),
-    conversionFactor: z.number(),
+    conversionFactor: z.coerce.string(),
     stock: z.number(),
     minStock: z.number(),
     costPrice: z.number(),
@@ -111,7 +111,7 @@ const AddIngredient = () => {
       name: "",
       unit: "pcs",
       baseUnit: "pcs",
-      conversionFactor: 1,
+      conversionFactor: "1",
       stock: 0,
       minStock: 0,
       costPrice: 0,
@@ -134,10 +134,10 @@ const AddIngredient = () => {
     const hint = conversionHints[watchUnit];
     if (hint) {
       form.setValue("baseUnit", hint.base);
-      form.setValue("conversionFactor", hint.factor);
+      form.setValue("conversionFactor", String(hint.factor));
     } else {
       form.setValue("baseUnit", watchUnit);
-      form.setValue("conversionFactor", 1);
+      form.setValue("conversionFactor", "1");
     }
   }, [watchUnit]);
 

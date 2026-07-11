@@ -281,6 +281,8 @@
   "page.discount.add.draftTitle": "Simpan Draft?",
   "page.discount.add.draftDescription": "Diskon akan disimpan sebagai draft",
   "page.discount.add.draftConfirm": "Ya, Simpan",
+  "page.discount.add.confirmTitle": "Tambah Diskon?",
+  "page.discount.add.confirmDescription": "Apakah Anda yakin ingin menambahkan diskon ini?",
   "page.discount.edit.description": "Edit data diskon",
   "page.discount.edit.saveAsDraft": "Simpan sebagai Draft",
   "page.discount.edit.toast.error": "Gagal",
