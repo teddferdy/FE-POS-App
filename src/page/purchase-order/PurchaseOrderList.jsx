@@ -782,8 +782,9 @@ const PurchaseOrderList = () => {
                   }
                 }}
               />
-            </div>
-          )}
+                </div>
+                </>
+                )}
 
           <div>
             <TipsCard
@@ -835,6 +836,7 @@ const PurchaseOrderList = () => {
                     <Skeleton className="h-16 w-full" />
                   </div>
                 ) : (
+                <>
                 <div className="bg-muted/30 rounded-lg p-4">
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                     <div>
