@@ -123,7 +123,9 @@ const AddExpense = () => {
         : selectedStore[0] || ""
       : cookie?.user?.store || "";
     const payload = {
-      ...values,
+      ...Object.fromEntries(
+        Object.entries(values).filter(([_, v]) => v !== "" && v !== undefined)
+      ),
       store: storeValue ? Number(storeValue) : undefined,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
