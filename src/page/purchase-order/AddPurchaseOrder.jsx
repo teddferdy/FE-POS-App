@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
@@ -87,17 +88,25 @@ const AddPurchaseOrder = () => {
   const [newSupplierName, setNewSupplierName] = useState("");
   const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
-  const { data: suppliersData } = useQuery(
+  const {
+    data: suppliersData,
+    isLoading: suppliersLoading,
+    isFetching: suppliersFetching
+  } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
-    { }
+    { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: employeesData } = useQuery(
+  const {
+    data: employeesData,
+    isLoading: employeesLoading,
+    isFetching: employeesFetching
+  } = useQuery(
     ["employees-dropdown"],
     () => getAllEmployee({ limit: 999, status: "active" }),
-    { }
+    { staleTime: 30000 }
   );
   const employees = employeesData?.data || [];
 
@@ -109,15 +118,21 @@ const AddPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
-    
-  });
+  const {
+    data: locationsData,
+    isLoading: locationsLoading,
+    isFetching: locationsFetching
+  } = useQuery(["locations-for-po"], () => getAllLocation(), { staleTime: 30000 });
   const locations = locationsData?.data || [];
 
-  const { data: ingredientsData } = useQuery(
+  const {
+    data: ingredientsData,
+    isLoading: ingredientsLoading,
+    isFetching: ingredientsFetching
+  } = useQuery(
     ["ingredients-po", selectedStore],
     () => getAllIngredients({ store: locationParam, limit: 999 }),
-    {  enabled: !!selectedStore }
+    { enabled: !!selectedStore, staleTime: 30000 }
   );
   const ingredients = ingredientsData?.data || [];
   const activeIngredients = ingredients.filter((i) => i.status === "active");
@@ -125,6 +140,12 @@ const AddPurchaseOrder = () => {
 
   const getFilteredIngredients = (search) =>
     activeIngredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
+
+  const allDropdownsLoading =
+    suppliersLoading || suppliersFetching ||
+    employeesLoading || employeesFetching ||
+    locationsLoading || locationsFetching ||
+    ingredientsLoading || ingredientsFetching;
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },
@@ -293,6 +314,36 @@ const AddPurchaseOrder = () => {
         </div>
       </div>
 
+      {allDropdownsLoading ? (
+        <div className="space-y-6">
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-14 rounded-none" />
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            </div>
+          </Card>
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-14 rounded-none" />
+            <div className="p-6 space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-10 w-1/3" />
+                  <Skeleton className="h-10 w-16" />
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+              ))}
+            </div>
+          </Card>
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-20 rounded-none" />
+          </Card>
+        </div>
+      ) : (
       <div>
         <div>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -756,6 +807,7 @@ const AddPurchaseOrder = () => {
           </form>
         </div>
       </div>
+      )}
 
       <Modal
         type="confirm"
