@@ -432,7 +432,7 @@ const PurchaseOrderList = () => {
             title={t("page.purchaseOrder.list.action.detail")}>
             <Eye size={15} />
           </Button>
-          {po.status !== "cancelled" &&
+          {po.status !== "cancelled" && po.status !== "draft" &&
             (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
               <Button
                 variant="ghost"

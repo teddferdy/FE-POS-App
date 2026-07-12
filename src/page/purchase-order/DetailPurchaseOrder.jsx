@@ -459,7 +459,7 @@ export default function DetailPurchaseOrder() {
                 <CreditCard size={16} className="text-muted-foreground" />
                 {t("page.purchaseOrder.detail.payment")}
               </h2>
-              {remaining > 0 && po.status !== "cancelled" && (
+              {remaining > 0 && po.status !== "cancelled" && po.status !== "draft" && (
                 <Button size="sm" variant="outline" onClick={() => setPaymentModalOpen(true)}>
                   <Banknote size={14} className="mr-1" />
                   {t("page.purchaseOrder.detail.pay")}
