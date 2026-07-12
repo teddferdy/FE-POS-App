@@ -700,6 +700,7 @@ const PurchaseOrderList = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
+            <>
             <div data-tour="purchase-order-table" className="mt-6">
               <DataTable
                 columns={columns}
@@ -782,9 +783,7 @@ const PurchaseOrderList = () => {
                   }
                 }}
               />
-                </div>
-                </>
-                )}
+            </div>
 
           <div>
             <TipsCard
@@ -796,8 +795,8 @@ const PurchaseOrderList = () => {
               ]}
             />
           </div>
-        </>
-      )}
+            </>
+          )}
 
       {returModal &&
         returPo &&

@@ -769,41 +769,41 @@ const AddPurchaseOrder = () => {
                         <Skeleton className="h-8 w-48" />
                       </div>
                     ) : (
-                    <div className="flex flex-col items-end space-y-2">
-                      <div className="flex items-center gap-3">
-                        <label className="text-sm text-muted-foreground font-medium">
-                          {t("page.purchaseOrder.add.discount")}
-                        </label>
-                        <Input
-                          placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
-                          value={discount ? formatIDR(discount) : ""}
-                          onChange={(e) => setDiscount(parseIDR(e.target.value))}
-                          className="h-9 text-sm w-36 text-right"
-                        />
+                      <div className="flex flex-col items-end space-y-2">
+                        <div className="flex items-center gap-3">
+                          <label className="text-sm text-muted-foreground font-medium">
+                            {t("page.purchaseOrder.add.discount")}
+                          </label>
+                          <Input
+                            placeholder={t("page.purchaseOrder.add.rpPlaceholder")}
+                            value={discount ? formatIDR(discount) : ""}
+                            onChange={(e) => setDiscount(parseIDR(e.target.value))}
+                            className="h-9 text-sm w-36 text-right"
+                          />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">
+                            {t("page.purchaseOrder.add.totalPrice")}
+                          </p>
+                          <p className="text-2xl font-bold text-foreground">
+                            Rp {totalAmount.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                        {discount > 0 && (
+                          <>
+                            <div className="w-full border-t border-border my-1" />
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-red-500">
+                                {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
+                                {discount.toLocaleString("id-ID")}
+                              </p>
+                              <p className="text-xl font-bold text-foreground">
+                                Rp {finalAmount.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {t("page.purchaseOrder.add.totalPrice")}
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">
-                          Rp {totalAmount.toLocaleString("id-ID")}
-                        </p>
-                      </div>
-                      {discount > 0 && (
-                        <>
-                          <div className="w-full border-t border-border my-1" />
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-red-500">
-                              {t("page.purchaseOrder.add.discountLabel")} - Rp{" "}
-                              {discount.toLocaleString("id-ID")}
-                            </p>
-                            <p className="text-xl font-bold text-foreground">
-                              Rp {finalAmount.toLocaleString("id-ID")}
-                            </p>
-                          </div>
-                        </>
-                      )}
-                    </div>
                     )}
                   </div>
                 </div>
@@ -826,9 +826,9 @@ const AddPurchaseOrder = () => {
                     {itemsLoading ? (
                       <Skeleton className="h-4 w-28 ml-auto" />
                     ) : (
-                    <p className="text-sm font-semibold">
-                      Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
-                    </p>
+                      <p className="text-sm font-semibold">
+                        Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
+                      </p>
                     )}
                   </div>
                   <div className="flex gap-3">
