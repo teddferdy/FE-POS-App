@@ -41,6 +41,7 @@ const EditPurchaseOrder = () => {
   const [items, setItems] = useState([]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
   const [orderDate, setOrderDate] = useState(null);
   const [orderTime, setOrderTime] = useState("");
   const [dueDate, setDueDate] = useState(null);
@@ -283,7 +284,7 @@ const EditPurchaseOrder = () => {
         price,
         unit: unit || "pcs"
       })),
-      modifiedBy: user?.id
+      status: saveAsDraft ? "draft" : po.status
     });
   };
 
@@ -778,9 +779,10 @@ const EditPurchaseOrder = () => {
                     Simpan sebagai Draft
                   </Button>
                   <Button
-                    type="submit"
+                    type="button"
                     disabled={updateMutation.isLoading}
-                    className="gap-2 min-w-[140px] shadow-md">
+                    className="gap-2 min-w-[140px] shadow-md"
+                    onClick={() => setConfirmModal(true)}>
                     <Save size={18} />
                     {updateMutation.isLoading
                       ? t("common.saving")
@@ -813,6 +815,19 @@ const EditPurchaseOrder = () => {
         onConfirm={() => {
           setDraftModal(false);
           handleSubmit(null, true);
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={confirmModal}
+        onOpenChange={setConfirmModal}
+        title={t("page.purchaseOrder.add.confirmTitle") || "Simpan Perubahan?"}
+        description={t("page.purchaseOrder.add.confirmDesc") || "Pastikan data yang diubah sudah benar sebelum menyimpan."}
+        confirmText={t("common.yes") || "Ya"}
+        cancelText={t("common.no") || "Batal"}
+        onConfirm={() => {
+          setConfirmModal(false);
+          handleSubmit(null, false);
         }}
       />
       <Modal
