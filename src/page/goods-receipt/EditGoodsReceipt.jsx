@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
-import { Save, X, Plus, Trash2, Package } from "lucide-react";
+import { Save, X, Plus, Trash2, Package, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { editGoodsReceipt, getGoodsReceiptById } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -486,6 +486,33 @@ const EditGoodsReceipt = () => {
             doSubmit(true);
           }}
         />
+
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <Lightbulb size={16} className="text-primary" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">
+                {t("page.goodsReceipt.edit.tips.title")}
+              </p>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {t("page.goodsReceipt.edit.tips.1")}
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {t("page.goodsReceipt.edit.tips.2")}
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {t("page.goodsReceipt.edit.tips.3")}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
