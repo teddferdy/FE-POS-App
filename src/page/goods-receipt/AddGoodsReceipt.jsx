@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
@@ -28,7 +29,7 @@ const AddGoodsReceipt = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: poData } = useQuery(
+  const { data: poData, isLoading: loadingPOs } = useQuery(
     ["pos-for-gr"],
     () => getAllPurchaseOrder({ limit: 50, status: "received" }),
     {
@@ -170,6 +171,9 @@ const AddGoodsReceipt = () => {
                 {t("page.goodsReceipt.add.form.purchaseOrder")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
+              {loadingPOs ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
               <select
                 value={poId}
                 onChange={(e) => {
@@ -184,6 +188,7 @@ const AddGoodsReceipt = () => {
                   </option>
                 ))}
               </select>
+              )}
               {selectedPO && (
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-xs text-muted-foreground">
@@ -204,9 +209,11 @@ const AddGoodsReceipt = () => {
 
           <div className="space-y-2">
             <Label>{t("page.goodsReceipt.add.form.items")}</Label>
-            {loadingPo ? (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                {t("page.goodsReceipt.add.loading.items")}
+            {loadingPo && poId ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
               </div>
             ) : poId ? (
               <div className="overflow-x-auto border rounded-lg">
@@ -355,12 +362,16 @@ const AddGoodsReceipt = () => {
 
           <div className="space-y-2">
             <Label>{t("page.goodsReceipt.add.form.notesLabel")}</Label>
+            {loadingPo && poId ? (
+              <Skeleton className="h-16 w-full" />
+            ) : (
             <Textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("page.goodsReceipt.add.placeholder.notes")}
             />
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-4 pt-4 border-t">
