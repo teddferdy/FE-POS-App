@@ -283,7 +283,7 @@ const AddPurchaseOrder = () => {
         d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         return d;
       })(),
-      items: items.map(({ name, ingredientId, qty, price, unit }) => ({
+      items: items.filter(i => saveAsDraft ? true : i.name?.trim()).map(({ name, ingredientId, qty, price, unit }) => ({
         product: null,
         ingredient: ingredientId || null,
         ingredientName: name,
