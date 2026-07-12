@@ -763,6 +763,12 @@ const AddPurchaseOrder = () => {
                   )}
 
                   <div className="bg-muted/40 rounded-xl p-5 mt-4">
+                    {itemsLoading ? (
+                      <div className="space-y-3 flex flex-col items-end">
+                        <Skeleton className="h-9 w-36" />
+                        <Skeleton className="h-8 w-48" />
+                      </div>
+                    ) : (
                     <div className="flex flex-col items-end space-y-2">
                       <div className="flex items-center gap-3">
                         <label className="text-sm text-muted-foreground font-medium">
@@ -798,6 +804,7 @@ const AddPurchaseOrder = () => {
                         </>
                       )}
                     </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -816,9 +823,13 @@ const AddPurchaseOrder = () => {
                     <p className="text-xs text-muted-foreground">
                       {t("page.purchaseOrder.add.totalAfterDiscount")}
                     </p>
+                    {itemsLoading ? (
+                      <Skeleton className="h-4 w-28 ml-auto" />
+                    ) : (
                     <p className="text-sm font-semibold">
                       Rp {(discount > 0 ? finalAmount : totalAmount).toLocaleString("id-ID")}
                     </p>
+                    )}
                   </div>
                   <div className="flex gap-3">
                     <Button
