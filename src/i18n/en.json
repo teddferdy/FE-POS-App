@@ -3340,6 +3340,7 @@
   "page.expense.add.validation.categoryRequired": "Category Required",
   "page.expense.add.validation.dateRequired": "Date Required",
   "page.expense.add.validation.descriptionRequired": "Description is required",
+  "page.expense.add.validation.storeRequired": "Please select a store first",
   "page.expense.detail.actions": "Actions",
   "page.expense.detail.amount": "Amount",
   "page.expense.detail.back": "Back",

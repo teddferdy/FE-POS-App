@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { addExpense, getExpenseCategories } from "@/services/expense";
+import { getAllLocation } from "@/services/location";
 import { Loading } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
+import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -38,6 +40,18 @@ const AddExpense = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [selectedStore, setSelectedStore] = useState([]);
+  const [allStores, setAllStores] = useState(false);
+
+  const role = user?.roleType || "";
+  const isSuperAdmin = role === "super_admin";
+
+  const { data: locationsData, isLoading: locsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    { enabled: isSuperAdmin }
+  );
+  const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: categoriesData, isLoading, isFetching } = useQuery(["expense-categories", store], () =>
     getExpenseCategories(store || undefined)
@@ -46,13 +60,14 @@ const AddExpense = () => {
     (cat) => cat.status === "active"
   );
 
-  const formSchema = z.object({
+  const formSchema = useMemo(() => z.object({
     categoryId: z.string().min(1, t("page.expense.add.validation.categoryRequired")),
     description: z.string().min(1, t("page.expense.add.validation.descriptionRequired")),
     amount: z.coerce.number().min(1, t("page.expense.add.validation.amountRequired")),
     date: z.date({ required_error: t("page.expense.add.validation.dateRequired") }),
-    notes: z.string().optional().or(z.literal(""))
-  });
+    notes: z.string().optional().or(z.literal("")),
+    store: z.string().optional()
+  }), [t]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -61,7 +76,8 @@ const AddExpense = () => {
       description: "",
       amount: "",
       date: new Date(),
-      notes: ""
+      notes: "",
+      store: ""
     }
   });
 
@@ -83,10 +99,17 @@ const AddExpense = () => {
   });
 
   const onSubmit = (values, saveAsDraft = false) => {
-    const store = cookie?.user?.store || "";
+    if (isSuperAdmin && !allStores && selectedStore.length === 0 && !saveAsDraft) {
+      form.setError("store", { message: t("page.expense.add.validation.storeRequired") });
+      return;
+    }
+    form.clearErrors("store");
+    const storeValue = isSuperAdmin
+      ? (allStores ? "" : selectedStore[0] || "")
+      : (cookie?.user?.store || "");
     const payload = {
       ...values,
-      store,
+      store: storeValue ? Number(storeValue) : undefined,
       date: values.date ? format(values.date, "yyyy-MM-dd") : "",
       status: saveAsDraft ? "draft" : "pending"
     };
@@ -118,17 +141,55 @@ const AddExpense = () => {
         </div>
 
         <Card className="p-6">
-          {isLoading || isFetching ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-20 w-full rounded-lg md:col-span-2" />
+          {isLoading || isFetching || (isSuperAdmin && locsLoading) ? (
+            <div className="space-y-6">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg md:col-span-2" />
+              </div>
             </div>
           ) : (
           <Form {...form}>
             <form onSubmit={handleSubmit} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="store"
+                render={() => (
+                  <FormItem>
+                    <FormControl>
+                      <StoreSelectCard
+                        locations={locations}
+                        selectedStores={selectedStore}
+                        onChange={(stores) => {
+                          setSelectedStore(stores);
+                          form.clearErrors("store");
+                        }}
+                        isSuperAdmin={isSuperAdmin}
+                        user={user}
+                        t={t}
+                        title={t("page.category.form.storeSection.title")}
+                        description={t("page.category.form.storeSection.desc")}
+                        noStoreLabel={t("page.category.form.storeSection.noStore")}
+                        addStoreLabel={t("page.category.form.storeSection.addStore")}
+                        storeInfoLabel={t("page.category.form.storeStoreInfo")}
+                        allStores={allStores}
+                        onAllStoresChange={(val) => {
+                          setAllStores(val);
+                          form.clearErrors("store");
+                        }}
+                        navigate={navigate}
+                        mandatory={true}
+                        locationsLoading={locsLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}

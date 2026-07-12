@@ -3294,6 +3294,7 @@
   "page.expense.add.validation.categoryRequired": "Category Required",
   "page.expense.add.validation.dateRequired": "Date Required",
   "page.expense.add.validation.descriptionRequired": "Deskripsi wajib diisi",
+  "page.expense.add.validation.storeRequired": "Pilih toko terlebih dahulu",
   "page.expense.detail.actions": "Aksi",
   "page.expense.detail.amount": "Jumlah",
   "page.expense.detail.back": "Kembali",
