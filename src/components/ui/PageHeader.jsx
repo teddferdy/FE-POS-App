@@ -2,8 +2,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const PageHeader = ({ breadcrumbs = [], title, description, children }) => {
+const PageHeader = ({ breadcrumbs = [], title, description, children, backLink }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -35,9 +37,20 @@ const PageHeader = ({ breadcrumbs = [], title, description, children }) => {
         </nav>
       )}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+        <div className="flex items-center gap-3 min-w-0">
+          {backLink && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0"
+              onClick={() => navigate(backLink)}>
+              <ArrowLeft size={16} />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+            {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+          </div>
         </div>
         {children && (
           <div

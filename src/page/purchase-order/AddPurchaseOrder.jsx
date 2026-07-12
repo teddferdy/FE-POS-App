@@ -315,7 +315,8 @@ const AddPurchaseOrder = () => {
               { label: t("page.purchaseOrder.add.title"), i18nKey: "page.purchaseOrder.add.title" }
             ]}
             title={t("page.purchaseOrder.add.title")}
-            description={t("page.purchaseOrder.add.description")}>
+            description={t("page.purchaseOrder.add.description")}
+            backLink="/purchase-order">
             <UserGuide guideKey="add-purchase-order" />
           </PageHeader>
         </div>

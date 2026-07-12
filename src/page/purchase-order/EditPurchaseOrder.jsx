@@ -319,7 +319,8 @@ const EditPurchaseOrder = () => {
                 { label: t("page.purchaseOrder.edit.title") }
               ]}
               title={t("page.purchaseOrder.edit.title")}
-              description={t("page.purchaseOrder.edit.description")}>
+            description={t("page.purchaseOrder.edit.description")}
+            backLink="/purchase-order">
               <Skeleton className="h-9 w-28" />
             </PageHeader>
           </div>
