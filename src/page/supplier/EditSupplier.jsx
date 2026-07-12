@@ -176,7 +176,8 @@ const EditSupplier = () => {
               { label: t("breadcrumb.editSupplier"), i18nKey: "breadcrumb.editSupplier" }
             ]}
             title={t("page.supplier.edit.title")}
-            description={t("page.supplier.edit.description")}>
+            description={t("page.supplier.edit.description")}
+            backLink="/supplier">
             <UserGuide guideKey="add-supplier" />
           </PageHeader>
         </div>

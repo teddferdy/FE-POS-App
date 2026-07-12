@@ -129,7 +129,8 @@ const EditMember = () => {
               { label: t("breadcrumb.edit") }
             ]}
             title={t("breadcrumb.edit")}
-            description={t("page.member.edit.description")}>
+            description={t("page.member.edit.description")}
+            backLink="/member">
             <UserGuide guideKey="add-member" />
           </PageHeader>
         </div>

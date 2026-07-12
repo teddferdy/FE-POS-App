@@ -99,7 +99,8 @@ const EditCategory = () => {
           { label: t("page.ingredientCategory.add.breadcrumbEdit") }
         ]}
         title={t("page.ingredientCategory.add.titleEdit")}
-        description={t("page.ingredientCategory.add.subtitleEdit")}>
+        description={t("page.ingredientCategory.add.subtitleEdit")}
+        backLink="/ingredient-category">
         <UserGuide guideKey="edit-ingredient-category" />
       </PageHeader>
 

@@ -475,6 +475,7 @@ const EditEmployee = () => {
             ]}
             title={t("page.employee.edit.title")}
             description={t("page.employee.edit.description")}
+            backLink="/employee-list"
           />
         </div>
       </div>

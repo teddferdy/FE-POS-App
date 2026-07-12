@@ -32,7 +32,6 @@ const CashRegisterHistory = () => {
   const [search, setSearch] = useState("");
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation("all"), {
-    
     enabled: isSuperAdmin
   });
 
@@ -45,7 +44,7 @@ const CashRegisterHistory = () => {
         search: search || undefined,
         store: storeFilter === "all" ? undefined : storeFilter
       }),
-    { }
+    {}
   );
 
   const items = data?.data || [];

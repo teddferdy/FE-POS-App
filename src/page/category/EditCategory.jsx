@@ -497,7 +497,8 @@ const EditCategory = () => {
               { label: t("page.category.edit.title") }
             ]}
             title={t("page.category.edit.title")}
-            description={t("page.category.edit.description")}>
+            description={t("page.category.edit.description")}
+            backLink="/category-list">
             <UserGuide guideKey="edit-category" />
           </PageHeader>
         </div>

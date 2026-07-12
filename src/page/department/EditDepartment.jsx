@@ -124,6 +124,7 @@ const EditDepartment = () => {
         ]}
         title={t("page.department.edit.title")}
         description={t("page.department.edit.description")}
+        backLink="/department-list"
       />
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">

@@ -140,6 +140,7 @@ const EditPosition = () => {
         ]}
         title={t("page.position.edit.title")}
         description={t("page.position.edit.description")}
+        backLink="/position-list"
       />
 
       <div className="bg-card p-6 rounded-xl shadow-sm border border-border">

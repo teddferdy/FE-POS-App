@@ -505,7 +505,8 @@ const EditLocation = () => {
               { label: t("page.location.edit.title"), i18nKey: "page.location.edit.title" }
             ]}
             title={t("page.location.edit.title")}
-            description={t("page.location.edit.description")}>
+            description={t("page.location.edit.description")}
+            backLink="/location-list">
             <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
               <span className="material-symbols-outlined text-lg">arrow_back</span>
               {t("breadcrumb.back")}

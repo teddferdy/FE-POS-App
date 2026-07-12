@@ -664,7 +664,8 @@ const EditProduct = () => {
               { label: product.nameProduct || t("page.product.edit.title") }
             ]}
             title={`${t("page.product.edit.editLabel")} ${product.nameProduct || t("page.product.edit.title")}`}
-            description={t("page.product.edit.description")}>
+            description={t("page.product.edit.description")}
+            backLink="/product-list">
             <UserGuide guideKey="add-product" />
           </PageHeader>
         </div>
