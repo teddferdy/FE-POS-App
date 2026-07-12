@@ -54,10 +54,10 @@ const EditGoodsReceipt = () => {
       setItems(
         receipt.items.map((item) => ({
           id: item.id,
-          ingredient: item.product || null,
-          ingredientName: item.productData?.nameProduct || "",
+          ingredient: item.ingredient || item.product || null,
+          ingredientName: item.ingredientData?.name || item.productData?.nameProduct || "",
           product: item.product || null,
-          qty: item.qtyReceived || 0,
+          qty: item.qty || item.qtyReceived || 0,
           unit: item.unit || "pcs",
           qtyReceived: String(item.qtyReceived || 0),
           conditionNotes: item.conditionNotes || "",
@@ -75,19 +75,30 @@ const EditGoodsReceipt = () => {
   );
 
   useEffect(() => {
-    if (poDetail?.data?.items && items.length === 0 && !loaded) {
-      const poItems = poDetail.data.items;
-      const mapped = poItems.map((item) => ({
-        ingredient: item.ingredient || null,
-        ingredientName: item.ingredientName || item.productData?.nameProduct || "",
-        product: item.product || null,
-        qty: item.quantity,
-        unit: item.unit || "pcs",
-        qtyReceived: "0",
-        conditionNotes: "",
-        isFromPo: true
-      }));
-      setItems(mapped);
+    if (!poDetail?.data?.items) return;
+    const poItems = poDetail.data.items;
+    if (items.length === 0 && !loaded) {
+      setItems(
+        poItems.map((item) => ({
+          ingredient: item.ingredient || null,
+          ingredientName: item.ingredientName || item.ingredientData?.name || "",
+          product: item.product || null,
+          qty: item.quantity,
+          unit: item.unit || "pcs",
+          qtyReceived: "0",
+          conditionNotes: "",
+          isFromPo: true
+        }))
+      );
+    } else if (loaded && items.length > 0) {
+      setItems((prev) =>
+        prev.map((it) => {
+          const poItem = poItems.find(
+            (p) => (p.ingredient || p.product) === (it.ingredient || it.product)
+          );
+          return poItem ? { ...it, qty: poItem.quantity } : it;
+        })
+      );
     }
   }, [poDetail, items.length, loaded]);
 
