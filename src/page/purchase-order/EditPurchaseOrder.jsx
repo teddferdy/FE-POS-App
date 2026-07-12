@@ -311,31 +311,30 @@ const EditPurchaseOrder = () => {
         </div>
         <Card className="overflow-hidden border-0 shadow-md rounded-xl">
           <Skeleton className="h-14 rounded-none" />
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20 w-full" />
-                ))}
-              </div>
-            </div>
-          </Card>
-          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-            <Skeleton className="h-14 rounded-none" />
-            <div className="p-6 space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-10 w-1/3" />
-                  <Skeleton className="h-10 w-16" />
-                  <Skeleton className="h-10 w-32" />
-                  <Skeleton className="h-10 w-24" />
-                </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          </Card>
-          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-            <Skeleton className="h-20 rounded-none" />
-          </Card>
-        </div>
+          </div>
+        </Card>
+        <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+          <Skeleton className="h-14 rounded-none" />
+          <div className="p-6 space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-10 w-1/3" />
+                <Skeleton className="h-10 w-16" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-24" />
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+          <Skeleton className="h-20 rounded-none" />
+        </Card>
       </div>
     );
   }
