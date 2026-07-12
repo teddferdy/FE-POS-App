@@ -23,7 +23,8 @@ import {
   ClipboardList,
   FileEdit,
   CircleDollarSign,
-  Ban
+  Ban,
+  Trash2
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import UploadExcelModal from "@/components/organism/UploadExcelModal";
@@ -33,6 +34,7 @@ import {
   getAllPurchaseOrder,
   getPurchaseOrderById,
   cancelPurchaseOrder,
+  deletePurchaseOrder,
   returnPurchaseOrder,
   uploadPurchaseOrderExcel,
   downloadPurchaseOrderExcel
@@ -100,6 +102,8 @@ const PurchaseOrderList = () => {
   const [payModal, setPayModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelPoId, setCancelPoId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deletePoId, setDeletePoId] = useState(null);
   const [payPo, setPayPo] = useState(null);
   const [payForm, setPayForm] = useState({
     amount: "",
@@ -195,6 +199,20 @@ const PurchaseOrderList = () => {
       queryClient.invalidateQueries(["purchase-orders"]);
       setCancelModal(false);
       setCancelPoId(null);
+    },
+    onError: (err) => {
+      toast.error(t("common.failed"), {
+        description: err?.response?.data?.message || err.message
+      });
+    }
+  });
+
+  const deleteMutation = useMutation(deletePurchaseOrder, {
+    onSuccess: () => {
+      toast.success(t("common.success"));
+      queryClient.invalidateQueries(["purchase-orders"]);
+      setDeleteModal(false);
+      setDeletePoId(null);
     },
     onError: (err) => {
       toast.error(t("common.failed"), {
@@ -467,6 +485,19 @@ const PurchaseOrderList = () => {
               }}
               title={t("common.cancel")}>
               <XCircle size={15} />
+            </Button>
+          )}
+          {(po.status === "draft" || po.status === "cancelled") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-600"
+              onClick={() => {
+                setDeletePoId(po.id);
+                setDeleteModal(true);
+              }}
+              title={t("common.delete")}>
+              <Trash2 size={15} />
             </Button>
           )}
           {po.status === "pending" && (
@@ -1200,6 +1231,40 @@ const PurchaseOrderList = () => {
                   onClick={() => cancelMutation.mutate(cancelPoId)}
                   disabled={cancelMutation.isLoading}>
                   {cancelMutation.isLoading ? t("common.processing") : t("common.yes")}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      {deleteModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 z-[80] flex items-center justify-center p-4">
+            <div className="bg-card rounded-xl shadow-lg border border-border w-full max-w-sm">
+              <div className="px-6 py-4 border-b border-border">
+                <h3 className="text-lg font-semibold">
+                  {t("page.purchaseOrder.list.deleteConfirmTitle")}
+                </h3>
+              </div>
+              <div className="p-6">
+                <p className="text-muted-foreground">
+                  {t("page.purchaseOrder.list.deleteConfirmBody")}
+                </p>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDeleteModal(false);
+                    setDeletePoId(null);
+                  }}>
+                  {t("common.no")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => deleteMutation.mutate(deletePoId)}
+                  disabled={deleteMutation.isLoading}>
+                  {deleteMutation.isLoading ? t("common.processing") : t("common.yes")}
                 </Button>
               </div>
             </div>

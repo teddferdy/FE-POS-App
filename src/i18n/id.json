@@ -4589,6 +4589,8 @@
   "page.purchaseOrder.list.tips.4": "Proses retur untuk barang rusak atau tidak sesuai",
   "page.purchaseOrder.list.cancelConfirmTitle": "Batalkan Purchase Order?",
   "page.purchaseOrder.list.cancelConfirmBody": "Purchase order yang dibatalkan tidak dapat dikembalikan. Status akan berubah menjadi cancelled.",
+  "page.purchaseOrder.list.deleteConfirmTitle": "Hapus Purchase Order?",
+  "page.purchaseOrder.list.deleteConfirmBody": "Purchase order yang dihapus tidak dapat dikembalikan. Data akan dihapus secara permanen.",
   "page.purchaseOrder.paymentMethod.cash": "Cash",
   "page.purchaseOrder.paymentMethod.giro": "Giro",
   "page.purchaseOrder.paymentMethod.other": "Other",
