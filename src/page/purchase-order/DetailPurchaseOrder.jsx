@@ -45,7 +45,8 @@ import {
   CheckCircle2,
   XCircle,
   Phone,
-  Banknote
+  Banknote,
+  ShoppingCart
 } from "lucide-react";
 
 export default function DetailPurchaseOrder() {
