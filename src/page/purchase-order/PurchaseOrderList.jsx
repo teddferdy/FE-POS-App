@@ -533,7 +533,7 @@ const PurchaseOrderList = () => {
               </Button>
             </>
           )}
-          {po.status === "received" && (
+          {(po.status === "ordered" || po.status === "received") && (
             <Button
               variant="ghost"
               size="icon"
