@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import PageHeader from "@/components/ui/PageHeader";
@@ -85,14 +86,14 @@ const EditPurchaseOrder = () => {
     }
   }, [po]);
 
-  const { data: suppliersData } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading, isFetching: suppliersFetching } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
     { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: employeesData } = useQuery(
+  const { data: employeesData, isLoading: employeesLoading, isFetching: employeesFetching } = useQuery(
     ["employees-dropdown"],
     () => getAllEmployee({ limit: 999, status: "active" }),
     { staleTime: 30000 }
@@ -107,17 +108,29 @@ const EditPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
-    
+  const { data: locationsData, isLoading: locationsLoading, isFetching: locationsFetching } = useQuery(["locations-for-po"], () => getAllLocation(), {
+    staleTime: 30000
   });
   const locations = locationsData?.data || [];
 
-  const { data: ingredientsData } = useQuery(
+  const { data: ingredientsData, isLoading: ingredientsLoading, isFetching: ingredientsFetching } = useQuery(
     ["ingredients-po-edit", selectedStore],
     () => getAllIngredients({ store: selectedStore, limit: 999 }),
-    {  enabled: !!selectedStore }
+    { enabled: !!selectedStore, staleTime: 30000 }
   );
   const ingredients = ingredientsData?.data || [];
+
+  const headerReady = !loadingPo && !suppliersLoading && !employeesLoading && !locationsLoading;
+  const [ingredientsReady, setIngredientsReady] = useState(false);
+  const prevStoreRef = useRef(selectedStore);
+  useEffect(() => {
+    if (prevStoreRef.current !== selectedStore) {
+      setIngredientsReady(false);
+      prevStoreRef.current = selectedStore;
+    }
+    if (ingredientsData) setIngredientsReady(true);
+  }, [selectedStore, ingredientsData]);
+  const itemsLoading = !!selectedStore && !ingredientsReady;
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const getFilteredIngredients = (search) =>
@@ -283,17 +296,46 @@ const EditPurchaseOrder = () => {
   }
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (loadingPo) {
-    return <Loading fullscreen size="lg" label={t("common.loading")} />;
-  }
 
   if (!po) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-muted-foreground">{t("page.purchaseOrder.detail.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/purchase-order")}>
-          {t("common.back")}
-        </Button>
+      <div className="space-y-6">
+        <PageHeader
+          breadcrumbs={[
+            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
+            { label: t("page.purchaseOrder.list.title"), href: "/purchase-order", i18nKey: "page.purchaseOrder.list.title" },
+            { label: t("page.purchaseOrder.edit.title") }
+          ]}
+          title={t("page.purchaseOrder.edit.title")}
+          description={t("page.purchaseOrder.edit.description")} />
+        <div className="space-y-6">
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-14 rounded-none" />
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            </div>
+          </Card>
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-14 rounded-none" />
+            <div className="p-6 space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-10 w-1/3" />
+                  <Skeleton className="h-10 w-16" />
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+              ))}
+            </div>
+          </Card>
+          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+            <Skeleton className="h-20 rounded-none" />
+          </Card>
+        </div>
       </div>
     );
   }
@@ -541,19 +583,37 @@ const EditPurchaseOrder = () => {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                    onClick={addItem}>
-                    <Plus size={15} />
-                    {t("page.purchaseOrder.add.addItem")}
-                  </Button>
+                  {!itemsLoading && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
+                      onClick={addItem}>
+                      <Plus size={15} />
+                      {t("page.purchaseOrder.add.addItem")}
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="p-6">
-                {items.length === 0 ? (
+                {itemsLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                        <Skeleton className="w-6 h-6 rounded-full shrink-0" />
+                        <Skeleton className="h-9 flex-1" />
+                        <Skeleton className="h-9 w-20 shrink-0" />
+                        <Skeleton className="h-9 w-20 shrink-0" />
+                        <Skeleton className="h-9 w-36 shrink-0" />
+                        <Skeleton className="h-5 w-28 shrink-0" />
+                      </div>
+                    ))}
+                    <p className="text-xs text-muted-foreground text-center pt-2">
+                      {t("page.purchaseOrder.add.loadingIngredients")}
+                    </p>
+                  </div>
+                ) : items.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     {t("page.purchaseOrder.add.noItem")}
                   </p>
