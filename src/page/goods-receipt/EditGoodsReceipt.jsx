@@ -251,12 +251,8 @@ const EditGoodsReceipt = () => {
               </Label>
               <select
                 value={poId}
-                onChange={(e) => {
-                  setPoId(e.target.value);
-                  setItems([]);
-                  setLoaded(false);
-                }}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm">
+                disabled
+                className="w-full h-10 px-3 rounded-md border border-input bg-muted text-sm cursor-not-allowed opacity-70">
                 <option value="">{t("page.goodsReceipt.edit.form.selectPO")}</option>
                 {purchaseOrders.map((po) => (
                   <option key={po.id} value={po.id}>
