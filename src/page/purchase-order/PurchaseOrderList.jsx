@@ -432,7 +432,8 @@ const PurchaseOrderList = () => {
             title={t("page.purchaseOrder.list.action.detail")}>
             <Eye size={15} />
           </Button>
-          {po.status !== "cancelled" && po.status !== "draft" &&
+          {po.status !== "cancelled" &&
+            po.status !== "draft" &&
             (po.totalPaid || 0) < (po.finalAmount || po.totalAmount || 0) && (
               <Button
                 variant="ghost"
@@ -700,7 +701,6 @@ const PurchaseOrderList = () => {
           {isError ? (
             <AbortController refetch={refetch} />
           ) : (
-            <>
             <div data-tour="purchase-order-table" className="mt-6">
               <DataTable
                 columns={columns}
@@ -784,6 +784,7 @@ const PurchaseOrderList = () => {
                 }}
               />
             </div>
+          )}
 
           <div>
             <TipsCard
@@ -795,8 +796,8 @@ const PurchaseOrderList = () => {
               ]}
             />
           </div>
-            </>
-          )}
+        </>
+      )}
 
       {returModal &&
         returPo &&
@@ -835,164 +836,165 @@ const PurchaseOrderList = () => {
                     <Skeleton className="h-16 w-full" />
                   </div>
                 ) : (
-                <>
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.purchaseOrder.list.returInfo.supplier")}
-                      </p>
-                      <p className="text-sm font-medium">{returPo.supplierData?.name || "-"}</p>
+                  <>
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.list.returInfo.supplier")}
+                          </p>
+                          <p className="text-sm font-medium">{returPo.supplierData?.name || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.list.returInfo.pic")}
+                          </p>
+                          <p className="text-sm font-medium">{returPo.picData?.fullName || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.list.returInfo.poDate")}
+                          </p>
+                          <p className="text-sm font-medium">
+                            {returPo.orderDate
+                              ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric"
+                                })
+                              : "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.list.returInfo.poTime")}
+                          </p>
+                          <p className="text-sm font-medium">
+                            {returPo.orderDate
+                              ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })
+                              : "-"}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-xs text-muted-foreground">
+                            {t("page.purchaseOrder.list.returInfo.store")}
+                          </p>
+                          <p className="text-sm font-medium">{returPo.storeData?.name || "-"}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.purchaseOrder.list.returInfo.pic")}
-                      </p>
-                      <p className="text-sm font-medium">{returPo.picData?.fullName || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.purchaseOrder.list.returInfo.poDate")}
-                      </p>
-                      <p className="text-sm font-medium">
-                        {returPo.orderDate
-                          ? new Date(returPo.orderDate).toLocaleDateString("id-ID", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric"
-                            })
-                          : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.purchaseOrder.list.returInfo.poTime")}
-                      </p>
-                      <p className="text-sm font-medium">
-                        {returPo.orderDate
-                          ? new Date(returPo.orderDate).toLocaleTimeString("id-ID", {
-                              hour: "2-digit",
-                              minute: "2-digit"
-                            })
-                          : "-"}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">
-                        {t("page.purchaseOrder.list.returInfo.store")}
-                      </p>
-                      <p className="text-sm font-medium">{returPo.storeData?.name || "-"}</p>
-                    </div>
-                  </div>
-                </div>
 
-                {returItems.length > 0 && (
-                  <div>
-                    <p className="text-sm font-semibold text-foreground mb-2">
-                      {t("page.purchaseOrder.list.returInfo.itemTitle")}
-                    </p>
-                    <div className="overflow-x-auto border border-border rounded-lg">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="bg-muted/50 border-b border-border">
-                            <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">
-                              {t("page.purchaseOrder.list.returInfo.itemHeader")}
-                            </th>
-                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-16">
-                              {t("page.purchaseOrder.list.returInfo.qtyPo")}
-                            </th>
-                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-14">
-                              {t("page.purchaseOrder.list.returInfo.unit")}
-                            </th>
-                            <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-20">
-                              {t("page.purchaseOrder.list.returInfo.return")}
-                            </th>
-                            <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground w-40">
-                              {t("page.purchaseOrder.list.returInfo.notes")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/50">
-                          {returItems.map((item, idx) => (
-                            <tr
-                              key={item.id || idx}
-                              className="hover:bg-muted/20 transition-colors">
-                              <td className="px-3 py-2.5 text-sm font-medium">
-                                {item.productData?.nameProduct || item.ingredientName || "-"}
-                              </td>
-                              <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
-                                {item.quantity || 0}
-                              </td>
-                              <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
-                                {item.unit || "pcs"}
-                              </td>
-                              <td className="px-3 py-2.5 text-center">
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={item.returnQty ?? ""}
-                                  onChange={(e) => {
-                                    const raw = e.target.value;
-                                    if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
-                                    const maxQty = item.quantity || 0;
-                                    const val = parseFloat(raw);
-                                    const capped =
-                                      !isNaN(val) && val > maxQty ? String(maxQty) : raw;
-                                    const normalized = capped
-                                      .replace(/^0+(\d)/, "$1")
-                                      .replace(/^0+(\.)/, "0$1")
-                                      .replace(/^0+$/, "0");
-                                    setReturItems((prev) =>
-                                      prev.map((it, i) =>
-                                        i === idx ? { ...it, returnQty: normalized } : it
-                                      )
-                                    );
-                                  }}
-                                  className={`w-16 h-8 text-center border rounded bg-background text-sm transition-colors ${
-                                    parseFloat(item.returnQty) > 0
-                                      ? "border-amber-300 ring-1 ring-amber-200 dark:border-amber-700"
-                                      : "border-input"
-                                  }`}
-                                  placeholder="0"
-                                />
-                              </td>
-                              <td className="px-3 py-2.5">
-                                <input
-                                  type="text"
-                                  value={item.notes ?? ""}
-                                  onChange={(e) =>
-                                    setReturItems((prev) =>
-                                      prev.map((it, i) =>
-                                        i === idx ? { ...it, notes: e.target.value } : it
-                                      )
-                                    )
-                                  }
-                                  className="w-full h-8 px-2 text-sm border rounded bg-background transition-colors border-input"
-                                  placeholder={t(
-                                    "page.purchaseOrder.list.returInfo.notesPlaceholder"
-                                  )}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+                    {returItems.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-2">
+                          {t("page.purchaseOrder.list.returInfo.itemTitle")}
+                        </p>
+                        <div className="overflow-x-auto border border-border rounded-lg">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/50 border-b border-border">
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">
+                                  {t("page.purchaseOrder.list.returInfo.itemHeader")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-16">
+                                  {t("page.purchaseOrder.list.returInfo.qtyPo")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-14">
+                                  {t("page.purchaseOrder.list.returInfo.unit")}
+                                </th>
+                                <th className="px-3 py-2.5 text-center text-xs font-semibold text-muted-foreground w-20">
+                                  {t("page.purchaseOrder.list.returInfo.return")}
+                                </th>
+                                <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground w-40">
+                                  {t("page.purchaseOrder.list.returInfo.notes")}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/50">
+                              {returItems.map((item, idx) => (
+                                <tr
+                                  key={item.id || idx}
+                                  className="hover:bg-muted/20 transition-colors">
+                                  <td className="px-3 py-2.5 text-sm font-medium">
+                                    {item.productData?.nameProduct || item.ingredientName || "-"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
+                                    {item.quantity || 0}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center text-sm text-muted-foreground">
+                                    {item.unit || "pcs"}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center">
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      value={item.returnQty ?? ""}
+                                      onChange={(e) => {
+                                        const raw = e.target.value;
+                                        if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
+                                        const maxQty = item.quantity || 0;
+                                        const val = parseFloat(raw);
+                                        const capped =
+                                          !isNaN(val) && val > maxQty ? String(maxQty) : raw;
+                                        const normalized = capped
+                                          .replace(/^0+(\d)/, "$1")
+                                          .replace(/^0+(\.)/, "0$1")
+                                          .replace(/^0+$/, "0");
+                                        setReturItems((prev) =>
+                                          prev.map((it, i) =>
+                                            i === idx ? { ...it, returnQty: normalized } : it
+                                          )
+                                        );
+                                      }}
+                                      className={`w-16 h-8 text-center border rounded bg-background text-sm transition-colors ${
+                                        parseFloat(item.returnQty) > 0
+                                          ? "border-amber-300 ring-1 ring-amber-200 dark:border-amber-700"
+                                          : "border-input"
+                                      }`}
+                                      placeholder="0"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <input
+                                      type="text"
+                                      value={item.notes ?? ""}
+                                      onChange={(e) =>
+                                        setReturItems((prev) =>
+                                          prev.map((it, i) =>
+                                            i === idx ? { ...it, notes: e.target.value } : it
+                                          )
+                                        )
+                                      }
+                                      className="w-full h-8 px-2 text-sm border rounded bg-background transition-colors border-input"
+                                      placeholder={t(
+                                        "page.purchaseOrder.list.returInfo.notesPlaceholder"
+                                      )}
+                                    />
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
 
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">
-                    {t("page.purchaseOrder.list.returInfo.reasonLabel")}{" "}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <textarea
-                    className="w-full min-h-[100px] px-3 py-2.5 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
-                    placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
-                    value={returReason}
-                    onChange={(e) => setReturReason(e.target.value)}
-                  />
-                </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1.5">
+                        {t("page.purchaseOrder.list.returInfo.reasonLabel")}{" "}
+                        <span className="text-destructive">*</span>
+                      </label>
+                      <textarea
+                        className="w-full min-h-[100px] px-3 py-2.5 border border-border rounded-lg bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
+                        placeholder={t("page.purchaseOrder.list.returInfo.reasonPlaceholder")}
+                        value={returReason}
+                        onChange={(e) => setReturReason(e.target.value)}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
               <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-2 bg-muted/20">
