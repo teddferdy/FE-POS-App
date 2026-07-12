@@ -4,7 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 import { toast } from "sonner";
-import { Plus, Search, Edit, Trash2, Tag, Eye, FolderOpen, CheckCircle, FileEdit, XCircle } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Tag,
+  Eye,
+  FolderOpen,
+  CheckCircle,
+  FileEdit,
+  XCircle
+} from "lucide-react";
 import { getExpenseCategories, deleteExpenseCategory } from "@/services/expense";
 import { getAllLocation } from "@/services/location";
 import { Button } from "@/components/ui/button";
@@ -29,19 +40,16 @@ const ExpenseCategoryList = () => {
   const MENU_KEY = "/expense-category";
 
   const { data: locData } = useQuery(["locations-expense-category"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
-
-  const store = user?.store || "";
 
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["expense-categories", store],
-    () => getExpenseCategories(store || undefined),
-    { }
+    ["expense-categories"],
+    () => getExpenseCategories(),
+    {}
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {

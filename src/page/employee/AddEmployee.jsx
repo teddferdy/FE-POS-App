@@ -181,33 +181,45 @@ const AddEmployee = () => {
     fetchId();
   }, []);
 
-  const { data: locationsData, isLoading: locLoading } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { retry: 0 }
-  );
+  const {
+    data: locationsData,
+    isLoading: locLoading,
+    isFetching: locFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), { retry: 0 });
   const locations = locationsData?.data || locationsData?.locations || [];
 
-  const { data: positionsData, isLoading: posLoading } = useQuery(
-    ["positions-all"],
-    () => getAllPosition(),
-    { retry: 0 }
-  );
+  const {
+    data: positionsData,
+    isLoading: posLoading,
+    isFetching: posFetching
+  } = useQuery(["positions-all"], () => getAllPosition(), { retry: 0 });
   const positions = positionsData?.data || positionsData?.positions || [];
 
-  const { data: departmentsData, isLoading: deptLoading } = useQuery(
-    ["departments-all"],
-    () => getAllDepartment(),
-    { retry: 0 }
-  );
+  const {
+    data: departmentsData,
+    isLoading: deptLoading,
+    isFetching: deptFetching
+  } = useQuery(["departments-all"], () => getAllDepartment(), { retry: 0 });
   const departments = departmentsData?.data || departmentsData?.departments || [];
 
-  const { data: rolesData, isLoading: roleLoading } = useQuery(["roles"], () => getAllRole(), {
+  const {
+    data: rolesData,
+    isLoading: roleLoading,
+    isFetching: roleFetching
+  } = useQuery(["roles"], () => getAllRole(), {
     retry: 0
   });
   const roles = rolesData?.data || rolesData?.roles || [];
 
-  const dropdownsLoading = locLoading || posLoading || deptLoading || roleLoading;
+  const dropdownsLoading =
+    locLoading ||
+    posLoading ||
+    deptLoading ||
+    roleLoading ||
+    locFetching ||
+    posFetching ||
+    deptFetching ||
+    roleFetching;
 
   const selectedRoleIdForAccess =
     form.watch("roleId") && accessMenuModalOpen ? form.watch("roleId") : null;
@@ -217,7 +229,7 @@ const AddEmployee = () => {
     () => getRoleById(selectedRoleIdForAccess),
     {
       enabled: !!selectedRoleIdForAccess,
-      staleTime: 5 * 60 * 1000
+      retry: 0
     }
   );
   const selectedRoleAccessMenu =
@@ -229,7 +241,7 @@ const AddEmployee = () => {
     ["shifts-all", selectedStore],
     () => getShiftDropdown({ store: selectedStore, statusShift: "active" }),
     {
-      staleTime: 5 * 60 * 1000,
+      retry: 0,
       enabled: !!selectedStore
     }
   );

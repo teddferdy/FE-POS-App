@@ -9,6 +9,7 @@ import { useCookies } from "react-cookie";
 import { X, Save } from "lucide-react";
 import { addExpense, getExpenseCategories } from "@/services/expense";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +39,7 @@ const AddExpense = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
 
-  const { data: categoriesData } = useQuery(["expense-categories", store], () =>
+  const { data: categoriesData, isLoading, isFetching } = useQuery(["expense-categories", store], () =>
     getExpenseCategories(store || undefined)
   );
   const categories = (categoriesData?.data || categoriesData || []).filter(
@@ -117,6 +118,15 @@ const AddExpense = () => {
         </div>
 
         <Card className="p-6">
+          {isLoading || isFetching ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-20 w-full rounded-lg md:col-span-2" />
+            </div>
+          ) : (
           <Form {...form}>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -249,6 +259,7 @@ const AddExpense = () => {
               </div>
             </form>
           </Form>
+          )}
         </Card>
 
         <Modal type="confirm" {...confirmModal()} />
