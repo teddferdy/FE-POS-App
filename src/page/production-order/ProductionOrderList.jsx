@@ -83,7 +83,6 @@ const ProductionOrderList = () => {
   const [completeQty, setCompleteQty] = useState("");
 
   const { data: locData } = useQuery(["locations-production-order"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -95,7 +94,7 @@ const ProductionOrderList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      }),
+      })
   );
 
   const items = data?.data || [];

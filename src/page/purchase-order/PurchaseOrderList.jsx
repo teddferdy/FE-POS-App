@@ -133,7 +133,7 @@ const PurchaseOrderList = () => {
   const { data: poDetail } = useQuery(
     ["po-detail", returPo?.id],
     () => getPurchaseOrderById(returPo.id),
-    { enabled: !!returPo, }
+    { enabled: !!returPo }
   );
 
   useEffect(() => {
@@ -154,14 +154,13 @@ const PurchaseOrderList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
     () =>
-      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
+      getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter })
   );
 
   const returnMutation = useMutation(

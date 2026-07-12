@@ -52,7 +52,6 @@ const PurchaseReturnList = () => {
   const [actionType, setActionType] = useState(null);
 
   const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -67,7 +66,7 @@ const PurchaseReturnList = () => {
         search: search || undefined,
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
-      }),
+      })
   );
 
   const items = data?.data || [];

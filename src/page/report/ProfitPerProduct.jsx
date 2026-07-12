@@ -28,7 +28,7 @@ const ProfitPerProduct = () => {
         startDate,
         endDate
       }),
-    { enabled: true, }
+    { enabled: true }
   );
 
   const items = data?.data || [];

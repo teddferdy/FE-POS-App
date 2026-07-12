@@ -34,16 +34,13 @@ const LowStock = () => {
   const role = user?.roleType || "";
 
   const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isError, refetch } = useQuery(
     ["low-stock"],
     () => getLowStockProducts(),
-    {
-      
-    }
+    {}
   );
 
   const lowStockData = data?.data || {};

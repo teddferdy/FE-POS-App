@@ -73,7 +73,6 @@ const MemberList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -89,9 +88,7 @@ const MemberList = () => {
   const { data: tiersData, isLoading: tiersLoading } = useQuery(
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
-    {
-      
-    }
+    {}
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];
 
@@ -107,7 +104,7 @@ const MemberList = () => {
         tier: tierFilter != null ? tierFilter : undefined,
         statusMember: statusFilter || undefined
       }),
-    { }
+    {}
   );
 
   const deleteMutation = useMutation(deleteMember, {

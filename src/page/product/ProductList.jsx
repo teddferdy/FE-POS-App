@@ -76,7 +76,7 @@ const ProductList = () => {
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-products"],
     () => getAllLocation(),
-    {  enabled: role === "super_admin" }
+    { enabled: role === "super_admin" }
   );
 
   useEffect(() => {
@@ -98,7 +98,7 @@ const ProductList = () => {
         category: categoryFilter,
         sort: sortFilter
       }),
-    { }
+    {}
   );
 
   const { data: categoriesData } = useQuery(
@@ -107,7 +107,7 @@ const ProductList = () => {
       const loc = isSuperAdmin ? (storeFilter === "all" ? "" : storeFilter) : effectiveLocation;
       return getAllCategoryActive({ location: loc });
     },
-    { }
+    {}
   );
 
   const categories = categoriesData?.data || [];

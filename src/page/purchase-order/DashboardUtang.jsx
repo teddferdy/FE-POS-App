@@ -35,7 +35,6 @@ const DashboardUtang = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const { data: locData } = useQuery(["locations-ap-dashboard"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 

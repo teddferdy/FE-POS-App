@@ -23,7 +23,6 @@ const SalesReportPage = () => {
   const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-sales-report"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -32,9 +31,8 @@ const SalesReportPage = () => {
     isLoading: salesLoading,
     isError,
     refetch
-  } = useQuery(
-    ["sales-summary", salesPeriod],
-    () => getSalesSummary({ period: salesPeriod.toLowerCase() }),
+  } = useQuery(["sales-summary", salesPeriod], () =>
+    getSalesSummary({ period: salesPeriod.toLowerCase() })
   );
 
   const handleExport = async () => {

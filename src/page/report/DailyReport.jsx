@@ -23,7 +23,6 @@ const DailyReport = () => {
   const [endDate, setEndDate] = useState(new Date());
 
   const { data: locData } = useQuery(["locations-daily-report"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -33,7 +32,7 @@ const DailyReport = () => {
       getDailyReport({
         date: format(startDate, "yyyy-MM-dd")
       }),
-    { }
+    {}
   );
 
   const reports = data?.data || [];

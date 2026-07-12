@@ -46,9 +46,8 @@ const ExpenseCategoryList = () => {
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["expense-categories"],
-    () => getExpenseCategories(),
+  const { data, isLoading, isFetching, isError, refetch } = useQuery(["expense-categories"], () =>
+    getExpenseCategories()
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {

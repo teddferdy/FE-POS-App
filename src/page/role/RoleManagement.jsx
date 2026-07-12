@@ -26,7 +26,6 @@ const RoleManagement = () => {
   const MENU_KEY = "/role-management";
 
   const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
   const [page, setPage] = useState(1);
@@ -38,9 +37,8 @@ const RoleManagement = () => {
     return PROTECTED_ROLE_NAMES.includes(role.name || "");
   };
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["roles-table", page],
-    () => getAllRoleTable({ page, limit: 10 }),
+  const { data, isLoading, isError, refetch } = useQuery(["roles-table", page], () =>
+    getAllRoleTable({ page, limit: 10 })
   );
 
   const roles = data?.data || [];

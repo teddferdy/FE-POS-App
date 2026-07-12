@@ -22,13 +22,11 @@ const PurchasePaymentList = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
   const { data: locData } = useQuery(["locations-purchase-payments"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["purchase-payments", page, limit],
-    () => getAllPayments({ page, limit }),
+  const { data, isLoading, isError, refetch } = useQuery(["purchase-payments", page, limit], () =>
+    getAllPayments({ page, limit })
   );
 
   const payments = data?.data || [];

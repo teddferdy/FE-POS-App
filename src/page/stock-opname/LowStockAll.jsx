@@ -36,7 +36,6 @@ const LowStockAll = () => {
   const [typeFilter, setTypeFilter] = useState("all");
 
   const { data: locData } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];
@@ -50,7 +49,7 @@ const LowStockAll = () => {
         store: storeFilter !== "all" ? storeFilter : undefined,
         type: typeFilter !== "all" ? typeFilter : undefined,
         search: search || undefined
-      }),
+      })
   );
 
   const items = data?.data?.items || [];

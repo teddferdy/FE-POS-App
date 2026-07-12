@@ -23,7 +23,6 @@ const ProfitLossReport = () => {
   const [endDate, setEndDate] = useState(new Date());
 
   const { data: locData } = useQuery(["locations-profit-loss"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -34,7 +33,7 @@ const ProfitLossReport = () => {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd")
       }),
-    { }
+    {}
   );
 
   const pl = data?.data || {};

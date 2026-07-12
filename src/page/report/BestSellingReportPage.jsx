@@ -22,7 +22,6 @@ const BestSellingReportPage = () => {
   const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 

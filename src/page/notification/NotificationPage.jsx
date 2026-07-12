@@ -158,9 +158,8 @@ const NotificationPage = () => {
   const [page, setPage] = useState(1);
   const [selectedNotif, setSelectedNotif] = useState(null);
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    ["notifications", page],
-    () => getAllNotifications({ page, limit: 20 }),
+  const { data, isLoading, isError, refetch } = useQuery(["notifications", page], () =>
+    getAllNotifications({ page, limit: 20 })
   );
 
   const { mutate: readMutate } = useMutation(markAsRead, {

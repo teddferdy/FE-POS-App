@@ -61,9 +61,7 @@ const MemberDetail = () => {
     }
   );
 
-  const { data: tierData } = useQuery(["member-tiers"], () => getAllMemberTier(), {
-    
-  });
+  const { data: tierData } = useQuery(["member-tiers"], () => getAllMemberTier(), {});
 
   const { data: pointData, isLoading: pointLoading } = useQuery(
     ["member-point-history", id, pointPage],
