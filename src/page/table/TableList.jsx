@@ -80,13 +80,12 @@ const TableList = () => {
   const [formStore, setFormStore] = useState("");
 
   const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tables", locationParam, page, limit, search],
-    () => getTablesByStore({ location: locationParam, page, limit, search }),
+    () => getTablesByStore({ location: locationParam, page, limit, search })
   );
 
   const deleteMutation = useMutation(deleteTable, {

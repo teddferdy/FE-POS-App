@@ -69,7 +69,6 @@ const StockOpnameList = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-stock-opname"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -82,7 +81,7 @@ const StockOpnameList = () => {
         search: search || undefined,
         location: warehouseFilter !== "all" ? warehouseFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      }),
+      })
   );
 
   const items = data?.data || data?.stockOpname || [];

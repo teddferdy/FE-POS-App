@@ -64,7 +64,6 @@ const StockTransferList = () => {
   const effectiveStore = storeFilter !== "all" ? storeFilter : store;
 
   const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -79,7 +78,7 @@ const StockTransferList = () => {
         limit,
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
-      }),
+      })
   );
 
   const receiveMutation = useMutation(receiveStockTransfer, {

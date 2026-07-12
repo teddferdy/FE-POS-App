@@ -57,7 +57,6 @@ const SupplierList = () => {
   const MENU_KEY = "/supplier";
 
   const { data: locData } = useQuery(["locations-suppliers"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -74,7 +73,7 @@ const SupplierList = () => {
             : ""
           : user?.store || ""
       }),
-    { }
+    {}
   );
 
   const deleteMutation = useMutation(deleteSupplier, {

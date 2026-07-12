@@ -148,8 +148,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const confirmLogout = async () => {
     try {
       await logOut();
+    } catch (e) {}
     try {
       sessionStorage.removeItem("user");
+    } catch (e) {}
     removeCookie("token");
     removeCookie("user");
     removeCookie("activeStore");

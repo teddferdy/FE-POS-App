@@ -94,6 +94,7 @@ const LoginPage = () => {
       }
       try {
         sessionStorage.setItem("user", JSON.stringify(user));
+      } catch (e) {}
       // ponytail: strip accessMenu to fit 4KB cookie limit, canAccess falls back to sessionStorage
       const { accessMenu, ...userSlim } = user;
       setCookie("user", userSlim, { path: "/" });
