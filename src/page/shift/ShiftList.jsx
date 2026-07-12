@@ -44,14 +44,13 @@ const ShiftList = () => {
   const locationParam = user?.store || "";
 
   const { data: locData } = useQuery(["locations-shift"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["shifts", page, limit, search],
     () => getAllShift({ store: locationParam, page, limit, statusShift: search }),
-    {}
   );
 
   const deleteMutation = useMutation(deleteShift, {

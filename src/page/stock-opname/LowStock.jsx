@@ -34,7 +34,7 @@ const LowStock = () => {
   const role = user?.roleType || "";
 
   const { data: locData } = useQuery(["locations-low-stock"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -42,7 +42,7 @@ const LowStock = () => {
     ["low-stock"],
     () => getLowStockProducts(),
     {
-      staleTime: 30 * 1000
+      
     }
   );
 

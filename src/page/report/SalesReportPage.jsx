@@ -23,7 +23,7 @@ const SalesReportPage = () => {
   const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-sales-report"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -35,7 +35,6 @@ const SalesReportPage = () => {
   } = useQuery(
     ["sales-summary", salesPeriod],
     () => getSalesSummary({ period: salesPeriod.toLowerCase() }),
-    {}
   );
 
   const handleExport = async () => {

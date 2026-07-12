@@ -48,7 +48,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
     enabled: role === "super_admin",
-    staleTime: 60 * 1000
+    
   });
   const locations = locationsData?.data || [];
 
@@ -248,7 +248,7 @@ export const NotificationBell = () => {
   const [localUnread, setLocalUnread] = useState(0);
 
   const { data: unreadData } = useQuery("unread-notifications", getUnreadCount, {
-    staleTime: 60 * 1000,
+    
     onSuccess: (data) => {
       const count = data?.data?.count || data?.count || 0;
       setLocalUnread(count);

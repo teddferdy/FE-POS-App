@@ -57,7 +57,7 @@ const DiscountList = () => {
     : user?.store;
 
   const { data: locData } = useQuery(["locations-discounts"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
   const { data, isLoading, isFetching } = useQuery(

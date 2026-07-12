@@ -33,7 +33,7 @@ const AddAdmin = () => {
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: rolesData } = useQuery(["roles-all"], () => getAllRole(), {
-    staleTime: 5 * 60 * 1000
+    
   });
   const roles = rolesData?.data || rolesData?.roles || [];
 

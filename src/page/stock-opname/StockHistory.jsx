@@ -59,7 +59,7 @@ const StockHistory = () => {
   const [searchProduct] = useState("");
 
   const { data: locData } = useQuery(["locations-stock-history"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -76,13 +76,11 @@ const StockHistory = () => {
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined
       }),
-    {}
   );
 
   const { data: productsData } = useQuery(
     ["products-dropdown", searchProduct],
     () => getAllProductTable({ location: "", limit: 100, page: 1, statusProduct: "all" }),
-    {}
   );
 
   const histories = data?.data || [];

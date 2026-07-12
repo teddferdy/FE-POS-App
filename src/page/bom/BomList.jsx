@@ -30,7 +30,7 @@ const BomList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: locData } = useQuery(["locations-bom"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

@@ -64,7 +64,7 @@ const StockTransferList = () => {
   const effectiveStore = storeFilter !== "all" ? storeFilter : store;
 
   const { data: locData } = useQuery(["locations-stock-transfer"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -80,7 +80,6 @@ const StockTransferList = () => {
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    {}
   );
 
   const receiveMutation = useMutation(receiveStockTransfer, {

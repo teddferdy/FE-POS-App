@@ -82,7 +82,7 @@ const KitchenDisplay = () => {
     : cookie?.activeStore || cookie?.user?.store;
 
   const { data: locData } = useQuery(["locations-kitchen"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

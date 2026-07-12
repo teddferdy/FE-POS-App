@@ -83,7 +83,7 @@ const CategoryList = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -103,7 +103,7 @@ const CategoryList = () => {
               : ""
             : user?.store || "")
       }),
-    { staleTime: 3 * 60 * 1000 }
+    { }
   );
 
   const deleteMutation = useMutation(deleteCategory, {

@@ -115,27 +115,25 @@ const CheckoutModal = ({
   const { data: customersData } = useQuery(
     ["customers", store],
     () => getAllCustomer({ page: 1, limit: 999, store }),
-    { staleTime: 5 * 60 * 1000, enabled: !!store }
+    { enabled: !!store }
   );
   const { data: discountsData } = useQuery(
     ["discounts-active", store],
     () => getAllDiscount({ page: 1, limit: 999, location: store }),
-    { staleTime: 5 * 60 * 1000, enabled: !!store }
+    { enabled: !!store }
   );
   const { data: tiersData } = useQuery(
     ["member-tiers-active"],
-    () => getAllMemberTier({ status: "active" }),
-    { staleTime: 5 * 60 * 1000 }
+    () => getAllMemberTier({ status: "active" })
   );
   const { data: paymentMethodsData } = useQuery(
     ["payment-methods-active"],
-    () => getAllTypePayment({ store, status: "active" }),
-    { staleTime: 5 * 60 * 1000 }
+    () => getAllTypePayment({ store, status: "active" })
   );
   const { data: tablesData } = useQuery(
     ["table-availability", store],
     () => getTableAvailability({ location: store }),
-    { enabled: !!store, staleTime: 30_000 }
+    { enabled: !!store }
   );
   const availableTables = useMemo(() => {
     const data = tablesData?.data?.tables || [];
@@ -146,7 +144,7 @@ const CheckoutModal = ({
   const { data: memberData } = useQuery(
     ["member-points", customerId],
     () => getMemberById({ id: customerId }),
-    { enabled: !!customerId, retry: false, staleTime: 10 * 1000 }
+    { enabled: !!customerId, retry: false }
   );
 
   const customers = useMemo(() => {

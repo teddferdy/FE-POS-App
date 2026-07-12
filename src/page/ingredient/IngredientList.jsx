@@ -52,7 +52,7 @@ const IngredientList = () => {
   const MENU_KEY = "/ingredient";
 
   const { data: locData } = useQuery(["locations-ingredients"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

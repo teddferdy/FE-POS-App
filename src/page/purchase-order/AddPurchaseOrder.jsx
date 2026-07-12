@@ -90,14 +90,14 @@ const AddPurchaseOrder = () => {
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
-    { staleTime: 30000 }
+    { }
   );
   const suppliers = suppliersData?.data || [];
 
   const { data: employeesData } = useQuery(
     ["employees-dropdown"],
     () => getAllEmployee({ limit: 999, status: "active" }),
-    { staleTime: 30000 }
+    { }
   );
   const employees = employeesData?.data || [];
 
@@ -110,14 +110,14 @@ const AddPurchaseOrder = () => {
   );
 
   const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
-    staleTime: 60000
+    
   });
   const locations = locationsData?.data || [];
 
   const { data: ingredientsData } = useQuery(
     ["ingredients-po", selectedStore],
     () => getAllIngredients({ store: locationParam, limit: 999 }),
-    { staleTime: 30000, enabled: !!selectedStore }
+    {  enabled: !!selectedStore }
   );
   const ingredients = ingredientsData?.data || [];
   const activeIngredients = ingredients.filter((i) => i.status === "active");

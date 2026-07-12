@@ -50,11 +50,10 @@ const EmployeeList = () => {
     ["employees", page, limit, search, locationFilter, positionFilter],
     () =>
       getAllEmployee({ page, limit, search, location: locationFilter, position: positionFilter }),
-    {}
   );
 
   const { data: locData } = useQuery(["locations-employees"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

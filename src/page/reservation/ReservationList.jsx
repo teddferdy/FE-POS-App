@@ -74,7 +74,7 @@ const ReservationList = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
   const storeMap = Object.fromEntries((locData?.data || []).map((s) => [String(s.id), s.name]));
@@ -100,7 +100,6 @@ const ReservationList = () => {
         status: statusFilter !== "all" ? statusFilter : undefined,
         store: storeFilter !== "all" ? storeFilter : undefined
       }),
-    {}
   );
 
   const deleteMutation = useMutation(deleteReservation, {

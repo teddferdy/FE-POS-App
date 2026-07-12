@@ -202,12 +202,12 @@ const AddStockOpname = () => {
   const { data: productsData } = useQuery(
     ["all-products-for-opname", activeLocationId],
     () => getAllProduct({ location: activeLocationId, nameProduct: "", category: "" }),
-    { staleTime: 60000, enabled: !!activeLocationId }
+    {  enabled: !!activeLocationId }
   );
   const { data: productsFallback } = useQuery(
     ["all-products-for-opname-fallback"],
     () => getAllProduct({ location: "", nameProduct: "", category: "" }),
-    { staleTime: 60000, enabled: !activeLocationId }
+    {  enabled: !activeLocationId }
   );
   const allProducts = activeLocationId ? productsData?.data || [] : productsFallback?.data || [];
 

@@ -46,7 +46,7 @@ const AddShift = () => {
     ["employees-for-shift"],
     () => getAllEmployee({ limit: 100 }),
     {
-      staleTime: 5 * 60 * 1000
+      
     }
   );
   const employees = (employeesData?.data || employeesData?.employees || []).filter(

@@ -30,7 +30,7 @@ const CustomerOrderManagement = () => {
   const [acceptingId, setAcceptingId] = useState(null);
 
   const { data: locData } = useQuery(["locations-customer-orders"], () => getAllLocation("all"), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

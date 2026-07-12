@@ -67,14 +67,13 @@ const CategoryList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data: locData } = useQuery(["locations-ingredient-categories"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ingredient-categories", page, search],
     () => getAllIngredientCategoryTable({ page, limit, search }),
-    {}
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {

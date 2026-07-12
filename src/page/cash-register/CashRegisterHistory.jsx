@@ -32,7 +32,7 @@ const CashRegisterHistory = () => {
   const [search, setSearch] = useState("");
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation("all"), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

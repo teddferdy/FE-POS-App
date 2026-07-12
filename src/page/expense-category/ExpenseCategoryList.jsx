@@ -49,7 +49,6 @@ const ExpenseCategoryList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["expense-categories"],
     () => getExpenseCategories(),
-    {}
   );
 
   const deleteMutation = useMutation(deleteExpenseCategory, {

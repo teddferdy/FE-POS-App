@@ -161,7 +161,6 @@ const NotificationPage = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["notifications", page],
     () => getAllNotifications({ page, limit: 20 }),
-    {}
   );
 
   const { mutate: readMutate } = useMutation(markAsRead, {

@@ -68,14 +68,13 @@ const TaxConfigList = () => {
   const locationParam = user?.store || "";
 
   const { data: locData } = useQuery(["locations-tax"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["tax-configs", page, limit, search],
     () => getAllTaxConfig({ location: locationParam, page, limit, search }),
-    {}
   );
 
   const deleteMutation = useMutation(deleteTaxConfig, {

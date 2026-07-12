@@ -62,7 +62,7 @@ const MemberDetail = () => {
   );
 
   const { data: tierData } = useQuery(["member-tiers"], () => getAllMemberTier(), {
-    staleTime: 300000
+    
   });
 
   const { data: pointData, isLoading: pointLoading } = useQuery(

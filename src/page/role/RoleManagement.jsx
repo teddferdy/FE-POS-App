@@ -26,7 +26,7 @@ const RoleManagement = () => {
   const MENU_KEY = "/role-management";
 
   const { data: locData } = useQuery(["locations-role"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
   const [page, setPage] = useState(1);
@@ -41,7 +41,6 @@ const RoleManagement = () => {
   const { data, isLoading, isError, refetch } = useQuery(
     ["roles-table", page],
     () => getAllRoleTable({ page, limit: 10 }),
-    {}
   );
 
   const roles = data?.data || [];

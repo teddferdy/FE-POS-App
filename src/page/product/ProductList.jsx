@@ -76,7 +76,7 @@ const ProductList = () => {
   const { data: locData, isLoading: isLoadingLocations } = useQuery(
     ["locations-products"],
     () => getAllLocation(),
-    { staleTime: 5 * 60 * 1000, enabled: role === "super_admin" }
+    {  enabled: role === "super_admin" }
   );
 
   useEffect(() => {
@@ -98,7 +98,7 @@ const ProductList = () => {
         category: categoryFilter,
         sort: sortFilter
       }),
-    { staleTime: 3 * 60 * 1000 }
+    { }
   );
 
   const { data: categoriesData } = useQuery(
@@ -107,7 +107,7 @@ const ProductList = () => {
       const loc = isSuperAdmin ? (storeFilter === "all" ? "" : storeFilter) : effectiveLocation;
       return getAllCategoryActive({ location: loc });
     },
-    { staleTime: 3 * 60 * 1000 }
+    { }
   );
 
   const categories = categoriesData?.data || [];

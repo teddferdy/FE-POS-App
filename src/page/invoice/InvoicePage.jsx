@@ -101,7 +101,6 @@ const InvoicePreview = ({
   showMemberInfo = true,
   showSocialMedia = true,
   socialMedia = [],
-  socialMediaVisible = {}
 }) => {
   const { t } = useTranslation();
   const subtotal = sampleItems.reduce((sum, i) => sum + i.qty * i.price, 0);
@@ -250,7 +249,7 @@ const InvoicePage = () => {
     ["active-locations"],
     () => getAllLocation("active"),
     {
-      staleTime: 5 * 60 * 1000
+      
     }
   );
   const locationList = locData?.data || locData || [];
@@ -261,7 +260,7 @@ const InvoicePage = () => {
     refetch: refetchStore
   } = useQuery(["store-detail", selectedStore], () => getLocationById({ id: selectedStore }), {
     enabled: !!selectedStore,
-    staleTime: 60 * 1000
+    
   });
   const locationDetail = (storeData?.data || storeData) ?? null;
   const hasStore = !!locationDetail && !!(locationDetail?.name || locationDetail?.storeName);
@@ -284,27 +283,27 @@ const InvoicePage = () => {
 
   const { data: provinces } = useQuery(["provinces"], getProvinces, {
     enabled: hasStore && !!locationDetail?.province,
-    staleTime: 30 * 60 * 1000
+    
   });
   const { data: cities } = useQuery(
     ["cities", locationDetail?.province],
     () => getCities(locationDetail.province),
-    { enabled: hasStore && !!locationDetail?.province, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.province, }
   );
   const { data: districts } = useQuery(
     ["districts", locationDetail?.city],
     () => getDistricts(locationDetail.city),
-    { enabled: hasStore && !!locationDetail?.city, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.city, }
   );
   const { data: villages } = useQuery(
     ["villages", locationDetail?.district],
     () => getVillages(locationDetail.district),
-    { enabled: hasStore && !!locationDetail?.district, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.district, }
   );
   const { data: postalCodes } = useQuery(
     ["postal-codes", locationDetail?.village],
     () => getPostalCode(locationDetail.village),
-    { enabled: hasStore && !!locationDetail?.village, staleTime: 30 * 60 * 1000 }
+    { enabled: hasStore && !!locationDetail?.village, }
   );
 
   const provinceName =
@@ -330,7 +329,7 @@ const InvoicePage = () => {
     () => getInvoiceSetting(selectedStore),
     {
       enabled: !!selectedStore,
-      staleTime: 5 * 60 * 1000
+      
     }
   );
 

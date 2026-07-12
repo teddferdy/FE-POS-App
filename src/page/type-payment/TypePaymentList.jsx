@@ -67,7 +67,7 @@ const TypePaymentList = () => {
   const MENU_KEY = "/type-payment-list";
 
   const { data: locData } = useQuery(["locations-type-payment"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

@@ -60,7 +60,7 @@ const EditPosition = () => {
   const position = positionData?.data || positionData;
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
-    staleTime: 5 * 60 * 1000
+    
   });
   const departments = departmentsData?.data || departmentsData?.departments || [];
 

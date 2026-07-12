@@ -90,7 +90,7 @@ const EditPurchaseOrder = () => {
     () => getAllSupplier({ limit: 999, store: store || undefined }),
 
     () => getAllEmployee({ limit: 999, status: "active" }),
-    { staleTime: 30000 }
+    { }
   );
   const employees = employeesData?.data || [];
 
@@ -103,14 +103,14 @@ const EditPurchaseOrder = () => {
   );
 
   const { data: locationsData } = useQuery(["locations-for-po"], () => getAllLocation(), {
-    staleTime: 60000
+    
   });
   const locations = locationsData?.data || [];
 
   const { data: ingredientsData } = useQuery(
     ["ingredients-po-edit", selectedStore],
     () => getAllIngredients({ store: selectedStore, limit: 999 }),
-    { staleTime: 30000, enabled: !!selectedStore }
+    {  enabled: !!selectedStore }
   );
   const ingredients = ingredientsData?.data || [];
   const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);

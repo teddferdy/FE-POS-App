@@ -22,7 +22,7 @@ const BestSellingReportPage = () => {
   const [exportLoading, setExportLoading] = useState(false);
 
   const { data: locData } = useQuery(["locations-best-selling"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

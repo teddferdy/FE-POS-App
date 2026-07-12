@@ -124,7 +124,7 @@ const AddProduct = () => {
   const { data: categoriesData } = useQuery(
     ["categories-for-product", firstStore],
     () => getAllCategoryActive({ location: firstStore }),
-    { staleTime: 30000, enabled: true }
+    {  enabled: true }
   );
   const categories = categoriesData?.data || categoriesData?.categories || [];
 

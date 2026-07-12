@@ -37,7 +37,7 @@ const ExpenseList = () => {
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
 
   const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

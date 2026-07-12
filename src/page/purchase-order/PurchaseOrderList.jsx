@@ -133,7 +133,7 @@ const PurchaseOrderList = () => {
   const { data: poDetail } = useQuery(
     ["po-detail", returPo?.id],
     () => getPurchaseOrderById(returPo.id),
-    { enabled: !!returPo, staleTime: 0 }
+    { enabled: !!returPo, }
   );
 
   useEffect(() => {
@@ -154,7 +154,7 @@ const PurchaseOrderList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const { data: locData } = useQuery(["locations-purchase-orders"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -162,7 +162,6 @@ const PurchaseOrderList = () => {
     ["purchase-orders", page, limit, search, storeFilter, statusFilter],
     () =>
       getAllPurchaseOrder({ location: locationParam, page, limit, search, status: statusFilter }),
-    {}
   );
 
   const returnMutation = useMutation(

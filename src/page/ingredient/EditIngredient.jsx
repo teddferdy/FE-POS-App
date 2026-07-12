@@ -87,14 +87,12 @@ const EditIngredient = () => {
   const { data: suppliersData } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
-    {}
   );
   const suppliers = suppliersData?.data || [];
 
   const { data: categoriesData } = useQuery(
     ["ingredient-categories-dropdown"],
     () => getAllIngredientCategory(),
-    {}
   );
   const categories = categoriesData?.data || [];
 

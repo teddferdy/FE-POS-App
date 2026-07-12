@@ -53,7 +53,7 @@ const GoodsReceiptList = () => {
   const isSuperAdmin = user?.roleType === "super_admin";
 
   const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

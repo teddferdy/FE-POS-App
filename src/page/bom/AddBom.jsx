@@ -34,14 +34,14 @@ const AddBom = () => {
   const [draftModal, setDraftModal] = useState(false);
 
   const { data: prodData } = useQuery(["products-for-bom"], () => getAllProduct({}), {
-    staleTime: 60000
+    
   });
   const products = prodData?.data || [];
 
   const { data: ingData } = useQuery(
     ["ingredients-for-bom", user?.store],
     () => getAllIngredients({ store: user?.store, limit: 999 }),
-    { staleTime: 60000 }
+    { }
   );
   const ingredients = (ingData?.data || []).filter((i) => i.status === "active");
 

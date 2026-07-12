@@ -96,7 +96,7 @@ const EditDiscount = () => {
     ["locations"],
     () => getAllLocation(),
     {
-      staleTime: 5 * 60 * 1000
+      
     }
   );
   const locations = locData?.data || [];

@@ -51,7 +51,7 @@ const CashierPage = () => {
     getAllLocation,
     {
       enabled: isSuperAdmin,
-      staleTime: 60 * 1000
+      
     }
   );
   const locationList = locsData?.data || locsData || [];
@@ -101,7 +101,7 @@ const CashierPage = () => {
     () => getProductByOutlet({ location: store, search: search || undefined }),
     {
       enabled: !!store,
-      staleTime: 3 * 60 * 1000,
+      
 
     }
   );

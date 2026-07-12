@@ -41,7 +41,7 @@ const AddStockTransfer = () => {
   const [cancelModal, setCancelModal] = useState(false);
 
   const { data: locData } = useQuery(["locations-for-transfer"], getAllLocation, {
-    staleTime: 60000
+    
   });
   const locations = locData?.data || locData?.locations || locData || [];
   const storeOptions = locations.map((l) => ({ value: String(l.id), label: l.name }));
@@ -49,7 +49,7 @@ const AddStockTransfer = () => {
   const { data: prodData } = useQuery(
     ["products-for-transfer", fromStore],
     () => getAllProduct({ location: fromStore, status: "active" }),
-    { staleTime: 60000, enabled: !!fromStore }
+    {  enabled: !!fromStore }
   );
   const products = prodData?.data || [];
 

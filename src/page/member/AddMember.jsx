@@ -52,7 +52,7 @@ const AddMember = () => {
     ["member-tiers-active"],
     () => getAllMemberTier({ status: "active" }),
     {
-      staleTime: 5 * 60 * 1000
+      
     }
   );
   const tiers = tiersData?.data || tiersData?.tiers || [];

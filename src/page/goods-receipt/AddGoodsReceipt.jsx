@@ -32,7 +32,7 @@ const AddGoodsReceipt = () => {
     ["pos-for-gr"],
     () => getAllPurchaseOrder({ limit: 50, status: "received" }),
     {
-      staleTime: 60000
+      
     }
   );
   const purchaseOrders = poData?.data || [];

@@ -145,7 +145,6 @@ export default function AccessMenuModal({
     try {
       const parsed = value ? JSON.parse(value) : [];
       employeePerms = Array.isArray(parsed) ? parseAccessMenuToPermissions(parsed) : {};
-    } catch (e) {}
     const merged = { ...rolePerms };
     Object.keys(employeePerms).forEach((menu) => {
       merged[menu] = { ...(merged[menu] || {}), ...employeePerms[menu] };

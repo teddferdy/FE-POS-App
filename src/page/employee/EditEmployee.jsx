@@ -261,17 +261,17 @@ const EditEmployee = () => {
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: positionsData } = useQuery(["positions-all"], () => getAllPosition(), {
-    staleTime: 5 * 60 * 1000
+    
   });
   const positions = positionsData?.data || positionsData?.positions || [];
 
   const { data: departmentsData } = useQuery(["departments-all"], () => getAllDepartment(), {
-    staleTime: 5 * 60 * 1000
+    
   });
   const departments = departmentsData?.data || departmentsData?.departments || [];
 
   const { data: rolesData } = useQuery(["roles"], getAllRole, {
-    staleTime: 5 * 60 * 1000
+    
   });
   const roles = rolesData?.data || rolesData?.roles || [];
 
@@ -283,7 +283,7 @@ const EditEmployee = () => {
     () => getRoleById(selectedRoleIdForAccess),
     {
       enabled: !!selectedRoleIdForAccess,
-      staleTime: 5 * 60 * 1000
+      
     }
   );
   const selectedRoleAccessMenu =
@@ -295,7 +295,7 @@ const EditEmployee = () => {
     ["shifts-all", selectedStore],
     () => getShiftDropdown({ store: selectedStore, statusShift: "active" }),
     {
-      staleTime: 5 * 60 * 1000,
+      
       enabled: !!selectedStore
     }
   );

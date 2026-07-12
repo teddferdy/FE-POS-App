@@ -35,7 +35,7 @@ const AddProductionOrder = () => {
   // const [productSearch, setProductSearch] = useState("");
 
   const { data: productsData } = useQuery(["products-for-po"], () => getAllProduct({}), {
-    staleTime: 60000
+    
   });
   const products = productsData?.data || [];
 

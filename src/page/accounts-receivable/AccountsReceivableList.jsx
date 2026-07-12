@@ -43,7 +43,7 @@ const AccountsReceivableList = () => {
   const [payAmount, setPayAmount] = useState("");
 
   const { data: locData } = useQuery(["locations-ar"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -60,7 +60,6 @@ const AccountsReceivableList = () => {
             : ""
           : user?.store
       }),
-    {}
   );
 
   const { data: agingData } = useQuery(["ar-aging"], () => getARAging(), {
@@ -261,7 +260,6 @@ const AccountsReceivableList = () => {
           <div className="flex items-center gap-2">
             {["", "UNPAID", "PARTIAL", "PAID", "OVERDUE"].map((s) => (
               <button
-                key={s}
                 onClick={() => {
                   setStatusFilter(s);
                   setPage(1);

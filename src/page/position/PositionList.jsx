@@ -64,12 +64,12 @@ const PositionList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data: locData } = useQuery(["locations-positions"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
   const { data: departmentData } = useQuery(["departments-all"], getAllDepartment, {
-    staleTime: 5 * 60 * 1000
+    
   });
 
   const departments = departmentData?.data || departmentData?.departments || [];
@@ -83,7 +83,6 @@ const PositionList = () => {
         statusRole: "all",
         search
       }),
-    {}
   );
 
   const deleteMutation = useMutation(deletePosition, {

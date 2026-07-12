@@ -28,7 +28,7 @@ const PriceStoreList = () => {
   const [editPrice, setEditPrice] = useState("");
 
   const { data: locData, isLoading } = useQuery(["locations-price-store"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);
@@ -42,7 +42,7 @@ const PriceStoreList = () => {
     () => getProductByOutlet({ location: selectedStore }),
     {
       enabled: !!selectedStore,
-      staleTime: 60000
+      
     }
   );
   const allProducts = useMemo(() => prodData?.data || prodData || [], [prodData]);

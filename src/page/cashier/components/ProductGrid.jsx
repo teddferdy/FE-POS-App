@@ -33,7 +33,7 @@ const ProductGrid = ({
 
     () => getAllCategoryActive({ location: store }),
 
-    { enabled: !!store, staleTime: 3 * 60 * 1000 }
+    { enabled: !!store, }
   );
   const categories = categoriesData?.data || categoriesData || [];
 

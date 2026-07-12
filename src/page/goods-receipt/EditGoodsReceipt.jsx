@@ -39,7 +39,7 @@ const EditGoodsReceipt = () => {
   } = useQuery(["goods-receipt-edit", id], () => getGoodsReceiptById(id), { enabled: !!id });
 
   const { data: poData } = useQuery(["pos-for-gr-edit"], () => getAllPurchaseOrder({ limit: 50 }), {
-    staleTime: 60000
+    
   });
   const purchaseOrders = poData?.data || [];
 

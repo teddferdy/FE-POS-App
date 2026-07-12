@@ -23,7 +23,7 @@ const CashFlowReport = () => {
   const [endDate, setEndDate] = useState(new Date());
 
   const { data: locData } = useQuery(["locations-cash-flow"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -34,7 +34,7 @@ const CashFlowReport = () => {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd")
       }),
-    { staleTime: 30000 }
+    { }
   );
 
   const cf = data?.data || {};

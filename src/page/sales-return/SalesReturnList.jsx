@@ -49,7 +49,7 @@ const SalesReturnList = () => {
   const [actionType, setActionType] = useState(null);
 
   const { data: locData } = useQuery(["locations-sales-return"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 
@@ -65,7 +65,6 @@ const SalesReturnList = () => {
         store: locationParam,
         status: statusFilter !== "all" ? statusFilter : undefined
       }),
-    {}
   );
 
   const items = data?.data || [];

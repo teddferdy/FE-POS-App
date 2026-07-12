@@ -62,7 +62,7 @@ const DepartmentList = () => {
   const [isDownloadingData, setIsDownloadingData] = useState(false);
 
   const { data: locData } = useQuery(["locations-departments"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
+    
     enabled: isSuperAdmin
   });
 

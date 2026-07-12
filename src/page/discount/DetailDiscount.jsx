@@ -47,7 +47,7 @@ const DetailDiscount = () => {
   const discount = data?.data || data;
 
   const { data: locData } = useQuery(["locations"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000
+    
   });
   const locations = locData?.data || [];
 

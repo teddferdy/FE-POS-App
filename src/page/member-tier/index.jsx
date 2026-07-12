@@ -33,7 +33,6 @@ const MemberTier = () => {
   const [limit, setLimit] = useState(5);
 
   const { data: locData } = useQuery(["locations-member-tier"], () => getAllLocation(), {
-    staleTime: 5 * 60 * 1000,
     enabled: isSuperAdmin
   });
 
@@ -43,7 +42,7 @@ const MemberTier = () => {
     isFetching,
     isError,
     refetch
-  } = useQuery(["member-tiers"], getAllMemberTier, { staleTime: 30000 });
+  } = useQuery(["member-tiers"], getAllMemberTier);
   const tiers = tiersData?.data || tiersData?.tiers || [];
   const normalizeStatus = (s) => {
     const v = String(s ?? "").toLowerCase();
