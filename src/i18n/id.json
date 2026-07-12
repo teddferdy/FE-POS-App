@@ -5124,6 +5124,7 @@
     "Untuk restore, buka halaman entitas terkait dan gunakan tombol Import Excel di masing-masing halaman."
   ],
   "page.goodsReceipt.detail.status.draft": "Draft",
+  "page.goodsReceipt.detail.status.completed": "Selesai",
   "page.ingredientCategory.list.viewTitle": "Lihat",
   "page.location.modal.deleteTitle": "Hapus Lokasi?",
   "page.location.modal.deleteDesc": "Apakah Anda yakin ingin menghapus lokasi ini? Tindakan ini tidak dapat dibatalkan.",

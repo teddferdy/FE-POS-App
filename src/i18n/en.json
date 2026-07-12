@@ -5136,6 +5136,7 @@
     "To restore, open the respective entity page and use the Import Excel button."
   ],
   "page.goodsReceipt.detail.status.draft": "Draft",
+  "page.goodsReceipt.detail.status.completed": "Completed",
   "page.ingredientCategory.list.viewTitle": "View",
   "page.location.modal.deleteTitle": "Delete Location?",
   "page.location.modal.deleteDesc": "Are you sure you want to delete this location? This action cannot be undone.",
