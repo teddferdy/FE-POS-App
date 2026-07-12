@@ -3357,6 +3357,7 @@
   "page.expense.edit.saving": "Menyimpan...",
   "page.expense.list.approved": "Approved",
   "page.expense.list.pending": "Pending",
+  "page.expense.list.draft": "Draft",
   "page.expense.list.rejected": "Rejected",
   "page.expense.list.statusDraft": "Draft",
   "page.expense.list.statusApproved": "Status Approved",

@@ -295,8 +295,8 @@ const ExpenseList = () => {
           ) : (
             <>
               {isFetching || isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+                  {[...Array(5)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl border border-border p-4">
                       <div className="flex items-start justify-between mb-3">
                         <Skeleton className="h-3 w-24" />
@@ -308,7 +308,7 @@ const ExpenseList = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
                   <StatCard
                     label={t("page.expense.list.total")}
                     value={total}
@@ -316,16 +316,22 @@ const ExpenseList = () => {
                     variant="default"
                   />
                   <StatCard
-                    label={t("page.expense.list.approved")}
-                    value={stats.approved || 0}
-                    icon={CheckCircle}
-                    variant="active"
+                    label={t("page.expense.list.draft")}
+                    value={stats.draft || 0}
+                    icon={FileEdit}
+                    variant="draft"
                   />
                   <StatCard
                     label={t("page.expense.list.pending")}
                     value={stats.pending || 0}
                     icon={FileEdit}
-                    variant="draft"
+                    variant="warning"
+                  />
+                  <StatCard
+                    label={t("page.expense.list.approved")}
+                    value={stats.approved || 0}
+                    icon={CheckCircle}
+                    variant="active"
                   />
                   <StatCard
                     label={t("page.expense.list.rejected")}
