@@ -4587,6 +4587,8 @@
   "page.purchaseOrder.list.tips.2": "Atur tanggal jatuh tempo untuk menghindari keterlambatan pembayaran",
   "page.purchaseOrder.list.tips.3": "Terima barang untuk memperbarui stok secara otomatis",
   "page.purchaseOrder.list.tips.4": "Proses retur untuk barang rusak atau tidak sesuai",
+  "page.purchaseOrder.list.cancelConfirmTitle": "Batalkan Purchase Order?",
+  "page.purchaseOrder.list.cancelConfirmBody": "Purchase order yang dibatalkan tidak dapat dikembalikan. Status akan berubah menjadi cancelled.",
   "page.purchaseOrder.paymentMethod.cash": "Cash",
   "page.purchaseOrder.paymentMethod.giro": "Giro",
   "page.purchaseOrder.paymentMethod.other": "Other",
