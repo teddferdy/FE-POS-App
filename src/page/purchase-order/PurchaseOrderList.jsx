@@ -134,7 +134,7 @@ const PurchaseOrderList = () => {
     }
   });
 
-  const { data: poDetail } = useQuery(
+  const { data: poDetail, isLoading: loadingReturPo } = useQuery(
     ["po-detail", returPo?.id],
     () => getPurchaseOrderById(returPo.id),
     { enabled: !!returPo }
@@ -817,6 +817,24 @@ const PurchaseOrderList = () => {
                 </div>
               </div>
               <div className="p-6 space-y-5">
+                {loadingReturPo ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className={i === 4 ? "col-span-2" : ""}>
+                          <Skeleton className="h-3 w-16 mb-1" />
+                          <Skeleton className="h-4 w-28" />
+                        </div>
+                      ))}
+                    </div>
+                    <Skeleton className="h-4 w-24 mt-4" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                    </div>
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                ) : (
                 <div className="bg-muted/30 rounded-lg p-4">
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                     <div>
@@ -974,6 +992,7 @@ const PurchaseOrderList = () => {
                     onChange={(e) => setReturReason(e.target.value)}
                   />
                 </div>
+                )}
               </div>
               <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-2 bg-muted/20">
                 <p className="text-xs text-muted-foreground">
