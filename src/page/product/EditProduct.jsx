@@ -158,7 +158,7 @@ const EditProduct = () => {
   );
   const taxOptions = (taxData?.data || []).filter((t) => t.status === "active");
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     getAllLocation,
     {
@@ -771,7 +771,7 @@ const EditProduct = () => {
                                 }}
                                 navigate={navigate}
                                 mandatory={true}
-                                locationsLoading={locsLoading}
+                                locationsLoading={locsLoading || locsFetching}
                               />
                             </FormControl>
                             <FormMessage />

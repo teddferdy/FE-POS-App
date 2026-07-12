@@ -357,7 +357,7 @@ const AddCategory = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     () => getAllLocation(),
     {
@@ -496,7 +496,7 @@ const AddCategory = () => {
                             }}
                             navigate={navigate}
                             mandatory={true}
-                            locationsLoading={locsLoading}
+                            locationsLoading={locsLoading || locsFetching}
                           />
                         </FormControl>
                         <FormMessage />

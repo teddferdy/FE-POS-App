@@ -111,7 +111,7 @@ const AddProduct = () => {
 
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     getAllLocation,
     {
@@ -586,7 +586,7 @@ const AddProduct = () => {
                                 }}
                                 navigate={navigate}
                                 mandatory={true}
-                                locationsLoading={locsLoading}
+                                locationsLoading={locsLoading || locsFetching}
                               />
                             </FormControl>
                             <FormMessage />

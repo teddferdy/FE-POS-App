@@ -92,7 +92,7 @@ const EditDiscount = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData, isLoading: locsLoading } = useQuery(
+  const { data: locData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["locations"],
     () => getAllLocation(),
     {
@@ -359,7 +359,7 @@ const EditDiscount = () => {
                           }}
                           navigate={navigate}
                           mandatory={true}
-                          locationsLoading={locsLoading}
+                          locationsLoading={locsLoading || locsFetching}
                         />
                       </FormControl>
                       <FormMessage />

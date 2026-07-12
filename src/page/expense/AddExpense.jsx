@@ -21,7 +21,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/organism/modal";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
@@ -46,11 +53,11 @@ const AddExpense = () => {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    { enabled: isSuperAdmin }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), { enabled: isSuperAdmin });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const {
@@ -191,7 +198,7 @@ const AddExpense = () => {
                           }}
                           navigate={navigate}
                           mandatory={true}
-                          locationsLoading={locsLoading}
+                          locationsLoading={locsLoading || locsFetching}
                         />
                       </FormControl>
                       <FormMessage />

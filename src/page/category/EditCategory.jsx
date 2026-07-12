@@ -360,7 +360,7 @@ const EditCategory = () => {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     () => getAllLocation(),
     {
@@ -537,7 +537,7 @@ const EditCategory = () => {
                             }}
                             navigate={navigate}
                             mandatory={true}
-                            locationsLoading={locsLoading}
+                            locationsLoading={locsLoading || locsFetching}
                           />
                         </FormControl>
                         <FormMessage />

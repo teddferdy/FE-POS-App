@@ -59,7 +59,7 @@ const AddDiscount = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [pendingValues, setPendingValues] = useState(null);
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     () => getAllLocation(),
     {
@@ -287,7 +287,7 @@ const AddDiscount = () => {
                           }}
                           navigate={navigate}
                           mandatory={true}
-                          locationsLoading={locsLoading}
+                          locationsLoading={locsLoading || locsFetching}
                         />
                       </FormControl>
                       <FormMessage />

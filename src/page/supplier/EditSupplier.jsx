@@ -53,7 +53,7 @@ const EditSupplier = () => {
   const user = cookie?.user;
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     () => getAllLocation(),
     { enabled: isSuperAdmin }
@@ -218,7 +218,7 @@ const EditSupplier = () => {
                               }}
                               navigate={navigate}
                               mandatory={true}
-                              locationsLoading={locsLoading}
+                              locationsLoading={locsLoading || locsFetching}
                             />
                           </FormControl>
                           <FormMessage />

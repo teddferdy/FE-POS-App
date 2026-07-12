@@ -49,7 +49,7 @@ const AddSupplier = () => {
   const [selectedStore, setSelectedStore] = useState([]);
   const [allStores, setAllStores] = useState(false);
 
-  const { data: locationsData, isLoading: locsLoading } = useQuery(
+  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
     ["allLocations"],
     () => getAllLocation(),
     { enabled: isSuperAdmin }
@@ -165,7 +165,7 @@ const AddSupplier = () => {
                               }}
                               navigate={navigate}
                               mandatory={true}
-                              locationsLoading={locsLoading}
+                              locationsLoading={locsLoading || locsFetching}
                             />
                           </FormControl>
                           <FormMessage />
