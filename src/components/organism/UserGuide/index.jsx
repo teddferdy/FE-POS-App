@@ -155,6 +155,18 @@ const guides = {
       { icon: "save", textKey: "guide.addPurchaseOrder.step7" }
     ]
   },
+  "edit-purchase-order": {
+    titleKey: "guide.editPurchaseOrder.title",
+    steps: [
+      { icon: "person", textKey: "guide.editPurchaseOrder.step1" },
+      { icon: "badge", textKey: "guide.editPurchaseOrder.step2" },
+      { icon: "calendar_today", textKey: "guide.editPurchaseOrder.step3" },
+      { icon: "inventory_2", textKey: "guide.editPurchaseOrder.step4" },
+      { icon: "calculate", textKey: "guide.editPurchaseOrder.step5" },
+      { icon: "description", textKey: "guide.editPurchaseOrder.step6" },
+      { icon: "save", textKey: "guide.editPurchaseOrder.step7" }
+    ]
+  },
   "add-ingredient": {
     titleKey: "guide.addIngredient.title",
     steps: [
