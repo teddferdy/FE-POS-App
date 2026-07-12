@@ -1,11 +1,11 @@
 import React from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Tags, Edit3, Calendar, User, Store } from "lucide-react";
+import { ArrowLeft, Tags, Percent, Edit3, Calendar, User, Store } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getDiscountById } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
 
@@ -62,8 +62,6 @@ const DetailDiscount = () => {
       </div>
     );
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -101,7 +99,11 @@ const DetailDiscount = () => {
           {t("page.discount.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{discount.name || "Detail"}</span>
+        {isLoading ? (
+          <Skeleton className="h-4 w-20" />
+        ) : (
+          <span className="text-primary font-semibold">{discount?.name || "Detail"}</span>
+        )}
       </nav>
 
       <div className="flex items-center justify-between">
@@ -110,137 +112,166 @@ const DetailDiscount = () => {
             <ArrowLeft size={16} />
           </Button>
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <Tags size={24} />
+            <Percent size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{discount.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.discount.detail.title")}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{discount?.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">{t("page.discount.detail.title")}</p>
+              </>
+            )}
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/edit-discount?id=${id}`)}>
-          <Edit3 size={14} className="mr-1.5" />
-          {t("common.edit")}
-        </Button>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-discount?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 col-span-1 md:col-span-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
-            <Tags size={16} />
-            Discount Info
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.table.status")}
-              </p>
-              {statusBadge(discount.status, t)}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.store")}</p>
-              <p className="font-medium flex items-center gap-1.5">
-                <Store size={14} className="text-muted-foreground" />
-                {storeName}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.type")}</p>
-              <p className="font-medium">
-                {discount.type === "percent"
-                  ? "Persentase"
-                  : discount.type === "nominal"
-                    ? "Nominal"
-                    : discount.type || "-"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.value")}</p>
-              <p className="font-medium">
-                {discount.value}
-                {discount.type === "percent" ? "%" : ""}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.form.promoCode")}
-              </p>
-              <p className="font-mono text-sm">{discount.code || "-"}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.form.minPurchase")}
-              </p>
-              <p className="font-medium">
-                {discount.minimumOrder ? `Rp${discount.minimumOrder.toLocaleString("id-ID")}` : "0"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.form.maxDiscount")}
-              </p>
-              <p className="font-medium">
-                {discount.maximumDiscount
-                  ? `Rp${discount.maximumDiscount.toLocaleString("id-ID")}`
-                  : "0"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.table.validity")}
-              </p>
-              <p className="font-medium">
-                {formatDate(discount.startDate)} - {formatDate(discount.endDate)}
-              </p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.discount.form.description")}
-              </p>
-              <p className="font-medium">{discount.description || "-"}</p>
-            </div>
-          </div>
-          <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("page.discount.table.createdBy")}:{" "}
-                {discount.createdByUser?.fullName || discount.createdBy || "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("page.discount.table.modifiedBy")}:{" "}
-                {discount.modifiedByUser?.fullName || discount.modifiedBy || "-"}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-4">
-          <Card className="p-5 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-              <Tags size={20} />
-            </div>
-            <p className="text-2xl font-bold">{discount.usageCount ?? 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">Total Transaksi</p>
           </Card>
-          <Card className="p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              <Calendar size={14} />
-              Created
-            </div>
-            <p className="text-sm font-medium">{formatDate(discount.createdAt)}</p>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              <Calendar size={14} />
-              Modified
-            </div>
-            <p className="text-sm font-medium">{formatDate(discount.updatedAt)}</p>
-          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
+              <Tags size={16} />
+              Discount Info
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.table.status")}
+                </p>
+                {statusBadge(discount.status, t)}
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.discount.table.store")}</p>
+                <p className="font-medium flex items-center gap-1.5">
+                  <Store size={14} className="text-muted-foreground" />
+                  {storeName}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.type")}</p>
+                <p className="font-medium">
+                  {discount.type === "percent"
+                    ? "Persentase"
+                    : discount.type === "nominal"
+                      ? "Nominal"
+                      : discount.type || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.discount.form.value")}</p>
+                <p className="font-medium">
+                  {discount.value}
+                  {discount.type === "percent" ? "%" : ""}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.form.promoCode")}
+                </p>
+                <p className="font-mono text-sm">{discount.code || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.form.minPurchase")}
+                </p>
+                <p className="font-medium">
+                  {discount.minimumOrder ? `Rp${discount.minimumOrder.toLocaleString("id-ID")}` : "0"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.form.maxDiscount")}
+                </p>
+                <p className="font-medium">
+                  {discount.maximumDiscount
+                    ? `Rp${discount.maximumDiscount.toLocaleString("id-ID")}`
+                    : "0"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.table.validity")}
+                </p>
+                <p className="font-medium">
+                  {formatDate(discount.startDate)} - {formatDate(discount.endDate)}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.discount.form.description")}
+                </p>
+                <p className="font-medium">{discount.description || "-"}</p>
+              </div>
+            </div>
+            <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("page.discount.table.createdBy")}:{" "}
+                  {discount.createdByUser?.fullName || discount.createdBy || "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("page.discount.table.modifiedBy")}:{" "}
+                  {discount.modifiedByUser?.fullName || discount.modifiedBy || "-"}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          <div className="space-y-4">
+            <Card className="p-5 flex flex-col items-center justify-center text-center">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                <Tags size={20} />
+              </div>
+              <p className="text-2xl font-bold">{discount.usageCount ?? 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Total Transaksi</p>
+            </Card>
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <Calendar size={14} />
+                Created
+              </div>
+              <p className="text-sm font-medium">{formatDate(discount.createdAt)}</p>
+            </Card>
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <Calendar size={14} />
+                Modified
+              </div>
+              <p className="text-sm font-medium">{formatDate(discount.updatedAt)}</p>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

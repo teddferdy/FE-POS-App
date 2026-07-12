@@ -13,7 +13,8 @@ import {
   ShoppingCart,
   Receipt,
   FileText,
-  Coins
+  Coins,
+  Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -208,21 +209,27 @@ const CashRegisterDetail = () => {
         </nav>
 
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t("page.cashRegister.detail.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {new Date(item.openedAt).toLocaleDateString("id")}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase ${sc.class}`}>
-              {sc.label}
-            </span>
-            <Button variant="outline" onClick={() => navigate("/cash-register/history")}>
-              <ArrowLeft size={16} className="mr-1" /> {t("page.cashRegister.detail.back")}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/cash-register/history")}>
+              <ArrowLeft size={16} />
             </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Wallet size={24} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">{t("page.cashRegister.detail.title")}</h1>
+              <p className="text-sm text-muted-foreground">
+                {new Date(item.openedAt).toLocaleDateString("id")}
+              </p>
+            </div>
           </div>
+          <span
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase ${sc.class}`}>
+            {sc.label}
+          </span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

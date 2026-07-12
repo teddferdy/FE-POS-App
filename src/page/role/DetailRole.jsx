@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ChevronDown, ChevronRight, Shield, ArrowLeft } from "lucide-react";
+import { ChevronDown, ChevronRight, Shield, ArrowLeft, Edit3 } from "lucide-react";
 import { getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import {
@@ -203,27 +203,24 @@ const DetailRole = () => {
         </nav>
 
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/role-management")}
-              className="p-2 rounded-lg hover:bg-muted transition-colors">
-              <ArrowLeft size={20} />
-            </button>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/role-management")}>
+              <ArrowLeft size={16} />
+            </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Shield size={24} />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold text-foreground tracking-tight">
-                {t("page.role.detail.pageTitle")} {role.name}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h1 className="text-2xl font-bold">{role.name || "-"}</h1>
+              <p className="text-sm text-muted-foreground">
                 {t("page.role.detail.description")}
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
-              {t("common.edit")}
-            </Button>
-            <Button onClick={() => navigate("/role-management")}>{t("common.back")}</Button>
-          </div>
+          <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
         </div>
 
         <div className="grid grid-cols-12 gap-6">

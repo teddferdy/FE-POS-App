@@ -2,10 +2,11 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Edit, CreditCard } from "lucide-react";
+import { ArrowLeft, Edit3, CreditCard } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { getTypePaymentById } from "@/services/type-payment";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TipsCard } from "@/components/ui/tips-card";
 
@@ -57,9 +58,31 @@ const DetailTypePayment = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-48 w-full" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+            </div>
+          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -102,29 +125,25 @@ const DetailTypePayment = () => {
         </nav>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 md:p-8">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <CreditCard size={28} />
+          <div className="flex items-center justify-between p-6 md:p-8">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" onClick={() => navigate("/type-payment-list")}>
+                <ArrowLeft size={16} />
+              </Button>
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <CreditCard size={24} />
               </div>
               <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl font-bold text-foreground">{item.name}</h1>
-                  <span
-                    className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-bold ${
-                      isActive
-                        ? "bg-green-100 text-green-700 border border-green-200"
-                        : "bg-red-100 text-red-700 border border-red-200"
-                    }`}>
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
-                    />
-                    {isActive ? t("common.active") : t("common.inactive")}
-                  </span>
-                </div>
+                <h1 className="text-2xl font-bold">{item.name}</h1>
                 <p className="text-sm text-muted-foreground">{item.type || item.tipe || "-"}</p>
               </div>
             </div>
+            {!item.isSystem && (
+              <Button variant="outline" onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}>
+                <Edit3 size={14} className="mr-1.5" />
+                {t("common.edit")}
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
@@ -217,14 +236,6 @@ const DetailTypePayment = () => {
             <ArrowLeft size={16} />
             Kembali
           </Button>
-          {!item.isSystem && (
-            <Button
-              onClick={() => navigate(`/edit-type-payment?id=${item.id}`)}
-              className="gap-2 shadow-md">
-              <Edit size={16} />
-              {t("common.edit")}
-            </Button>
-          )}
         </div>
       </div>
     </div>

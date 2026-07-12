@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
-import { Tag, ArrowLeft, Clock, Edit } from "lucide-react";
+import { Tag, ArrowLeft, Clock, Edit3 } from "lucide-react";
 import { getExpenseCategories } from "@/services/expense";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 const ExpenseCategoryDetail = () => {
@@ -41,27 +41,17 @@ const ExpenseCategoryDetail = () => {
 
   if (isError) return <AbortController refetch={refetch} />;
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-
-  if (!category) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">{t("page.expenseCategory.detail.categoryNotFound")}</p>
-      </div>
-    );
-  }
-
   const statusStyle =
-    category.status === "active"
+    category?.status === "active"
       ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-      : category.status === "draft"
+      : category?.status === "draft"
         ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
         : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
 
   const statusLabel =
-    category.status === "active"
+    category?.status === "active"
       ? t("common.active")
-      : category.status === "draft"
+      : category?.status === "draft"
         ? t("common.draft")
         : t("common.inactive");
 
@@ -87,28 +77,66 @@ const ExpenseCategoryDetail = () => {
           {t("page.expenseCategory.list.title")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{category.name}</span>
+        <span className="text-primary font-semibold">
+          {isLoading ? <Skeleton className="h-4 w-24" /> : category?.name || "Detail"}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{category.name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.expenseCategory.detail.title")}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => navigate("/expense-category")} className="gap-2">
-            <ArrowLeft size={18} />
-            Kembali
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={() => navigate("/expense-category")}>
+            <ArrowLeft size={16} />
           </Button>
-          <Button onClick={() => navigate(`/edit-expense-category?id=${id}`)} className="gap-2">
-            <Edit size={18} />
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <Tag size={24} />
+          </div>
+          <div>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{category?.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.expenseCategory.detail.title")}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-expense-category?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
             {t("common.edit")}
           </Button>
-        </div>
+        )}
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              </div>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
+        </div>
+      ) : !category ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">{t("page.expenseCategory.detail.categoryNotFound")}</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6">
@@ -187,6 +215,7 @@ const ExpenseCategoryDetail = () => {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 };

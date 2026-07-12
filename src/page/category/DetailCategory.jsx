@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, FolderTree, Edit3, Calendar, Store, User, Package } from "lucide-react";
+import { ArrowLeft, FolderTree, Edit3, Calendar, Store, User, Package, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import Modal from "@/components/organism/modal";
 import { getCategoryById } from "@/services/category";
 import { getAllProduct } from "@/services/product";
@@ -62,8 +62,6 @@ const DetailCategory = () => {
       </div>
     );
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -77,7 +75,7 @@ const DetailCategory = () => {
       </div>
     );
 
-  const hasImage = category.image && !category.image.startsWith("http") === false;
+  const hasImage = category?.image && !category.image.startsWith("http") === false;
 
   return (
     <div className="space-y-6">
@@ -92,7 +90,11 @@ const DetailCategory = () => {
           {t("breadcrumb.category")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{category.name || "Detail"}</span>
+        {isLoading ? (
+          <Skeleton className="h-4 w-20" />
+        ) : (
+          <span className="text-primary font-semibold">{category?.name || "Detail"}</span>
+        )}
       </nav>
 
       <div className="flex items-center justify-between">
@@ -101,19 +103,30 @@ const DetailCategory = () => {
             <ArrowLeft size={16} />
           </Button>
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-3xl">
-              {category.image && !category.image.startsWith("http") ? category.image : "category"}
-            </span>
+            <Tag size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{category.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.category.detail.description")}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{category?.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.category.detail.description")}
+                </p>
+              </>
+            )}
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/edit-category?id=${id}`)}>
-          <Edit3 size={14} className="mr-1.5" />
-          {t("common.edit")}
-        </Button>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-category?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
+        )}
       </div>
 
       {hasImage && (
@@ -126,92 +139,131 @@ const DetailCategory = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 col-span-1 md:col-span-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
-            <FolderTree size={16} />
-            {t("page.category.form.info")}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.category.form.name")}</p>
-              <p className="font-medium">{category.name || "-"}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.category.value")}</p>
-              <p className="font-medium">{category.value || "-"}</p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.category.form.description")}
-              </p>
-              <p className="font-medium">{category.description || "-"}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.category.table.status")}
-              </p>
-              {statusBadge(category.status, t)}
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{t("page.category.detail.code")}</p>
-              <p className="font-mono text-sm">#CAT-{String(category.id).padStart(3, "0")}</p>
-            </div>
-          </div>
-          <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.createdBy")}: {category.createdBy || "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.modifiedBy")}: {category.modifiedBy || "-"}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-4">
-          <Card
-            className="p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => setProductModalOpen(true)}>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-              <Package size={20} />
-            </div>
-            <p className="text-2xl font-bold">{category.productCount ?? 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">Total Produk</p>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              <Calendar size={14} />
-              {t("page.category.detail.created")}
-            </div>
-            <p className="text-sm font-medium">
-              {category.createdAt
-                ? new Date(category.createdAt).toLocaleDateString("id-ID", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                  })
-                : "-"}
-            </p>
-            <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2 text-xs text-muted-foreground">
-              <Store size={13} className="shrink-0" />
-              <span>
-                {t("page.category.store")}:{" "}
-                {Array.isArray(category.store) && category.store.length > 0
-                  ? category.store.map((s) => s.name || `Store #${s.id}`).join(", ")
-                  : t("page.category.form.storeSection.allStores")}
-              </span>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
             </div>
           </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
+              <FolderTree size={16} />
+              {t("page.category.form.info")}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.category.form.name")}</p>
+                <p className="font-medium">{category.name || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{t("page.category.value")}</p>
+                <p className="font-medium">{category.value || "-"}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.category.form.description")}
+                </p>
+                <p className="font-medium">{category.description || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.category.table.status")}
+                </p>
+                {statusBadge(category.status, t)}
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.category.detail.code")}
+                </p>
+                <p className="font-mono text-sm">#CAT-{String(category.id).padStart(3, "0")}</p>
+              </div>
+            </div>
+            <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.createdBy")}: {category.createdBy || "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.modifiedBy")}: {category.modifiedBy || "-"}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          <div className="space-y-4">
+            <Card
+              className="p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => setProductModalOpen(true)}>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                <Package size={20} />
+              </div>
+              <p className="text-2xl font-bold">{category.productCount ?? 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Total Produk</p>
+            </Card>
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <Calendar size={14} />
+                {t("page.category.detail.created")}
+              </div>
+              <p className="text-sm font-medium">
+                {category.createdAt
+                  ? new Date(category.createdAt).toLocaleDateString("id-ID", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    })
+                  : "-"}
+              </p>
+              <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2 text-xs text-muted-foreground">
+                <Store size={13} className="shrink-0" />
+                <span>
+                  {t("page.category.store")}:{" "}
+                  {Array.isArray(category.store) && category.store.length > 0
+                    ? category.store.map((s) => s.name || `Store #${s.id}`).join(", ")
+                    : t("page.category.form.storeSection.allStores")}
+                </span>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
 
       <Modal
         type="custom"

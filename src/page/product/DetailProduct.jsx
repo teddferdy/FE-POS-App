@@ -23,7 +23,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getProductById } from "@/services/product";
 
 const statusBadge = (status, t) => {
@@ -92,8 +92,6 @@ const DetailProduct = () => {
       </div>
     );
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -149,7 +147,11 @@ const DetailProduct = () => {
         </button>
         <span className="text-xs">/</span>
         <span className="text-primary font-semibold">
-          {product.nameProduct || product.name || "Detail"}
+          {isLoading ? (
+            <Skeleton className="h-4 w-32 inline-block" />
+          ) : (
+            product.nameProduct || product.name || "Detail"
+          )}
         </span>
       </nav>
 
@@ -166,16 +168,64 @@ const DetailProduct = () => {
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{product.nameProduct || product.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.product.detail.description")}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{product.nameProduct || product.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">{t("page.product.detail.description")}</p>
+              </>
+            )}
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/edit-product?id=${id}`)}>
-          <Edit3 size={14} className="mr-1.5" />
-          {t("common.edit")}
-        </Button>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-product?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
+        )}
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            </div>
+          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
+          </div>
+        </div>
+      ) : (
+        <>
       {hasImage && (
         <div className="w-full h-56 rounded-xl overflow-hidden bg-muted/30 border border-border/50">
           <img
@@ -521,6 +571,8 @@ const DetailProduct = () => {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

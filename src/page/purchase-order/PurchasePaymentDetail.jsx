@@ -3,11 +3,11 @@ import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Wallet, Building2, FileText, User } from "lucide-react";
+import { ArrowLeft, Wallet, Building2, FileText, User, CreditCard } from "lucide-react";
 import { getPaymentById } from "@/services/purchase-payment";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 const methodBadge = {
@@ -82,19 +82,6 @@ const PurchasePaymentDetail = () => {
   }
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-  if (!payment) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <Wallet className="w-12 h-12 text-muted-foreground" />
-        <p className="text-muted-foreground">{t("page.purchasePayment.detail.title")}</p>
-        <Button variant="outline" onClick={() => navigate("/purchase-payment")}>
-          <ArrowLeft size={16} className="mr-2" />
-          {t("common.back")}
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -117,24 +104,60 @@ const PurchasePaymentDetail = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={() => navigate("/purchase-payment")}>
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </Button>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <CreditCard size={24} />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.purchasePayment.detail.title")} #{payment.id}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.purchasePayment.detail.pageDesc")}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">
+                  {t("page.purchasePayment.detail.title")} #{payment?.id}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.purchasePayment.detail.pageDesc")}
+                </p>
+              </>
+            )}
           </div>
         </div>
-        <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${mb.class}`}>
-          <Wallet size={14} />
-          {t(`page.purchaseOrder.paymentMethod.${payment.paymentMethod}`) || mb.label}
-        </span>
+        {!isLoading && (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${mb?.class}`}>
+            <Wallet size={14} />
+            {t(`page.purchaseOrder.paymentMethod.${payment?.paymentMethod}`) || mb?.label}
+          </span>
+        )}
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <div className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div>
+            </Card>
+            <Card className="p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <div className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></div>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+          </div>
+        </div>
+      ) : !payment ? (
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6">
@@ -263,6 +286,7 @@ const PurchasePaymentDetail = () => {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 };

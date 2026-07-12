@@ -3,7 +3,8 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Phone } from "lucide-react";
+import { ArrowLeft, Phone, CalendarDays } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getReservationById } from "@/services/reservation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -62,15 +63,7 @@ const DetailReservation = () => {
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">{t("common.loading")}</p>
-      </div>
-    );
-  }
-
-  if (!r) {
+  if (!r && !isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">{t("page.reservation.edit.notFound")}</p>
@@ -99,19 +92,49 @@ const DetailReservation = () => {
       </nav>
 
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {t("page.reservation.detailTitle")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.reservation.detail.subtitle")}
-          </p>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="icon" onClick={() => navigate("/reservation")}>
+            <ArrowLeft size={16} />
+          </Button>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <CalendarDays size={24} />
+          </div>
+          <div>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">
+                  {r?.customerName || t("page.reservation.detailTitle")}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.reservation.detail.subtitle")}
+                </p>
+              </>
+            )}
+          </div>
         </div>
-        <Button variant="outline" onClick={() => navigate("/reservation")} className="gap-2">
-          <ArrowLeft size={16} /> {t("breadcrumb.back")}
-        </Button>
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+      ) : (
       <Card className="p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
@@ -184,6 +207,7 @@ const DetailReservation = () => {
           )}
         </div>
       </Card>
+      )}
 
       {r.customerPhone && r.status === "confirmed" && (
         <div className="flex justify-end">

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getMemberById, getMemberPointHistory } from "@/services/member";
 import { getAllMemberTier } from "@/services/member-tier";
 import { Button } from "@/components/ui/button";
-import { Stars } from "lucide-react";
+import { Stars, ArrowLeft, Users, Edit3 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import AbortController from "@/components/organism/abort-controller";
@@ -269,29 +269,45 @@ const MemberDetail = () => {
   return (
     <div>
       <div className="space-y-8">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-          <div>
-            <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
-              <span>{t("breadcrumb.management")}</span>
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
-              <button
-                onClick={() => navigate("/member-list")}
-                className="hover:text-primary transition-colors">
-                {t("breadcrumb.list")}
-              </button>
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
-              <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              Detail Member: {name}
-            </h2>
+        <nav className="flex items-center gap-2 mb-1 text-sm text-muted-foreground">
+          <span>{t("breadcrumb.management")}</span>
+          <span className="material-symbols-outlined text-sm">chevron_right</span>
+          <button
+            onClick={() => navigate("/member-list")}
+            className="hover:text-primary transition-colors">
+            {t("breadcrumb.list")}
+          </button>
+          <span className="material-symbols-outlined text-sm">chevron_right</span>
+          <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
+        </nav>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/member-list")}>
+              <ArrowLeft size={16} />
+            </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Users size={24} />
+            </div>
+            <div>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold">{name}</h1>
+                  <p className="text-sm text-muted-foreground">Detail informasi member</p>
+                </>
+              )}
+            </div>
           </div>
-          <Button
-            onClick={() => navigate(`/edit-member?id=${id}`)}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg shadow-sm w-full sm:w-auto">
-            <span className="material-symbols-outlined text-lg">edit</span>
-            {t("page.member.detail.editMember")}
-          </Button>
+          {!isLoading && (
+            <Button variant="outline" onClick={() => navigate(`/edit-member?id=${id}`)}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t("common.edit")}
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

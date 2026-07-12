@@ -4,7 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Package, Loader2, FolderOpen, CheckCircle, XCircle, FileEdit } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Package,
+  Loader2,
+  FolderOpen,
+  CheckCircle,
+  XCircle,
+  FileEdit
+} from "lucide-react";
 import {
   getAllIngredientCategoryTable,
   deleteIngredientCategory,
@@ -65,7 +74,7 @@ const CategoryList = () => {
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
     ["ingredient-categories", page, search],
     () => getAllIngredientCategoryTable({ page, limit, search }),
-    { }
+    {}
   );
 
   const deleteMutation = useMutation(deleteIngredientCategory, {
@@ -173,7 +182,7 @@ const CategoryList = () => {
         <div className="flex items-center justify-end gap-1">
           {canAccess(user, MENU_KEY, "view") && (
             <button
-              onClick={() => navigate(`/edit-ingredient-category?id=${item.id}`)}
+              onClick={() => navigate(`/detail-ingredient-category?id=${item.id}`)}
               className="p-1.5 text-muted-foreground hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all"
               title={t("page.ingredientCategory.list.viewTitle")}>
               <span className="material-symbols-outlined text-lg">visibility</span>

@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, Tag, User, Calendar, FileText, CreditCard, Receipt } from "lucide-react";
+import { ArrowLeft, Tag, User, Calendar, FileText, CreditCard, Receipt, Edit3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getExpenseById } from "@/services/expense";
 import { Button } from "@/components/ui/button";
-import { Loading } from "@/components/ui/loading";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusBadge = {
@@ -46,185 +47,226 @@ const DetailExpense = () => {
   );
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading) return <Loading fullscreen size="lg" label={t("page.expense.detail.loading")} />;
 
   const item = data?.data;
-  if (!item)
-    return (
-      <p className="text-center text-muted-foreground py-12">{t("page.expense.detail.notFound")}</p>
-    );
 
   return (
     <div>
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-              <button
-                onClick={() => navigate("/dashboard-super-admin")}
-                className="hover:text-primary transition-colors">
-                {t("breadcrumb.home")}
-              </button>
-              <span>/</span>
-              <button
-                onClick={() => navigate("/expense")}
-                className="hover:text-primary transition-colors">
-                {t("breadcrumb.management")}
-              </button>
-              <span>/</span>
-              <span className="text-primary font-semibold">{t("breadcrumb.detail")}</span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {item.description || t("page.expense.detail.fallbackTitle")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {item.expenseNumber} &mdash; {fmtDate(item.date)}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/edit-expense?id=${item.id}`)}
-              className="gap-2">
-              {t("page.expense.detail.editBtn")}
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <button
+            onClick={() => navigate("/dashboard-super-admin")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.home")}
+          </button>
+          <span className="text-xs">/</span>
+          <button
+            onClick={() => navigate("/expense-list")}
+            className="hover:text-foreground transition-colors">
+            {t("breadcrumb.management")}
+          </button>
+          <span className="text-xs">/</span>
+          {isLoading ? (
+            <Skeleton className="h-4 w-20" />
+          ) : (
+            <span className="text-primary font-semibold">{item?.description || "Detail"}</span>
+          )}
+        </nav>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/expense-list")}>
+              <ArrowLeft size={16} />
             </Button>
-            <Button variant="outline" onClick={() => navigate("/expense")} className="gap-2">
-              <ArrowLeft size={16} /> {t("page.expense.detail.back")}
-            </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Receipt size={24} />
+            </div>
+            <div>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold">{item?.description || t("page.expense.detail.fallbackTitle")}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {item?.expenseNumber} &mdash; {fmtDate(item?.date)}
+                  </p>
+                </>
+              )}
+            </div>
           </div>
+          {!isLoading && (
+            <Button variant="outline" onClick={() => navigate(`/edit-expense?id=${id}`)}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t("common.edit")}
+            </Button>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-base font-semibold text-foreground mb-6">
-                {t("page.expense.detail.infoTitle")}
-              </h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.expenseNumber")}
-                  </p>
-                  <p className="text-sm font-medium">{item.expenseNumber || "-"}</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="p-6 space-y-4">
+                <Skeleton className="h-5 w-36" />
+                <div className="grid grid-cols-2 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.status")}
-                  </p>
-                  <span
-                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.pending}`}>
-                    {getStatusLabel(t)[item.status] || item.status}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.category")}
-                  </p>
-                  <p className="text-sm font-medium flex items-center gap-1">
-                    <Tag size={14} className="text-muted-foreground" />
-                    {item.categoryData?.name || "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.amount")}
-                  </p>
-                  <p className="text-lg font-bold text-foreground">
-                    Rp {Number(item.amount || 0).toLocaleString("id-ID")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.paymentMethod")}
-                  </p>
-                  <p className="text-sm font-medium flex items-center gap-1 capitalize">
-                    <CreditCard size={14} className="text-muted-foreground" />
-                    {item.paymentMethod || "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.date")}
-                  </p>
-                  <p className="text-sm font-medium flex items-center gap-1">
-                    <Calendar size={14} className="text-muted-foreground" />
-                    {fmtDate(item.date)}
-                  </p>
-                </div>
-              </div>
+              </Card>
             </div>
-
-            {item.notes && (
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <FileText size={16} /> {t("page.expense.detail.notes")}
-                </h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.notes}</p>
-              </div>
-            )}
-
-            {item.receipt && (
-              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Receipt size={16} /> {t("page.expense.detail.receipt")}
-                </h3>
-                <img
-                  src={item.receipt}
-                  alt={t("page.expense.detail.receiptAlt")}
-                  className="max-w-md rounded-lg border"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-base font-semibold text-foreground mb-4">
-                {t("page.expense.detail.timeInfo")}
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.created")}
-                  </p>
-                  <p className="text-sm">{fmtDate(item.createdAt)}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {t("page.expense.detail.updated")}
-                  </p>
-                  <p className="text-sm">{fmtDate(item.updatedAt)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-                <User size={16} /> {t("page.expense.detail.creator")}
-              </h3>
-              <p className="text-sm font-medium">
-                {item.creator?.fullName || item.creator?.name || "-"}
-              </p>
-            </div>
-
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-base font-semibold text-foreground mb-4">
-                {t("page.expense.detail.actions")}
-              </h3>
-              <div className="space-y-3">
-                <Button
-                  className="w-full"
-                  variant="default"
-                  onClick={() => navigate(`/edit-expense?id=${item.id}`)}>
-                  {t("page.expense.detail.editBtn")}
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => navigate("/expense")}>
-                  {t("page.expense.detail.backToList")}
-                </Button>
-              </div>
+            <div className="space-y-6">
+              <Card className="p-6 space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </Card>
+              <Card className="p-6 space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-40" />
+              </Card>
             </div>
           </div>
-        </div>
+        ) : !item ? (
+          <p className="text-center text-muted-foreground py-12">{t("page.expense.detail.notFound")}</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <h3 className="text-base font-semibold text-foreground mb-6">
+                  {t("page.expense.detail.infoTitle")}
+                </h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.expenseNumber")}
+                    </p>
+                    <p className="text-sm font-medium">{item.expenseNumber || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.status")}
+                    </p>
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[item.status] || statusBadge.pending}`}>
+                      {getStatusLabel(t)[item.status] || item.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.category")}
+                    </p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <Tag size={14} className="text-muted-foreground" />
+                      {item.categoryData?.name || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.amount")}
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      Rp {Number(item.amount || 0).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.paymentMethod")}
+                    </p>
+                    <p className="text-sm font-medium flex items-center gap-1 capitalize">
+                      <CreditCard size={14} className="text-muted-foreground" />
+                      {item.paymentMethod || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.date")}
+                    </p>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <Calendar size={14} className="text-muted-foreground" />
+                      {fmtDate(item.date)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {item.notes && (
+                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                  <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <FileText size={16} /> {t("page.expense.detail.notes")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.notes}</p>
+                </div>
+              )}
+
+              {item.receipt && (
+                <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                  <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Receipt size={16} /> {t("page.expense.detail.receipt")}
+                  </h3>
+                  <img
+                    src={item.receipt}
+                    alt={t("page.expense.detail.receiptAlt")}
+                    className="max-w-md rounded-lg border"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <h3 className="text-base font-semibold text-foreground mb-4">
+                  {t("page.expense.detail.timeInfo")}
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.created")}
+                    </p>
+                    <p className="text-sm">{fmtDate(item.createdAt)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      {t("page.expense.detail.updated")}
+                    </p>
+                    <p className="text-sm">{fmtDate(item.updatedAt)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <User size={16} /> {t("page.expense.detail.creator")}
+                </h3>
+                <p className="text-sm font-medium">
+                  {item.creator?.fullName || item.creator?.name || "-"}
+                </p>
+              </div>
+
+              <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                <h3 className="text-base font-semibold text-foreground mb-4">
+                  {t("page.expense.detail.actions")}
+                </h3>
+                <div className="space-y-3">
+                  <Button
+                    className="w-full"
+                    variant="default"
+                    onClick={() => navigate(`/edit-expense?id=${item.id}`)}>
+                    {t("page.expense.detail.editBtn")}
+                  </Button>
+                  <Button className="w-full" variant="outline" onClick={() => navigate("/expense-list")}>
+                    {t("page.expense.detail.backToList")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

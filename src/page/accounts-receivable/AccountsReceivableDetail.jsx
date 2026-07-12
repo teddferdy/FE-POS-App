@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, Receipt, Wallet, Clock, AlertCircle } from "lucide-react";
+import { ArrowLeft, Receipt, Wallet, Clock, AlertCircle, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getARById } from "@/services/accounts-receivable";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import DataTable from "@/components/ui/DataTable";
 import { formatCurrencyRupiah } from "@/utils/formatter-currency";
@@ -30,23 +30,15 @@ const AccountsReceivableDetail = () => {
   });
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading)
-    return <Loading fullscreen size="lg" label={t("page.accountsReceivable.detail.loading")} />;
-  const ar = data?.data;
-  if (!ar)
-    return (
-      <p className="text-center text-muted-foreground py-12">
-        {t("page.accountsReceivable.detail.notFound")}
-      </p>
-    );
 
-  const statusKey = ar.status || "UNPAID";
+  const ar = data?.data;
+  const statusKey = ar?.status || "UNPAID";
   const statusInfo = {
     ...STATUS_MAP[statusKey],
-    label: t(`page.accountsReceivable.detail.status.${statusKey.toLowerCase()}`)
+    label: t(`page.accountsReceivable.detail.status.${statusKey?.toLowerCase()}`)
   };
-  const payments = ar.payments || [];
-  const isOverdue = ar.overdueDays > 0 && ar.status !== "PAID";
+  const payments = ar?.payments || [];
+  const isOverdue = ar?.overdueDays > 0 && ar?.status !== "PAID";
 
   const paymentColumns = [
     {
@@ -97,21 +89,45 @@ const AccountsReceivableDetail = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="icon" onClick={() => navigate("/accounts-receivable")}>
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
             </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <FileText size={24} />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold">{ar.invoiceNo || `AR-${ar.id}`}</h1>
-              <span
-                className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${statusInfo.color}`}>
-                {isOverdue ? t("page.accountsReceivable.detail.status.overdue") : statusInfo.label}
-                {ar.overdueDays > 0 &&
-                  ` (${t("page.accountsReceivable.detail.overdueLabel")} ${ar.overdueDays} ${t("page.accountsReceivable.detail.days")})`}
-              </span>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold">{ar?.invoiceNo || `AR-${ar?.id}`}</h1>
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${statusInfo?.color}`}>
+                    {isOverdue ? t("page.accountsReceivable.detail.status.overdue") : statusInfo?.label}
+                    {ar?.overdueDays > 0 &&
+                      ` (${t("page.accountsReceivable.detail.overdueLabel")} ${ar.overdueDays} ${t("page.accountsReceivable.detail.days")})`}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+          <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+        </div>
+      ) : !ar ? (
+        <p className="text-center text-muted-foreground py-12">
+          {t("page.accountsReceivable.detail.notFound")}
+        </p>
+      ) : (
+      <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div>
           <Card className="p-4 flex items-center gap-3">
@@ -264,6 +280,8 @@ const AccountsReceivableDetail = () => {
             <p className="text-sm text-muted-foreground">{ar.notes}</p>
           </Card>
         </div>
+      )}
+      </>
       )}
     </div>
   );

@@ -27,6 +27,7 @@ import {
   DialogDescription,
   DialogFooter
 } from "../../components/ui/dialog";
+import { Skeleton } from "../../components/ui/skeleton";
 import {
   ArrowLeft,
   FileText,
@@ -206,15 +207,7 @@ export default function DetailPurchaseOrder() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!po) {
+  if (!po && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-muted-foreground">{t("page.purchaseOrder.detail.notFound")}</p>
@@ -230,35 +223,65 @@ export default function DetailPurchaseOrder() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link
-            to="/purchase-order"
-            className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
+          <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
+            <ArrowLeft size={16} />
+          </Button>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <ShoppingCart size={24} />
+          </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">{po.orderNumber}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t("page.purchaseOrder.detail.created")}:{" "}
-              {po.createdAt
-                ? format(new Date(po.createdAt), "dd MMM yyyy, HH:mm", { locale: localeId })
-                : "-"}
-            </p>
+            {loading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{po?.orderNumber || "-"}</h1>
+                <p className="text-sm text-muted-foreground">Purchase Order Detail</p>
+              </>
+            )}
           </div>
         </div>
-        {(() => {
-          const st = statusMap[po.status] || statusMap.pending;
-          const StatusIcon =
-            po.status === "received" ? CheckCircle2 : po.status === "cancelled" ? XCircle : Clock;
-          return (
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-              <StatusIcon size={14} />
-              {st.label}
-            </span>
-          );
-        })()}
+        {!loading &&
+          po &&
+          (() => {
+            const st = statusMap[po.status] || statusMap.pending;
+            const StatusIcon =
+              po.status === "received"
+                ? CheckCircle2
+                : po.status === "cancelled"
+                  ? XCircle
+                  : Clock;
+            return (
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+                <StatusIcon size={14} />
+                {st.label}
+              </span>
+            );
+          })()}
       </div>
 
+      {loading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="p-5 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              </div>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* PO Info Card */}
@@ -682,6 +705,7 @@ export default function DetailPurchaseOrder() {
           </Card>
         </div>
       </div>
+      )}
 
       {/* Payment Modal */}
       <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>

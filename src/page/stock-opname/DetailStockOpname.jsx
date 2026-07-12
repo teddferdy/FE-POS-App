@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { ArrowLeft, ClipboardCheck, Edit3 } from "lucide-react";
 import { getStockOpnameById } from "@/services/stock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -100,23 +101,25 @@ const DetailStockOpname = () => {
   return (
     <div>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <button
-                onClick={() => navigate("/stock-opname")}
-                className="hover:text-foreground transition-colors">
-                {t("breadcrumb.stockOpname")}
-              </button>
-              <span>/</span>
-              <span className="text-primary font-semibold">
-                {opname.auditId || `#${opname.id}`}
-              </span>
-            </nav>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {t("page.stockOpname.detail.title")}
-            </h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/stock-opname")}>
+              <ArrowLeft size={16} />
+            </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <ClipboardCheck size={24} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">{t("page.stockOpname.detail.title")}</h1>
+              <p className="text-sm text-muted-foreground">{opname.auditId || `#${opname.id}`}</p>
+            </div>
           </div>
+          {canEdit && (
+            <Button variant="outline" onClick={() => navigate(`/add-stock-opname?id=${opname.id}`)}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t("common.edit")}
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

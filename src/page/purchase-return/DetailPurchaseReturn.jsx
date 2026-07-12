@@ -5,6 +5,7 @@ import { useQuery } from "react-query";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
+  RotateCcw,
   ShoppingBag,
   Clock,
   CheckCircle2,
@@ -17,7 +18,7 @@ import {
 import { getPurchaseReturnById } from "@/services/purchase-return";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
 const statusBadge = {
@@ -69,8 +70,7 @@ const DetailPurchaseReturn = () => {
   }
 
   if (isError) return <AbortController refetch={refetch} />;
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-  if (!ret) {
+  if (!ret && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <ShoppingBag className="w-12 h-12 text-muted-foreground" />
@@ -106,22 +106,55 @@ const DetailPurchaseReturn = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={() => navigate("/purchase-return")}>
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </Button>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <RotateCcw size={24} />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("page.purchaseReturn.detail.title")}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">{ret.returnNumber}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{ret?.returnNumber || "-"}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.purchaseReturn.detail.title")}
+                </p>
+              </>
+            )}
           </div>
         </div>
-        <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
-          <StatusIcon size={14} />
-          {st.label}
-        </span>
+        {!isLoading && (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${st.class}`}>
+            <StatusIcon size={14} />
+            {st.label}
+          </span>
+        )}
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+                <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+                <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              </div>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6">
@@ -286,6 +319,7 @@ const DetailPurchaseReturn = () => {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 };

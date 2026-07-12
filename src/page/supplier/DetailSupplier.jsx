@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, User, Plus } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, User, Plus, Edit3, Lightbulb, ShoppingCart } from "lucide-react";
 import AbortController from "@/components/organism/abort-controller";
 import { useTranslation } from "react-i18next";
 import { getSupplierById } from "@/services/supplier";
@@ -13,14 +13,14 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import Modal from "@/components/organism/modal";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 const statusMap = {
-  pending: { label: "Menunggu", class: "bg-yellow-100 text-yellow-800" },
-  ordered: { label: "Sebagian", class: "bg-blue-100 text-blue-800" },
-  received: { label: "Diterima", class: "bg-green-100 text-green-800" },
-  cancelled: { label: "Dibatalkan", class: "bg-red-100 text-red-800" }
+  pending: { class: "bg-yellow-100 text-yellow-800" },
+  ordered: { class: "bg-blue-100 text-blue-800" },
+  received: { class: "bg-green-100 text-green-800" },
+  cancelled: { class: "bg-red-100 text-red-800" }
 };
 const statusKeys = {
   pending: "pending",
@@ -84,7 +84,35 @@ const DetailSupplier = () => {
   if (isError) return <AbortController refetch={refetch} />;
 
   if (isLoading) {
-    return <Loading fullscreen size="lg" label={t("page.supplier.detail.loading")} />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+            </div>
+          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const poColumns = [
@@ -159,7 +187,7 @@ const DetailSupplier = () => {
           {t("page.supplier.detail.breadcrumb.list")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{supplier.name || "Detail"}</span>
+        <span className="text-primary font-semibold">{isLoading ? "..." : supplier.name || "Detail"}</span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -167,15 +195,17 @@ const DetailSupplier = () => {
           <Button variant="outline" size="icon" onClick={() => navigate("/supplier")}>
             <ArrowLeft size={16} />
           </Button>
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <Building2 size={24} />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Building2 size={24} className="text-primary" /> {supplier.name || "-"}
-            </h1>
+            <h1 className="text-2xl font-bold">{supplier.name || "-"}</h1>
             <p className="text-sm text-muted-foreground">{t("page.supplier.detail.subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(`/edit-supplier?id=${id}`)}>
+            <Edit3 size={14} className="mr-1.5" />
             {t("page.supplier.detail.editSupplier")}
           </Button>
           {supplier.status !== "inactive" && supplier.status !== "draft" && (
@@ -225,7 +255,7 @@ const DetailSupplier = () => {
             <div className="flex items-center gap-2">
               <User size={13} className="shrink-0" />
               <span>
-                Dibuat oleh:{" "}
+                {t("common.createdBy")}:{" "}
                 {supplier.createdByUser?.fullName ||
                   supplier.createdByUser?.userName ||
                   supplier.createdBy ||
@@ -235,7 +265,7 @@ const DetailSupplier = () => {
             <div className="flex items-center gap-2">
               <User size={13} className="shrink-0" />
               <span>
-                Diubah oleh:{" "}
+                {t("common.modifiedBy")}:{" "}
                 {supplier.modifiedByUser?.fullName ||
                   supplier.modifiedByUser?.userName ||
                   supplier.modifiedBy ||
@@ -277,7 +307,61 @@ const DetailSupplier = () => {
       </div>
 
       {loadingPayments ? (
-        <Loading fullscreen size="lg" label={t("page.supplier.detail.loading")} />
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      ) : purchaseOrders.length === 0 ? (
+        <div className="space-y-4">
+          <Card className="p-8 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                <ShoppingCart size={24} className="text-muted-foreground/60" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t("page.supplier.detail.emptyTitle")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("page.supplier.detail.emptyDesc")}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="mt-1"
+                onClick={() => navigate(`/add-purchase-order?supplier=${id}`)}>
+                <Plus size={14} className="mr-1" />
+                {t("page.supplier.detail.createPo")}
+              </Button>
+            </div>
+          </Card>
+          <Card className="p-5 bg-primary/5 border-primary/20">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Lightbulb size={16} className="text-primary" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  {t("page.supplier.detail.tips.title")}
+                </p>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    {t("page.supplier.detail.tips.1")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    {t("page.supplier.detail.tips.2")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    {t("page.supplier.detail.tips.3")}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        </div>
       ) : (
         <DataTable
           columns={poColumns}

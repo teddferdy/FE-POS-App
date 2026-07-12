@@ -14,7 +14,7 @@ import {
   Mail,
   Clock,
   Globe,
-  Edit,
+  Edit3,
   Building2,
   Hash,
   CheckCircle2,
@@ -27,7 +27,8 @@ import {
   Info,
   ShieldCheck,
   History,
-  Smartphone
+  Smartphone,
+  ArrowLeft
 } from "lucide-react";
 import { getLocationDetail } from "@/services/location";
 import {
@@ -37,7 +38,6 @@ import {
   getVillages,
   getPostalCode
 } from "@/services/general";
-import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
@@ -320,27 +320,35 @@ const LocationDetail = () => {
     <div className="space-y-6">
       <div>
         <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href: "/dashboard-super-admin",
-                i18nKey: "breadcrumb.home"
-              },
-              {
-                label: t("page.location.list.title"),
-                href: "/location-list",
-                i18nKey: "page.location.list.title"
-              },
-              { label: t("page.location.detail.title"), i18nKey: "page.location.detail.title" }
-            ]}
-            title={t("page.location.detail.title")}
-            description={t("page.location.detail.description")}>
-            <Button onClick={() => navigate(`/edit-location?id=${id}`)} className="gap-2 shrink-0">
-              <Edit size={16} />
-              {t("breadcrumb.edit")}
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <button onClick={() => navigate("/dashboard-super-admin")} className="hover:text-foreground transition-colors">
+              {t("breadcrumb.home")}
+            </button>
+            <span className="text-xs">/</span>
+            <button onClick={() => navigate("/location-list")} className="hover:text-foreground transition-colors">
+              {t("page.location.list.title")}
+            </button>
+            <span className="text-xs">/</span>
+            <span className="text-primary font-semibold">{t("page.location.detail.title")}</span>
+          </nav>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" onClick={() => navigate("/location")}>
+                <ArrowLeft size={16} />
+              </Button>
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <MapPin size={24} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">{location?.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">{t("page.location.detail.description")}</p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={() => navigate(`/edit-location?id=${id}`)}>
+              <Edit3 size={14} className="mr-1.5" />
+              {t("common.edit")}
             </Button>
-          </PageHeader>
+          </div>
         </div>
       </div>
       <div>

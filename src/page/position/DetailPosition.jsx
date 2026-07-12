@@ -5,7 +5,7 @@ import { ArrowLeft, Briefcase, Edit3, Calendar, Building2, User } from "lucide-r
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getPositionById } from "@/services/position";
 
 const statusBadge = (status, t) => {
@@ -52,8 +52,6 @@ const DetailPosition = () => {
       </div>
     );
 
-  if (isLoading) return <Loading fullscreen size="lg" label={t("common.loading")} />;
-
   if (isError)
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -80,7 +78,13 @@ const DetailPosition = () => {
           {t("breadcrumb.position")}
         </button>
         <span className="text-xs">/</span>
-        <span className="text-primary font-semibold">{position.name || "Detail"}</span>
+        <span className="text-primary font-semibold">
+          {isLoading ? (
+            <Skeleton className="h-4 w-32 inline-block" />
+          ) : (
+            position.name || "Detail"
+          )}
+        </span>
       </nav>
 
       <div className="flex items-center justify-between">
@@ -92,96 +96,130 @@ const DetailPosition = () => {
             <Briefcase size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{position.name || "-"}</h1>
-            <p className="text-sm text-muted-foreground">{t("page.position.detail.description")}</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-7 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{position.name || "-"}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {t("page.position.detail.description")}
+                </p>
+              </>
+            )}
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/edit-position?id=${positionID}`)}>
-          <Edit3 size={14} className="mr-1.5" />
-          {t("common.edit")}
-        </Button>
+        {!isLoading && (
+          <Button variant="outline" onClick={() => navigate(`/edit-position?id=${positionID}`)}>
+            <Edit3 size={14} className="mr-1.5" />
+            {t("common.edit")}
+          </Button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 col-span-1 md:col-span-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
-            <Briefcase size={16} />
-            {t("page.position.detail.jobInfo")}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            </div>
+          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.detail.positionName")}
-              </p>
-              <p className="font-medium">{position.name || "-"}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
+              <Briefcase size={16} />
+              {t("page.position.detail.jobInfo")}
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.detail.positionId")}
-              </p>
-              <p className="font-mono text-sm">#{position.id}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.detail.positionName")}
+                </p>
+                <p className="font-medium">{position.name || "-"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.detail.positionId")}
+                </p>
+                <p className="font-mono text-sm">#{position.id}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.detail.department")}
+                </p>
+                <p className="font-medium">
+                  {position.departmentData?.name || position.department || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.detail.status")}
+                </p>
+                {statusBadge(position.status, t)}
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.form.description")}
+                </p>
+                <p className="font-medium">{position.description || "-"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.detail.department")}
-              </p>
-              <p className="font-medium">
-                {position.departmentData?.name || position.department || "-"}
-              </p>
+            <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.createdBy")}: {position.createdBy || "-"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <User size={13} className="shrink-0" />
+                <span>
+                  {t("common.modifiedBy")}: {position.modifiedBy || "-"}
+                </span>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.detail.status")}
-              </p>
-              {statusBadge(position.status, t)}
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.form.description")}
-              </p>
-              <p className="font-medium">{position.description || "-"}</p>
-            </div>
-          </div>
-          <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.createdBy")}: {position.createdBy || "-"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User size={13} className="shrink-0" />
-              <span>
-                {t("common.modifiedBy")}: {position.modifiedBy || "-"}
-              </span>
-            </div>
-          </div>
-        </Card>
+          </Card>
 
-        <div className="space-y-4">
-          <Card className="p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              <Calendar size={14} />
-              {t("page.position.detail.createdAt")}
-            </div>
-            <p className="text-sm font-medium">
-              {position.createdAt
-                ? new Date(position.createdAt).toLocaleDateString("id-ID", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                  })
-                : "-"}
-            </p>
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <p className="text-xs text-muted-foreground mb-1">
-                {t("page.position.detail.updatedAt")}
-              </p>
+          <div className="space-y-4">
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <Calendar size={14} />
+                {t("page.position.detail.createdAt")}
+              </div>
               <p className="text-sm font-medium">
-                {position.updatedAt
-                  ? new Date(position.updatedAt).toLocaleDateString("id-ID", {
+                {position.createdAt
+                  ? new Date(position.createdAt).toLocaleDateString("id-ID", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -190,22 +228,38 @@ const DetailPosition = () => {
                     })
                   : "-"}
               </p>
-            </div>
-          </Card>
-          {position.store && (
-            <Card className="p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                <Building2 size={14} />
-                {t("page.position.detail.store")}
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Building2 size={14} className="shrink-0 text-muted-foreground" />
-                <span>{position.store}</span>
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("page.position.detail.updatedAt")}
+                </p>
+                <p className="text-sm font-medium">
+                  {position.updatedAt
+                    ? new Date(position.updatedAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })
+                    : "-"}
+                </p>
               </div>
             </Card>
-          )}
+            {position.store && (
+              <Card className="p-5">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  <Building2 size={14} />
+                  {t("page.position.detail.store")}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Building2 size={14} className="shrink-0 text-muted-foreground" />
+                  <span>{position.store}</span>
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

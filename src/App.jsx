@@ -111,6 +111,9 @@ const DetailIngredient = React.lazy(() => import("./page/ingredient/DetailIngred
 const IngredientCategoryList = React.lazy(() => import("./page/ingredient-category/CategoryList"));
 const AddIngredientCategory = React.lazy(() => import("./page/ingredient-category/AddCategory"));
 const EditIngredientCategory = React.lazy(() => import("./page/ingredient-category/EditCategory"));
+const DetailIngredientCategory = React.lazy(
+  () => import("./page/ingredient-category/DetailCategory")
+);
 
 // Tax Config
 const TaxConfigList = React.lazy(() => import("./page/tax-config/TaxConfigList"));
@@ -399,6 +402,7 @@ function App() {
                 <Route path="/ingredient-category" element={<IngredientCategoryList />} />
                 <Route path="/add-ingredient-category" element={<AddIngredientCategory />} />
                 <Route path="/edit-ingredient-category" element={<EditIngredientCategory />} />
+                <Route path="/detail-ingredient-category" element={<DetailIngredientCategory />} />
 
                 <Route path="/tax-list" element={<TaxConfigList />} />
                 <Route path="/add-tax" element={<AddTaxConfig />} />

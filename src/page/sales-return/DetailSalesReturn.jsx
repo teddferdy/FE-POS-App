@@ -1,10 +1,11 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getSalesReturnById } from "@/services/sales-return";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 
@@ -32,9 +33,30 @@ const DetailSalesReturn = () => {
   if (isError) return <AbortController refetch={refetch} />;
   if (isLoading)
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
+              <div className="col-span-2 space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-48" /></div>
+            </div>
+          </Card>
+          <div className="space-y-4">
+            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
+          </div>
+        </div>
       </div>
     );
   if (!ret)
@@ -69,13 +91,18 @@ const DetailSalesReturn = () => {
         </nav>
 
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t("page.salesReturn.detail.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{ret.returnNumber}</p>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => navigate("/sales-return")}>
+              <ArrowLeft size={16} />
+            </Button>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <RotateCcw size={24} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">{t("page.salesReturn.detail.title")}</h1>
+              <p className="text-sm text-muted-foreground">{ret.returnNumber}</p>
+            </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/sales-return")}>
-            <ArrowLeft size={16} className="mr-1" /> {t("page.salesReturn.detail.back")}
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
