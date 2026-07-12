@@ -6,6 +6,7 @@ import { Save, X, Plus, Trash2, Package, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { editGoodsReceipt, getGoodsReceiptById } from "@/services/goods-receipt";
 import { getAllPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
+import { getAllIngredients } from "@/services/ingredient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +32,7 @@ const EditGoodsReceipt = () => {
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [ingredientFocusIdx, setIngredientFocusIdx] = useState(null);
 
   const {
     data: receiptData,
@@ -43,6 +45,20 @@ const EditGoodsReceipt = () => {
     
   });
   const purchaseOrders = poData?.data || [];
+
+  const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
+  const storeId = selectedPO?.store || receiptData?.data?.store;
+
+  const { data: ingredientsData } = useQuery(
+    ["ingredients-gr-edit", storeId],
+    () => getAllIngredients({ store: storeId, limit: 999 }),
+    { enabled: !!storeId }
+  );
+  const ingredients = ingredientsData?.data || [];
+  const activeIngredients = ingredients.filter((i) => i.status === "active");
+
+  const getFilteredIngredients = (search) =>
+    activeIngredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
   useEffect(() => {
     const receipt = receiptData?.data;
@@ -103,8 +119,6 @@ const EditGoodsReceipt = () => {
       );
     }
   }, [poDetail, items.length, loaded]);
-
-  const selectedPO = purchaseOrders.find((po) => po.id === parseInt(poId));
 
   const addItem = () =>
     setItems((prev) => [
@@ -330,13 +344,48 @@ const EditGoodsReceipt = () => {
                               <span className="text-sm font-medium">{item.ingredientName}</span>
                             </div>
                           ) : (
-                            <Input
-                              type="text"
-                              value={item.ingredientName}
-                              onChange={(e) => updateItem(idx, "ingredientName", e.target.value)}
-                              className="h-8 text-xs"
-                              placeholder={t("page.goodsReceipt.edit.placeholder.name")}
-                            />
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                value={item.ingredientName}
+                                onChange={(e) => {
+                                  updateItem(idx, "ingredientName", e.target.value);
+                                  updateItem(idx, "ingredient", null);
+                                  setIngredientFocusIdx(idx);
+                                }}
+                                onFocus={() => setIngredientFocusIdx(idx)}
+                                onBlur={() => setTimeout(() => setIngredientFocusIdx(null), 200)}
+                                className="h-8 text-xs"
+                                placeholder={t("page.goodsReceipt.edit.placeholder.name")}
+                              />
+                              {ingredientFocusIdx === idx && (
+                                <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                  {getFilteredIngredients(item.ingredientName || "").length > 0 ? (
+                                    getFilteredIngredients(item.ingredientName || "").map((ing) => (
+                                      <button
+                                        key={ing.id}
+                                        type="button"
+                                        onMouseDown={() => {
+                                          updateItem(idx, "ingredientName", ing.name);
+                                          updateItem(idx, "ingredient", ing.id);
+                                          updateItem(idx, "unit", ing.unit || "pcs");
+                                          setIngredientFocusIdx(null);
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors flex items-center gap-2">
+                                        <span>{ing.name}</span>
+                                        <span className="text-xs text-muted-foreground ml-auto">
+                                          {ing.unit || "pcs"}
+                                        </span>
+                                      </button>
+                                    ))
+                                  ) : (
+                                    <p className="p-3 text-xs text-muted-foreground text-center">
+                                      {t("page.goodsReceipt.edit.placeholder.noIngredient") || "Tidak ada bahan ditemukan"}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </td>
                         <td className="px-3 py-2 text-center">
