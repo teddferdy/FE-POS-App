@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
-import { Save, X, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
+import { Save, X, Plus, Trash2, ShoppingCart, Package, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { editPurchaseOrder, getPurchaseOrderById } from "@/services/purchase-order";
@@ -301,17 +301,16 @@ const EditPurchaseOrder = () => {
   if (!po) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          breadcrumbs={[
-            { label: t("breadcrumb.home"), href: "/dashboard-super-admin", i18nKey: "breadcrumb.home" },
-            { label: t("page.purchaseOrder.list.title"), href: "/purchase-order", i18nKey: "page.purchaseOrder.list.title" },
-            { label: t("page.purchaseOrder.edit.title") }
-          ]}
-          title={t("page.purchaseOrder.edit.title")}
-          description={t("page.purchaseOrder.edit.description")} />
-        <div className="space-y-6">
-          <Card className="overflow-hidden border-0 shadow-md rounded-xl">
-            <Skeleton className="h-14 rounded-none" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 shrink-0" />
+          <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
+          <div>
+            <Skeleton className="h-7 w-64 mb-2" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+        </div>
+        <Card className="overflow-hidden border-0 shadow-md rounded-xl">
+          <Skeleton className="h-14 rounded-none" />
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -343,26 +342,40 @@ const EditPurchaseOrder = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" onClick={() => navigate("/purchase-order")}>
+          <ArrowLeft size={16} />
+        </Button>
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <ShoppingCart size={24} />
+        </div>
         <div>
-          <PageHeader
-            breadcrumbs={[
-              {
-                label: t("breadcrumb.home"),
-                href: "/dashboard-super-admin",
-                i18nKey: "breadcrumb.home"
-              },
-              {
-                label: t("page.purchaseOrder.list.title"),
-                href: "/purchase-order",
-                i18nKey: "page.purchaseOrder.list.title"
-              },
-              { label: t("page.purchaseOrder.edit.title") }
-            ]}
-            title={`${t("page.purchaseOrder.edit.editLabel")} ${po.orderNumber || `PO-${po.id}`}`}
-            description={t("page.purchaseOrder.edit.description")}></PageHeader>
+          <h1 className="text-2xl font-bold">
+            {t("page.purchaseOrder.edit.editLabel")} {po.orderNumber || `PO-${po.id}`}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("page.purchaseOrder.edit.description")}
+          </p>
         </div>
       </div>
+
+      <Card className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800/50">
+        <div className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <ShoppingCart size={16} className="text-blue-600" />
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                {t("page.purchaseOrder.add.tips.1")}
+              </h4>
+              <p className="text-xs text-blue-700/70 dark:text-blue-300/70 mt-0.5">
+                {t("page.purchaseOrder.add.tips.2")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <div>
         <div>
