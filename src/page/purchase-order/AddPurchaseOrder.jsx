@@ -89,24 +89,20 @@ const AddPurchaseOrder = () => {
   const [newSupplierName, setNewSupplierName] = useState("");
   const [newSupplierPhone, setNewSupplierPhone] = useState("");
 
-  const {
-    data: suppliersData,
-    isLoading: suppliersLoading,
-    isFetching: suppliersFetching
-  } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
     { staleTime: 30000 }
   );
   const suppliers = suppliersData?.data || [];
 
-  const {
-    data: employeesData,
-    isLoading: employeesLoading,
-    isFetching: employeesFetching
-  } = useQuery(["employees-dropdown"], () => getAllEmployee({ limit: 999, status: "active" }), {
-    staleTime: 30000
-  });
+  const { data: employeesData, isLoading: employeesLoading } = useQuery(
+    ["employees-dropdown"],
+    () => getAllEmployee({ limit: 999, status: "active" }),
+    {
+      staleTime: 30000
+    }
+  );
   const employees = employeesData?.data || [];
 
   const filteredSuppliers = suppliers.filter((s) =>
@@ -117,18 +113,14 @@ const AddPurchaseOrder = () => {
     (e.fullName || e.userName)?.toLowerCase().includes(picSearch.toLowerCase())
   );
 
-  const {
-    data: locationsData,
-    isLoading: locationsLoading,
-    isFetching: locationsFetching
-  } = useQuery(["locations-for-po"], () => getAllLocation(), { staleTime: 30000 });
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(
+    ["locations-for-po"],
+    () => getAllLocation(),
+    { staleTime: 30000 }
+  );
   const locations = locationsData?.data || [];
 
-  const {
-    data: ingredientsData,
-    isLoading: ingredientsLoading,
-    isFetching: ingredientsFetching
-  } = useQuery(
+  const { data: ingredientsData } = useQuery(
     ["ingredients-po", selectedStore],
     () => getAllIngredients({ store: locationParam, limit: 999 }),
     { enabled: !!selectedStore, staleTime: 30000 }

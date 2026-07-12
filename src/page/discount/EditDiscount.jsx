@@ -38,6 +38,7 @@ import AbortController from "@/components/organism/abort-controller";
 import Modal from "@/components/organism/modal";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { useTranslation } from "react-i18next";
+import PageHeader from "@/components/ui/PageHeader";
 const PROMO_TYPES = {
   standard: "page.discount.form.promoType.standard",
   bogo: "page.discount.form.promoType.bogo",
@@ -304,28 +305,24 @@ const EditDiscount = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/discount")}
-            className="hover:text-foreground transition-colors">
-            {t("page.discount.list.title")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.discount.edit.title")}</span>
-        </nav>
-
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.discount.edit.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.discount.edit.description")}
-          </p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("page.discount.list.title"),
+              href: "/discount",
+              i18nKey: "page.discount.list.title"
+            },
+            { label: t("page.discount.edit.title"), i18nKey: "page.discount.edit.title" }
+          ]}
+          title={t("page.discount.edit.title")}
+          description={t("page.discount.edit.description")}
+          backLink="/discount"
+        />
 
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-6">

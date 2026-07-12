@@ -27,6 +27,7 @@ import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
+import PageHeader from "@/components/ui/PageHeader";
 
 const EditExpense = () => {
   const { t } = useTranslation();
@@ -140,26 +141,24 @@ const EditExpense = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/expense")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.management")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
-        </nav>
-
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("page.expense.edit.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("page.expense.edit.description")}</p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("breadcrumb.management"),
+              href: "/expense",
+              i18nKey: "breadcrumb.management"
+            },
+            { label: t("breadcrumb.edit"), i18nKey: "breadcrumb.edit" }
+          ]}
+          title={t("page.expense.edit.title")}
+          description={t("page.expense.edit.description")}
+          backLink="/expense"
+        />
 
         <Card className="p-6">
           <Form {...form}>

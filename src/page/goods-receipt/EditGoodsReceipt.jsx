@@ -14,6 +14,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Modal from "@/components/organism/modal";
 import AbortController from "@/components/organism/abort-controller";
 import { Loading } from "@/components/ui/loading";
+import PageHeader from "@/components/ui/PageHeader";
 
 const EditGoodsReceipt = () => {
   const navigate = useNavigate();
@@ -178,26 +179,24 @@ const EditGoodsReceipt = () => {
   return (
     <>
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground">
-            {t("breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button onClick={() => navigate("/goods-receipt")} className="hover:text-foreground">
-            {t("breadcrumb.goodsReceipt")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("breadcrumb.edit")}</span>
-        </nav>
-
-        <div>
-          <h1 className="text-2xl font-bold">{t("page.goodsReceipt.edit.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("page.goodsReceipt.edit.description")}
-          </p>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.dashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.dashboard"
+            },
+            {
+              label: t("breadcrumb.goodsReceipt"),
+              href: "/goods-receipt",
+              i18nKey: "breadcrumb.goodsReceipt"
+            },
+            { label: t("breadcrumb.edit"), i18nKey: "breadcrumb.edit" }
+          ]}
+          title={t("page.goodsReceipt.edit.title")}
+          description={t("page.goodsReceipt.edit.description")}
+          backLink="/goods-receipt"
+        />
 
         <form
           onSubmit={(e) => {

@@ -21,6 +21,7 @@ import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
 import AbortController from "@/components/organism/abort-controller";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
+import PageHeader from "@/components/ui/PageHeader";
 
 const conversionHints = {
   kg: { base: "gram", factor: 1000 },
@@ -213,31 +214,24 @@ const EditIngredient = () => {
   return (
     <div>
       <div>
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <nav className="flex gap-2 mb-2 text-sm text-muted-foreground">
-              <button
-                onClick={() => navigate("/dashboard-super-admin")}
-                className="hover:text-primary transition-colors">
-                {t("page.ingredient.edit.breadcrumbDashboard")}
-              </button>
-              <span>/</span>
-              <button
-                onClick={() => navigate("/ingredient")}
-                className="hover:text-primary transition-colors">
-                {t("page.ingredient.edit.breadcrumbIngredient")}
-              </button>
-              <span>/</span>
-              <span className="text-primary font-semibold">
-                {t("page.ingredient.edit.breadcrumbEdit")}
-              </span>
-            </nav>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.ingredient.edit.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">{form.watch("name")}</p>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.ingredient.edit.breadcrumbDashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "page.ingredient.edit.breadcrumbDashboard"
+            },
+            {
+              label: t("page.ingredient.edit.breadcrumbIngredient"),
+              href: "/ingredient",
+              i18nKey: "page.ingredient.edit.breadcrumbIngredient"
+            },
+            { label: t("page.ingredient.edit.breadcrumbEdit"), i18nKey: "page.ingredient.edit.breadcrumbEdit" }
+          ]}
+          title={t("page.ingredient.edit.title")}
+          description={form.watch("name")}
+          backLink="/ingredient"
+        />
 
         <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>

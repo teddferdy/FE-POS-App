@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { editRole, getRoleById } from "@/services/role";
 import { sidebarMenuSuperAdmin } from "@/utils/sidebar-menu";
 import {
@@ -242,23 +243,22 @@ const EditRole = () => {
   return (
     <div>
       <div>
-        <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/role-management")}
-            className="hover:text-primary transition-colors">
-            {t("page.role.detail.breadcrumbParent")}
-          </button>
-          <ChevronRight size={14} />
-          <span className="text-foreground font-bold">{t("page.role.edit.title")}</span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.role.detail.breadcrumbParent"),
+              href: "/role-management",
+              i18nKey: "page.role.detail.breadcrumbParent"
+            },
+            { label: t("page.role.edit.title"), i18nKey: "page.role.edit.title" }
+          ]}
+          title={`${t("page.role.edit.title")}: ${name}`}
+          description={t("page.role.edit.description")}
+          backLink="/role-management">
+        </PageHeader>
 
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">
-              {t("page.role.edit.title")}: {name}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.role.edit.description")}</p>
-          </div>
+          <div></div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => setCancelModal(true)}>
               {t("common.cancel")}

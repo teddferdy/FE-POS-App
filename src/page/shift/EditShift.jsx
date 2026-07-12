@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { useTranslation } from "react-i18next";
 import { getAllShift, editShift } from "@/services/shift";
 import { Button } from "@/components/ui/button";
@@ -111,27 +112,27 @@ const EditShift = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("page.shift.edit.breadcrumb.dashboard")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/shift")}
-            className="hover:text-foreground transition-colors">
-            {t("page.shift.edit.breadcrumb.list")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.shift.edit.breadcrumb.edit")}</span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("page.shift.edit.breadcrumb.dashboard"),
+              href: "/dashboard-super-admin",
+              i18nKey: "page.shift.edit.breadcrumb.dashboard"
+            },
+            {
+              label: t("page.shift.edit.breadcrumb.list"),
+              href: "/shift",
+              i18nKey: "page.shift.edit.breadcrumb.list"
+            },
+            { label: t("page.shift.edit.breadcrumb.edit"), i18nKey: "page.shift.edit.breadcrumb.edit" }
+          ]}
+          title={t("page.shift.edit.title")}
+          description={t("page.shift.edit.subtitle")}
+          backLink="/shift">
+        </PageHeader>
 
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.shift.edit.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.shift.edit.subtitle")}</p>
-          </div>
+          <div></div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
               <X size={18} />

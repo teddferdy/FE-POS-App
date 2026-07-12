@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { X, Save } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 import { editTaxConfig, getTaxConfigById } from "@/services/tax-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,29 +118,27 @@ const EditTaxConfig = () => {
   return (
     <div>
       <div className="space-y-6">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <button
-            onClick={() => navigate("/dashboard-super-admin")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.home")}
-          </button>
-          <span className="text-xs">/</span>
-          <button
-            onClick={() => navigate("/tax-list")}
-            className="hover:text-foreground transition-colors">
-            {t("breadcrumb.tax")}
-          </button>
-          <span className="text-xs">/</span>
-          <span className="text-primary font-semibold">{t("page.taxConfig.edit.title")}</span>
-        </nav>
+        <PageHeader
+          breadcrumbs={[
+            {
+              label: t("breadcrumb.home"),
+              href: "/dashboard-super-admin",
+              i18nKey: "breadcrumb.home"
+            },
+            {
+              label: t("breadcrumb.tax"),
+              href: "/tax-list",
+              i18nKey: "breadcrumb.tax"
+            },
+            { label: t("page.taxConfig.edit.title"), i18nKey: "page.taxConfig.edit.title" }
+          ]}
+          title={t("page.taxConfig.edit.title")}
+          description={t("page.taxConfig.edit.description")}
+          backLink="/tax-list">
+        </PageHeader>
 
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t("page.taxConfig.edit.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("page.taxConfig.edit.description")}
-            </p>
-          </div>
+          <div></div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setCancelModal(true)} className="gap-2">
               <X size={18} />
