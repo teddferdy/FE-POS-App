@@ -54,8 +54,8 @@ const EditGoodsReceipt = () => {
       setItems(
         receipt.items.map((item) => ({
           id: item.id,
-          ingredient: item.ingredient || item.product || null,
-          ingredientName: item.ingredientData?.name || item.productData?.nameProduct || "",
+          ingredient: item.product || null,
+          ingredientName: item.ingredientName || item.productData?.nameProduct || "",
           product: item.product || null,
           qty: item.qty || item.qtyReceived || 0,
           unit: item.unit || "pcs",
@@ -94,7 +94,9 @@ const EditGoodsReceipt = () => {
       setItems((prev) =>
         prev.map((it) => {
           const poItem = poItems.find(
-            (p) => (p.ingredient || p.product) === (it.ingredient || it.product)
+            (p) =>
+              (p.ingredientName || p.ingredientData?.name) === it.ingredientName ||
+              (p.ingredient || p.product) === (it.ingredient || it.product)
           );
           return poItem ? { ...it, qty: poItem.quantity } : it;
         })
