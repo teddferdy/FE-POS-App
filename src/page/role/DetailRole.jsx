@@ -212,9 +212,7 @@ const DetailRole = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold">{role.name || "-"}</h1>
-              <p className="text-sm text-muted-foreground">
-                {t("page.role.detail.description")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("page.role.detail.description")}</p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate(`/edit-role/${id}`)}>

@@ -225,12 +225,14 @@ const EditReservation = () => {
               href: "/reservation",
               i18nKey: "page.reservation.edit.breadcrumb.list"
             },
-            { label: t("page.reservation.edit.breadcrumb.edit"), i18nKey: "page.reservation.edit.breadcrumb.edit" }
+            {
+              label: t("page.reservation.edit.breadcrumb.edit"),
+              i18nKey: "page.reservation.edit.breadcrumb.edit"
+            }
           ]}
           title={t("page.reservation.edit.title")}
           description={t("page.reservation.edit.subtitle")}
-          backLink="/reservation">
-        </PageHeader>
+          backLink="/reservation"></PageHeader>
 
         <Card className="p-6">
           <Form {...form}>

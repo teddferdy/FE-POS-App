@@ -135,78 +135,78 @@ const DetailReservation = () => {
           </div>
         </div>
       ) : (
-      <Card className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              {t("page.reservation.detail.customer")}
-            </h2>
-            <DetailRow label={t("page.reservation.detail.name")}>{r.customerName}</DetailRow>
-            {r.customerPhone && (
-              <DetailRow label={t("page.reservation.detail.phone")}>{r.customerPhone}</DetailRow>
-            )}
-            {r.customerEmail && (
-              <DetailRow label={t("page.reservation.detail.email")}>{r.customerEmail}</DetailRow>
+        <Card className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("page.reservation.detail.customer")}
+              </h2>
+              <DetailRow label={t("page.reservation.detail.name")}>{r.customerName}</DetailRow>
+              {r.customerPhone && (
+                <DetailRow label={t("page.reservation.detail.phone")}>{r.customerPhone}</DetailRow>
+              )}
+              {r.customerEmail && (
+                <DetailRow label={t("page.reservation.detail.email")}>{r.customerEmail}</DetailRow>
+              )}
+            </div>
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                {t("common.status")}
+              </h2>
+              <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${s.color}`}>
+                {t(s.labelKey)}
+              </span>
+            </div>
+          </div>
+
+          <hr />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DetailRow label={t("page.reservation.columns.date")}>
+              {r.reservationDate
+                ? new Date(r.reservationDate + "T00:00:00").toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric"
+                  })
+                : "-"}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.columns.time")}>
+              {r.startTime?.slice(0, 5)} - {r.endTime?.slice(0, 5)}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.columns.guests")}>
+              {r.guestCount} {t("page.reservation.guestSuffix")}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.columns.table")}>
+              {r.tableInfo?.name || "-"}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.columns.store")}>
+              {r.storeInfo?.name || `Store #${r.store}`}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.columns.notes")}>{r.notes || "-"}</DetailRow>
+          </div>
+
+          <hr />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DetailRow label={t("page.reservation.createdBy")}>
+              {r.createdByUser?.fullName || r.createdBy}
+            </DetailRow>
+            <DetailRow label={t("page.reservation.createdAt")}>
+              {r.createdAt ? new Date(r.createdAt).toLocaleString("id-ID") : "-"}
+            </DetailRow>
+            {r.modifiedBy && (
+              <>
+                <DetailRow label={t("page.reservation.modifiedBy")}>
+                  {r.modifiedByUser?.fullName || r.modifiedBy}
+                </DetailRow>
+                <DetailRow label={t("page.reservation.updatedAt")}>
+                  {r.updatedAt ? new Date(r.updatedAt).toLocaleString("id-ID") : "-"}
+                </DetailRow>
+              </>
             )}
           </div>
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              {t("common.status")}
-            </h2>
-            <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${s.color}`}>
-              {t(s.labelKey)}
-            </span>
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <DetailRow label={t("page.reservation.columns.date")}>
-            {r.reservationDate
-              ? new Date(r.reservationDate + "T00:00:00").toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric"
-                })
-              : "-"}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.columns.time")}>
-            {r.startTime?.slice(0, 5)} - {r.endTime?.slice(0, 5)}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.columns.guests")}>
-            {r.guestCount} {t("page.reservation.guestSuffix")}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.columns.table")}>
-            {r.tableInfo?.name || "-"}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.columns.store")}>
-            {r.storeInfo?.name || `Store #${r.store}`}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.columns.notes")}>{r.notes || "-"}</DetailRow>
-        </div>
-
-        <hr />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <DetailRow label={t("page.reservation.createdBy")}>
-            {r.createdByUser?.fullName || r.createdBy}
-          </DetailRow>
-          <DetailRow label={t("page.reservation.createdAt")}>
-            {r.createdAt ? new Date(r.createdAt).toLocaleString("id-ID") : "-"}
-          </DetailRow>
-          {r.modifiedBy && (
-            <>
-              <DetailRow label={t("page.reservation.modifiedBy")}>
-                {r.modifiedByUser?.fullName || r.modifiedBy}
-              </DetailRow>
-              <DetailRow label={t("page.reservation.updatedAt")}>
-                {r.updatedAt ? new Date(r.updatedAt).toLocaleString("id-ID") : "-"}
-              </DetailRow>
-            </>
-          )}
-        </div>
-      </Card>
+        </Card>
       )}
 
       {r.customerPhone && r.status === "confirmed" && (

@@ -360,13 +360,13 @@ const EditCategory = () => {
   const role = user?.roleType || "";
   const isSuperAdmin = role === "super_admin";
 
-  const { data: locationsData, isLoading: locsLoading, isFetching: locsFetching } = useQuery(
-    ["allLocations"],
-    () => getAllLocation(),
-    {
-      enabled: isSuperAdmin
-    }
-  );
+  const {
+    data: locationsData,
+    isLoading: locsLoading,
+    isFetching: locsFetching
+  } = useQuery(["allLocations"], () => getAllLocation(), {
+    enabled: isSuperAdmin
+  });
   const locations = locationsData?.data || locationsData?.locations || [];
 
   const { data: categoryData, isLoading: categoryLoading } = useQuery(

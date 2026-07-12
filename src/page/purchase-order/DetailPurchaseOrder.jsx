@@ -46,7 +46,8 @@ import {
   XCircle,
   Phone,
   Banknote,
-  ShoppingCart
+  ShoppingCart,
+  Loader2
 } from "lucide-react";
 
 export default function DetailPurchaseOrder() {
@@ -762,7 +763,8 @@ export default function DetailPurchaseOrder() {
               {t("common.cancel")}
             </Button>
             <Button onClick={handleRecordPayment} disabled={paySubmitting}>
-              {paySubmitting ? "..." : t("page.purchaseOrder.detail.pay")}
+              {paySubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {paySubmitting ? t("common.processing") : t("page.purchaseOrder.detail.pay")}
             </Button>
           </DialogFooter>
         </DialogContent>

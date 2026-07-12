@@ -83,7 +83,6 @@ const CategoryList = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
-    
     enabled: isSuperAdmin
   });
 
@@ -103,7 +102,7 @@ const CategoryList = () => {
               : ""
             : user?.store || "")
       }),
-    { }
+    {}
   );
 
   const deleteMutation = useMutation(deleteCategory, {

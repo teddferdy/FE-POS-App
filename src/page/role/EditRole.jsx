@@ -254,8 +254,7 @@ const EditRole = () => {
           ]}
           title={`${t("page.role.edit.title")}: ${name}`}
           description={t("page.role.edit.description")}
-          backLink="/role-management">
-        </PageHeader>
+          backLink="/role-management"></PageHeader>
 
         <div className="flex items-center justify-between mb-8">
           <div></div>
