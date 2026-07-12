@@ -68,6 +68,15 @@ export default function DetailPurchaseOrder() {
   const [payRef, setPayRef] = useState("");
   const [paySubmitting, setPaySubmitting] = useState(false);
 
+  const formatIDR = (num) => {
+    if (!num && num !== 0) return "";
+    return "Rp " + Number(num).toLocaleString("id-ID");
+  };
+  const parseIDR = (str) => {
+    if (!str) return "";
+    return str.replace(/[^0-9]/g, "") || "";
+  };
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState(null);
 
@@ -723,12 +732,14 @@ export default function DetailPurchaseOrder() {
             <div className="space-y-2">
               <Label>{t("page.purchaseOrder.detail.paymentAmount")}</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 min={1}
                 max={remaining}
-                value={payAmount}
-                onChange={(e) => setPayAmount(e.target.value)}
-                placeholder="Rp"
+                value={payAmount ? formatIDR(payAmount) : ""}
+                onChange={(e) => setPayAmount(parseIDR(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                placeholder="Rp 0"
               />
             </div>
             <div className="space-y-2">
