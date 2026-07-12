@@ -421,6 +421,7 @@ const PurchaseOrderList = () => {
     {
       header: t("page.purchaseOrder.list.columns.actions"),
       align: "right",
+      stickyRight: true,
       render: (po) => (
         <div className="flex items-center justify-end gap-1">
           <Button
