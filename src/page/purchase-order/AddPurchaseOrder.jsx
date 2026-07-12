@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCookies } from "react-cookie";
@@ -141,11 +141,17 @@ const AddPurchaseOrder = () => {
   const getFilteredIngredients = (search) =>
     activeIngredients.filter((i) => i.name?.toLowerCase().includes((search || "").toLowerCase()));
 
-  const allDropdownsLoading =
-    suppliersLoading || suppliersFetching ||
-    employeesLoading || employeesFetching ||
-    locationsLoading || locationsFetching ||
-    ingredientsLoading || ingredientsFetching;
+  const headerReady = !suppliersLoading && !employeesLoading && !locationsLoading;
+  const [ingredientsReady, setIngredientsReady] = useState(false);
+  const prevStoreRef = useRef(selectedStore);
+  useEffect(() => {
+    if (prevStoreRef.current !== selectedStore) {
+      setIngredientsReady(false);
+      prevStoreRef.current = selectedStore;
+    }
+    if (ingredientsData) setIngredientsReady(true);
+  }, [selectedStore, ingredientsData]);
+  const itemsLoading = !!selectedStore && !ingredientsReady;
 
   const unitOptions = [
     { value: "pcs", label: t("page.product.form.unit.pcs") },
@@ -314,7 +320,7 @@ const AddPurchaseOrder = () => {
         </div>
       </div>
 
-      {allDropdownsLoading ? (
+      {!headerReady ? (
         <div className="space-y-6">
           <Card className="overflow-hidden border-0 shadow-md rounded-xl">
             <Skeleton className="h-14 rounded-none" />
@@ -613,21 +619,51 @@ const AddPurchaseOrder = () => {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                    onClick={addItem}>
-                    <Plus size={15} />
-                    {t("page.purchaseOrder.add.addItem")}
-                  </Button>
+                  {!itemsLoading && selectedStore && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
+                      onClick={addItem}>
+                      <Plus size={15} />
+                      {t("page.purchaseOrder.add.addItem")}
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="p-6">
                 {errors.items && <p className="text-xs text-destructive mb-3">{errors.items}</p>}
 
-                {items.length === 0 ? (
+                {!selectedStore ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                      <ShoppingCart size={20} className="text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">
+                      {t("page.purchaseOrder.add.selectStoreFirst") || "Pilih store terlebih dahulu"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("page.purchaseOrder.add.selectStoreHint") || "Item pesanan akan muncul setelah store dipilih"}
+                    </p>
+                  </div>
+                ) : itemsLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                        <Skeleton className="w-6 h-6 rounded-full shrink-0" />
+                        <Skeleton className="h-9 flex-1" />
+                        <Skeleton className="h-9 w-20 shrink-0" />
+                        <Skeleton className="h-9 w-20 shrink-0" />
+                        <Skeleton className="h-9 w-36 shrink-0" />
+                        <Skeleton className="h-5 w-28 shrink-0" />
+                      </div>
+                    ))}
+                    <p className="text-xs text-muted-foreground text-center pt-2">
+                      {t("page.purchaseOrder.add.loadingIngredients") || "Memuat data bahan..."}
+                    </p>
+                  </div>
+                ) : items.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     {t("page.purchaseOrder.add.noItem")}
                   </p>
