@@ -4477,6 +4477,8 @@
   "page.purchaseOrder.add.selectStoreFirst": "Select a store first",
   "page.purchaseOrder.add.selectStoreHint": "Order items will appear after a store is selected",
   "page.purchaseOrder.add.loadingIngredients": "Loading ingredients...",
+  "page.purchaseOrder.add.confirmTitle": "Create Purchase Order?",
+  "page.purchaseOrder.add.confirmDesc": "Make sure the data is correct before saving.",
   "page.purchaseOrder.add.validation.dueDate": "Due Date",
   "page.purchaseOrder.add.validation.itemName": "Item Name",
   "page.purchaseOrder.add.validation.minItem": "Min Item",

@@ -78,6 +78,7 @@ const AddPurchaseOrder = () => {
   }, [searchParams]);
   const [cancelModal, setCancelModal] = useState(false);
   const [draftModal, setDraftModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
   const [orderDate, setOrderDate] = useState(new Date());
   const [orderTime, setOrderTime] = useState(format(new Date(), "HH:mm"));
   const [dueDate, setDueDate] = useState(null);
@@ -829,9 +830,10 @@ const AddPurchaseOrder = () => {
                     Simpan sebagai Draft
                   </Button>
                   <Button
-                    type="submit"
+                    type="button"
                     disabled={createMutation.isLoading}
-                    className="gap-2 min-w-[140px] shadow-md">
+                    className="gap-2 min-w-[140px] shadow-md"
+                    onClick={() => setConfirmModal(true)}>
                     <Save size={18} />
                     {createMutation.isLoading
                       ? t("common.saving")
@@ -865,6 +867,19 @@ const AddPurchaseOrder = () => {
         onConfirm={() => {
           setDraftModal(false);
           handleSubmit(null, true);
+        }}
+      />
+      <Modal
+        type="confirm"
+        open={confirmModal}
+        onOpenChange={setConfirmModal}
+        title={t("page.purchaseOrder.add.confirmTitle") || "Buat Purchase Order?"}
+        description={t("page.purchaseOrder.add.confirmDesc") || "Pastikan data yang diisi sudah benar sebelum menyimpan."}
+        confirmText={t("common.yes") || "Ya"}
+        cancelText={t("common.no") || "Batal"}
+        onConfirm={() => {
+          setConfirmModal(false);
+          handleSubmit(null, false);
         }}
       />
       <Modal

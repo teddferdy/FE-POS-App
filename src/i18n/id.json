@@ -4426,6 +4426,8 @@
   "page.purchaseOrder.add.selectStoreFirst": "Pilih store terlebih dahulu",
   "page.purchaseOrder.add.selectStoreHint": "Item pesanan akan muncul setelah store dipilih",
   "page.purchaseOrder.add.loadingIngredients": "Memuat data bahan...",
+  "page.purchaseOrder.add.confirmTitle": "Buat Purchase Order?",
+  "page.purchaseOrder.add.confirmDesc": "Pastikan data yang diisi sudah benar sebelum menyimpan.",
   "page.purchaseOrder.add.validation.dueDate": "Jatuh tempo harus diisi",
   "page.purchaseOrder.add.validation.itemName": "Nama item harus diisi",
   "page.purchaseOrder.add.validation.minItem": "Minimal 1 item",
