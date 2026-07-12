@@ -274,7 +274,7 @@ const AddPurchaseOrder = () => {
       supplier: supplierId,
       notes,
       discount,
-      status: saveAsDraft ? "draft" : undefined,
+      status: saveAsDraft ? "draft" : "pending",
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       pic: picId,
       orderDate: (() => {
