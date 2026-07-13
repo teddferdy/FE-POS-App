@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
@@ -7,9 +7,10 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useCookies } from "react-cookie";
-import { X, Save } from "lucide-react";
+import { X, Save, Check, PackageOpen, Plus, ChevronsUpDown } from "lucide-react";
 import { addDiscount } from "@/services/discount";
 import { getAllLocation } from "@/services/location";
+import { getAllProduct } from "@/services/product";
 import StoreSelectCard from "@/components/organism/StoreSelectCard";
 import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,10 @@ import {
   FormControl
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import Modal from "@/components/organism/modal";
 import { useTranslation } from "react-i18next";
 const PROMO_TYPES = {
@@ -67,6 +72,25 @@ const AddDiscount = () => {
     }
   );
   const locations = locationsData?.data || locationsData?.locations || [];
+
+  const storeId = selectedStores?.[0] || null;
+
+  const { data: productsData, isLoading: productsLoading } = useQuery(
+    ["products-for-bundling", storeId],
+    () => getAllProduct({ location: storeId }),
+    { enabled: !!storeId }
+  );
+  const products = productsData?.data || productsData?.products || productsData || [];
+
+  const formatIDR = (value) => {
+    if (!value && value !== 0) return "";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(Number(value));
+  };
 
   const formSchema = z.object({
     name: z.string().min(1, t("page.discount.form.validation.nameRequired")),
@@ -164,7 +188,11 @@ const AddDiscount = () => {
         return {
           promoType: "bundling",
           bundlePrice: Number(values.bundlePrice),
-          productIds: values.productIds ? values.productIds.split(",").map(Number) : []
+          productIds: Array.isArray(values.productIds)
+            ? values.productIds.map(Number)
+            : values.productIds
+              ? values.productIds.split(",").map(Number)
+              : []
         };
       case "happyHour":
         return {
@@ -454,15 +482,21 @@ const AddDiscount = () => {
                         <FormLabel>
                           Harga Paket (Rp) <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder={t("page.discount.form.placeholder.bundlePrice")}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === "" ? "" : Number(e.target.value))
-                          }
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            Rp
+                          </span>
+                          <Input
+                            type="text"
+                            className="pl-10"
+                            value={field.value ? formatIDR(field.value).replace("Rp", "").trim() : ""}
+                            placeholder="0"
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\D/g, "");
+                              field.onChange(raw ? Number(raw) : "");
+                            }}
+                          />
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -473,19 +507,50 @@ const AddDiscount = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          ID Produk <span className="text-destructive">*</span>
+                          Produk <span className="text-destructive">*</span>
                         </FormLabel>
-                        <Input
-                          placeholder={t("page.discount.form.placeholder.productIds")}
-                          {...field}
-                        />
+                        {!storeId ? (
+                          <p className="text-sm text-muted-foreground">
+                            Pilih toko terlebih dahulu untuk memilih produk.
+                          </p>
+                        ) : productsLoading ? (
+                          <div className="space-y-2">
+                            <Skeleton className="h-10 w-full rounded-lg" />
+                            <div className="flex gap-1.5">
+                              <Skeleton className="h-6 w-20 rounded-md" />
+                              <Skeleton className="h-6 w-16 rounded-md" />
+                              <Skeleton className="h-6 w-24 rounded-md" />
+                            </div>
+                          </div>
+                        ) : Array.isArray(products) && products.length === 0 ? (
+                          <div className="flex items-center gap-3 p-3 border border-dashed rounded-lg">
+                            <PackageOpen size={18} className="text-muted-foreground shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm text-muted-foreground">
+                                Belum ada produk di toko ini.
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="gap-1 shrink-0"
+                              onClick={() => navigate("/add-product")}>
+                              <Plus size={14} />
+                              Tambah Produk
+                            </Button>
+                          </div>
+                        ) : (
+                          <ProductMultiSelect
+                            products={Array.isArray(products) ? products : []}
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <p className="text-xs text-muted-foreground md:col-span-2">
-                    Masukkan ID produk yang termasuk dalam paket, pisahkan dengan koma.
-                  </p>
                 </div>
               )}
 
@@ -824,5 +889,91 @@ const AddDiscount = () => {
     </div>
   );
 };
+
+function ProductMultiSelect({ products, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selectedIds = value ? (Array.isArray(value) ? value : value.split(",").filter(Boolean).map(Number)) : [];
+
+  const toggleProduct = (id) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((x) => x !== id)
+      : [...selectedIds, id];
+    onChange(next.join(","));
+  };
+
+  const selectedProducts = products.filter((p) => selectedIds.includes(p.id || p.productId));
+
+  return (
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal h-10">
+            <span className="truncate text-muted-foreground">
+              {selectedIds.length > 0
+                ? `${selectedIds.length} produk dipilih`
+                : "Pilih produk..."}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+          <Command>
+            <CommandInput placeholder="Cari produk..." />
+            <CommandList>
+              <CommandEmpty>Produk tidak ditemukan</CommandEmpty>
+              <CommandGroup>
+                {products.map((product) => {
+                  const id = product.id || product.productId;
+                  const name = product.name || product.productName || `Produk #${id}`;
+                  const isSelected = selectedIds.includes(id);
+                  return (
+                    <CommandItem
+                      key={id}
+                      onSelect={() => toggleProduct(id)}
+                      className="cursor-pointer">
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          isSelected ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {name}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selectedProducts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedProducts.map((product) => {
+            const id = product.id || product.productId;
+            const name = product.name || product.productName || `#${id}`;
+            return (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                {name}
+                <button
+                  type="button"
+                  onClick={() => toggleProduct(id)}
+                  className="hover:text-destructive">
+                  <X size={12} />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default AddDiscount;

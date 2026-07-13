@@ -27,7 +27,11 @@ const PriceStoreList = () => {
   const [editModal, setEditModal] = useState(null);
   const [editPrice, setEditPrice] = useState("");
 
-  const { data: locData, isLoading } = useQuery(["locations-price-store"], () => getAllLocation(), {
+  const {
+    data: locData,
+    isLoading,
+    isFetching
+  } = useQuery(["locations-price-store"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const stores = useMemo(() => locData?.data || locData || [], [locData]);
@@ -36,7 +40,11 @@ const PriceStoreList = () => {
     [stores, selectedStore]
   );
 
-  const { data: prodData, isLoading: isLoadingProducts } = useQuery(
+  const {
+    data: prodData,
+    isLoading: isLoadingProducts,
+    isFetching: isFetchingProducts
+  } = useQuery(
     ["products-for-price", selectedStore],
     () => getProductByOutlet({ location: selectedStore }),
     {
@@ -93,7 +101,7 @@ const PriceStoreList = () => {
         <span className="text-primary font-semibold">{t("page.priceStore.list.title")}</span>
       </nav>
 
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <Store size={40} className="text-primary" />
@@ -162,7 +170,7 @@ const PriceStoreList = () => {
             </div>
           </div>
 
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[160px] bg-card rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -211,17 +219,33 @@ const PriceStoreList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoadingProducts ? (
+                  {isLoadingProducts || isFetchingProducts ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={`skel-${i}`} className="border-b last:border-0">
-                        <td className="py-3"><Skeleton className="h-4 w-32" /></td>
-                        <td className="py-3"><Skeleton className="h-4 w-24" /></td>
-                        <td className="py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                        <td className="py-3 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
-                        <td className="py-3 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
-                        <td className="py-3 text-right"><Skeleton className="h-4 w-10 ml-auto" /></td>
-                        <td className="py-3"><Skeleton className="h-4 w-10" /></td>
-                        <td className="py-3 text-right"><Skeleton className="h-8 w-8 rounded ml-auto" /></td>
+                        <td className="py-3">
+                          <Skeleton className="h-4 w-32" />
+                        </td>
+                        <td className="py-3">
+                          <Skeleton className="h-4 w-24" />
+                        </td>
+                        <td className="py-3">
+                          <Skeleton className="h-5 w-14 rounded-full" />
+                        </td>
+                        <td className="py-3 text-right">
+                          <Skeleton className="h-4 w-20 ml-auto" />
+                        </td>
+                        <td className="py-3 text-right">
+                          <Skeleton className="h-4 w-20 ml-auto" />
+                        </td>
+                        <td className="py-3 text-right">
+                          <Skeleton className="h-4 w-10 ml-auto" />
+                        </td>
+                        <td className="py-3">
+                          <Skeleton className="h-4 w-10" />
+                        </td>
+                        <td className="py-3 text-right">
+                          <Skeleton className="h-8 w-8 rounded ml-auto" />
+                        </td>
                       </tr>
                     ))
                   ) : products.length === 0 ? (
