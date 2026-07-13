@@ -146,63 +146,17 @@ const EditIngredient = () => {
           />
         </div>
 
-        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
-          <Form {...form}>
-            <form>
-              {isSuperAdmin && (
-                <div className="mb-6">
-                  <Skeleton className="h-6 w-24 mb-2" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              )}
-              <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-8 space-y-6">
-                  <div>
-                    <Skeleton className="h-5 w-32 mb-6" />
-                    <div className="space-y-6">
-                      <Skeleton className="h-10 w-full" />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Skeleton className="h-5 w-32 mb-6" />
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                      </div>
-                      <Skeleton className="h-12 w-full" />
-                    </div>
-                  </div>
-                  <div>
-                    <Skeleton className="h-5 w-32 mb-6" />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
-                  </div>
-                  <div>
-                    <Skeleton className="h-5 w-32 mb-6" />
-                    <div className="space-y-4">
-                      <Skeleton className="h-28 w-full" />
-                      <Skeleton className="h-28 w-full" />
-                      <Skeleton className="h-28 w-full" />
-                    </div>
-                  </div>
-                </div>
-                <div className="col-span-12 lg:col-span-4 space-y-6">
-                  <Skeleton className="h-40 w-full" />
-                  <Skeleton className="h-40 w-full" />
-                  <Skeleton className="h-32 w-full" />
-                </div>
-              </div>
-            </form>
-          </Form>
+        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
         </div>
       </div>
     );
