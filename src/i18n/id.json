@@ -3606,6 +3606,7 @@
   "page.ingredient.edit.breadcrumbEdit": "Edit",
   "page.ingredient.edit.breadcrumbIngredient": "Bahan Baku",
   "page.ingredient.edit.loadingData": "Memuat data...",
+  "page.ingredient.edit.loading": "Memuat...",
   "page.ingredient.edit.modalCancelConfirm": "Ya, Batalkan",
   "page.ingredient.edit.modalCancelDesc": "Apakah Anda yakin ingin membatalkan? Perubahan tidak akan disimpan.",
   "page.ingredient.edit.modalCancelTitle": "Batalkan",

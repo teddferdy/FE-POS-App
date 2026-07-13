@@ -19,6 +19,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import AbortController from "@/components/organism/abort-controller";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 import PageHeader from "@/components/ui/PageHeader";
@@ -85,22 +86,29 @@ const EditIngredient = () => {
     store: z.string().nullable()
   });
 
-  const { data: suppliersData } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", store],
-    () => getAllSupplier({ limit: 999, store: store || undefined }),
+    () => getAllSupplier({ limit: 999, store: store || undefined })
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: categoriesData } = useQuery(
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
     ["ingredient-categories-dropdown"],
-    () => getAllIngredientCategory(),
+    () => getAllIngredientCategory()
   );
   const categories = categoriesData?.data || [];
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
-    enabled: isSuperAdmin
-  });
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(
+    ["allLocations"],
+    () => getAllLocation(),
+    {
+      enabled: isSuperAdmin
+    }
+  );
   const locations = locationsData?.data || locationsData?.locations || [];
+
+  const dropdownsLoading =
+    suppliersLoading || categoriesLoading || (isSuperAdmin && locationsLoading);
 
   const {
     data,
@@ -111,105 +119,93 @@ const EditIngredient = () => {
 
   if (isError) return <AbortController refetch={refetch} />;
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      unit: "pcs",
-      baseUnit: "pcs",
-      conversionFactor: "1",
-      stock: 0,
-      minStock: 0,
-      costPrice: 0,
-      supplier: null,
-      category: null,
-      isActive: true,
-      store: null
-    }
-  });
+  if (dropdownsLoading || loadingData)
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div>
+          <PageHeader
+            breadcrumbs={[
+              {
+                label: t("page.ingredient.edit.breadcrumbDashboard"),
+                href: "/dashboard-super-admin",
+                i18nKey: "page.ingredient.edit.breadcrumbDashboard"
+              },
+              {
+                label: t("page.ingredient.edit.breadcrumbIngredient"),
+                href: "/ingredient",
+                i18nKey: "page.ingredient.edit.breadcrumbIngredient"
+              },
+              {
+                label: t("page.ingredient.edit.breadcrumbEdit"),
+                i18nKey: "page.ingredient.edit.breadcrumbEdit"
+              }
+            ]}
+            title={t("page.ingredient.edit.title")}
+            description={t("page.ingredient.edit.loading")}
+            backLink="/ingredient"
+          />
+        </div>
 
-  const { handleSubmit, confirmModal } = useConfirmSubmit(form, (values) =>
-    onSubmit(values, false)
-  );
-
-  useEffect(() => {
-    if (data?.data) {
-      const d = data.data;
-      form.reset({
-        name: d.name || "",
-        unit: d.unit || "pcs",
-        baseUnit: d.baseUnit || d.unit || "pcs",
-        conversionFactor: String(d.conversionFactor ?? 1),
-        stock: d.stock ?? 0,
-        minStock: d.minStock ?? 0,
-        costPrice: d.costPrice ?? 0,
-        supplier: d.supplier ? String(d.supplier) : null,
-        category: d.category ? String(d.category) : null,
-        isActive: d.status !== "inactive",
-        store: d.store ? String(d.store) : null
-      });
-    }
-  }, [data]);
-
-  const watchUnit = form.watch("unit");
-  const watchBaseUnit = form.watch("baseUnit");
-  const watchConversionFactor = form.watch("conversionFactor");
-
-  useEffect(() => {
-    const hint = conversionHints[watchUnit];
-    if (hint) {
-      form.setValue("baseUnit", hint.base);
-      form.setValue("conversionFactor", String(hint.factor));
-    } else {
-      form.setValue("baseUnit", watchUnit);
-      form.setValue("conversionFactor", "1");
-    }
-  }, [watchUnit]);
-
-  const mutation = useMutation((payload) => editIngredient(id, payload), {
-    onSuccess: () => {
-      toast.success(t("page.ingredient.edit.toastSuccess"), {
-        description: t("page.ingredient.edit.toastEditDesc")
-      });
-      queryClient.invalidateQueries(["ingredients"]);
-      navigate("/ingredient");
-    },
-    onError: (err) => {
-      toast.error(t("page.ingredient.edit.toastError"), {
-        description: err?.response?.data?.message || err.message
-      });
-    }
-  });
-
-  const onSubmit = (values, saveAsDraft = false) => {
-    mutation.mutate({
-      ...values,
-      supplier: values.supplier ? parseInt(values.supplier) : null,
-      category: values.category ? parseInt(values.category) : null,
-      status: saveAsDraft ? "draft" : values.isActive ? "active" : "inactive",
-      store: values.store ? parseInt(values.store) : cookie?.user?.store || null
-    });
-  };
-
-  const convLabel =
-    watchUnit === "kg"
-      ? t("page.ingredient.form.convKg")
-      : watchUnit === "liter"
-        ? t("page.ingredient.form.convLiter")
-        : watchUnit === "meter"
-          ? t("page.ingredient.form.convMeter")
-          : watchUnit === "lusin"
-            ? t("page.ingredient.form.convLusin")
-            : watchUnit === "karton"
-              ? t("page.ingredient.form.convKarton")
-              : watchUnit === "box"
-                ? t("page.ingredient.form.convBox")
-                : watchUnit === "pack"
-                  ? t("page.ingredient.form.convPack")
-                  : t("page.ingredient.form.convNoAuto");
-
-  if (loadingData)
-    return <Loading fullscreen size="lg" label={t("page.ingredient.edit.loadingData")} />;
+        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+          <Form {...form}>
+            <form>
+              {isSuperAdmin && (
+                <div className="mb-6">
+                  <Skeleton className="h-6 w-24 mb-2" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              )}
+              <div className="grid grid-cols-12 gap-6">
+                <div className="col-span-12 lg:col-span-8 space-y-6">
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-6" />
+                    <div className="space-y-6">
+                      <Skeleton className="h-10 w-full" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-6" />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-6" />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-6" />
+                    <div className="space-y-4">
+                      <Skeleton className="h-28 w-full" />
+                      <Skeleton className="h-28 w-full" />
+                      <Skeleton className="h-28 w-full" />
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-12 lg:col-span-4 space-y-6">
+                  <Skeleton className="h-40 w-full" />
+                  <Skeleton className="h-40 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </div>
+    );
 
   return (
     <div>
@@ -226,14 +222,31 @@ const EditIngredient = () => {
               href: "/ingredient",
               i18nKey: "page.ingredient.edit.breadcrumbIngredient"
             },
-            { label: t("page.ingredient.edit.breadcrumbEdit"), i18nKey: "page.ingredient.edit.breadcrumbEdit" }
+            {
+              label: t("page.ingredient.edit.breadcrumbEdit"),
+              i18nKey: "page.ingredient.edit.breadcrumbEdit"
+            }
           ]}
           title={t("page.ingredient.edit.title")}
           description={form.watch("name")}
           backLink="/ingredient"
         />
 
-        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        {dropdownsLoading || loadingData ? (
+          <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
+            <div className="space-y-6">
+              <Skeleton className="h-10 w-full" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
             <form onSubmit={handleSubmit}>
               {isSuperAdmin && (
@@ -680,6 +693,7 @@ const EditIngredient = () => {
             </form>
           </Form>
         </div>
+        )}
 
         {mutation.isLoading && (
           <Loading fullscreen size="lg" label={t("page.ingredient.form.savingButton")} />

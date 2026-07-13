@@ -19,6 +19,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Modal from "@/components/organism/modal";
 import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import UserGuide from "@/components/organism/UserGuide";
 import { useConfirmSubmit } from "@/hooks/useConfirmSubmit";
 // const item = {
@@ -86,22 +87,24 @@ const AddIngredient = () => {
     store: z.string().nullable()
   });
 
-  const { data: suppliersData } = useQuery(
+  const { data: suppliersData, isLoading: suppliersLoading } = useQuery(
     ["suppliers-dropdown", store],
     () => getAllSupplier({ limit: 999, store: store || undefined }),
   );
   const suppliers = suppliersData?.data || [];
 
-  const { data: categoriesData } = useQuery(
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery(
     ["ingredient-categories-dropdown"],
     () => getAllIngredientCategory(),
   );
   const categories = categoriesData?.data || [];
 
-  const { data: locationsData } = useQuery(["allLocations"], () => getAllLocation(), {
+  const { data: locationsData, isLoading: locationsLoading } = useQuery(["allLocations"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const locations = locationsData?.data || locationsData?.locations || [];
+
+  const dropdownsLoading = suppliersLoading || categoriesLoading || (isSuperAdmin && locationsLoading);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -213,7 +216,21 @@ const AddIngredient = () => {
           <UserGuide guideKey="add-ingredient" />
         </div>
 
-        <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
+        {dropdownsLoading ? (
+          <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden space-y-6">
+            <div className="space-y-6">
+              <Skeleton className="h-10 w-full" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-card p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border overflow-hidden">
           <Form {...form}>
             <form onSubmit={handleSubmit}>
               {isSuperAdmin && (
@@ -660,6 +677,7 @@ const AddIngredient = () => {
             </form>
           </Form>
         </div>
+        )}
 
         {mutation.isLoading && (
           <Loading fullscreen size="lg" label={t("page.ingredient.form.savingButton")} />

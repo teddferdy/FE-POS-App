@@ -3657,6 +3657,7 @@
   "page.ingredient.edit.breadcrumbEdit": "Edit",
   "page.ingredient.edit.breadcrumbIngredient": "Ingredients",
   "page.ingredient.edit.loadingData": "Loading data...",
+  "page.ingredient.edit.loading": "Loading...",
   "page.ingredient.edit.modalCancelConfirm": "Yes, Cancel",
   "page.ingredient.edit.modalCancelDesc": "Are you sure you want to cancel? Changes will not be saved.",
   "page.ingredient.edit.modalCancelTitle": "Cancel",
