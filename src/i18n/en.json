@@ -2009,6 +2009,8 @@
   "page.table.table.name": "Table Name",
   "page.table.table.capacity": "Capacity",
   "page.table.table.capacityValue": "{{capacity}} Person(s)",
+  "page.table.table.createdAt": "Created At",
+  "page.table.table.updatedAt": "Updated At",
   "page.table.status.available": "Available",
   "page.table.status.occupied": "Occupied",
   "page.table.status.maintenance": "Maintenance",

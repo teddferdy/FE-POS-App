@@ -2005,6 +2005,8 @@
   "page.table.table.name": "Nama Meja",
   "page.table.table.capacity": "Kapasitas",
   "page.table.table.capacityValue": "{{capacity}} Orang",
+  "page.table.table.createdAt": "Dibuat",
+  "page.table.table.updatedAt": "Diubah",
   "page.table.status.available": "Tersedia",
   "page.table.status.occupied": "Terisi",
   "page.table.status.maintenance": "Perbaikan",
