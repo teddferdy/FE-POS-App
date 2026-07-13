@@ -36,7 +36,7 @@ const PriceStoreList = () => {
     [stores, selectedStore]
   );
 
-  const { data: prodData } = useQuery(
+  const { data: prodData, isLoading: isLoadingProducts } = useQuery(
     ["products-for-price", selectedStore],
     () => getProductByOutlet({ location: selectedStore }),
     {
@@ -211,10 +211,23 @@ const PriceStoreList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.length === 0 ? (
+                  {isLoadingProducts ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={`skel-${i}`} className="border-b last:border-0">
+                        <td className="py-3"><Skeleton className="h-4 w-32" /></td>
+                        <td className="py-3"><Skeleton className="h-4 w-24" /></td>
+                        <td className="py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                        <td className="py-3 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
+                        <td className="py-3 text-right"><Skeleton className="h-4 w-20 ml-auto" /></td>
+                        <td className="py-3 text-right"><Skeleton className="h-4 w-10 ml-auto" /></td>
+                        <td className="py-3"><Skeleton className="h-4 w-10" /></td>
+                        <td className="py-3 text-right"><Skeleton className="h-8 w-8 rounded ml-auto" /></td>
+                      </tr>
+                    ))
+                  ) : products.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-muted-foreground">
-                        {t("common.loading")}
+                        {t("common.noData")}
                       </td>
                     </tr>
                   ) : (
