@@ -20,6 +20,7 @@ import {
 import AbortController from "@/components/organism/abort-controller";
 import { TipsCard } from "@/components/ui/tips-card";
 import StatCard from "@/components/ui/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "@/components/layout/DashboardLayout";
 
 const LowStockAll = () => {
@@ -35,7 +36,7 @@ const LowStockAll = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: locData } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-low-stock-all"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const locations = locData?.data || [];
@@ -171,7 +172,12 @@ const LowStockAll = () => {
     }
   ];
 
-  const filters = (
+  const filters = isLoadingLocations ? (
+    <div className="flex flex-wrap items-center gap-3">
+      <Skeleton className="h-9 w-56 rounded-md" />
+      <Skeleton className="h-9 w-44 rounded-md" />
+    </div>
+  ) : (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative w-56">
         <Search

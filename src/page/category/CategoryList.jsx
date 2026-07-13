@@ -82,7 +82,7 @@ const CategoryList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData } = useQuery(["locations-cat"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-cat"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -463,59 +463,72 @@ const CategoryList = () => {
                   emptyMessage={t("page.category.list.empty")}
                   toolbar={
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.category.list.sectionTitle")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                        )}
-                        <div className="relative min-w-0 flex-[1_1_180px]">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                            search
-                          </span>
-                          <Input
-                            placeholder={t("page.category.list.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 text-sm"
-                          />
-                        </div>
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
-                          <option value="">{t("page.category.list.statusAll")}</option>
-                          <option value="active">{t("common.active")}</option>
-                          <option value="inactive">{t("common.inactive")}</option>
-                        </select>
-                      </div>
+                      {isLoadingLocations ? (
+                        <>
+                          <Skeleton className="h-6 w-32" />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Skeleton className="h-9 w-48 rounded-md" />
+                            <Skeleton className="h-9 w-64 rounded-md" />
+                            <Skeleton className="h-9 w-32 rounded-md" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                            <h4 className="text-base font-semibold text-foreground shrink-0">
+                              {t("page.category.list.sectionTitle")}
+                            </h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 h-9 lg:hidden"
+                              onClick={() => setShowFilters(!showFilters)}>
+                              <span className="material-symbols-outlined text-base">filter_list</span>
+                              {showFilters ? "Tutup" : "Filter"}
+                            </Button>
+                          </div>
+                          <div
+                            className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                            {isSuperAdmin && (
+                              <StoreFilter
+                                locations={locData?.data || []}
+                                value={storeFilter}
+                                onChange={(v) => {
+                                  setGlobalStoreFilter(v);
+                                  setPage(1);
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                t={t}
+                              />
+                            )}
+                            <div className="relative min-w-0 flex-[1_1_180px]">
+                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                                search
+                              </span>
+                              <Input
+                                placeholder={t("page.category.list.search")}
+                                value={search}
+                                onChange={(e) => {
+                                  setSearch(e.target.value);
+                                  setPage(1);
+                                }}
+                                className="pl-9 h-9 text-sm"
+                              />
+                            </div>
+                            <select
+                              value={statusFilter}
+                              onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                              }}
+                              className="h-9 px-3 bg-background border border-input rounded-lg text-sm focus:ring-2 focus:ring-ring outline-none">
+                              <option value="">{t("page.category.list.statusAll")}</option>
+                              <option value="active">{t("common.active")}</option>
+                              <option value="inactive">{t("common.inactive")}</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
                     </div>
                   }
                   pagination={{

@@ -72,7 +72,7 @@ const MemberList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data: locData } = useQuery(["locations-members"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-members"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -552,37 +552,45 @@ const MemberList = () => {
                     isLoading={isLoading}
                     emptyMessage={t("page.member.list.empty")}
                     toolbar={
-                      <div className="flex items-center justify-between w-full">
-                        <h4 className="text-base font-semibold text-foreground">
-                          {t("page.member.list.title")}
-                        </h4>
-                        {isSuperAdmin && (
-                          <StoreFilter
-                            locations={locData?.data || []}
-                            value={storeFilter}
-                            onChange={(v) => {
-                              setGlobalStoreFilter(v);
-                              setPage(1);
-                            }}
-                            isSuperAdmin={isSuperAdmin}
-                            t={t}
-                          />
-                        )}
-                        <div className="relative">
-                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
-                            search
-                          </span>
-                          <Input
-                            placeholder={t("page.member.list.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 w-72 text-sm"
-                          />
+                      isLoadingLocations ? (
+                        <div className="flex items-center justify-between w-full">
+                          <Skeleton className="h-6 w-32" />
+                          <Skeleton className="h-9 w-48 rounded-md" />
+                          <Skeleton className="h-9 w-72 rounded-md" />
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex items-center justify-between w-full">
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.member.list.title")}
+                          </h4>
+                          {isSuperAdmin && (
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setGlobalStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          )}
+                          <div className="relative">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                              search
+                            </span>
+                            <Input
+                              placeholder={t("page.member.list.search")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                              }}
+                              className="pl-9 h-9 w-72 text-sm"
+                            />
+                          </div>
+                        </div>
+                      )
                     }
                     pagination={{
                       page,

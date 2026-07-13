@@ -42,7 +42,7 @@ const AccountsReceivableList = () => {
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState("");
 
-  const { data: locData } = useQuery(["locations-ar"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-ar"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -246,14 +246,18 @@ const AccountsReceivableList = () => {
           )}
 
           {isSuperAdmin && (
-            <StoreFilter
-              locations={locData?.data || locData?.locations || []}
-              value={storeFilter}
-              onChange={(v) => {
-                setGlobalStoreFilter(v);
-                setPage(1);
-              }}
-            />
+            isLoadingLocations ? (
+              <Skeleton className="h-9 w-48 rounded-md" />
+            ) : (
+              <StoreFilter
+                locations={locData?.data || locData?.locations || []}
+                value={storeFilter}
+                onChange={(v) => {
+                  setGlobalStoreFilter(v);
+                  setPage(1);
+                }}
+              />
+            )
           )}
 
           <div className="flex items-center gap-2">

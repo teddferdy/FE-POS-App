@@ -36,7 +36,7 @@ const ExpenseList = () => {
   const MENU_KEY = "/expense";
   const locationParam = storeFilter !== "all" ? storeFilter : user?.store || "";
 
-  const { data: locData } = useQuery(["locations-expense"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-expense"], () => getAllLocation(), {
     
     enabled: isSuperAdmin
   });
@@ -342,6 +342,13 @@ const ExpenseList = () => {
                 </div>
               )}
 
+              {isLoadingLocations ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Skeleton className="h-9 w-72 rounded-md" />
+                  <Skeleton className="h-9 w-48 rounded-md" />
+                  <Skeleton className="h-9 w-32 rounded-md" />
+                </div>
+              ) : (
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-full sm:w-72">
                   <Search
@@ -397,6 +404,7 @@ const ExpenseList = () => {
                   </>
                 )}
               </div>
+              )}
 
               <div>
                 <DataTable

@@ -51,7 +51,7 @@ const PurchaseReturnList = () => {
   const [actionTarget, setActionTarget] = useState(null);
   const [actionType, setActionType] = useState(null);
 
-  const { data: locData } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-purchase-return"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -305,48 +305,66 @@ const PurchaseReturnList = () => {
                 isLoading={isLoading || isFetching}
                 emptyMessage={t("page.purchaseReturn.list.emptyMessage")}
                 toolbar={
-                  <div className="flex flex-wrap items-center gap-2">
-                    {isSuperAdmin && (
-                      <StoreFilter
-                        locations={locData?.data || []}
-                        value={storeFilter}
-                        onChange={(v) => {
-                          setGlobalStoreFilter(v);
-                          setPage(1);
-                        }}
-                        isSuperAdmin={isSuperAdmin}
-                        t={t}
-                      />
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                    {isLoadingLocations ? (
+                      <>
+                        <Skeleton className="h-6 w-32" />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Skeleton className="h-9 w-48 rounded-md" />
+                          <Skeleton className="h-9 w-32 rounded-md" />
+                          <Skeleton className="h-9 w-64 rounded-md" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h4 className="text-base font-semibold text-foreground">
+                          {t("page.purchaseReturn.list.title")}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {isSuperAdmin && (
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setGlobalStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                          )}
+                          <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                              setStatusFilter(e.target.value);
+                              setPage(1);
+                            }}
+                            className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                            <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
+                            {Object.keys(statusCfg).map((k) => (
+                              <option key={k} value={k}>
+                                {t(`page.purchaseReturn.status.${k}`)}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="relative w-full sm:w-64">
+                            <Search
+                              size={16}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                              placeholder={t("page.purchaseReturn.list.placeholder.search")}
+                              value={search}
+                              onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                              }}
+                              className="pl-9 h-9 text-sm"
+                            />
+                          </div>
+                        </div>
+                      </>
                     )}
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                      <option value="all">{t("page.purchaseReturn.list.filter.allStatus")}</option>
-                      {Object.keys(statusCfg).map((k) => (
-                        <option key={k} value={k}>
-                          {t(`page.purchaseReturn.status.${k}`)}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="relative w-full sm:w-64">
-                      <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
-                      <Input
-                        placeholder={t("page.purchaseReturn.list.placeholder.search")}
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setPage(1);
-                        }}
-                        className="pl-9 h-9 text-sm"
-                      />
-                    </div>
                   </div>
                 }
                 pagination={{

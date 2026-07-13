@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { getAllLocation } from "@/services/location";
 import { format } from "date-fns";
 import AbortController from "@/components/organism/abort-controller";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -60,7 +61,7 @@ const StockHistory = () => {
   const [searchProduct] = useState("");
   const [storeFilter, setStoreFilter] = useState("");
 
-  const { data: locData } = useQuery(["locations-stock-history"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-stock-history"], () => getAllLocation(), {
     enabled: true
   });
 
@@ -239,85 +240,95 @@ const StockHistory = () => {
               emptyIcon={Calendar}
               toolbar={
                 <Card className="p-4 border-0 shadow-none bg-transparent">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                    {isSuperAdmin && (
+                  {isLoadingLocations ? (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                      <Skeleton className="h-9 rounded-md" />
+                      <Skeleton className="h-9 rounded-md" />
+                      <Skeleton className="h-9 rounded-md" />
+                      <Skeleton className="h-9 rounded-md" />
+                      <Skeleton className="h-9 rounded-md" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                      {isSuperAdmin && (
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                            {t("header.selectStore") || "Store"}
+                          </label>
+                          <StoreFilter
+                            locations={locData?.data || []}
+                            value={storeFilter}
+                            onChange={(v) => {
+                              setStoreFilter(v);
+                              setPage(1);
+                            }}
+                            isSuperAdmin={isSuperAdmin}
+                            t={t}
+                          />
+                        </div>
+                      )}
                       <div>
                         <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                          {t("header.selectStore") || "Store"}
+                          {t("page.stockHistory.filter.product")}
                         </label>
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
+                        <Combobox
+                          options={[
+                            { value: "", label: t("page.stockHistory.filter.allProducts") },
+                            ...products.map((p) => ({
+                              value: String(p.id || p._id),
+                              label: p.name || p.nameProduct
+                            }))
+                          ]}
+                          value={productFilter}
                           onChange={(v) => {
-                            setStoreFilter(v);
+                            setProductFilter(v);
                             setPage(1);
                           }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
+                          placeholder={t("page.stockHistory.filter.allProducts")}
+                          searchPlaceholder={t("common.search")}
                         />
                       </div>
-                    )}
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                        {t("page.stockHistory.filter.product")}
-                      </label>
-                      <Combobox
-                        options={[
-                          { value: "", label: t("page.stockHistory.filter.allProducts") },
-                          ...products.map((p) => ({
-                            value: String(p.id || p._id),
-                            label: p.name || p.nameProduct
-                          }))
-                        ]}
-                        value={productFilter}
-                        onChange={(v) => {
-                          setProductFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.stockHistory.filter.allProducts")}
-                        searchPlaceholder={t("common.search")}
-                      />
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                          {t("page.stockHistory.filter.referenceType")}
+                        </label>
+                        <Combobox
+                          options={referenceTypeOptions}
+                          value={referenceFilter}
+                          onChange={(v) => {
+                            setReferenceFilter(v);
+                            setPage(1);
+                          }}
+                          placeholder={t("page.stockHistory.filter.allTypes")}
+                          searchPlaceholder={t("common.search")}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                          {t("page.stockHistory.filter.startDate")}
+                        </label>
+                        <DatePicker
+                          date={startDate}
+                          setDate={(date) => {
+                            setStartDate(date);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                          {t("page.stockHistory.filter.endDate")}
+                        </label>
+                        <DatePicker
+                          date={endDate}
+                          setDate={(date) => {
+                            setEndDate(date);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                        {t("page.stockHistory.filter.referenceType")}
-                      </label>
-                      <Combobox
-                        options={referenceTypeOptions}
-                        value={referenceFilter}
-                        onChange={(v) => {
-                          setReferenceFilter(v);
-                          setPage(1);
-                        }}
-                        placeholder={t("page.stockHistory.filter.allTypes")}
-                        searchPlaceholder={t("common.search")}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                        {t("page.stockHistory.filter.startDate")}
-                      </label>
-                      <DatePicker
-                        date={startDate}
-                        setDate={(date) => {
-                          setStartDate(date);
-                          setPage(1);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                        {t("page.stockHistory.filter.endDate")}
-                      </label>
-                      <DatePicker
-                        date={endDate}
-                        setDate={(date) => {
-                          setEndDate(date);
-                          setPage(1);
-                        }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </Card>
               }
               pagination={{

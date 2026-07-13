@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { axiosInstance } from "@/services";
 import { useQuery } from "react-query";
 import StoreFilter from "@/components/ui/StoreFilter";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
 
@@ -29,7 +30,7 @@ const CustomerOrderManagement = () => {
   const [search, setSearch] = useState("");
   const [acceptingId, setAcceptingId] = useState(null);
 
-  const { data: locData } = useQuery(["locations-customer-orders"], () => getAllLocation("all"), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-customer-orders"], () => getAllLocation("all"), {
     
     enabled: isSuperAdmin
   });
@@ -121,27 +122,36 @@ const CustomerOrderManagement = () => {
       ) : (
         <>
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-            {isSuperAdmin && (
-              <StoreFilter
-                locations={(locData?.data || []).filter((l) => l.status === "active")}
-                value={storeFilter}
-                onChange={(v) => setGlobalStoreFilter(v)}
-                isSuperAdmin={isSuperAdmin}
-                t={t}
-              />
+            {isLoadingLocations ? (
+              <>
+                <Skeleton className="h-9 w-48 rounded-md" />
+                <Skeleton className="h-9 w-full md:w-64 rounded-md" />
+              </>
+            ) : (
+              <>
+                {isSuperAdmin && (
+                  <StoreFilter
+                    locations={(locData?.data || []).filter((l) => l.status === "active")}
+                    value={storeFilter}
+                    onChange={(v) => setGlobalStoreFilter(v)}
+                    isSuperAdmin={isSuperAdmin}
+                    t={t}
+                  />
+                )}
+                <div className="relative flex-1 md:w-64 w-full">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    placeholder={t("page.customerOrder.searchOrders")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm w-full"
+                  />
+                </div>
+              </>
             )}
-            <div className="relative flex-1 md:w-64 w-full">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("page.customerOrder.searchOrders")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm w-full"
-              />
-            </div>
           </div>
 
           {loading ? (

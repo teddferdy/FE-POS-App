@@ -79,7 +79,7 @@ const TableList = () => {
   const [formCapacity, setFormCapacity] = useState(4);
   const [formStore, setFormStore] = useState("");
 
-  const { data: locData } = useQuery(["locations-table"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-table"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -373,36 +373,48 @@ const TableList = () => {
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      <h4 className="text-base font-semibold text-foreground">
-                        {t("page.table.list.title")}
-                      </h4>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(val) => {
-                            setGlobalStoreFilter(val);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                        <div className="relative flex-1 md:w-64">
-                          <Search
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                          />
-                          <Input
-                            placeholder={t("page.table.list.search")}
-                            value={search}
-                            onChange={(e) => {
-                              setSearch(e.target.value);
-                              setPage(1);
-                            }}
-                            className="pl-9 h-9 text-sm"
-                          />
-                        </div>
-                      </div>
+                      {isLoadingLocations ? (
+                        <>
+                          <Skeleton className="h-6 w-32" />
+                          <div className="flex items-center gap-3 w-full md:w-auto">
+                            <Skeleton className="h-9 w-48 rounded-md" />
+                            <Skeleton className="h-9 w-64 rounded-md" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.table.list.title")}
+                          </h4>
+                          <div className="flex items-center gap-3 w-full md:w-auto">
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(val) => {
+                                setGlobalStoreFilter(val);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                            <div className="relative flex-1 md:w-64">
+                              <Search
+                                size={16}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                              />
+                              <Input
+                                placeholder={t("page.table.list.search")}
+                                value={search}
+                                onChange={(e) => {
+                                  setSearch(e.target.value);
+                                  setPage(1);
+                                }}
+                                className="pl-9 h-9 text-sm"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   }
                   pagination={{

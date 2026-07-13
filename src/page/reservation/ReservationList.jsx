@@ -73,7 +73,7 @@ const ReservationList = () => {
   const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data: locData } = useQuery(["locations-reservations"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-reservations"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
   const storeMap = Object.fromEntries((locData?.data || []).map((s) => [String(s.id), s.name]));
@@ -382,61 +382,74 @@ const ReservationList = () => {
                   emptyIcon={Calendar}
                   toolbar={
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                      <div className="flex items-center justify-between lg:justify-start lg:gap-4">
-                        <h4 className="text-base font-semibold text-foreground shrink-0">
-                          {t("page.reservation.title")}
-                        </h4>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 h-9 lg:hidden"
-                          onClick={() => setShowFilters(!showFilters)}>
-                          <span className="material-symbols-outlined text-base">filter_list</span>
-                          {showFilters ? "Tutup" : "Filter"}
-                        </Button>
-                      </div>
-                      <div
-                        className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
-                        <StoreFilter
-                          locations={locData?.data || []}
-                          value={storeFilter}
-                          onChange={(v) => {
-                            setGlobalStoreFilter(v);
-                            setPage(1);
-                          }}
-                          isSuperAdmin={isSuperAdmin}
-                          t={t}
-                        />
-                        <div className="w-full sm:w-60">
-                          <DatePicker
-                            date={dateFilter}
-                            setDate={(date) => {
-                              setDateFilter(date);
-                              setPage(1);
-                            }}
-                          />
-                        </div>
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
-                          <option value="all">{t("page.reservation.filter.allStatus")}</option>
-                          <option value="pending">{t("page.reservation.status.pending")}</option>
-                          <option value="confirmed">
-                            {t("page.reservation.status.confirmed")}
-                          </option>
-                          <option value="cancelled">
-                            {t("page.reservation.status.cancelled")}
-                          </option>
-                          <option value="completed">
-                            {t("page.reservation.status.completed")}
-                          </option>
-                          <option value="no_show">{t("page.reservation.status.noShow")}</option>
-                        </select>
-                      </div>
+                      {isLoadingLocations ? (
+                        <>
+                          <Skeleton className="h-6 w-32" />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Skeleton className="h-9 w-48 rounded-md" />
+                            <Skeleton className="h-9 w-60 rounded-md" />
+                            <Skeleton className="h-9 w-32 rounded-md" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between lg:justify-start lg:gap-4">
+                            <h4 className="text-base font-semibold text-foreground shrink-0">
+                              {t("page.reservation.title")}
+                            </h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 h-9 lg:hidden"
+                              onClick={() => setShowFilters(!showFilters)}>
+                              <span className="material-symbols-outlined text-base">filter_list</span>
+                              {showFilters ? "Tutup" : "Filter"}
+                            </Button>
+                          </div>
+                          <div
+                            className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
+                            <StoreFilter
+                              locations={locData?.data || []}
+                              value={storeFilter}
+                              onChange={(v) => {
+                                setGlobalStoreFilter(v);
+                                setPage(1);
+                              }}
+                              isSuperAdmin={isSuperAdmin}
+                              t={t}
+                            />
+                            <div className="w-full sm:w-60">
+                              <DatePicker
+                                date={dateFilter}
+                                setDate={(date) => {
+                                  setDateFilter(date);
+                                  setPage(1);
+                                }}
+                              />
+                            </div>
+                            <select
+                              value={statusFilter}
+                              onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                              }}
+                              className="h-9 px-3 rounded-lg border border-input bg-background text-sm">
+                              <option value="all">{t("page.reservation.filter.allStatus")}</option>
+                              <option value="pending">{t("page.reservation.status.pending")}</option>
+                              <option value="confirmed">
+                                {t("page.reservation.status.confirmed")}
+                              </option>
+                              <option value="cancelled">
+                                {t("page.reservation.status.cancelled")}
+                              </option>
+                              <option value="completed">
+                                {t("page.reservation.status.completed")}
+                              </option>
+                              <option value="no_show">{t("page.reservation.status.noShow")}</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
                     </div>
                   }
                   pagination={{

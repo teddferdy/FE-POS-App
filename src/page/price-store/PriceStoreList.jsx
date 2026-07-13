@@ -170,7 +170,7 @@ const PriceStoreList = () => {
             </div>
           </div>
 
-          {isLoading || isFetching ? (
+          {isLoading || isFetching || isLoadingProducts || isFetchingProducts ? (
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[160px] bg-card rounded-xl border border-border p-4">
                 <div className="flex items-start justify-between mb-3">

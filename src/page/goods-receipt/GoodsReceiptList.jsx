@@ -52,8 +52,7 @@ const GoodsReceiptList = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const isSuperAdmin = user?.roleType === "super_admin";
 
-  const { data: locData } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
-    
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-goods-receipt"], () => getAllLocation(), {
     enabled: isSuperAdmin
   });
 
@@ -352,65 +351,83 @@ const GoodsReceiptList = () => {
                   emptyMessage={t("page.goodsReceipt.list.empty")}
                   emptyIcon={FileText}
                   toolbar={
-                    <div className="flex items-center gap-3">
-                      {isSuperAdmin && (
-                        <select
-                          value={storeFilter}
-                          onChange={(e) => {
-                            setGlobalStoreFilter(e.target.value);
-                            setPage(1);
-                          }}
-                          className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                          <option value="all">
-                            {t("page.goodsReceipt.list.filter.allStores")}
-                          </option>
-                          {(locData?.data || []).map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                              {loc.name}
-                            </option>
-                          ))}
-                        </select>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                      {isLoadingLocations ? (
+                        <>
+                          <Skeleton className="h-6 w-32" />
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="h-9 w-48 rounded-md" />
+                            <Skeleton className="h-9 w-32 rounded-md" />
+                            <Skeleton className="h-9 w-64 rounded-md" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h4 className="text-base font-semibold text-foreground">
+                            {t("page.goodsReceipt.list.title")}
+                          </h4>
+                          <div className="flex items-center gap-3">
+                            {isSuperAdmin && (
+                              <select
+                                value={storeFilter}
+                                onChange={(e) => {
+                                  setGlobalStoreFilter(e.target.value);
+                                  setPage(1);
+                                }}
+                                className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                                <option value="all">
+                                  {t("page.goodsReceipt.list.filter.allStores")}
+                                </option>
+                                {(locData?.data || []).map((loc) => (
+                                  <option key={loc.id} value={loc.id}>
+                                    {loc.name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            <select
+                              value={statusFilter}
+                              onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                              }}
+                              className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+                              <option value="all">
+                                {t("page.goodsReceipt.list.filter.allStatuses")}
+                              </option>
+                              {Object.keys(statusMap).map((k) => (
+                                <option key={k} value={k}>
+                                  {t(`page.goodsReceipt.list.status.${k}`)}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="relative w-full sm:w-64">
+                              <Search
+                                size={16}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                              />
+                              <Input
+                                placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
+                                value={search}
+                                onChange={(e) => {
+                                  setSearch(e.target.value);
+                                  setPage(1);
+                                }}
+                                className="pl-9 h-9 text-sm"
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleExport}
+                              disabled={exportLoading}
+                              className="gap-1.5">
+                              <Download size={14} />
+                              {exportLoading ? "..." : t("common.export")}
+                            </Button>
+                          </div>
+                        </>
                       )}
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                          setStatusFilter(e.target.value);
-                          setPage(1);
-                        }}
-                        className="h-9 px-3 rounded-md border border-input bg-background text-sm">
-                        <option value="all">
-                          {t("page.goodsReceipt.list.filter.allStatuses")}
-                        </option>
-                        {Object.keys(statusMap).map((k) => (
-                          <option key={k} value={k}>
-                            {t(`page.goodsReceipt.list.status.${k}`)}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="relative w-full sm:w-64">
-                        <Search
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                          placeholder={t("page.goodsReceipt.list.searchPlaceholder")}
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setPage(1);
-                          }}
-                          className="pl-9 h-9 text-sm"
-                        />
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleExport}
-                        disabled={exportLoading}
-                        className="gap-1.5">
-                        <Download size={14} />
-                        {exportLoading ? "..." : t("common.export")}
-                      </Button>
                     </div>
                   }
                   pagination={{

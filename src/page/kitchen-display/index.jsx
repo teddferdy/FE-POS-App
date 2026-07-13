@@ -81,7 +81,7 @@ const KitchenDisplay = () => {
       : ""
     : cookie?.activeStore || cookie?.user?.store;
 
-  const { data: locData } = useQuery(["locations-kitchen"], () => getAllLocation(), {
+  const { data: locData, isLoading: isLoadingLocations } = useQuery(["locations-kitchen"], () => getAllLocation(), {
     
     enabled: isSuperAdmin
   });
@@ -174,15 +174,19 @@ const KitchenDisplay = () => {
       </div>
 
       {isSuperAdmin && (
-        <div className="mb-4">
-          <StoreFilter
-            locations={locData?.data || []}
-            value={storeFilter}
-            onChange={(v) => setGlobalStoreFilter(v)}
-            isSuperAdmin={isSuperAdmin}
-            t={t}
-          />
-        </div>
+        isLoadingLocations ? (
+          <Skeleton className="h-9 w-48 rounded-md" />
+        ) : (
+          <div className="mb-4">
+            <StoreFilter
+              locations={locData?.data || []}
+              value={storeFilter}
+              onChange={(v) => setGlobalStoreFilter(v)}
+              isSuperAdmin={isSuperAdmin}
+              t={t}
+            />
+          </div>
+        )
       )}
 
       {locData && (locData?.data || []).length === 0 ? (

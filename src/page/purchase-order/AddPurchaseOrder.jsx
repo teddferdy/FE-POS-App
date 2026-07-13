@@ -176,6 +176,7 @@ const AddPurchaseOrder = () => {
       setShowSupplierList(false);
       setShowAddSupplierModal(false);
       toast.success(t("page.purchaseOrder.add.toast.supplierAdded"));
+      queryClient.invalidateQueries(["suppliers-dropdown"]);
     },
     onError: (err) => {
       toast.error(t("page.purchaseOrder.add.toast.supplierAddFailed"), {
