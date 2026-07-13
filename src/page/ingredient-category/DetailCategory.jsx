@@ -6,7 +6,6 @@ import {
   FolderTree,
   Edit3,
   Calendar,
-  User,
   Tag,
   Hash,
   CheckCircle2,
@@ -25,17 +24,20 @@ const statusConfig = {
   active: {
     icon: CheckCircle2,
     bg: "bg-green-600 dark:bg-green-700 text-white",
-    badge: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+    badge:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
   },
   draft: {
     icon: Clock,
     bg: "bg-yellow-500 dark:bg-yellow-600 text-white",
-    badge: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+    badge:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
   },
   inactive: {
     icon: XCircle,
     bg: "bg-red-600 dark:bg-red-900 text-white",
-    badge: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
+    badge:
+      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
   }
 };
 
@@ -52,7 +54,7 @@ const DetailIngredientCategory = () => {
   );
 
   const category = data?.data || data;
-  const st = category ? (statusConfig[category.status] || statusConfig.draft) : null;
+  const st = category ? statusConfig[category.status] || statusConfig.draft : null;
   const StatusIcon = st?.icon;
 
   if (!id)
@@ -131,81 +133,136 @@ const DetailIngredientCategory = () => {
           <Card className="p-5 col-span-1 md:col-span-2 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-32" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>
-              <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
             </div>
           </Card>
           <div className="space-y-4">
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></Card>
-            <Card className="p-5 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-40" /></Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </Card>
+            <Card className="p-5 space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </Card>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Info Card */}
-          <Card className="p-5 col-span-1 md:col-span-2">
-            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
-              <Tag size={16} />
-              {t("page.ingredientCategory.detail.info")}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Tag size={15} className="text-muted-foreground" />
+          <div className="col-span-1 md:col-span-2 space-y-5">
+            {/* Info Card */}
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-5">
+                <Tag size={16} />
+                {t("page.ingredientCategory.detail.info")}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Tag size={15} className="text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t("page.ingredientCategory.detail.name")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground mt-0.5 break-words">
+                      {category?.name || "-"}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t("page.ingredientCategory.detail.name")}
-                  </p>
-                  <p className="text-sm font-medium text-foreground mt-0.5 break-words">
-                    {category?.name || "-"}
-                  </p>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Hash size={15} className="text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t("page.ingredientCategory.detail.code")}
+                    </p>
+                    <p className="text-sm font-mono text-foreground mt-0.5">
+                      #ICAT-{String(category?.id).padStart(3, "0")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${st?.bg || "bg-gray-500 text-white"}`}>
+                    {StatusIcon && <StatusIcon size={15} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t("page.ingredientCategory.detail.status")}
+                    </p>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mt-1 ${st?.badge || ""}`}>
+                      {StatusIcon && <StatusIcon size={12} />}
+                      {t(`common.${category?.status || "draft"}`)}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Hash size={15} className="text-muted-foreground" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t("page.ingredientCategory.detail.code")}
-                  </p>
-                  <p className="text-sm font-mono text-foreground mt-0.5">
-                    {category?.code || "-"}
-                  </p>
-                </div>
+            </Card>
+            {/* Info Waktu */}
+            <Card className="p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <Calendar size={14} />
+                {t("page.ingredientCategory.detail.infoWaktu")}
               </div>
-              <div className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${st?.bg || "bg-gray-500 text-white"}`}>
-                  {StatusIcon && <StatusIcon size={15} />}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs text-muted-foreground">{t("common.createdBy")}</span>
+                  <span className="text-xs font-medium">
+                    {category?.createdByName || category?.createdBy || "-"}
+                  </span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {t("page.ingredientCategory.detail.status")}
-                  </p>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mt-1 ${st?.badge || ""}`}>
-                    {StatusIcon && <StatusIcon size={12} />}
-                    {t(`common.${category?.status || "draft"}`)}
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs text-muted-foreground">{t("common.createdAt")}</span>
+                  <span className="text-xs font-medium">
+                    {category?.createdAt
+                      ? new Date(category.createdAt).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
+                      : "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs text-muted-foreground">{t("common.modifiedBy")}</span>
+                  <span className="text-xs font-medium">
+                    {category?.modifiedByName || category?.modifiedBy || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+                  <span className="text-xs text-muted-foreground">{t("common.updatedAt")}</span>
+                  <span className="text-xs font-medium">
+                    {category?.updatedAt
+                      ? new Date(category.updatedAt).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
+                      : "-"}
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="border-t border-border/50 mt-5 pt-4 grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <User size={13} className="shrink-0" />
-                <span>
-                  {t("common.createdBy")}: {category?.createdBy || "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <User size={13} className="shrink-0" />
-                <span>
-                  {t("common.modifiedBy")}: {category?.modifiedBy || "-"}
-                </span>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
@@ -220,44 +277,6 @@ const DetailIngredientCategory = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 {t("page.ingredientCategory.detail.totalIngredient")}
               </p>
-            </Card>
-
-            {/* Info Waktu */}
-            <Card className="p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                <Calendar size={14} />
-                {t("page.ingredientCategory.detail.infoWaktu")}
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                  <span className="text-xs text-muted-foreground">
-                    {t("common.createdAt")}
-                  </span>
-                  <span className="text-xs font-medium">
-                    {category?.createdAt
-                      ? new Date(category.createdAt).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric"
-                        })
-                      : "-"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
-                  <span className="text-xs text-muted-foreground">
-                    {t("common.updatedAt")}
-                  </span>
-                  <span className="text-xs font-medium">
-                    {category?.updatedAt
-                      ? new Date(category.updatedAt).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric"
-                        })
-                      : "-"}
-                  </span>
-                </div>
-              </div>
             </Card>
 
             {/* Tips */}

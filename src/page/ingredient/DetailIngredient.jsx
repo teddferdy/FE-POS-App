@@ -18,7 +18,6 @@ import {
   XCircle,
   Clock,
   Edit3,
-  Info,
   Lightbulb,
   Beef,
   ArrowLeft
@@ -78,7 +77,7 @@ const DetailIngredient = () => {
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
         <Package size={40} />
         <p>{t("page.ingredient.notFound")}</p>
-        <Button variant="outline" onClick={() => navigate("/ingredient-list")}>
+        <Button variant="outline" onClick={() => navigate("/ingredient")}>
           {t("common.back")}
         </Button>
       </div>
@@ -404,38 +403,37 @@ const DetailIngredient = () => {
                     </div>
                   </div>
                 </div>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Lightbulb size={16} className="text-primary" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-foreground">
-                        {t("page.ingredient.detail.tips.title")}
-                      </p>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-2">
-                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                          {t("page.ingredient.detail.tips.1")}
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                          {t("page.ingredient.detail.tips.2")}
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                          {t("page.ingredient.detail.tips.3")}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+            <Lightbulb size={16} className="text-primary" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">
+              {t("page.ingredient.detail.tips.title")}
+            </p>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                {t("page.ingredient.detail.tips.1")}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                {t("page.ingredient.detail.tips.2")}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                {t("page.ingredient.detail.tips.3")}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

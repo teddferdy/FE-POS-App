@@ -118,6 +118,12 @@ const IngredientList = () => {
       )
     },
     {
+      header: t("page.ingredient.list.tableStore"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">{item.storeData?.name || "-"}</span>
+      )
+    },
+    {
       header: t("page.ingredient.list.tableSupplier"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">{item.supplierData?.name || "-"}</span>
