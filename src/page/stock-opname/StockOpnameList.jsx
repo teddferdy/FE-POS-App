@@ -261,14 +261,6 @@ const StockOpnameList = () => {
       )
     },
     {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
-        </span>
-      )
-    },
-    {
       header: t("common.createdAt"),
       render: (item) => {
         if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
@@ -281,6 +273,14 @@ const StockOpnameList = () => {
           </span>
         );
       }
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+        </span>
+      )
     },
     {
       header: t("common.updatedAt"),

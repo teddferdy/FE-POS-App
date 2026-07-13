@@ -147,6 +147,10 @@ const DiscountList = () => {
       }
     },
     {
+      header: t("page.discount.table.validity"),
+      render: (item) => `${formatDate(item.startDate)} - ${formatDate(item.endDate)}`
+    },
+    {
       header: t("page.discount.table.status"),
       render: (item) => (
         <span
@@ -166,24 +170,20 @@ const DiscountList = () => {
       )
     },
     {
-      header: t("page.discount.table.validity"),
-      render: (item) => `${formatDate(item.startDate)} - ${formatDate(item.endDate)}`
+      header: t("page.discount.table.createdBy"),
+      render: (item) => item.createdByUser?.fullName || item.createdBy || "-"
     },
     {
       header: t("page.discount.table.createdDate"),
       render: (item) => formatDate(item.createdAt)
     },
     {
-      header: t("page.discount.table.createdBy"),
-      render: (item) => item.createdByUser?.fullName || item.createdBy || "-"
+      header: t("page.discount.table.modifiedBy"),
+      render: (item) => item.modifiedByUser?.fullName || item.modifiedBy || "-"
     },
     {
       header: t("page.discount.table.modifiedDate"),
       render: (item) => formatDate(item.updatedAt)
-    },
-    {
-      header: t("page.discount.table.modifiedBy"),
-      render: (item) => item.modifiedByUser?.fullName || item.modifiedBy || "-"
     },
     {
       header: t("page.discount.table.actions"),

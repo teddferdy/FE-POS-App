@@ -171,22 +171,6 @@ const PositionList = () => {
       )
     },
     {
-      header: t("page.position.table.createdDate"),
-      render: (position) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(position.createdAt)}
-        </span>
-      )
-    },
-    {
-      header: t("page.position.table.updatedDate"),
-      render: (position) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(position.updatedAt)}
-        </span>
-      )
-    },
-    {
       header: t("common.createdBy"),
       render: (position) => (
         <span className="text-sm text-muted-foreground">
@@ -198,6 +182,14 @@ const PositionList = () => {
       )
     },
     {
+      header: t("page.position.table.createdDate"),
+      render: (position) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(position.createdAt)}
+        </span>
+      )
+    },
+    {
       header: t("common.modifiedBy"),
       render: (position) => (
         <span className="text-sm text-muted-foreground">
@@ -205,6 +197,14 @@ const PositionList = () => {
             position.modifiedByUser?.userName ||
             position.modifiedBy ||
             "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.position.table.updatedDate"),
+      render: (position) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(position.updatedAt)}
         </span>
       )
     },

@@ -145,22 +145,6 @@ const DepartmentList = () => {
       )
     },
     {
-      header: t("page.department.table.createdDate"),
-      render: (department) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(department.createdAt)}
-        </span>
-      )
-    },
-    {
-      header: t("page.department.table.updatedDate"),
-      render: (department) => (
-        <span className="text-sm font-mono text-muted-foreground">
-          {formatDate(department.updatedAt)}
-        </span>
-      )
-    },
-    {
       header: t("common.createdBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
@@ -172,6 +156,14 @@ const DepartmentList = () => {
       )
     },
     {
+      header: t("page.department.table.createdDate"),
+      render: (department) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(department.createdAt)}
+        </span>
+      )
+    },
+    {
       header: t("common.modifiedBy"),
       render: (department) => (
         <span className="text-sm text-muted-foreground">
@@ -179,6 +171,14 @@ const DepartmentList = () => {
             department.modifiedByUser?.userName ||
             department.modifiedBy ||
             "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.department.table.updatedDate"),
+      render: (department) => (
+        <span className="text-sm font-mono text-muted-foreground">
+          {formatDate(department.updatedAt)}
         </span>
       )
     },

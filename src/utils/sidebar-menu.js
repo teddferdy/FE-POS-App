@@ -29,7 +29,9 @@ import {
   ChefHat,
   Wallet,
   Database,
-  QrCode
+  QrCode,
+  ShoppingBag,
+  FlaskConical
 } from "lucide-react";
 
 export const sidebarMenuSuperAdmin = [
@@ -92,12 +94,27 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Produk",
-        i18nKey: "sidebar.daftarProduk",
-        href: "/product-list",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
       },
+      {
+        title: "Diskon",
+        i18nKey: "sidebar.diskon",
+        href: "/discount-list",
+        icon: BadgePercent,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ]
+  },
+  {
+    title: "Product",
+    section: true,
+    i18nKey: "sidebar.section.product",
+    icon: ShoppingBag,
+    children: [
       {
         title: "Kategori",
         i18nKey: "sidebar.kategori",
@@ -106,18 +123,48 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
+        title: "Daftar Produk",
+        i18nKey: "sidebar.daftarProduk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ]
+  },
+  {
+    title: "Meja",
+    section: true,
+    i18nKey: "sidebar.section.meja",
+    icon: Table,
+    children: [
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete"]
+      }
+    ]
+  },
+  {
+    title: "Bahan Baku",
+    section: true,
+    i18nKey: "sidebar.section.bahanBaku",
+    icon: FlaskConical,
+    children: [
+      {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
-      {
-        title: "Bahan Baku",
-        i18nKey: "sidebar.bahanBaku",
-        href: "/ingredient",
-        icon: Package,
-        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Kategori Bahan Baku",
@@ -127,18 +174,11 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Diskon",
-        i18nKey: "sidebar.diskon",
-        href: "/discount-list",
-        icon: BadgePercent,
+        title: "Bahan Baku",
+        i18nKey: "sidebar.bahanBaku",
+        href: "/ingredient",
+        icon: Package,
         actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Meja",
-        i18nKey: "sidebar.meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
       }
     ]
   },
@@ -421,20 +461,6 @@ export const sidebarMenuSuperAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Harga per Toko",
-        i18nKey: "sidebar.pricePerStore",
-        href: "/price-list-template",
-        icon: BadgePercent,
-        actions: ["view", "edit"]
-      },
-      {
-        title: "Reservasi Meja",
-        i18nKey: "sidebar.reservation",
-        href: "/reservation",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete"]
-      },
-      {
         title: "Backup & Restore",
         i18nKey: "sidebar.backup",
         href: "/backup",
@@ -497,12 +523,27 @@ export const sidebarMenuAdmin = [
     icon: Package,
     children: [
       {
-        title: "Produk",
-        i18nKey: "sidebar.daftarProduk",
-        href: "/product-list",
-        icon: UtensilsCrossed,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
+        title: "Diskon",
+        i18nKey: "sidebar.diskon",
+        href: "/discount-list",
+        icon: BadgePercent,
+        actions: ["add", "edit", "view", "delete"]
       },
+      {
+        title: "Harga per Toko",
+        i18nKey: "sidebar.pricePerStore",
+        href: "/price-list-template",
+        icon: BadgePercent,
+        actions: ["view", "edit"]
+      }
+    ]
+  },
+  {
+    title: "Product",
+    section: true,
+    i18nKey: "sidebar.section.product",
+    icon: ShoppingBag,
+    children: [
       {
         title: "Kategori",
         i18nKey: "sidebar.kategori",
@@ -511,18 +552,48 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
+        title: "Daftar Produk",
+        i18nKey: "sidebar.daftarProduk",
+        href: "/product-list",
+        icon: UtensilsCrossed,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ]
+  },
+  {
+    title: "Meja",
+    section: true,
+    i18nKey: "sidebar.section.meja",
+    icon: Table,
+    children: [
+      {
+        title: "Meja",
+        i18nKey: "sidebar.meja",
+        href: "/table-list",
+        icon: Table,
+        actions: ["add", "edit", "view", "delete", "update-status"]
+      },
+      {
+        title: "Reservasi Meja",
+        i18nKey: "sidebar.reservation",
+        href: "/reservation",
+        icon: CalendarDays,
+        actions: ["add", "edit", "view", "delete", "import", "export"]
+      }
+    ]
+  },
+  {
+    title: "Bahan Baku",
+    section: true,
+    i18nKey: "sidebar.section.bahanBaku",
+    icon: FlaskConical,
+    children: [
+      {
         title: "Supplier",
         i18nKey: "sidebar.supplier",
         href: "/supplier",
         icon: Building2,
         actions: ["add", "edit", "view", "delete", "import", "export"]
-      },
-      {
-        title: "Bahan Baku",
-        i18nKey: "sidebar.bahanBaku",
-        href: "/ingredient",
-        icon: Package,
-        actions: ["add", "edit", "view", "delete"]
       },
       {
         title: "Kategori Bahan Baku",
@@ -532,18 +603,11 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Diskon",
-        i18nKey: "sidebar.diskon",
-        href: "/discount-list",
-        icon: BadgePercent,
+        title: "Bahan Baku",
+        i18nKey: "sidebar.bahanBaku",
+        href: "/ingredient",
+        icon: Package,
         actions: ["add", "edit", "view", "delete"]
-      },
-      {
-        title: "Meja",
-        i18nKey: "sidebar.meja",
-        href: "/table-list",
-        icon: Table,
-        actions: ["add", "edit", "view", "delete", "update-status"]
       }
     ]
   },
@@ -791,25 +855,11 @@ export const sidebarMenuAdmin = [
         actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
-        title: "Harga per Toko",
-        i18nKey: "sidebar.pricePerStore",
-        href: "/price-list-template",
-        icon: BadgePercent,
-        actions: ["view", "edit"]
-      },
-      {
         title: "Invoice & Struk",
         i18nKey: "sidebar.invoiceStruk",
         href: "/invoice-page",
         icon: FileText,
         actions: ["add", "edit", "view"]
-      },
-      {
-        title: "Reservasi Meja",
-        i18nKey: "sidebar.reservation",
-        href: "/reservation",
-        icon: CalendarDays,
-        actions: ["add", "edit", "view", "delete", "import", "export"]
       },
       {
         title: "Backup & Restore",

@@ -197,6 +197,50 @@ const TableList = () => {
       )
     },
     {
+      header: t("common.createdBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.createdByUser?.fullName || row.createdByUser?.userName || row.createdBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.table.table.createdAt"),
+      render: (row) => {
+        if (!row.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(row.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("page.table.table.updatedAt"),
+      render: (row) => {
+        if (!row.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(row.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
+    },
+    {
       header: t("common.actions"),
       align: "right",
       render: (row) => (

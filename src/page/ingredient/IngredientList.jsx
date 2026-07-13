@@ -180,20 +180,6 @@ const IngredientList = () => {
       )
     },
     {
-      header: t("page.ingredient.list.tableDibuat"),
-      className: "min-w-[180px]",
-      render: (item) => (
-        <span className="text-xs text-muted-foreground">{fmtDate(item.createdAt)}</span>
-      )
-    },
-    {
-      header: t("page.ingredient.list.tableDiubah"),
-      className: "min-w-[180px]",
-      render: (item) => (
-        <span className="text-xs text-muted-foreground">{fmtDate(item.updatedAt)}</span>
-      )
-    },
-    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-xs text-muted-foreground">
@@ -202,11 +188,25 @@ const IngredientList = () => {
       )
     },
     {
+      header: t("page.ingredient.list.tableDibuat"),
+      className: "min-w-[180px]",
+      render: (item) => (
+        <span className="text-xs text-muted-foreground">{fmtDate(item.createdAt)}</span>
+      )
+    },
+    {
       header: t("common.modifiedBy"),
       render: (item) => (
         <span className="text-xs text-muted-foreground">
           {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
         </span>
+      )
+    },
+    {
+      header: t("page.ingredient.list.tableDiubah"),
+      className: "min-w-[180px]",
+      render: (item) => (
+        <span className="text-xs text-muted-foreground">{fmtDate(item.updatedAt)}</span>
       )
     },
     {

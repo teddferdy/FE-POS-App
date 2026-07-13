@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import DataTable from "@/components/ui/DataTable";
 import { useTranslation } from "react-i18next";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useNavigate } from "react-router-dom";
 import { getAllLocation } from "@/services/location";
@@ -57,12 +58,13 @@ const StockHistory = () => {
   const [startDate, setStartDate] = useState(undefined);
   const [endDate, setEndDate] = useState(undefined);
   const [searchProduct] = useState("");
+  const [storeFilter, setStoreFilter] = useState("");
 
   const { data: locData } = useQuery(["locations-stock-history"], () => getAllLocation(), {
-    enabled: isSuperAdmin
+    enabled: true
   });
 
-  const store = user?.store || "";
+  const store = isSuperAdmin ? (storeFilter && storeFilter !== "all" ? storeFilter : "") : user?.store || "";
   const { data, isLoading, isError, refetch } = useQuery(
     ["stock-history", page, pageSize, productFilter, referenceFilter, startDate, endDate, store],
     () =>
@@ -237,7 +239,24 @@ const StockHistory = () => {
               emptyIcon={Calendar}
               toolbar={
                 <Card className="p-4 border-0 shadow-none bg-transparent">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    {isSuperAdmin && (
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                          {t("header.selectStore") || "Store"}
+                        </label>
+                        <StoreFilter
+                          locations={locData?.data || []}
+                          value={storeFilter}
+                          onChange={(v) => {
+                            setStoreFilter(v);
+                            setPage(1);
+                          }}
+                          isSuperAdmin={isSuperAdmin}
+                          t={t}
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground mb-1 block">
                         {t("page.stockHistory.filter.product")}

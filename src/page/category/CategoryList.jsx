@@ -230,19 +230,6 @@ const CategoryList = () => {
       }
     },
     {
-      header: t("page.category.table.createdDate"),
-      render: (cat) => (
-        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.createdAt)}</span>
-      )
-    },
-    {
-      header: t("page.category.table.updatedDate"),
-      hideOn: "lg",
-      render: (cat) => (
-        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
-      )
-    },
-    {
       header: t("common.createdBy"),
       hideOn: "lg",
       render: (cat) => (
@@ -252,12 +239,25 @@ const CategoryList = () => {
       )
     },
     {
+      header: t("page.category.table.createdDate"),
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.createdAt)}</span>
+      )
+    },
+    {
       header: t("common.modifiedBy"),
       hideOn: "lg",
       render: (cat) => (
         <span className="text-sm text-muted-foreground">
           {cat.modifiedByUser?.fullName || cat.modifiedByUser?.userName || cat.modifiedBy || "-"}
         </span>
+      )
+    },
+    {
+      header: t("page.category.table.updatedDate"),
+      hideOn: "lg",
+      render: (cat) => (
+        <span className="text-sm font-mono text-muted-foreground">{formatDate(cat.updatedAt)}</span>
       )
     },
     {

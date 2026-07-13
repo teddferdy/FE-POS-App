@@ -175,6 +175,14 @@ const ReservationList = () => {
       )
     },
     {
+      header: t("page.reservation.columns.notes"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground max-w-[150px] truncate block">
+          {item.notes || "-"}
+        </span>
+      )
+    },
+    {
       header: t("page.reservation.columns.status"),
       render: (item) => {
         const s = STATUS_MAP[item.status] || STATUS_MAP.pending;
@@ -187,12 +195,48 @@ const ReservationList = () => {
       }
     },
     {
-      header: t("page.reservation.columns.notes"),
+      header: t("common.createdBy"),
       render: (item) => (
-        <span className="text-sm text-muted-foreground max-w-[150px] truncate block">
-          {item.notes || "-"}
+        <span className="text-sm text-muted-foreground">
+          {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
         </span>
       )
+    },
+    {
+      header: t("common.createdAt"),
+      render: (item) => {
+        if (!item.createdAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.createdAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.updatedAt"),
+      render: (item) => {
+        if (!item.updatedAt) return <span className="text-sm text-muted-foreground">-</span>;
+        const d = new Date(item.updatedAt);
+        if (isNaN(d.getTime())) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <span className="text-sm font-mono text-muted-foreground">
+            {d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}{" "}
+            {d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        );
+      }
     },
     {
       header: t("page.reservation.columns.actions"),

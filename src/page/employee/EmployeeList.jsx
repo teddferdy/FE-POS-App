@@ -196,14 +196,6 @@ const EmployeeList = () => {
       )
     },
     {
-      header: t("common.modifiedBy"),
-      render: (row) => (
-        <span className="text-sm">
-          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
-        </span>
-      )
-    },
-    {
       header: t("common.createdAt"),
       render: (row) => (
         <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -214,6 +206,14 @@ const EmployeeList = () => {
                 day: "numeric"
               })
             : "-"}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (row) => (
+        <span className="text-sm">
+          {row.modifiedByUser?.fullName || row.modifiedByUser?.userName || row.modifiedBy || "-"}
         </span>
       )
     },

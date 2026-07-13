@@ -301,25 +301,6 @@ const PurchaseOrderList = () => {
       render: (po) => <span className="text-sm">{po.storeData?.name || "-"}</span>
     },
     {
-      header: t("page.purchaseOrder.list.columns.status"),
-      render: (po) => {
-        const st = statusMap[po.status] || statusMap.pending;
-        return (
-          <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${st.class}`}>
-            {po.status === "received" ? (
-              <CheckCircle2 size={12} />
-            ) : po.status === "cancelled" ? (
-              <XCircle size={12} />
-            ) : (
-              <Clock size={12} />
-            )}
-            {st.label}
-          </span>
-        );
-      }
-    },
-    {
       header: t("page.purchaseOrder.list.columns.total"),
       align: "right",
       render: (po) => (
@@ -375,18 +356,29 @@ const PurchaseOrderList = () => {
       )
     },
     {
+      header: t("page.purchaseOrder.list.columns.status"),
+      render: (po) => {
+        const st = statusMap[po.status] || statusMap.pending;
+        return (
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${st.class}`}>
+            {po.status === "received" ? (
+              <CheckCircle2 size={12} />
+            ) : po.status === "cancelled" ? (
+              <XCircle size={12} />
+            ) : (
+              <Clock size={12} />
+            )}
+            {st.label}
+          </span>
+        );
+      }
+    },
+    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
           {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
         </span>
       )
     },
@@ -403,6 +395,14 @@ const PurchaseOrderList = () => {
           </span>
         );
       }
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+        </span>
+      )
     },
     {
       header: t("common.updatedAt"),

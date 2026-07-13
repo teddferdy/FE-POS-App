@@ -293,18 +293,6 @@ const ProductList = () => {
       }
     },
     {
-      header: t("page.product.table.status"),
-      render: (product) => {
-        const badge = getProductStatusBadge(product);
-        return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
-            {badge.label}
-          </span>
-        );
-      }
-    },
-    {
       header: t("page.product.table.tax"),
       render: (product) => <span className="text-sm text-foreground">{renderTax(product.tax)}</span>
     },
@@ -327,18 +315,22 @@ const ProductList = () => {
       )
     },
     {
+      header: t("page.product.table.status"),
+      render: (product) => {
+        const badge = getProductStatusBadge(product);
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${badge.className}`}>
+            {badge.label}
+          </span>
+        );
+      }
+    },
+    {
       header: t("common.createdBy"),
       render: (item) => (
         <span className="text-sm text-muted-foreground">
           {item.createdByUser?.fullName || item.createdByUser?.userName || item.createdBy || "-"}
-        </span>
-      )
-    },
-    {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
         </span>
       )
     },
@@ -355,6 +347,14 @@ const ProductList = () => {
           </span>
         );
       }
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
+        </span>
+      )
     },
     {
       header: t("page.product.table.updatedAt"),

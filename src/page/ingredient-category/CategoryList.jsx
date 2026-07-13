@@ -149,18 +149,18 @@ const CategoryList = () => {
       )
     },
     {
-      header: t("common.modifiedBy"),
-      render: (item) => (
-        <span className="text-sm text-muted-foreground">
-          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
-        </span>
-      )
-    },
-    {
       header: t("page.ingredientCategory.list.tableDibuat"),
       render: (item) => (
         <span className="text-sm font-mono text-muted-foreground">
           {formatDate(item.createdAt)}
+        </span>
+      )
+    },
+    {
+      header: t("common.modifiedBy"),
+      render: (item) => (
+        <span className="text-sm text-muted-foreground">
+          {item.modifiedByUser?.fullName || item.modifiedByUser?.userName || item.modifiedBy || "-"}
         </span>
       )
     },
