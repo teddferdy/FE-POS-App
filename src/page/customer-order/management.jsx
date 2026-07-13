@@ -123,7 +123,7 @@ const CustomerOrderManagement = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
             {isSuperAdmin && (
               <StoreFilter
-                locations={locData?.data || []}
+                locations={(locData?.data || []).filter((l) => l.status === "active")}
                 value={storeFilter}
                 onChange={(v) => setGlobalStoreFilter(v)}
                 isSuperAdmin={isSuperAdmin}
