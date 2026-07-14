@@ -172,7 +172,7 @@ const LowStockAll = () => {
     }
   ];
 
-  const filters = isLoadingLocations ? (
+  const filters = isLoadingLocations || isLoading ? (
     <div className="flex flex-wrap items-center gap-3">
       <Skeleton className="h-9 w-56 rounded-md" />
       <Skeleton className="h-9 w-44 rounded-md" />

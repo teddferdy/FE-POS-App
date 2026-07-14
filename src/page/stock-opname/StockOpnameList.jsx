@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { useTranslation } from "react-i18next";
+import { useGlobalStoreFilter } from "@/hooks/useGlobalStoreFilter";
 import {
   Plus,
   Search,
@@ -31,6 +32,7 @@ import AbortController from "@/components/organism/abort-controller";
 import StatCard from "@/components/ui/StatCard";
 import { getAllLocation } from "@/services/location";
 import NoStore from "@/components/ui/NoStore";
+import StoreFilter from "@/components/ui/StoreFilter";
 
 const StockOpnameList = () => {
   const { t } = useTranslation();
@@ -61,7 +63,7 @@ const StockOpnameList = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [warehouseFilter, setWarehouseFilter] = useState("all");
+  const [storeFilter, setGlobalStoreFilter] = useGlobalStoreFilter();
   const [statusFilter, setStatusFilter] = useState("all");
   const [noDataModal, setNoDataModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -75,13 +77,13 @@ const StockOpnameList = () => {
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery(
-    ["stockOpname", page, limit, search, warehouseFilter, statusFilter],
+    ["stockOpname", page, limit, search, storeFilter, statusFilter],
     () =>
       getStockOpname({
         page,
         limit,
         search: search || undefined,
-        location: warehouseFilter !== "all" ? warehouseFilter : undefined,
+        location: storeFilter !== "all" ? storeFilter : undefined,
         status: statusFilter !== "all" ? statusFilter : undefined
       })
   );
@@ -92,7 +94,7 @@ const StockOpnameList = () => {
 
   useEffect(() => {
     setSelectedItems([]);
-  }, [page, search, warehouseFilter, statusFilter]);
+  }, [page, search, storeFilter, statusFilter]);
 
   // Remove completed items from selection
   useEffect(() => {
@@ -449,7 +451,7 @@ const StockOpnameList = () => {
                 }}
                 toolbar={
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 w-full">
-                    {isLoadingLocations ? (
+                    {isLoadingLocations || isLoading || isFetching ? (
                       <>
                         <Skeleton className="h-6 w-32" />
                         <div className="flex flex-wrap items-center gap-2">
@@ -477,26 +479,16 @@ const StockOpnameList = () => {
                           className={`${showFilters ? "flex" : "hidden"} lg:flex flex-wrap items-center gap-2`}>
                           <div className="flex items-center gap-2 flex-wrap">
                             {isSuperAdmin && (
-                              <div className="relative">
-                                <select
-                                  value={warehouseFilter}
-                                  onChange={(e) => {
-                                    setWarehouseFilter(e.target.value);
-                                    setPage(1);
-                                  }}
-                                  className="h-9 px-3 pr-8 rounded-md border border-input bg-background text-sm appearance-none cursor-pointer">
-                                  <option value="all">{t("page.stockOpname.list.allWarehouse")}</option>
-                                  {(locData?.data || []).map((loc) => (
-                                    <option key={loc.id} value={loc.id}>
-                                      {loc.name}
-                                    </option>
-                                  ))}
-                                </select>
-                                <ChevronLeft
-                                  size={14}
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none rotate-90"
-                                />
-                              </div>
+                              <StoreFilter
+                                locations={locData?.data || []}
+                                value={storeFilter}
+                                onChange={(val) => {
+                                  setGlobalStoreFilter(val);
+                                  setPage(1);
+                                }}
+                                isSuperAdmin={isSuperAdmin}
+                                t={t}
+                              />
                             )}
                             <div className="relative">
                               <select

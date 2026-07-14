@@ -174,7 +174,7 @@ const KitchenDisplay = () => {
       </div>
 
       {isSuperAdmin && (
-        isLoadingLocations ? (
+        isLoadingLocations || isLoading ? (
           <Skeleton className="h-9 w-48 rounded-md" />
         ) : (
           <div className="mb-4">

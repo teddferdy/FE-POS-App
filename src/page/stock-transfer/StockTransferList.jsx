@@ -254,7 +254,7 @@ const StockTransferList = () => {
                 emptyMessage={t("page.stockTransfer.list.emptyMessage")}
                 toolbar={
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    {isLoadingLocations ? (
+                    {isLoadingLocations || isLoading ? (
                       <>
                         <Skeleton className="h-6 w-32" />
                         <div className="flex items-center gap-3">

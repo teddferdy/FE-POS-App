@@ -240,7 +240,7 @@ const StockHistory = () => {
               emptyIcon={Calendar}
               toolbar={
                 <Card className="p-4 border-0 shadow-none bg-transparent">
-                  {isLoadingLocations ? (
+                  {isLoadingLocations || isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                       <Skeleton className="h-9 rounded-md" />
                       <Skeleton className="h-9 rounded-md" />

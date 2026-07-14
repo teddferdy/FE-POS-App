@@ -374,7 +374,7 @@ const TableList = () => {
                   emptyMessage={t("page.table.list.empty")}
                   toolbar={
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                      {isLoadingLocations ? (
+                      {isLoadingLocations || isLoading || isFetching ? (
                         <>
                           <Skeleton className="h-6 w-32" />
                           <div className="flex items-center gap-3 w-full md:w-auto">

@@ -343,7 +343,7 @@ const ExpenseList = () => {
                 </div>
               )}
 
-              {isLoadingLocations ? (
+              {isLoadingLocations || isLoading || isFetching ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <Skeleton className="h-9 w-72 rounded-md" />
                   <Skeleton className="h-9 w-48 rounded-md" />

@@ -246,7 +246,7 @@ const AccountsReceivableList = () => {
           )}
 
           {isSuperAdmin && (
-            isLoadingLocations ? (
+            isLoadingLocations || isLoading || isFetching ? (
               <Skeleton className="h-9 w-48 rounded-md" />
             ) : (
               <StoreFilter

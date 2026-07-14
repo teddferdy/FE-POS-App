@@ -552,7 +552,7 @@ const MemberList = () => {
                     isLoading={isLoading}
                     emptyMessage={t("page.member.list.empty")}
                     toolbar={
-                      isLoadingLocations ? (
+                      isLoadingLocations || isLoading ? (
                         <div className="flex items-center justify-between w-full">
                           <Skeleton className="h-6 w-32" />
                           <Skeleton className="h-9 w-48 rounded-md" />
