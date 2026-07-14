@@ -185,10 +185,15 @@ const EditEmployee = () => {
     };
     const employmentTypeMap = { fulltime: "full-time", parttime: "part-time" };
 
+    const empId = String(employee.employeeID || "");
+    const isDraftPlaceholder = (val, pattern) =>
+      !val || val === pattern || (empId && val === `draft-${empId}`);
+    const clearDraft = (val, pattern) => (isDraftPlaceholder(val, pattern) ? "" : val || "");
+
     form.reset({
-      fullName: employee.fullName || "",
-      userName: employee.userName || "",
-      email: employee.email || "",
+      fullName: clearDraft(employee.fullName),
+      userName: clearDraft(employee.userName),
+      email: clearDraft(employee.email),
       password: "",
       phoneNumber: employee.phoneNumber || "",
       placeOfBirth: employee.placeOfBirth || "",
