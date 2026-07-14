@@ -47,8 +47,7 @@ const StoreSelector = ({ cookie, setCookie }) => {
     userAccessMenu.length === 0 || userAccessMenu.some((m) => m.menu === "/home");
 
   const { data: locationsData } = useQuery(["allLocations"], getAllLocation, {
-    enabled: role === "super_admin",
-    
+    enabled: role === "super_admin"
   });
   const locations = locationsData?.data || [];
 
@@ -248,7 +247,6 @@ export const NotificationBell = () => {
   const [localUnread, setLocalUnread] = useState(0);
 
   const { data: unreadData } = useQuery("unread-notifications", getUnreadCount, {
-    
     onSuccess: (data) => {
       const count = data?.data?.count || data?.count || 0;
       setLocalUnread(count);

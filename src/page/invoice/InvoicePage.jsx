@@ -14,14 +14,7 @@ import {
   Globe,
   Building2,
   Store,
-  Printer,
-  Award,
-  Medal,
-  Coins,
-  ImagePlus,
-  X,
-  RotateCcw,
-  ArrowLeft
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -265,7 +258,7 @@ const InvoicePage = () => {
     ["active-locations"],
     () => getAllLocation("active"),
     {
-      
+      enabled: isSuperAdmin
     }
   );
   const locationList = locData?.data || locData || [];
@@ -573,45 +566,56 @@ const InvoicePage = () => {
       </div>
 
       {!selectedStore ? (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
-          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-            <Store size={40} className="text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{t("page.invoice.title")}</h1>
-          <p className="text-muted-foreground text-lg mb-10 max-w-md">
-            {t("page.invoice.selectStore")}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
-            {locLoading
-              ? Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card">
-                    <Skeleton className="w-14 h-14 rounded-xl" />
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))
-              : locationList.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      setSelectedStore(String(s.id));
-                      if (isSuperAdmin) {
-                        setCookie("activeStore", String(s.id), { path: "/" });
-                        setCookie("activeStoreName", s.name || "", { path: "/" });
-                      }
-                    }}
-                    className="group relative flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all duration-200">
-                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                      <Store size={28} className="text-primary" />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center w-full">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <Store size={40} className="text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              {t("page.invoice.title")}
+            </h2>
+            <p className="text-muted-foreground mb-8">Pilih toko</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {locLoading
+                ? [0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card ${
+                        i === 1 ? "hidden sm:flex" : i >= 2 ? "hidden lg:flex" : ""
+                      }`}>
+                      <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <Skeleton className="h-5 w-5/6" />
+                        <Skeleton className="h-4 w-4/6" />
+                      </div>
+                      <Skeleton className="w-5 h-5 shrink-0" />
                     </div>
-                    <span className="text-lg font-semibold text-foreground">{s.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {t("page.priceStore.list.selectStore")}
-                    </span>
-                  </button>
-                ))}
+                  ))
+                : locationList.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedStore(String(s.id));
+                        if (isSuperAdmin) {
+                          setCookie("activeStore", String(s.id), { path: "/" });
+                          setCookie("activeStoreName", s.name || "", { path: "/" });
+                        }
+                      }}
+                      className="flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-card hover:border-primary hover:shadow-lg transition-all text-left group">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15">
+                        <Store size={24} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground">{s.name}</p>
+                        <p className="text-sm text-muted-foreground">Pilih toko</p>
+                      </div>
+                      <ChevronRight
+                        size={20}
+                        className="text-muted-foreground group-hover:text-primary transition-colors shrink-0"
+                      />
+                    </button>
+                  ))}
+            </div>
           </div>
         </div>
       ) : storeError ? (

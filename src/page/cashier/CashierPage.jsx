@@ -14,13 +14,13 @@ import CheckoutModal from "./components/CheckoutModal";
 import ReceiptModal from "./components/ReceiptModal";
 import Sidebar from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserDropdown, NotificationBell, StoreSelector } from "@/components/layout/Header";
+import { UserDropdown, NotificationBell } from "@/components/layout/Header";
 import { translationSelect } from "@/state/translation";
 import { useThemeStore } from "@/state/theme";
 
 const CashierPage = () => {
   const { t } = useTranslation();
-  const [cookie, setCookie] = useCookies();
+  const cookie = useCookies();
   const user = useMemo(() => {
     const fromSession = () => {
       try {
@@ -50,8 +50,7 @@ const CashierPage = () => {
     ["cashier-locations"],
     getAllLocation,
     {
-      enabled: isSuperAdmin,
-      
+      enabled: isSuperAdmin
     }
   );
   const locationList = locsData?.data || locsData || [];
@@ -100,9 +99,7 @@ const CashierPage = () => {
     ["products-outlet", store, search],
     () => getProductByOutlet({ location: store, search: search || undefined }),
     {
-      enabled: !!store,
-      
-
+      enabled: !!store
     }
   );
 
@@ -194,7 +191,7 @@ const CashierPage = () => {
                   <p className="text-xs text-muted-foreground/80">{userName}</p>
                 </div>
               </div>
-              <StoreSelector cookie={cookie} setCookie={setCookie} />
+              {/* <StoreSelector cookie={cookie} setCookie={setCookie} /> */}
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="flex items-center bg-muted/60 rounded-full p-0.5 border border-border/60 shadow-sm">
