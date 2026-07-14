@@ -167,7 +167,74 @@ const RoleManagement = () => {
                 </div>
 
                 {isLoading ? (
-                  <Loading fullscreen size="lg" label={t("common.loadingData")} />
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-muted/10">
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("page.globalSetting.roleManagement.table.name")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("page.globalSetting.roleManagement.table.description")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("page.globalSetting.roleManagement.table.type")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("common.status")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("common.createdBy")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("common.modifiedBy")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("common.createdAt")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border">
+                            {t("common.updatedAt")}
+                          </th>
+                          <th className="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border text-right">
+                            {t("page.globalSetting.roleManagement.table.actions")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {[...Array(6)].map((_, i) => (
+                          <tr key={i}>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-32" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-24" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-5 w-20 rounded-full" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-5 w-16 rounded-full" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-28" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-28" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-32" />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Skeleton className="h-4 w-32" />
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <Skeleton className="h-8 w-20 ml-auto rounded" />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
