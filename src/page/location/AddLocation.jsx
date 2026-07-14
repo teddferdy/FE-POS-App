@@ -106,7 +106,7 @@ const AddLocation = () => {
   const [managerPage, setManagerPage] = useState(1);
   const limit = 10;
 
-  const { data: managerEmployeesData } = useQuery(
+  const { data: managerEmployeesData, isLoading: managerLoading, isFetching: managerFetching } = useQuery(
     ["employees-manager-picker", managerFetchSearch, managerPage],
     () =>
       getAllEmployee({ search: managerFetchSearch, limit, page: managerPage, status: "active" }),
@@ -1293,7 +1293,18 @@ const AddLocation = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {managerEmployees.length === 0 ? (
+                {managerLoading || managerFetching ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={`skel-${i}`}>
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-9 w-9 rounded-full" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-36" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                    </tr>
+                  ))
+                ) : managerEmployees.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                       <User size={32} className="mx-auto mb-2 opacity-50" />
